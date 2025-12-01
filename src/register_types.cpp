@@ -1,0 +1,82 @@
+#include "register_types.h"
+
+#include <gdextension_interface.h>
+#include <godot_cpp/core/defs.hpp>
+#include <godot_cpp/godot.hpp>
+#include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/resource_saver.hpp>
+
+#include "js_sandbox.h"
+#include "js_script.h"
+#include "js_script_language.h"
+#include "js_resource_loader.h"
+
+using namespace godot;
+
+static jsb::JSScriptLanguage* script_language = nullptr;
+static Ref<jsb::JSResourceLoader> resource_loader;
+static Ref<jsb::JSResourceSaver> resource_saver;
+
+void initialize_godot_js_runtime_module(ModuleInitializationLevel p_level) {
+    if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+        return;
+    }
+
+    // Register classes
+    ClassDB::register_class<jsb::JSSandbox>();
+    ClassDB::register_class<jsb::JSScript>();
+    ClassDB::register_class<jsb::JSScriptLanguage>();
+    ClassDB::register_class<jsb::JSResourceLoader>();
+    ClassDB::register_class<jsb::JSResourceSaver>();
+
+    // Create and register script language
+    script_language = memnew(jsb::JSScriptLanguage);
+    Engine::get_singleton()->register_script_language(script_language);
+
+    // Create and register resource loader/saver
+    resource_loader.instantiate();
+    resource_saver.instantiate();
+    ResourceLoader::get_singleton()->add_resource_format_loader(resource_loader);
+    ResourceSaver::get_singleton()->add_resource_format_saver(resource_saver);
+}
+
+void uninitialize_godot_js_runtime_module(ModuleInitializationLevel p_level) {
+    if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+        return;
+    }
+
+    // Unregister resource loader/saver
+    if (resource_loader.is_valid()) {
+        ResourceLoader::get_singleton()->remove_resource_format_loader(resource_loader);
+        resource_loader.unref();
+    }
+    if (resource_saver.is_valid()) {
+        ResourceSaver::get_singleton()->remove_resource_format_saver(resource_saver);
+        resource_saver.unref();
+    }
+
+    // Unregister script language
+    if (script_language) {
+        Engine::get_singleton()->unregister_script_language(script_language);
+        memdelete(script_language);
+        script_language = nullptr;
+    }
+}
+
+extern "C" {
+    GDExtensionBool GDE_EXPORT godot_js_runtime_library_init(
+        GDExtensionInterfaceGetProcAddress p_get_proc_address,
+        const GDExtensionClassLibraryPtr p_library,
+        GDExtensionInitialization *r_initialization
+    ) {
+        godot::GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
+
+        init_obj.register_initializer(initialize_godot_js_runtime_module);
+        init_obj.register_terminator(uninitialize_godot_js_runtime_module);
+        init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_SCENE);
+
+        return init_obj.init();
+    }
+}

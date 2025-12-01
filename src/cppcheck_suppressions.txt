@@ -1,0 +1,13 @@
+# Cppcheck suppressions for GodotJSRuntime
+# These are intentional suppressions for code that cannot be changed due to external API requirements
+
+# QuickJS callback signatures are fixed by the QuickJS API - we cannot change parameter const-ness
+# JS_SetInterruptHandler expects: int (*)(JSRuntime *rt, void *opaque)
+# JSCFunction expects: JSValue (*)(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv)
+# JSClassFinalizer expects: void (*)(JSRuntime *rt, JSValue val)
+
+constParameterCallback:src/quickjs_context.cpp:15
+constParameterCallback:src/quickjs_context.cpp:29
+constParameterCallback:src/quickjs_context.cpp:43
+constParameterCallback:src/quickjs_context.cpp:127
+constParameterCallback:src/quickjs_context.cpp:138

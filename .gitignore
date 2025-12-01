@@ -1,0 +1,5 @@
+ref
+.DS_Store
+bin/macos
+demo/.godot
+demo/bin

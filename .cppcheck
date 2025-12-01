@@ -1,0 +1,23 @@
+# Cppcheck configuration for GodotJSRuntime
+# Run with: cppcheck --project=.cppcheck src/
+
+# Only check our source files
+-I src/
+
+# Suppress third-party library warnings
+--suppress=*:godot-cpp/*
+--suppress=*:quickjs/*
+
+# Enable all checks
+--enable=all
+
+# Suppress noise
+--suppress=missingIncludeSystem
+--suppress=unmatchedSuppression
+--suppress=unusedFunction
+
+# Output format
+--template=gcc
+
+# Error exit code
+--error-exitcode=1
