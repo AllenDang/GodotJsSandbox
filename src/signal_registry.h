@@ -12,6 +12,7 @@
 namespace jsb {
 
 class ObjectRegistry;
+class QuickJSContext;
 
 // SignalRegistry manages JavaScript callback connections to Godot signals
 // Handles automatic cleanup when objects are deleted or sandbox is destroyed
@@ -21,6 +22,7 @@ public:
     ~SignalRegistry();
 
     void set_context(JSContext* ctx) { ctx_ = ctx; }
+    void set_quickjs_context(QuickJSContext* qjs_ctx) { qjs_context_ = qjs_ctx; }
     void set_object_registry(ObjectRegistry* registry) { object_registry_ = registry; }
 
     // Connect a JS callback to a Godot signal
@@ -52,6 +54,7 @@ private:
     };
 
     JSContext* ctx_ = nullptr;
+    QuickJSContext* qjs_context_ = nullptr;
     ObjectRegistry* object_registry_ = nullptr;
 
     godot::HashMap<uint64_t, SignalConnection> connections_;

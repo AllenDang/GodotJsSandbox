@@ -1,5 +1,6 @@
 #include "signal_registry.h"
 #include "object_registry.h"
+#include "quickjs_context.h"
 
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -148,16 +149,18 @@ void SignalRegistry::invoke_callback(uint64_t connection_id, const Array& args) 
         return;
     }
 
-    // Convert Godot args to JS args
+    // Convert Godot args to JS args using QuickJSContext
     int argc = args.size();
     JSValue* js_args = nullptr;
 
     if (argc > 0) {
         js_args = static_cast<JSValue*>(js_malloc(ctx_, sizeof(JSValue) * argc));
-        // Note: Would need QuickJSContext to convert Variant to JS
-        // For now, this is a placeholder
         for (int i = 0; i < argc; i++) {
-            js_args[i] = JS_UNDEFINED;
+            if (qjs_context_) {
+                js_args[i] = qjs_context_->variant_to_js(args[i]);
+            } else {
+                js_args[i] = JS_UNDEFINED;
+            }
         }
     }
 

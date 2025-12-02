@@ -32,6 +32,7 @@ bool JSSandbox::initialize() {
     safe_wrapper_->set_object_registry(object_registry_.get());
     safe_wrapper_->set_sandbox_config(sandbox_config_.get());
     safe_wrapper_->set_execution_limiter(execution_limiter_.get());
+    safe_wrapper_->set_deletion_tracker(deletion_tracker_.get());
 
     // Configure DeletionTracker
     deletion_tracker_->set_object_registry(object_registry_.get());
@@ -52,6 +53,7 @@ bool JSSandbox::initialize() {
 
     // Configure SignalRegistry with context
     signal_registry_->set_context(context_->ctx());
+    signal_registry_->set_quickjs_context(context_.get());
     signal_registry_->set_object_registry(object_registry_.get());
 
     return true;

@@ -11,6 +11,7 @@ namespace jsb {
 class ObjectRegistry;
 class SandboxConfig;
 class ExecutionLimiter;
+class DeletionTracker;
 
 // SafeWrapper is the core security layer for all Godot API calls from JavaScript
 // All API calls pass through this wrapper for validation and safety checks
@@ -22,6 +23,7 @@ public:
     void set_object_registry(ObjectRegistry* registry) { object_registry_ = registry; }
     void set_sandbox_config(SandboxConfig* config) { sandbox_config_ = config; }
     void set_execution_limiter(ExecutionLimiter* limiter) { execution_limiter_ = limiter; }
+    void set_deletion_tracker(DeletionTracker* tracker) { deletion_tracker_ = tracker; }
 
     // Object creation - creates a new Godot object if allowed
     // Returns handle or 0 on failure
@@ -58,6 +60,7 @@ private:
     ObjectRegistry* object_registry_ = nullptr;
     SandboxConfig* sandbox_config_ = nullptr;
     ExecutionLimiter* execution_limiter_ = nullptr;
+    DeletionTracker* deletion_tracker_ = nullptr;
 
     godot::String last_error_;
 

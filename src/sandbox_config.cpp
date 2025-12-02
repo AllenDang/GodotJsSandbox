@@ -2,6 +2,7 @@
 
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/json.hpp>
+#include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <algorithm>
 
@@ -176,6 +177,21 @@ void SandboxConfig::unblock_class(const String& class_name) {
 
 bool SandboxConfig::is_class_blocked(const String& class_name) const {
     return blocked_classes_.has(class_name);
+}
+
+bool SandboxConfig::is_class_or_parent_blocked(const StringName& class_name) const {
+    // Walk up the inheritance chain to check if any parent class is blocked
+    StringName current = class_name;
+
+    while (!current.is_empty()) {
+        if (blocked_classes_.has(String(current))) {
+            return true;
+        }
+        // Get parent class using ClassDB
+        current = ClassDB::get_parent_class(current);
+    }
+
+    return false;
 }
 
 void SandboxConfig::block_method(const String& class_name, const String& method_name) {

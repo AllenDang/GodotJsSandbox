@@ -2,6 +2,7 @@
 #define GODOT_JS_RUNTIME_SANDBOX_CONFIG_H
 
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/classes/global_constants.hpp>
 
@@ -21,6 +22,9 @@ public:
     void block_class(const godot::String& class_name);
     void unblock_class(const godot::String& class_name);
     bool is_class_blocked(const godot::String& class_name) const;
+
+    // Inheritance-aware class check (checks class and all parent classes)
+    bool is_class_or_parent_blocked(const godot::StringName& class_name) const;
 
     // Method blocklist (format: "ClassName.method_name")
     void block_method(const godot::String& class_name, const godot::String& method_name);

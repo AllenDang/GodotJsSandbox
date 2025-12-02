@@ -72,7 +72,7 @@ private:
     std::unique_ptr<GodotBindings> bindings_;
 
     int64_t timeout_ms_ = 1000;
-    int64_t deadline_ = 0;
+    mutable int64_t deadline_ = 0;  // mutable: accessed from const interrupt_handler
 
     void setup_builtins();
     void setup_godot_bindings();

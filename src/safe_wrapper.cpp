@@ -2,6 +2,7 @@
 #include "object_registry.h"
 #include "sandbox_config.h"
 #include "execution_limiter.h"
+#include "deletion_tracker.h"
 
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/resource.hpp>
@@ -50,18 +51,23 @@ StringName SafeWrapper::get_object_class(Object* obj) const {
 
 bool SafeWrapper::is_class_allowed(const StringName& class_name) const {
     if (!sandbox_config_) return true;
-    return !sandbox_config_->is_class_blocked(String(class_name));
+    // Security: Walk the inheritance chain to block subclasses of blocked classes
+    // e.g., if "Node" is blocked, Node2D, Node3D, Control, etc. are also blocked
+    return !sandbox_config_->is_class_or_parent_blocked(class_name);
 }
 
 bool SafeWrapper::is_method_allowed(const StringName& class_name, const StringName& method) const {
     if (!sandbox_config_) return true;
 
-    // Check global blocked methods (apply to all classes)
+    // Security: Block methods in two layers
+    // 1. Global blocks (Object.*): Apply to ALL classes via inheritance
+    //    e.g., blocking "Object.free" blocks free() on every Godot object
     if (sandbox_config_->is_method_blocked("Object", String(method))) {
         return false;
     }
 
-    // Check class-specific blocked methods
+    // 2. Class-specific blocks: Apply only to the specified class
+    //    e.g., blocking "FileAccess.open" only blocks FileAccess.open()
     return !sandbox_config_->is_method_blocked(String(class_name), String(method));
 }
 
@@ -114,6 +120,12 @@ uint64_t SafeWrapper::create_object(const StringName& class_name, String& error)
 
     // Mark as JS-created (true) so we can track objects created by JavaScript
     uint64_t handle = object_registry_->create_handle(obj, true);
+
+    // Track Node objects for deletion notification
+    Node* node = Object::cast_to<Node>(obj);
+    if (node && deletion_tracker_) {
+        deletion_tracker_->track_node(node);
+    }
 
     return handle;
 }
