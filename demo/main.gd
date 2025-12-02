@@ -37,6 +37,9 @@ func _ready() -> void:
 	# Test tracking APIs
 	test_tracking_apis()
 
+	# Test singleton bindings
+	test_singleton_bindings()
+
 	print("\n=== All tests completed ===")
 
 func test_basic_eval() -> void:
@@ -210,6 +213,7 @@ func test_tracking_apis() -> void:
 
 	# Test creating nodes via JS and setting properties
 	print("\nTest 1: Create nodes via JS and set properties (natural syntax)")
+
 	sandbox.eval("""
 		console.log('Creating tracked nodes with natural property access...');
 
@@ -222,19 +226,33 @@ func test_tracking_apis() -> void:
 		node2.name = 'TestNode2';
 		console.log('node2.name =', node2.name);
 
-		// Test method calls
+		// Create a parent and test add_child
 		let parent = new Node3D();
 		parent.name = 'Parent';
-		parent.add_child(node1);
-		parent.add_child(node2);
-		console.log('parent.get_child_count() =', parent.get_child_count());
+		console.log('parent.name =', parent.name);
 
-		// Test with Sprite2D and position
+		// Test position property
+		parent.position = {x: 10, y: 20, z: 30};
+		console.log('parent.position =', JSON.stringify(parent.position));
+
+		// Test with Sprite2D
 		let sprite = new Sprite2D();
 		sprite.name = 'MySprite';
-		sprite.position = new Vector2(100, 200);
 		console.log('sprite.name =', sprite.name);
-		console.log('sprite.position.x =', sprite.position.x, 'y =', sprite.position.y);
+
+		// Test boolean property
+		sprite.centered = false;
+		console.log('sprite.centered =', sprite.centered);
+
+		// Test add_child - now supported!
+		let child = new Node3D();
+		child.name = 'ChildNode';
+		parent.add_child(child);
+		console.log('add_child worked! child count:', parent.get_child_count());
+
+		// Test get_viewport
+		let viewport = parent.get_viewport();
+		console.log('get_viewport returned:', viewport);
 
 		console.log('All natural syntax tests passed!');
 	""")
@@ -253,6 +271,36 @@ func test_tracking_apis() -> void:
 	print("Attached scripts count: ", scripts.size())
 
 	print("\nTracking APIs tests completed")
+
+func test_singleton_bindings() -> void:
+	print("\n--- Test: Singleton Bindings ---")
+
+	# Test Time singleton
+	print("\nTest 1: Time singleton")
+	sandbox.eval("""
+		console.log('Time singleton tests:');
+		console.log('  get_ticks_msec():', Time.get_ticks_msec());
+		console.log('  get_ticks_usec():', Time.get_ticks_usec());
+		console.log('  get_unix_time_from_system():', Time.get_unix_time_from_system());
+	""")
+
+	# Test Input singleton
+	print("\nTest 2: Input singleton")
+	sandbox.eval("""
+		console.log('Input singleton tests:');
+		console.log('  is_anything_pressed():', Input.is_anything_pressed());
+		console.log('  is_key_pressed(65/A):', Input.is_key_pressed(65));
+		console.log('  is_mouse_button_pressed(1):', Input.is_mouse_button_pressed(1));
+		console.log('  is_action_pressed("ui_accept"):', Input.is_action_pressed("ui_accept"));
+		console.log('  get_action_strength("ui_accept"):', Input.get_action_strength("ui_accept"));
+		console.log('  get_axis("ui_left", "ui_right"):', Input.get_axis("ui_left", "ui_right"));
+		var vec = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down");
+		console.log('  get_vector():', JSON.stringify(vec));
+		console.log('  get_last_mouse_velocity():', JSON.stringify(Input.get_last_mouse_velocity()));
+		console.log('  get_mouse_button_mask():', Input.get_mouse_button_mask());
+	""")
+
+	print("\nSingleton bindings tests completed")
 
 func _on_level_saved(path: String) -> void:
 	print("Level saved signal received: ", path)

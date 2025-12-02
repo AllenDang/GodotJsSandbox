@@ -19,6 +19,7 @@ env = SConscript(godot_cpp_path + "/SConstruct")
 env.Append(CPPPATH=[
     "src/",
     "quickjs/",
+    "generated/",
 ])
 
 # QuickJS-ng source files (C code) - v0.11.0
@@ -32,6 +33,9 @@ quickjs_sources = [
 
 # Module C++ source files
 cpp_sources = Glob("src/*.cpp")
+
+# Generated binding files
+generated_sources = Glob("generated/*.gen.cpp")
 
 # Build QuickJS as C
 env_quickjs = env.Clone()
@@ -49,8 +53,11 @@ quickjs_objects = [env_quickjs.SharedObject(src) for src in quickjs_sources]
 # Build C++ sources
 cpp_objects = [env.SharedObject(src) for src in cpp_sources]
 
+# Build generated binding sources
+generated_objects = [env.SharedObject(src) for src in generated_sources]
+
 # Combine all objects
-all_objects = quickjs_objects + cpp_objects
+all_objects = quickjs_objects + cpp_objects + generated_objects
 
 # Build library name following godot-cpp-template pattern
 suffix = env['suffix'].replace(".dev", "").replace(".universal", "")

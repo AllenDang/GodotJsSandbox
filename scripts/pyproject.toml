@@ -1,0 +1,11 @@
+[project]
+name = "godot-js-binding-generator"
+version = "0.1.0"
+description = "Code generator for GodotJSRuntime bindings"
+requires-python = ">=3.10"
+dependencies = [
+    "jinja2>=3.1.6",
+]
+
+[project.scripts]
+generate-bindings = "generate_bindings:main"

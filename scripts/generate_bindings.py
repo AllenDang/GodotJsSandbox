@@ -1,0 +1,985 @@
+#!/usr/bin/env python3
+"""
+GodotJSRuntime Binding Generator
+
+Generates C++ bindings for Godot classes from extension_api.json.
+Uses Jinja2 templates for code generation.
+
+Usage:
+    uv run generate_bindings.py [--api-json PATH] [--output-dir PATH]
+"""
+
+import json
+import os
+import sys
+import argparse
+from pathlib import Path
+from typing import Any
+from dataclasses import dataclass, field
+
+from jinja2 import Environment, FileSystemLoader
+
+
+# Type mapping from Godot types to C++ types
+GODOT_TO_CPP_TYPE = {
+    "Nil": "Variant",
+    "bool": "bool",
+    "int": "int64_t",
+    "float": "double",
+    "String": "String",
+    "StringName": "StringName",
+    "Vector2": "Vector2",
+    "Vector2i": "Vector2i",
+    "Vector3": "Vector3",
+    "Vector3i": "Vector3i",
+    "Vector4": "Vector4",
+    "Vector4i": "Vector4i",
+    "Rect2": "Rect2",
+    "Rect2i": "Rect2i",
+    "Transform2D": "Transform2D",
+    "Transform3D": "Transform3D",
+    "Plane": "Plane",
+    "Quaternion": "Quaternion",
+    "AABB": "AABB",
+    "Basis": "Basis",
+    "Projection": "Projection",
+    "Color": "Color",
+    "NodePath": "NodePath",
+    "RID": "RID",
+    "Callable": "Callable",
+    "Signal": "Signal",
+    "Dictionary": "Dictionary",
+    "Array": "Array",
+    "PackedByteArray": "PackedByteArray",
+    "PackedInt32Array": "PackedInt32Array",
+    "PackedInt64Array": "PackedInt64Array",
+    "PackedFloat32Array": "PackedFloat32Array",
+    "PackedFloat64Array": "PackedFloat64Array",
+    "PackedStringArray": "PackedStringArray",
+    "PackedVector2Array": "PackedVector2Array",
+    "PackedVector3Array": "PackedVector3Array",
+    "PackedColorArray": "PackedColorArray",
+    "PackedVector4Array": "PackedVector4Array",
+    "Variant": "Variant",
+}
+
+# Types that need special JS conversion
+JS_CONVERSION_TEMPLATES = {
+    "bool": {
+        "to_js": "return JS_NewBool(ctx, value);",
+        "from_js": "bool value = JS_ToBool(ctx, argv[1]);",
+    },
+    "int64_t": {
+        "to_js": "return JS_NewInt64(ctx, value);",
+        "from_js": "int64_t value; JS_ToInt64(ctx, &value, argv[1]);",
+    },
+    "double": {
+        "to_js": "return JS_NewFloat64(ctx, value);",
+        "from_js": "double value; JS_ToFloat64(ctx, &value, argv[1]);",
+    },
+    "String": {
+        "to_js": "return JS_NewString(ctx, value.utf8().get_data());",
+        "from_js": 'const char* str = JS_ToCString(ctx, argv[1]); String value = str ? str : ""; JS_FreeCString(ctx, str);',
+    },
+    "StringName": {
+        "to_js": "return JS_NewString(ctx, String(value).utf8().get_data());",
+        "from_js": 'const char* str = JS_ToCString(ctx, argv[1]); StringName value = str ? str : ""; JS_FreeCString(ctx, str);',
+    },
+    "Vector2": {
+        "to_js": """JSValue obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, value.x));
+    JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, value.y));
+    return obj;""",
+        "from_js": """Vector2 value;
+    JSValue x_val = JS_GetPropertyStr(ctx, argv[1], "x");
+    JSValue y_val = JS_GetPropertyStr(ctx, argv[1], "y");
+    JS_ToFloat64(ctx, &value.x, x_val);
+    JS_ToFloat64(ctx, &value.y, y_val);
+    JS_FreeValue(ctx, x_val);
+    JS_FreeValue(ctx, y_val);""",
+    },
+    "Vector3": {
+        "to_js": """JSValue obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, value.x));
+    JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, value.y));
+    JS_SetPropertyStr(ctx, obj, "z", JS_NewFloat64(ctx, value.z));
+    return obj;""",
+        "from_js": """Vector3 value;
+    JSValue x_val = JS_GetPropertyStr(ctx, argv[1], "x");
+    JSValue y_val = JS_GetPropertyStr(ctx, argv[1], "y");
+    JSValue z_val = JS_GetPropertyStr(ctx, argv[1], "z");
+    JS_ToFloat64(ctx, &value.x, x_val);
+    JS_ToFloat64(ctx, &value.y, y_val);
+    JS_ToFloat64(ctx, &value.z, z_val);
+    JS_FreeValue(ctx, x_val);
+    JS_FreeValue(ctx, y_val);
+    JS_FreeValue(ctx, z_val);""",
+    },
+    "Color": {
+        "to_js": """JSValue obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, obj, "r", JS_NewFloat64(ctx, value.r));
+    JS_SetPropertyStr(ctx, obj, "g", JS_NewFloat64(ctx, value.g));
+    JS_SetPropertyStr(ctx, obj, "b", JS_NewFloat64(ctx, value.b));
+    JS_SetPropertyStr(ctx, obj, "a", JS_NewFloat64(ctx, value.a));
+    return obj;""",
+        "from_js": """Color value;
+    JSValue r_val = JS_GetPropertyStr(ctx, argv[1], "r");
+    JSValue g_val = JS_GetPropertyStr(ctx, argv[1], "g");
+    JSValue b_val = JS_GetPropertyStr(ctx, argv[1], "b");
+    JSValue a_val = JS_GetPropertyStr(ctx, argv[1], "a");
+    JS_ToFloat64(ctx, &value.r, r_val);
+    JS_ToFloat64(ctx, &value.g, g_val);
+    JS_ToFloat64(ctx, &value.b, b_val);
+    if (!JS_IsUndefined(a_val)) JS_ToFloat64(ctx, &value.a, a_val); else value.a = 1.0;
+    JS_FreeValue(ctx, r_val);
+    JS_FreeValue(ctx, g_val);
+    JS_FreeValue(ctx, b_val);
+    JS_FreeValue(ctx, a_val);""",
+    },
+}
+
+
+@dataclass
+class MethodArg:
+    name: str
+    type: str
+    cpp_type: str
+    conversion: str
+    default_value: str | None = None
+    is_optional: bool = False
+    arg_index: int = 0  # Index in argv (0-based, excluding handle)
+
+
+@dataclass
+class MethodInfo:
+    name: str
+    return_type: str
+    return_cpp_type: str
+    return_conversion: str
+    arguments: list[MethodArg] = field(default_factory=list)
+    call_args: str = ""
+    is_static: bool = False
+    is_virtual: bool = False
+    required_arg_count: int = 0  # Number of required arguments (without defaults)
+
+
+@dataclass
+class PropertyInfo:
+    name: str
+    type: str
+    cpp_type: str
+    getter: str
+    setter: str | None
+    readonly: bool
+    to_js_conversion: str
+    from_js_conversion: str
+    setter_cast: str = ""  # Cast expression for enum types
+
+
+@dataclass
+class ClassInfo:
+    name: str
+    parent_class: str
+    header_name: str
+    methods: list[MethodInfo] = field(default_factory=list)
+    properties: list[PropertyInfo] = field(default_factory=list)
+    extra_includes: list[str] = field(default_factory=list)
+    is_instantiable: bool = True  # Whether JS can create instances with new
+
+
+class BindingGenerator:
+    def __init__(self, api_json_path: Path, output_dir: Path, config_dir: Path, templates_dir: Path):
+        self.api_json_path = api_json_path
+        self.output_dir = output_dir
+        self.config_dir = config_dir
+        self.templates_dir = templates_dir
+
+        self.api_data: dict = {}
+        self.blocklist: dict = {}
+        self.classes: dict[str, ClassInfo] = {}
+
+        # Setup Jinja2
+        self.jinja_env = Environment(
+            loader=FileSystemLoader(str(templates_dir)),
+            trim_blocks=True,
+            lstrip_blocks=True,
+        )
+
+    def load_config(self):
+        """Load blocklist and other config files."""
+        blocklist_path = self.config_dir / "blocklist.json"
+        if blocklist_path.exists():
+            with open(blocklist_path) as f:
+                self.blocklist = json.load(f)
+        else:
+            self.blocklist = {
+                "blocked_classes": [],
+                "blocked_methods": {},
+                "blocked_properties": {},
+                "priority_classes": [],
+            }
+
+    def load_api(self):
+        """Load extension_api.json."""
+        with open(self.api_json_path) as f:
+            self.api_data = json.load(f)
+
+    def is_class_blocked(self, class_name: str) -> bool:
+        return class_name in self.blocklist.get("blocked_classes", [])
+
+    def is_method_blocked(self, class_name: str, method_name: str) -> bool:
+        blocked_methods = self.blocklist.get("blocked_methods", {})
+        if method_name in blocked_methods.get("Object", []):
+            return True
+        return method_name in blocked_methods.get(class_name, [])
+
+    def is_property_blocked(self, class_name: str, property_name: str) -> bool:
+        blocked_props = self.blocklist.get("blocked_properties", {})
+        if property_name in blocked_props.get("Object", []):
+            return True
+        return property_name in blocked_props.get(class_name, [])
+
+    def get_cpp_type(self, godot_type: str, for_return: bool = False) -> str:
+        """Convert Godot type to C++ type.
+
+        Args:
+            godot_type: The Godot type string
+            for_return: If True, use Ref<T> for RefCounted types (for return values)
+        """
+        # Handle typed arrays like "typedarray::Node"
+        if godot_type.startswith("typedarray::"):
+            return "TypedArray<" + godot_type[12:] + ">"
+
+        # Handle enum types
+        if godot_type.startswith("enum::"):
+            return godot_type[6:].replace(".", "::")
+
+        # Handle bitfield types
+        if godot_type.startswith("bitfield::"):
+            return "BitField<" + godot_type[10:].replace(".", "::") + ">"
+
+        # Basic type mapping
+        if godot_type in GODOT_TO_CPP_TYPE:
+            return GODOT_TO_CPP_TYPE[godot_type]
+
+        # Object types - return as pointer
+        # Note: RefCounted types (Resource, etc.) are not supported as they require
+        # full type definitions - they must be accessed via methods that return Variant
+        return godot_type + "*"
+
+    def convert_default_value(self, default_value: str, cpp_type: str, godot_type: str = None) -> str:
+        """Convert Godot default value format to C++ format."""
+        if default_value is None:
+            return None
+
+        # Enum types: cast numeric default to enum type
+        if godot_type and godot_type.startswith("enum::"):
+            # Default is usually a number like "0", cast to enum
+            return f"({cpp_type}){default_value}"
+
+        # StringName: &"" -> StringName()
+        if cpp_type == "StringName":
+            if default_value == '&""' or default_value == "":
+                return "StringName()"
+            # &"something" -> StringName("something")
+            if default_value.startswith('&"') and default_value.endswith('"'):
+                return f'StringName({default_value[1:]})'
+            return f'StringName("{default_value}")'
+
+        # String: "" -> String()
+        if cpp_type == "String":
+            if default_value == '""' or default_value == "":
+                return "String()"
+            return default_value  # Keep as is
+
+        # NodePath: ^"" -> NodePath()
+        if cpp_type == "NodePath":
+            if default_value.startswith('^"'):
+                inner = default_value[2:-1] if default_value.endswith('"') else ""
+                if inner == "":
+                    return "NodePath()"
+                return f'NodePath("{inner}")'
+            return default_value
+
+        # Array: [] -> Array()
+        if cpp_type == "Array":
+            if default_value == "[]":
+                return "Array()"
+            return "Array()"  # Default to empty array
+
+        # Dictionary: {} -> Dictionary()
+        if cpp_type == "Dictionary":
+            if default_value == "{}":
+                return "Dictionary()"
+            return "Dictionary()"
+
+        # bool: keep as is (true/false)
+        # int/float: keep as is
+        # null -> nullptr
+        if default_value == "null":
+            return "nullptr"
+
+        return default_value
+
+    def get_js_to_cpp_conversion(self, cpp_type: str, arg_index: int, arg_name: str, godot_type: str = None) -> str:
+        """Generate code to convert JS argument to C++ type.
+        godot_type: The original Godot type (e.g., "enum::Side") if different from cpp_type.
+        """
+        # Handle enum types first
+        if godot_type and godot_type.startswith("enum::"):
+            return f"int64_t tmp_{arg_name}; JS_ToInt64(ctx, &tmp_{arg_name}, argv[{arg_index}]); {cpp_type} arg_{arg_name} = ({cpp_type})tmp_{arg_name};"
+
+        if cpp_type == "bool":
+            return f"bool arg_{arg_name} = JS_ToBool(ctx, argv[{arg_index}]);"
+        if cpp_type == "int64_t":
+            return f"int64_t arg_{arg_name}; JS_ToInt64(ctx, &arg_{arg_name}, argv[{arg_index}]);"
+        if cpp_type == "double":
+            return f"double arg_{arg_name}; JS_ToFloat64(ctx, &arg_{arg_name}, argv[{arg_index}]);"
+        if cpp_type == "String":
+            return f'const char* cstr_{arg_name} = JS_ToCString(ctx, argv[{arg_index}]); String arg_{arg_name} = cstr_{arg_name} ? cstr_{arg_name} : ""; JS_FreeCString(ctx, cstr_{arg_name});'
+        if cpp_type == "StringName":
+            return f'const char* cstr_{arg_name} = JS_ToCString(ctx, argv[{arg_index}]); StringName arg_{arg_name} = cstr_{arg_name} ? cstr_{arg_name} : ""; JS_FreeCString(ctx, cstr_{arg_name});'
+        if cpp_type == "Vector2":
+            return f"""double tmp_x_{arg_name}, tmp_y_{arg_name};
+    JSValue jx_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "x");
+    JSValue jy_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "y");
+    JS_ToFloat64(ctx, &tmp_x_{arg_name}, jx_{arg_name});
+    JS_ToFloat64(ctx, &tmp_y_{arg_name}, jy_{arg_name});
+    JS_FreeValue(ctx, jx_{arg_name});
+    JS_FreeValue(ctx, jy_{arg_name});
+    Vector2 arg_{arg_name}(tmp_x_{arg_name}, tmp_y_{arg_name});"""
+        if cpp_type == "Vector3":
+            return f"""double tmp_x_{arg_name}, tmp_y_{arg_name}, tmp_z_{arg_name};
+    JSValue jx_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "x");
+    JSValue jy_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "y");
+    JSValue jz_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "z");
+    JS_ToFloat64(ctx, &tmp_x_{arg_name}, jx_{arg_name});
+    JS_ToFloat64(ctx, &tmp_y_{arg_name}, jy_{arg_name});
+    JS_ToFloat64(ctx, &tmp_z_{arg_name}, jz_{arg_name});
+    JS_FreeValue(ctx, jx_{arg_name});
+    JS_FreeValue(ctx, jy_{arg_name});
+    JS_FreeValue(ctx, jz_{arg_name});
+    Vector3 arg_{arg_name}(tmp_x_{arg_name}, tmp_y_{arg_name}, tmp_z_{arg_name});"""
+        if cpp_type == "Color":
+            return f"""double tmp_r_{arg_name}, tmp_g_{arg_name}, tmp_b_{arg_name}, tmp_a_{arg_name} = 1.0;
+    JSValue jr_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "r");
+    JSValue jg_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "g");
+    JSValue jb_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "b");
+    JSValue ja_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "a");
+    JS_ToFloat64(ctx, &tmp_r_{arg_name}, jr_{arg_name});
+    JS_ToFloat64(ctx, &tmp_g_{arg_name}, jg_{arg_name});
+    JS_ToFloat64(ctx, &tmp_b_{arg_name}, jb_{arg_name});
+    if (!JS_IsUndefined(ja_{arg_name})) JS_ToFloat64(ctx, &tmp_a_{arg_name}, ja_{arg_name});
+    JS_FreeValue(ctx, jr_{arg_name});
+    JS_FreeValue(ctx, jg_{arg_name});
+    JS_FreeValue(ctx, jb_{arg_name});
+    JS_FreeValue(ctx, ja_{arg_name});
+    Color arg_{arg_name}(tmp_r_{arg_name}, tmp_g_{arg_name}, tmp_b_{arg_name}, tmp_a_{arg_name});"""
+
+        if cpp_type == "Rect2":
+            return f"""double tmp_x_{arg_name}, tmp_y_{arg_name}, tmp_w_{arg_name}, tmp_h_{arg_name};
+    JSValue jpos_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "position");
+    JSValue jsize_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "size");
+    JSValue jpx_{arg_name} = JS_GetPropertyStr(ctx, jpos_{arg_name}, "x");
+    JSValue jpy_{arg_name} = JS_GetPropertyStr(ctx, jpos_{arg_name}, "y");
+    JSValue jsx_{arg_name} = JS_GetPropertyStr(ctx, jsize_{arg_name}, "x");
+    JSValue jsy_{arg_name} = JS_GetPropertyStr(ctx, jsize_{arg_name}, "y");
+    JS_ToFloat64(ctx, &tmp_x_{arg_name}, jpx_{arg_name});
+    JS_ToFloat64(ctx, &tmp_y_{arg_name}, jpy_{arg_name});
+    JS_ToFloat64(ctx, &tmp_w_{arg_name}, jsx_{arg_name});
+    JS_ToFloat64(ctx, &tmp_h_{arg_name}, jsy_{arg_name});
+    JS_FreeValue(ctx, jpx_{arg_name}); JS_FreeValue(ctx, jpy_{arg_name});
+    JS_FreeValue(ctx, jsx_{arg_name}); JS_FreeValue(ctx, jsy_{arg_name});
+    JS_FreeValue(ctx, jpos_{arg_name}); JS_FreeValue(ctx, jsize_{arg_name});
+    Rect2 arg_{arg_name}(tmp_x_{arg_name}, tmp_y_{arg_name}, tmp_w_{arg_name}, tmp_h_{arg_name});"""
+
+        # Enum types - convert to int64 then cast
+        if "::" in cpp_type and not cpp_type.endswith("*"):
+            return f"int64_t tmp_{arg_name}; JS_ToInt64(ctx, &tmp_{arg_name}, argv[{arg_index}]); {cpp_type} arg_{arg_name} = ({cpp_type})tmp_{arg_name};"
+
+        # Object pointer types - extract handle and look up object
+        # Handle both: direct integer handle (from JS proxy unwrap) OR object with __handle property
+        # Use reinterpret_cast to handle forward-declared types (runtime type safety handled by Godot)
+        if cpp_type.endswith("*"):
+            return f"""{cpp_type} arg_{arg_name} = nullptr;
+    if (JS_IsNumber(argv[{arg_index}])) {{
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_{arg_name}; JS_ToInt64(ctx, &h_{arg_name}, argv[{arg_index}]);
+        Object* obj_{arg_name} = qjs_ctx->get_object_registry()->get_object(h_{arg_name});
+        arg_{arg_name} = reinterpret_cast<{cpp_type}>(obj_{arg_name});
+    }} else {{
+        // Object with __handle property
+        JSValue jh_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "__handle");
+        if (!JS_IsUndefined(jh_{arg_name})) {{
+            int64_t h_{arg_name}; JS_ToInt64(ctx, &h_{arg_name}, jh_{arg_name});
+            Object* obj_{arg_name} = qjs_ctx->get_object_registry()->get_object(h_{arg_name});
+            arg_{arg_name} = reinterpret_cast<{cpp_type}>(obj_{arg_name});
+        }}
+        JS_FreeValue(ctx, jh_{arg_name});
+    }}"""
+
+        # Default: use variant conversion
+        return f"{cpp_type} arg_{arg_name} = qjs_ctx->js_to_variant(argv[{arg_index}]);"
+
+    def get_cpp_to_js_conversion(self, cpp_type: str, var_name: str = "result") -> str:
+        """Generate code to convert C++ result to JS value."""
+        if cpp_type == "bool":
+            return f"return JS_NewBool(ctx, {var_name});"
+        if cpp_type == "int64_t":
+            return f"return JS_NewInt64(ctx, {var_name});"
+        if cpp_type == "double":
+            return f"return JS_NewFloat64(ctx, {var_name});"
+        if cpp_type == "String":
+            return f"return JS_NewString(ctx, {var_name}.utf8().get_data());"
+        if cpp_type == "StringName":
+            return f"return JS_NewString(ctx, String({var_name}).utf8().get_data());"
+        if cpp_type == "Vector2":
+            return f"""JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "x", JS_NewFloat64(ctx, {var_name}.x));
+    JS_SetPropertyStr(ctx, ret_obj, "y", JS_NewFloat64(ctx, {var_name}.y));
+    return ret_obj;"""
+        if cpp_type == "Vector3":
+            return f"""JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "x", JS_NewFloat64(ctx, {var_name}.x));
+    JS_SetPropertyStr(ctx, ret_obj, "y", JS_NewFloat64(ctx, {var_name}.y));
+    JS_SetPropertyStr(ctx, ret_obj, "z", JS_NewFloat64(ctx, {var_name}.z));
+    return ret_obj;"""
+        if cpp_type == "Color":
+            return f"""JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "r", JS_NewFloat64(ctx, {var_name}.r));
+    JS_SetPropertyStr(ctx, ret_obj, "g", JS_NewFloat64(ctx, {var_name}.g));
+    JS_SetPropertyStr(ctx, ret_obj, "b", JS_NewFloat64(ctx, {var_name}.b));
+    JS_SetPropertyStr(ctx, ret_obj, "a", JS_NewFloat64(ctx, {var_name}.a));
+    return ret_obj;"""
+
+        if cpp_type == "Rect2":
+            return f"""JSValue ret_obj = JS_NewObject(ctx);
+    JSValue pos_obj = JS_NewObject(ctx);
+    JSValue size_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, pos_obj, "x", JS_NewFloat64(ctx, {var_name}.position.x));
+    JS_SetPropertyStr(ctx, pos_obj, "y", JS_NewFloat64(ctx, {var_name}.position.y));
+    JS_SetPropertyStr(ctx, size_obj, "x", JS_NewFloat64(ctx, {var_name}.size.x));
+    JS_SetPropertyStr(ctx, size_obj, "y", JS_NewFloat64(ctx, {var_name}.size.y));
+    JS_SetPropertyStr(ctx, ret_obj, "position", pos_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "size", size_obj);
+    return ret_obj;"""
+
+        if cpp_type == "void":
+            return "return JS_UNDEFINED;"
+
+        # Enum types - return as int
+        if "::" in cpp_type and not cpp_type.endswith("*"):
+            return f"return JS_NewInt64(ctx, (int64_t){var_name});"
+
+        # Object pointer types - wrap in JS object with handle
+        # Use reinterpret_cast to handle forward-declared types (all Node types inherit from Object)
+        if cpp_type.endswith("*"):
+            return f"""if (!{var_name}) return JS_NULL;
+    Object* ret_obj_ptr = reinterpret_cast<Object*>({var_name});
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_obj_ptr->get_class().utf8().get_data()));
+    return ret_obj;"""
+
+        # Default: use variant conversion
+        return f"return qjs_ctx->variant_to_js(Variant({var_name}));"
+
+    def class_name_to_header(self, class_name: str) -> str:
+        """Convert class name to header file name (snake_case)."""
+        result = ""
+        for i, c in enumerate(class_name):
+            if c.isupper() and i > 0:
+                prev = class_name[i-1]
+                # Add underscore before uppercase if:
+                # - Previous char is lowercase (CamelCase -> camel_case)
+                # - Previous char is uppercase AND next char is lowercase (CPUParticles -> cpu_particles)
+                if prev.islower():
+                    result += "_"
+                elif prev.isupper() and i + 1 < len(class_name) and class_name[i+1].islower():
+                    result += "_"
+            result += c.lower()
+        return result
+
+    def is_supported_type(self, godot_type: str) -> bool:
+        """Check if a type is supported for binding."""
+        # Skip complex types that need special handling
+        if godot_type.startswith("typedarray::"):
+            return False
+        if godot_type.startswith("bitfield::"):
+            return False
+
+        # Support enum types - they're converted to int
+        if godot_type.startswith("enum::"):
+            return True
+
+        # Basic types we fully support
+        simple_types = {"void", "bool", "int", "float", "String", "StringName",
+                        "Vector2", "Vector2i", "Vector3", "Vector3i", "Color",
+                        "Variant", "NodePath", "Rect2", "Rect2i",
+                        "Transform2D", "Transform3D", "Basis", "Quaternion",
+                        "AABB", "Plane", "Array", "Dictionary"}
+        if godot_type in simple_types:
+            return True
+
+        # Object pointer types - only support Node subclasses (not Resource/RefCounted)
+        # Resource types return Ref<T> which needs special include handling
+        if self.is_node_type(godot_type):
+            return True
+
+        return False
+
+    def is_node_type(self, godot_type: str) -> bool:
+        """Check if a type is a Node subclass (not RefCounted/Resource)."""
+        classes_by_name = {c.get("name"): c for c in self.api_data.get("classes", [])}
+        if godot_type not in classes_by_name:
+            return False
+
+        # Walk up inheritance chain
+        current = godot_type
+        while current:
+            if current == "Node":
+                return True
+            if current in ("RefCounted", "Resource", "Object"):
+                return False  # Stop at these - not a Node
+            cls_data = classes_by_name.get(current)
+            if not cls_data:
+                break
+            current = cls_data.get("inherits", "")
+        return False
+
+    def is_refcounted_type(self, godot_type: str) -> bool:
+        """Check if a type is a RefCounted/Resource subclass (returns Ref<T>)."""
+        classes_by_name = {c.get("name"): c for c in self.api_data.get("classes", [])}
+        if godot_type not in classes_by_name:
+            return False
+
+        # Walk up inheritance chain
+        current = godot_type
+        while current:
+            if current in ("RefCounted", "Resource"):
+                return True
+            if current in ("Node", "Object"):
+                return False  # Stop at these - not a RefCounted
+            cls_data = classes_by_name.get(current)
+            if not cls_data:
+                break
+            current = cls_data.get("inherits", "")
+        return False
+
+    def is_supported_return_type(self, godot_type: str) -> bool:
+        """Check if a type is supported as a method return type.
+        For return types, we need full type definitions (not just forward declarations).
+        """
+        # Basic types are always supported
+        simple_types = {"void", "bool", "int", "float", "String", "StringName",
+                        "Vector2", "Vector2i", "Vector3", "Vector3i", "Color",
+                        "Variant", "NodePath", "Rect2", "Rect2i",
+                        "Transform2D", "Transform3D", "Basis", "Quaternion",
+                        "AABB", "Plane", "Array", "Dictionary"}
+        if godot_type in simple_types:
+            return True
+
+        # Enums are supported (converted to int)
+        if godot_type.startswith("enum::"):
+            return True
+
+        # Skip complex types
+        if godot_type.startswith("typedarray::"):
+            return False
+        if godot_type.startswith("bitfield::"):
+            return False
+
+        # For object return types, allow any Node subclass
+        # We cast to Object* in the generated code to handle forward-declared types
+        # Note: RefCounted/Resource types are not supported - they require Ref<T>
+        # which needs full type definitions that may not be included
+        if self.is_node_type(godot_type):
+            return True
+
+        return False
+
+    def is_object_type(self, godot_type: str) -> bool:
+        """Check if a type is a Godot Object subclass."""
+        # Known object base classes and common types
+        object_types = {"Object", "Node", "Resource", "RefCounted"}
+        if godot_type in object_types:
+            return True
+
+        # Check if it's a class we know about from the API
+        classes_by_name = {c.get("name"): c for c in self.api_data.get("classes", [])}
+        if godot_type in classes_by_name:
+            # Check if it inherits from Object
+            current = godot_type
+            while current:
+                if current == "Object":
+                    return True
+                cls_data = classes_by_name.get(current)
+                if not cls_data:
+                    break
+                current = cls_data.get("inherits", "")
+            return False
+        return False
+
+    # Keep old name as alias for compatibility
+    def is_simple_type(self, godot_type: str) -> bool:
+        return self.is_supported_type(godot_type)
+
+    def process_method(self, class_name: str, method_data: dict) -> MethodInfo | None:
+        """Process a method from API data into MethodInfo."""
+        method_name = method_data.get("name", "")
+
+        # Skip internal methods (prefixed with _)
+        if method_name.startswith("_"):
+            return None
+
+        # Skip blocked methods
+        if self.is_method_blocked(class_name, method_name):
+            return None
+
+        # Skip virtual methods (they're for overriding, not calling)
+        if method_data.get("is_virtual", False):
+            return None
+
+        # Skip vararg methods (complex to bind)
+        if method_data.get("is_vararg", False):
+            return None
+
+        # Check return type is supported (stricter for return types due to forward declarations)
+        return_type = method_data.get("return_value", {}).get("type", "void")
+        if not self.is_supported_return_type(return_type):
+            return None
+
+        # Check all argument types are simple (parameters are more flexible)
+        for arg_data in method_data.get("arguments", []):
+            arg_type = arg_data.get("type", "Variant")
+            if not self.is_simple_type(arg_type):
+                return None
+
+        return_type = method_data.get("return_value", {}).get("type", "void")
+        return_cpp_type = self.get_cpp_type(return_type, for_return=True) if return_type != "void" else "void"
+
+        method = MethodInfo(
+            name=method_name,
+            return_type=return_type,
+            return_cpp_type=return_cpp_type,
+            return_conversion=self.get_cpp_to_js_conversion(return_cpp_type),
+            is_static=method_data.get("is_static", False),
+            is_virtual=method_data.get("is_virtual", False),
+        )
+
+        # Process arguments
+        args_data = method_data.get("arguments", [])
+        call_args = []
+
+        for i, arg_data in enumerate(args_data):
+            arg_name = arg_data.get("name", f"arg{i}")
+            arg_type = arg_data.get("type", "Variant")
+            cpp_type = self.get_cpp_type(arg_type)
+            raw_default = arg_data.get("default_value")
+            # Convert Godot default values to C++ format
+            default_value = self.convert_default_value(raw_default, cpp_type, arg_type) if raw_default is not None else None
+            is_optional = default_value is not None
+
+            # Generate conversion code
+            arg_index = i + 1  # +1 because argv[0] is the handle
+            conversion = self.get_js_to_cpp_conversion(cpp_type, arg_index, arg_name, arg_type)
+
+            arg = MethodArg(
+                name=arg_name,
+                type=arg_type,
+                cpp_type=cpp_type,
+                conversion=conversion,
+                default_value=default_value,
+                is_optional=is_optional,
+                arg_index=i,  # 0-based index (template adds 1 for handle)
+            )
+            method.arguments.append(arg)
+            call_args.append(f"arg_{arg_name}")
+
+        method.call_args = ", ".join(call_args)
+
+        # Calculate required argument count (args without default values)
+        method.required_arg_count = sum(1 for arg in method.arguments if arg.default_value is None)
+
+        return method
+
+    def process_property(self, class_name: str, prop_data: dict, class_methods: list) -> PropertyInfo | None:
+        """Process a property from API data into PropertyInfo."""
+        prop_name = prop_data.get("name", "")
+
+        # Skip blocked properties
+        if self.is_property_blocked(class_name, prop_name):
+            return None
+
+        prop_type = prop_data.get("type", "Variant")
+
+        # Skip complex types that we don't support
+        # Only allow simple types (RefCounted types require additional includes per-class)
+        is_simple = self.is_simple_type(prop_type)
+        if not is_simple:
+            return None
+
+        getter = prop_data.get("getter", "")
+        setter = prop_data.get("setter", "")
+
+        if not getter:
+            return None
+
+        # Skip properties with internal getter/setter (prefixed with _)
+        if getter.startswith("_") or (setter and setter.startswith("_")):
+            return None
+
+        # Check if getter has parameters (indexed properties like get_param(enum))
+        # Also check if getter return type matches property type
+        getter_return_type = None
+        for method in class_methods:
+            if method.get("name") == getter:
+                if method.get("arguments"):
+                    return None  # Indexed property - getter takes parameters
+                getter_return_type = method.get("return_value", {}).get("type", prop_type)
+                break
+
+        # Skip if getter return type differs from property type (type mismatch like Viewport vs Node)
+        if getter_return_type and getter_return_type != prop_type:
+            # Allow int vs enum mismatches (common pattern)
+            if not (getter_return_type == "int" or prop_type == "int"):
+                return None
+
+        # Check if setter has non-simple parameter types or multiple parameters (indexed properties)
+        if setter:
+            for method in class_methods:
+                if method.get("name") == setter:
+                    args = method.get("arguments", [])
+                    # Skip if setter takes more than 1 argument (indexed property)
+                    if len(args) > 1:
+                        return None
+                    for arg in args:
+                        arg_type = arg.get("type", "")
+                        if not self.is_simple_type(arg_type):
+                            return None  # Setter uses non-simple type
+                    break
+
+        cpp_type = self.get_cpp_type(prop_type)
+
+        # Determine the actual setter parameter type from the setter method
+        setter_param_type = prop_type
+        setter_cast = ""
+        if setter:
+            for method in class_methods:
+                if method.get("name") == setter:
+                    args = method.get("arguments", [])
+                    if args:
+                        setter_param_type = args[0].get("type", prop_type)
+                    break
+
+        # Use setter param type for the conversion (it may differ from property type)
+        setter_cpp_type = self.get_cpp_type(setter_param_type)
+
+        # If setter param is an enum, we need a cast
+        if setter_param_type.startswith("enum::"):
+            setter_cast = f"({setter_cpp_type})"
+            from_js_conv = "int64_t value; JS_ToInt64(ctx, &value, argv[1]);"
+        elif prop_type.startswith("enum::"):
+            setter_cast = f"({cpp_type})"
+            from_js_conv = "int64_t value; JS_ToInt64(ctx, &value, argv[1]);"
+        else:
+            # Use setter param type for conversion (e.g., setter expects Node* even if property is Viewport)
+            from_js_conv = self.get_js_to_cpp_conversion(setter_cpp_type, 1, "value").replace("arg_value", "value")
+
+        return PropertyInfo(
+            name=prop_name,
+            type=prop_type,
+            cpp_type=cpp_type,
+            getter=getter,
+            setter=setter if setter else None,
+            readonly=not bool(setter),
+            to_js_conversion=self.get_cpp_to_js_conversion(cpp_type, "value"),  # Property getter uses "value" variable
+            from_js_conversion=from_js_conv,
+            setter_cast=setter_cast,
+        )
+
+    def get_all_methods_for_class(self, class_name: str) -> list:
+        """Get all methods for a class including inherited methods from parents."""
+        all_methods = []
+        classes_by_name = {c.get("name"): c for c in self.api_data.get("classes", [])}
+
+        current = class_name
+        while current and current in classes_by_name:
+            class_data = classes_by_name[current]
+            all_methods.extend(class_data.get("methods", []))
+            current = class_data.get("inherits", "")
+
+        return all_methods
+
+    def process_class(self, class_data: dict) -> ClassInfo | None:
+        """Process a class from API data into ClassInfo."""
+        class_name = class_data.get("name", "")
+
+        if self.is_class_blocked(class_name):
+            return None
+
+        # Generate bindings for both instantiable and non-instantiable classes
+        # Non-instantiable (abstract) classes are still needed for inheritance lookup
+        is_instantiable = class_data.get("is_instantiable", True)
+
+        parent = class_data.get("inherits", "")
+
+        class_info = ClassInfo(
+            name=class_name,
+            parent_class=parent,
+            header_name=self.class_name_to_header(class_name),
+            is_instantiable=is_instantiable,
+        )
+
+        # Collect property getters/setters to skip as methods
+        property_methods = set()
+        # Also collect method names that would conflict with auto-generated property accessors
+        # Template generates: js_Class_get_PropertyName and js_Class_set_PropertyName
+        # So methods named "get_PropertyName" or "set_PropertyName" would conflict
+        property_name_conflicts = set()
+        for prop_data in class_data.get("properties", []):
+            prop_name = prop_data.get("name", "")
+            if prop_data.get("getter"):
+                property_methods.add(prop_data["getter"])
+            if prop_data.get("setter"):
+                property_methods.add(prop_data["setter"])
+            # Track potential naming conflicts
+            property_name_conflicts.add(f"get_{prop_name}")
+            property_name_conflicts.add(f"set_{prop_name}")
+
+        class_methods = class_data.get("methods", [])
+
+        # Process methods (skip property accessors and conflicting names)
+        for method_data in class_methods:
+            method_name = method_data.get("name", "")
+            if method_name in property_methods:
+                continue  # Skip, will be generated as property accessor
+            if method_name in property_name_conflicts:
+                continue  # Skip, would conflict with auto-generated property accessor name
+            method = self.process_method(class_name, method_data)
+            if method:
+                class_info.methods.append(method)
+
+        # Get all methods including from parent classes for property getter/setter lookup
+        all_methods = self.get_all_methods_for_class(class_name)
+
+        # Process properties
+        for prop_data in class_data.get("properties", []):
+            prop = self.process_property(class_name, prop_data, all_methods)
+            if prop:
+                class_info.properties.append(prop)
+
+        return class_info
+
+    def generate(self):
+        """Generate all binding files."""
+        self.load_config()
+        self.load_api()
+
+        # Get priority classes to generate
+        priority_classes = set(self.blocklist.get("priority_classes", []))
+
+        # Process classes
+        for class_data in self.api_data.get("classes", []):
+            class_name = class_data.get("name", "")
+
+            # Only generate for priority classes initially
+            if priority_classes and class_name not in priority_classes:
+                continue
+
+            class_info = self.process_class(class_data)
+            if class_info:
+                self.classes[class_name] = class_info
+
+        # Create output directory
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Generate individual class binding files
+        class_template = self.jinja_env.get_template("class_binding.cpp.j2")
+
+        for class_name, class_info in self.classes.items():
+            output_path = self.output_dir / f"{class_info.header_name}_bindings.gen.cpp"
+
+            content = class_template.render(
+                class_name=class_info.name,
+                parent_class=class_info.parent_class,
+                header_name=class_info.header_name,
+                methods=class_info.methods,
+                properties=class_info.properties,
+                extra_includes=class_info.extra_includes,
+                is_instantiable=class_info.is_instantiable,
+            )
+
+            with open(output_path, "w") as f:
+                f.write(content)
+
+            print(f"Generated: {output_path.name}")
+
+        # Generate header file
+        header_template = self.jinja_env.get_template("generated_classes.h.j2")
+        header_content = header_template.render(classes=sorted(self.classes.keys()))
+
+        with open(self.output_dir / "generated_classes.gen.h", "w") as f:
+            f.write(header_content)
+
+        print(f"Generated: generated_classes.gen.h")
+
+        # Generate registration file
+        register_template = self.jinja_env.get_template("register_all.cpp.j2")
+        register_content = register_template.render(classes=sorted(self.classes.keys()))
+
+        with open(self.output_dir / "register_all.gen.cpp", "w") as f:
+            f.write(register_content)
+
+        print(f"Generated: register_all.gen.cpp")
+
+        print(f"\nGenerated bindings for {len(self.classes)} classes")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate GodotJSRuntime bindings")
+    parser.add_argument(
+        "--api-json",
+        type=Path,
+        default=Path(__file__).parent.parent / "extension_api.json",
+        help="Path to extension_api.json",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path(__file__).parent.parent / "generated",
+        help="Output directory for generated files",
+    )
+    parser.add_argument(
+        "--config-dir",
+        type=Path,
+        default=Path(__file__).parent / "config",
+        help="Directory containing config files",
+    )
+    parser.add_argument(
+        "--templates-dir",
+        type=Path,
+        default=Path(__file__).parent / "templates",
+        help="Directory containing Jinja2 templates",
+    )
+
+    args = parser.parse_args()
+
+    if not args.api_json.exists():
+        print(f"Error: extension_api.json not found at {args.api_json}")
+        print("Generate it with: godot --dump-extension-api")
+        sys.exit(1)
+
+    generator = BindingGenerator(
+        api_json_path=args.api_json,
+        output_dir=args.output_dir,
+        config_dir=args.config_dir,
+        templates_dir=args.templates_dir,
+    )
+
+    generator.generate()
+
+
+if __name__ == "__main__":
+    main()

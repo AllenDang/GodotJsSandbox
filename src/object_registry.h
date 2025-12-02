@@ -42,6 +42,9 @@ public:
     // Find handle by object ID
     uint64_t find_handle_by_object_id(uint64_t object_id) const;
 
+    // Get or create handle for an object (returns existing if already tracked)
+    uint64_t get_or_create_handle(godot::Object* obj);
+
     // Get all valid object IDs (for tracking created objects)
     godot::Vector<uint64_t> get_all_object_ids() const;
 

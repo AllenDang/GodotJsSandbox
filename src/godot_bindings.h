@@ -30,11 +30,8 @@ public:
     // Convert JSValue to Variant
     godot::Variant js_to_variant(JSValue value);
 
-    // Helper to get QuickJSContext from JSContext (public for proxy functions)
+    // Helper to get QuickJSContext from JSContext (public for generated bindings)
     static QuickJSContext* get_context(JSContext* ctx);
-
-    // Method call handler (public for proxy functions)
-    static JSValue godot_object_call_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv, int magic, JSValue* func_data);
 
 private:
     QuickJSContext* context_;

@@ -3,30 +3,11 @@
 #include "safe_wrapper.h"
 #include "object_registry.h"
 #include "sandbox_config.h"
+#include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/node.hpp>
-#include <godot_cpp/classes/node2d.hpp>
-#include <godot_cpp/classes/node3d.hpp>
-#include <godot_cpp/classes/control.hpp>
-#include <godot_cpp/classes/sprite2d.hpp>
-#include <godot_cpp/classes/sprite3d.hpp>
-#include <godot_cpp/classes/camera2d.hpp>
-#include <godot_cpp/classes/camera3d.hpp>
-#include <godot_cpp/classes/area2d.hpp>
-#include <godot_cpp/classes/area3d.hpp>
-#include <godot_cpp/classes/rigid_body2d.hpp>
-#include <godot_cpp/classes/rigid_body3d.hpp>
-#include <godot_cpp/classes/static_body2d.hpp>
-#include <godot_cpp/classes/static_body3d.hpp>
-#include <godot_cpp/classes/character_body2d.hpp>
-#include <godot_cpp/classes/character_body3d.hpp>
-#include <godot_cpp/classes/collision_shape2d.hpp>
-#include <godot_cpp/classes/collision_shape3d.hpp>
-#include <godot_cpp/classes/timer.hpp>
-#include <godot_cpp/classes/audio_stream_player.hpp>
-#include <godot_cpp/classes/label.hpp>
-#include <godot_cpp/classes/button.hpp>
 #include <godot_cpp/classes/time.hpp>
+#include <godot_cpp/classes/input.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -75,7 +56,13 @@ bool GodotBindings::initialize() {
     // Setup bindings
     setup_global_functions();
     setup_math_types();
-    setup_proxy_handler();  // Must be before setup_godot_class_constructor - defines __godot_get etc.
+
+    // Register all generated class bindings (creates __godot_classes registry)
+    JSValue global = JS_GetGlobalObject(ctx);
+    generated::register_all_classes(ctx, global);
+    JS_FreeValue(ctx, global);
+
+    setup_proxy_handler();  // No-op, but kept for structure
     setup_godot_class_constructor();
 
     return true;
@@ -98,6 +85,103 @@ static JSValue js_time_get_unix_time(JSContext* ctx, JSValueConst this_val, int 
     return JS_NewFloat64(ctx, Time::get_singleton()->get_unix_time_from_system());
 }
 
+// Input singleton wrapper functions
+static JSValue js_input_is_anything_pressed(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    return JS_NewBool(ctx, Input::get_singleton()->is_anything_pressed());
+}
+
+static JSValue js_input_is_key_pressed(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_ThrowTypeError(ctx, "is_key_pressed: missing keycode argument");
+    int64_t keycode;
+    JS_ToInt64(ctx, &keycode, argv[0]);
+    return JS_NewBool(ctx, Input::get_singleton()->is_key_pressed((Key)keycode));
+}
+
+static JSValue js_input_is_mouse_button_pressed(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_ThrowTypeError(ctx, "is_mouse_button_pressed: missing button argument");
+    int64_t button;
+    JS_ToInt64(ctx, &button, argv[0]);
+    return JS_NewBool(ctx, Input::get_singleton()->is_mouse_button_pressed((MouseButton)button));
+}
+
+static JSValue js_input_is_action_pressed(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_ThrowTypeError(ctx, "is_action_pressed: missing action argument");
+    const char* action = JS_ToCString(ctx, argv[0]);
+    bool exact_match = argc > 1 ? JS_ToBool(ctx, argv[1]) : false;
+    bool result = Input::get_singleton()->is_action_pressed(StringName(action), exact_match);
+    JS_FreeCString(ctx, action);
+    return JS_NewBool(ctx, result);
+}
+
+static JSValue js_input_is_action_just_pressed(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_ThrowTypeError(ctx, "is_action_just_pressed: missing action argument");
+    const char* action = JS_ToCString(ctx, argv[0]);
+    bool exact_match = argc > 1 ? JS_ToBool(ctx, argv[1]) : false;
+    bool result = Input::get_singleton()->is_action_just_pressed(StringName(action), exact_match);
+    JS_FreeCString(ctx, action);
+    return JS_NewBool(ctx, result);
+}
+
+static JSValue js_input_is_action_just_released(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_ThrowTypeError(ctx, "is_action_just_released: missing action argument");
+    const char* action = JS_ToCString(ctx, argv[0]);
+    bool exact_match = argc > 1 ? JS_ToBool(ctx, argv[1]) : false;
+    bool result = Input::get_singleton()->is_action_just_released(StringName(action), exact_match);
+    JS_FreeCString(ctx, action);
+    return JS_NewBool(ctx, result);
+}
+
+static JSValue js_input_get_action_strength(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_ThrowTypeError(ctx, "get_action_strength: missing action argument");
+    const char* action = JS_ToCString(ctx, argv[0]);
+    bool exact_match = argc > 1 ? JS_ToBool(ctx, argv[1]) : false;
+    double result = Input::get_singleton()->get_action_strength(StringName(action), exact_match);
+    JS_FreeCString(ctx, action);
+    return JS_NewFloat64(ctx, result);
+}
+
+static JSValue js_input_get_axis(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_ThrowTypeError(ctx, "get_axis: missing action arguments");
+    const char* neg_action = JS_ToCString(ctx, argv[0]);
+    const char* pos_action = JS_ToCString(ctx, argv[1]);
+    double result = Input::get_singleton()->get_axis(StringName(neg_action), StringName(pos_action));
+    JS_FreeCString(ctx, neg_action);
+    JS_FreeCString(ctx, pos_action);
+    return JS_NewFloat64(ctx, result);
+}
+
+static JSValue js_input_get_vector(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 4) return JS_ThrowTypeError(ctx, "get_vector: missing action arguments");
+    const char* neg_x = JS_ToCString(ctx, argv[0]);
+    const char* pos_x = JS_ToCString(ctx, argv[1]);
+    const char* neg_y = JS_ToCString(ctx, argv[2]);
+    const char* pos_y = JS_ToCString(ctx, argv[3]);
+    double deadzone = argc > 4 ? 0.0 : -1.0;
+    if (argc > 4) JS_ToFloat64(ctx, &deadzone, argv[4]);
+    Vector2 result = Input::get_singleton()->get_vector(
+        StringName(neg_x), StringName(pos_x), StringName(neg_y), StringName(pos_y), deadzone);
+    JS_FreeCString(ctx, neg_x);
+    JS_FreeCString(ctx, pos_x);
+    JS_FreeCString(ctx, neg_y);
+    JS_FreeCString(ctx, pos_y);
+    JSValue ret = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret, "x", JS_NewFloat64(ctx, result.x));
+    JS_SetPropertyStr(ctx, ret, "y", JS_NewFloat64(ctx, result.y));
+    return ret;
+}
+
+static JSValue js_input_get_last_mouse_velocity(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    Vector2 vel = Input::get_singleton()->get_last_mouse_velocity();
+    JSValue ret = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret, "x", JS_NewFloat64(ctx, vel.x));
+    JS_SetPropertyStr(ctx, ret, "y", JS_NewFloat64(ctx, vel.y));
+    return ret;
+}
+
+static JSValue js_input_get_mouse_button_mask(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    return JS_NewInt64(ctx, (int64_t)Input::get_singleton()->get_mouse_button_mask());
+}
+
 void GodotBindings::setup_global_functions() {
     JSContext* ctx = context_->ctx();
     JSValue global = JS_GetGlobalObject(ctx);
@@ -115,6 +199,32 @@ void GodotBindings::setup_global_functions() {
     JS_SetPropertyStr(ctx, time_obj, "get_unix_time_from_system",
         JS_NewCFunction(ctx, js_time_get_unix_time, "get_unix_time_from_system", 0));
     JS_SetPropertyStr(ctx, global, "Time", time_obj);
+
+    // Input singleton (safe subset of methods)
+    JSValue input_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, input_obj, "is_anything_pressed",
+        JS_NewCFunction(ctx, js_input_is_anything_pressed, "is_anything_pressed", 0));
+    JS_SetPropertyStr(ctx, input_obj, "is_key_pressed",
+        JS_NewCFunction(ctx, js_input_is_key_pressed, "is_key_pressed", 1));
+    JS_SetPropertyStr(ctx, input_obj, "is_mouse_button_pressed",
+        JS_NewCFunction(ctx, js_input_is_mouse_button_pressed, "is_mouse_button_pressed", 1));
+    JS_SetPropertyStr(ctx, input_obj, "is_action_pressed",
+        JS_NewCFunction(ctx, js_input_is_action_pressed, "is_action_pressed", 2));
+    JS_SetPropertyStr(ctx, input_obj, "is_action_just_pressed",
+        JS_NewCFunction(ctx, js_input_is_action_just_pressed, "is_action_just_pressed", 2));
+    JS_SetPropertyStr(ctx, input_obj, "is_action_just_released",
+        JS_NewCFunction(ctx, js_input_is_action_just_released, "is_action_just_released", 2));
+    JS_SetPropertyStr(ctx, input_obj, "get_action_strength",
+        JS_NewCFunction(ctx, js_input_get_action_strength, "get_action_strength", 2));
+    JS_SetPropertyStr(ctx, input_obj, "get_axis",
+        JS_NewCFunction(ctx, js_input_get_axis, "get_axis", 2));
+    JS_SetPropertyStr(ctx, input_obj, "get_vector",
+        JS_NewCFunction(ctx, js_input_get_vector, "get_vector", 5));
+    JS_SetPropertyStr(ctx, input_obj, "get_last_mouse_velocity",
+        JS_NewCFunction(ctx, js_input_get_last_mouse_velocity, "get_last_mouse_velocity", 0));
+    JS_SetPropertyStr(ctx, input_obj, "get_mouse_button_mask",
+        JS_NewCFunction(ctx, js_input_get_mouse_button_mask, "get_mouse_button_mask", 0));
+    JS_SetPropertyStr(ctx, global, "Input", input_obj);
 
     JS_FreeValue(ctx, global);
 }
@@ -149,291 +259,177 @@ void GodotBindings::setup_godot_class_constructor() {
     JS_SetPropertyStr(ctx, global, "__godot_new",
         JS_NewCFunction(ctx, js_godot_new, "__godot_new", 1));
 
-    // Create Proxy-based wrapper for transparent property access
-    // This allows AI-generated code to use natural syntax: node.name = "Test"
-    const char* setup_code = R"(
-        // Proxy handler for Godot objects
+    // Step 1: Create helper function
+    const char* helper_code = R"(
+        // Helper to find method/property in class hierarchy
+        globalThis.__findBinding = function(className, prop, type) {
+            var current = className;
+            while (current && __godot_classes[current]) {
+                var classInfo = __godot_classes[current];
+                if (type === 'method' && classInfo.methods && classInfo.methods[prop]) {
+                    return classInfo.methods[prop];
+                }
+                if (type === 'property' && classInfo.properties && classInfo.properties[prop]) {
+                    return classInfo.properties[prop];
+                }
+                current = classInfo.parent;
+            }
+            return null;
+        };
+        'helper done';
+    )";
+
+    JSValue result = JS_Eval(ctx, helper_code, strlen(helper_code), "<helper>", JS_EVAL_TYPE_GLOBAL);
+    if (JS_IsException(result)) {
+        JSValue exception = JS_GetException(ctx);
+        const char* err = JS_ToCString(ctx, exception);
+        UtilityFunctions::printerr("Failed to setup JS helper: ", err ? err : "unknown");
+        if (err) JS_FreeCString(ctx, err);
+        JS_FreeValue(ctx, exception);
+        JS_FreeValue(ctx, result);
+        JS_FreeValue(ctx, global);
+        return;
+    }
+    JS_FreeValue(ctx, result);
+
+    // Step 2: Create proxy handler
+    const char* proxy_code = R"(
         globalThis.__godot_proxy_handler = {
             get: function(target, prop, receiver) {
-                // Return internal properties directly
-                if (prop === '__handle' || prop === '__class') {
-                    return target[prop];
-                }
-                // Handle Symbol.toStringTag for toString()
+                if (prop === '__handle' || prop === '__class') return target[prop];
                 if (typeof prop === 'symbol') {
-                    if (prop === Symbol.toStringTag) {
-                        return 'GodotObject';
-                    }
+                    if (prop === Symbol.toStringTag) return 'GodotObject';
                     return undefined;
                 }
-                // Handle toString specially
                 if (prop === 'toString') {
-                    return function() {
-                        return '[GodotObject ' + target.__class + ']';
-                    };
+                    return function() { return '[GodotObject ' + target.__class + ']'; };
                 }
-                // Check if this is a method first using __godot_has_method
-                if (__godot_has_method(target.__handle, prop)) {
-                    // Return a bound method function
+
+                var methodFn = __findBinding(target.__class, prop, 'method');
+                if (methodFn) {
+                    var handle = target.__handle;
                     return function() {
-                        var args = [target.__handle, prop];
+                        var args = [handle];
                         for (var i = 0; i < arguments.length; i++) {
-                            args.push(arguments[i]);
+                            var arg = arguments[i];
+                            if (arg && typeof arg === 'object' && arg.__handle !== undefined) {
+                                args.push(arg.__handle);
+                            } else {
+                                args.push(arg);
+                            }
                         }
-                        return __godot_call.apply(null, args);
+                        return methodFn.apply(null, args);
                     };
                 }
-                // Otherwise get as property
-                return __godot_get(target.__handle, prop);
+
+                var propBinding = __findBinding(target.__class, prop, 'property');
+                if (propBinding && propBinding.get) {
+                    return propBinding.get(target.__handle);
+                }
+
+                return undefined;
             },
             set: function(target, prop, value, receiver) {
                 if (prop === '__handle' || prop === '__class') {
                     target[prop] = value;
                     return true;
                 }
-                // Pass value as-is, C++ will detect __handle on Proxy objects
-                __godot_set(target.__handle, prop, value);
+
+                var propBinding = __findBinding(target.__class, prop, 'property');
+                if (propBinding && propBinding.set) {
+                    var unwrapped = value;
+                    if (value && typeof value === 'object' && value.__handle !== undefined) {
+                        unwrapped = value.__handle;
+                    }
+                    propBinding.set(target.__handle, unwrapped);
+                    return true;
+                }
+
                 return true;
             },
             has: function(target, prop) {
-                return prop === '__handle' || prop === '__class' || true;
+                if (prop === '__handle' || prop === '__class') return true;
+                return __findBinding(target.__class, prop, 'method') !== null ||
+                       __findBinding(target.__class, prop, 'property') !== null;
             }
         };
+        'proxy handler done';
+    )";
 
-        // Create a Proxy-wrapped Godot object
+    result = JS_Eval(ctx, proxy_code, strlen(proxy_code), "<proxy>", JS_EVAL_TYPE_GLOBAL);
+    if (JS_IsException(result)) {
+        JSValue exception = JS_GetException(ctx);
+        const char* err = JS_ToCString(ctx, exception);
+        UtilityFunctions::printerr("Failed to setup JS proxy handler: ", err ? err : "unknown");
+        if (err) JS_FreeCString(ctx, err);
+        JS_FreeValue(ctx, exception);
+        JS_FreeValue(ctx, result);
+        JS_FreeValue(ctx, global);
+        return;
+    }
+    JS_FreeValue(ctx, result);
+
+    // Step 3: Create object factory
+    const char* factory_code = R"(
         globalThis.__create_godot_object = function(className) {
             var raw = __godot_new(className);
+            if (!raw || raw.__handle === undefined) {
+                throw new Error('Failed to create ' + className);
+            }
             var target = {
                 __handle: raw.__handle,
                 __class: className
             };
             return new Proxy(target, __godot_proxy_handler);
         };
+        'factory done';
     )";
 
-    JSValue result = JS_Eval(ctx, setup_code, strlen(setup_code), "<builtin>", JS_EVAL_TYPE_GLOBAL);
+    result = JS_Eval(ctx, factory_code, strlen(factory_code), "<factory>", JS_EVAL_TYPE_GLOBAL);
     if (JS_IsException(result)) {
         JSValue exception = JS_GetException(ctx);
         const char* err = JS_ToCString(ctx, exception);
-        UtilityFunctions::printerr("Failed to setup Godot object wrapper: ", err ? err : "unknown");
+        UtilityFunctions::printerr("Failed to setup JS factory: ", err ? err : "unknown");
+        if (err) JS_FreeCString(ctx, err);
+        JS_FreeValue(ctx, exception);
+        JS_FreeValue(ctx, result);
+        JS_FreeValue(ctx, global);
+        return;
+    }
+    JS_FreeValue(ctx, result);
+
+    // Step 4: Create constructors (only for instantiable classes)
+    const char* ctor_code = R"(
+        for (var className in __godot_classes) {
+            (function(name) {
+                var classInfo = __godot_classes[name];
+                if (classInfo.instantiable) {
+                    globalThis[name] = function() {
+                        return __create_godot_object(name);
+                    };
+                }
+            })(className);
+        }
+        'constructors done';
+    )";
+
+    result = JS_Eval(ctx, ctor_code, strlen(ctor_code), "<constructors>", JS_EVAL_TYPE_GLOBAL);
+    if (JS_IsException(result)) {
+        JSValue exception = JS_GetException(ctx);
+        const char* err = JS_ToCString(ctx, exception);
+        UtilityFunctions::printerr("Failed to setup JS constructors: ", err ? err : "unknown");
         if (err) JS_FreeCString(ctx, err);
         JS_FreeValue(ctx, exception);
     }
     JS_FreeValue(ctx, result);
 
-    // Create constructor function for common Godot classes
-    const char* class_names[] = {
-        // Core nodes
-        "Node", "Node2D", "Node3D",
-        // 2D nodes
-        "Sprite2D", "Camera2D", "Area2D", "RigidBody2D", "StaticBody2D",
-        "CharacterBody2D", "CollisionShape2D",
-        // 3D nodes
-        "Sprite3D", "Camera3D", "Area3D", "RigidBody3D", "StaticBody3D",
-        "CharacterBody3D", "CollisionShape3D",
-        // UI nodes
-        "Control", "Label", "Button",
-        // Utility nodes
-        "Timer", "AudioStreamPlayer",
-        nullptr
-    };
-
-    // Create constructor for each class using the wrapper factory
-    for (int i = 0; class_names[i] != nullptr; i++) {
-        String class_name = class_names[i];
-
-        // Create a constructor function that uses the wrapper factory
-        String code = "function " + class_name + "() { return __create_godot_object('" + class_name + "'); }";
-        result = JS_Eval(ctx, code.utf8().get_data(), code.utf8().length(),
-                                 "<builtin>", JS_EVAL_TYPE_GLOBAL);
-        JS_FreeValue(ctx, result);
-    }
-
     JS_FreeValue(ctx, global);
 }
 
-// Native property getter: __godot_get(handle, property)
-static JSValue js_godot_get_property(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
-    if (argc < 2) {
-        return JS_ThrowTypeError(ctx, "__godot_get requires 2 arguments");
-    }
-
-    int64_t handle;
-    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
-        return JS_ThrowTypeError(ctx, "Invalid handle");
-    }
-
-    const char* prop_name = JS_ToCString(ctx, argv[1]);
-    if (!prop_name) {
-        return JS_ThrowTypeError(ctx, "Invalid property name");
-    }
-
-    String property = prop_name;
-    JS_FreeCString(ctx, prop_name);
-
-    QuickJSContext* qjs_ctx = GodotBindings::get_context(ctx);
-    if (!qjs_ctx) {
-        return JS_ThrowInternalError(ctx, "Context not initialized");
-    }
-
-    SafeWrapper* wrapper = qjs_ctx->get_safe_wrapper();
-    if (!wrapper) {
-        return JS_ThrowInternalError(ctx, "SafeWrapper not initialized");
-    }
-
-    String error;
-    Variant value = wrapper->get_property(handle, StringName(property), error);
-
-    if (!error.is_empty()) {
-        return JS_ThrowTypeError(ctx, "%s", error.utf8().get_data());
-    }
-
-    return qjs_ctx->variant_to_js(value);
-}
-
-// Native property setter: __godot_set(handle, property, value)
-static JSValue js_godot_set_property(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
-    if (argc < 3) {
-        return JS_ThrowTypeError(ctx, "__godot_set requires 3 arguments");
-    }
-
-    int64_t handle;
-    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
-        return JS_ThrowTypeError(ctx, "Invalid handle");
-    }
-
-    const char* prop_name = JS_ToCString(ctx, argv[1]);
-    if (!prop_name) {
-        return JS_ThrowTypeError(ctx, "Invalid property name");
-    }
-
-    String property = prop_name;
-    JS_FreeCString(ctx, prop_name);
-
-    QuickJSContext* qjs_ctx = GodotBindings::get_context(ctx);
-    if (!qjs_ctx) {
-        return JS_ThrowInternalError(ctx, "Context not initialized");
-    }
-
-    SafeWrapper* wrapper = qjs_ctx->get_safe_wrapper();
-    if (!wrapper) {
-        return JS_ThrowInternalError(ctx, "SafeWrapper not initialized");
-    }
-
-    Variant gd_value = qjs_ctx->js_to_variant(argv[2]);
-
-    String error;
-    bool success = wrapper->set_property(handle, StringName(property), gd_value, error);
-
-    if (!success) {
-        return JS_ThrowTypeError(ctx, "%s", error.utf8().get_data());
-    }
-
-    return JS_TRUE;
-}
-
-// Native method caller: __godot_call(handle, method, argsArray)
-static JSValue js_godot_call_method_direct(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
-    if (argc < 2) {
-        return JS_ThrowTypeError(ctx, "__godot_call requires at least 2 arguments");
-    }
-
-    int64_t handle;
-    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
-        return JS_ThrowTypeError(ctx, "Invalid handle");
-    }
-
-    const char* method_name = JS_ToCString(ctx, argv[1]);
-    if (!method_name) {
-        return JS_ThrowTypeError(ctx, "Invalid method name");
-    }
-
-    String method = method_name;
-    JS_FreeCString(ctx, method_name);
-
-    QuickJSContext* qjs_ctx = GodotBindings::get_context(ctx);
-    if (!qjs_ctx) {
-        return JS_ThrowInternalError(ctx, "Context not initialized");
-    }
-
-    SafeWrapper* wrapper = qjs_ctx->get_safe_wrapper();
-    if (!wrapper) {
-        return JS_ThrowInternalError(ctx, "SafeWrapper not initialized");
-    }
-
-    // Convert JS arguments to Variant (remaining args after handle and method)
-    int arg_count = argc - 2;
-    Vector<Variant> args;
-    args.resize(arg_count);
-    for (int i = 0; i < arg_count; i++) {
-        args.write[i] = qjs_ctx->js_to_variant(argv[i + 2]);
-    }
-
-    // Create array of pointers
-    Vector<const Variant*> arg_ptrs;
-    arg_ptrs.resize(arg_count);
-    for (int i = 0; i < arg_count; i++) {
-        arg_ptrs.write[i] = &args[i];
-    }
-
-    String error;
-    const Variant** args_ptr = arg_count > 0 ? const_cast<const Variant**>(arg_ptrs.ptrw()) : nullptr;
-    Variant result = wrapper->call_method(handle, StringName(method), args_ptr, arg_count, error);
-
-    if (!error.is_empty()) {
-        return JS_ThrowTypeError(ctx, "%s", error.utf8().get_data());
-    }
-
-    return qjs_ctx->variant_to_js(result);
-}
-
-// Check if object has a method: __godot_has_method(handle, method_name)
-static JSValue js_godot_has_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
-    if (argc < 2) {
-        return JS_FALSE;
-    }
-
-    int64_t handle;
-    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
-        return JS_FALSE;
-    }
-
-    const char* method_name = JS_ToCString(ctx, argv[1]);
-    if (!method_name) {
-        return JS_FALSE;
-    }
-
-    String method = method_name;
-    JS_FreeCString(ctx, method_name);
-
-    QuickJSContext* qjs_ctx = GodotBindings::get_context(ctx);
-    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
-        return JS_FALSE;
-    }
-
-    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
-    if (!obj) {
-        return JS_FALSE;
-    }
-
-    return obj->has_method(StringName(method)) ? JS_TRUE : JS_FALSE;
-}
-
+// setup_proxy_handler is now a no-op since the proxy uses __godot_classes directly
+// The generated bindings are registered by register_all_classes() before this is called
 void GodotBindings::setup_proxy_handler() {
-    JSContext* ctx = context_->ctx();
-    JSValue global = JS_GetGlobalObject(ctx);
-
-    // Register native getter/setter functions that take (handle, property[, value])
-    JS_SetPropertyStr(ctx, global, "__godot_get",
-        JS_NewCFunction(ctx, js_godot_get_property, "__godot_get", 2));
-    JS_SetPropertyStr(ctx, global, "__godot_set",
-        JS_NewCFunction(ctx, js_godot_set_property, "__godot_set", 3));
-    JS_SetPropertyStr(ctx, global, "__godot_call",
-        JS_NewCFunction(ctx, js_godot_call_method_direct, "__godot_call", 3));
-    JS_SetPropertyStr(ctx, global, "__godot_has_method",
-        JS_NewCFunction(ctx, js_godot_has_method, "__godot_has_method", 2));
-
-    JS_FreeValue(ctx, global);
+    // No additional setup needed - __godot_classes is already populated
 }
 
 // Global function: __godot_new(class_name) - creates a new Godot object with JS wrapper
@@ -527,57 +523,6 @@ void GodotBindings::godot_object_finalizer(JSRuntime* rt, JSValueConst val) {
     if (ctx && ctx->get_object_registry()) {
         ctx->get_object_registry()->release_handle(handle);
     }
-}
-
-// Method call handler - called when a method on GodotObject is invoked
-JSValue GodotBindings::godot_object_call_method(JSContext* ctx, JSValueConst this_val,
-                                                 int argc, JSValueConst* argv,
-                                                 int magic, JSValue* func_data) {
-    int64_t handle;
-    JS_ToInt64(ctx, &handle, func_data[0]);
-
-    const char* method_name = JS_ToCString(ctx, func_data[1]);
-    if (!method_name) {
-        return JS_ThrowTypeError(ctx, "Invalid method name");
-    }
-
-    String method = method_name;
-    JS_FreeCString(ctx, method_name);
-
-    QuickJSContext* qjs_ctx = get_context(ctx);
-    if (!qjs_ctx) {
-        return JS_ThrowInternalError(ctx, "Context not initialized");
-    }
-
-    SafeWrapper* wrapper = qjs_ctx->get_safe_wrapper();
-    if (!wrapper) {
-        return JS_ThrowInternalError(ctx, "SafeWrapper not initialized");
-    }
-
-    // Convert JS arguments to Variant
-    Vector<Variant> args;
-    args.resize(argc);
-    for (int i = 0; i < argc; i++) {
-        args.write[i] = qjs_ctx->js_to_variant(argv[i]);
-    }
-
-    // Create array of pointers
-    Vector<const Variant*> arg_ptrs;
-    arg_ptrs.resize(argc);
-    for (int i = 0; i < argc; i++) {
-        arg_ptrs.write[i] = &args[i];
-    }
-
-    String error;
-    const Variant** args_ptr = const_cast<const Variant**>(arg_ptrs.ptrw());
-    Variant result = wrapper->call_method(handle, StringName(method),
-                                          args_ptr, argc, error);
-
-    if (!error.is_empty()) {
-        return JS_ThrowTypeError(ctx, "%s", error.utf8().get_data());
-    }
-
-    return qjs_ctx->variant_to_js(result);
 }
 
 // Vector2 constructor

@@ -155,6 +155,20 @@ uint64_t ObjectRegistry::find_handle_by_object_id(uint64_t object_id) const {
     return 0;
 }
 
+uint64_t ObjectRegistry::get_or_create_handle(Object* obj) {
+    if (!obj) return 0;
+
+    // Check if we already have a handle for this object
+    uint64_t object_id = obj->get_instance_id();
+    uint64_t existing = find_handle_by_object_id(object_id);
+    if (existing != 0) {
+        return existing;
+    }
+
+    // Create new handle (not JS-created since we're tracking an existing object)
+    return create_handle(obj, false);
+}
+
 void ObjectRegistry::clear_all() {
     // Release all RefCounted objects
     for (auto& pair : handles_) {
