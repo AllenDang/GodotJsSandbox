@@ -61,15 +61,11 @@ private:
     std::unique_ptr<SignalRegistry> signal_registry_;
     std::unique_ptr<DeletionTracker> deletion_tracker_;
 
-    godot::Vector<uint64_t> created_nodes_;  // ObjectIDs
     godot::HashMap<uint64_t, godot::String> attached_scripts_;
 
     godot::String last_error_;
 
     bool initialize();
-
-    // Static callback for object creation tracking
-    static void on_object_created_static(void* user_data, godot::Object* obj, const godot::StringName& class_name);
 };
 
 } // namespace jsb

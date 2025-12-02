@@ -17,7 +17,8 @@ public:
 
     // Create a handle for an object
     // For RefCounted objects, this increments the reference count
-    uint64_t create_handle(godot::Object* obj);
+    // Set js_created=true when object was created by JS code
+    uint64_t create_handle(godot::Object* obj, bool js_created = false);
 
     // Get object from handle (returns nullptr if invalid)
     godot::Object* get_object(uint64_t handle);
@@ -44,6 +45,9 @@ public:
     // Get all valid object IDs (for tracking created objects)
     godot::Vector<uint64_t> get_all_object_ids() const;
 
+    // Get object IDs of nodes created by JS code
+    godot::Vector<uint64_t> get_js_created_node_ids() const;
+
 private:
     struct HandleEntry {
         godot::Object* object = nullptr;
@@ -51,6 +55,8 @@ private:
         uint32_t version = 0;       // Generation number to detect stale handles
         bool is_ref_counted = false;
         bool is_valid = true;       // Set to false when object is deleted
+        bool is_js_created = false; // True if created by JS (via SafeWrapper::create_object)
+        bool is_node = false;       // True if object is a Node
     };
 
     godot::HashMap<uint64_t, HandleEntry> handles_;

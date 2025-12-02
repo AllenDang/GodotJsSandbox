@@ -1,6 +1,7 @@
 #include "object_registry.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -15,7 +16,7 @@ ObjectRegistry::~ObjectRegistry() {
     clear_all();
 }
 
-uint64_t ObjectRegistry::create_handle(Object* obj) {
+uint64_t ObjectRegistry::create_handle(Object* obj, bool js_created) {
     if (!obj) {
         return 0;
     }
@@ -26,6 +27,10 @@ uint64_t ObjectRegistry::create_handle(Object* obj) {
     if (object_id_to_handle_.has(obj_id)) {
         uint64_t existing_handle = object_id_to_handle_[obj_id];
         if (handles_.has(existing_handle) && handles_[existing_handle].is_valid) {
+            // If this is now being marked as JS-created, update the flag
+            if (js_created && !handles_[existing_handle].is_js_created) {
+                handles_[existing_handle].is_js_created = true;
+            }
             return existing_handle;
         }
     }
@@ -38,6 +43,8 @@ uint64_t ObjectRegistry::create_handle(Object* obj) {
     entry.version = current_version_++;
     entry.is_ref_counted = Object::cast_to<RefCounted>(obj) != nullptr;
     entry.is_valid = true;
+    entry.is_js_created = js_created;
+    entry.is_node = Object::cast_to<Node>(obj) != nullptr;
 
     // For RefCounted objects, increment reference count to prevent premature deletion
     if (entry.is_ref_counted) {
@@ -176,6 +183,16 @@ Vector<uint64_t> ObjectRegistry::get_all_object_ids() const {
     Vector<uint64_t> result;
     for (const KeyValue<uint64_t, HandleEntry>& E : handles_) {
         if (E.value.is_valid) {
+            result.push_back(E.value.object_id);
+        }
+    }
+    return result;
+}
+
+Vector<uint64_t> ObjectRegistry::get_js_created_node_ids() const {
+    Vector<uint64_t> result;
+    for (const KeyValue<uint64_t, HandleEntry>& E : handles_) {
+        if (E.value.is_valid && E.value.is_js_created && E.value.is_node) {
             result.push_back(E.value.object_id);
         }
     }

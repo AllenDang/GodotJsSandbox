@@ -23,13 +23,6 @@ public:
     void set_sandbox_config(SandboxConfig* config) { sandbox_config_ = config; }
     void set_execution_limiter(ExecutionLimiter* limiter) { execution_limiter_ = limiter; }
 
-    // Callback for object creation tracking
-    using ObjectCreatedCallback = void(*)(void* user_data, godot::Object*, const godot::StringName&);
-    void set_object_created_callback(ObjectCreatedCallback callback, void* user_data) {
-        on_object_created_ = callback;
-        on_object_created_user_data_ = user_data;
-    }
-
     // Object creation - creates a new Godot object if allowed
     // Returns handle or 0 on failure
     uint64_t create_object(const godot::StringName& class_name, godot::String& error);
@@ -67,10 +60,6 @@ private:
     ExecutionLimiter* execution_limiter_ = nullptr;
 
     godot::String last_error_;
-
-    // Callback for tracking created objects
-    ObjectCreatedCallback on_object_created_ = nullptr;
-    void* on_object_created_user_data_ = nullptr;
 
     // Validate object handle and return the object
     godot::Object* validate_handle(uint64_t handle, godot::String& error);

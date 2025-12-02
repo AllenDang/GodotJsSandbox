@@ -17,7 +17,6 @@ JSSandbox::JSSandbox() {
 }
 
 JSSandbox::~JSSandbox() {
-    created_nodes_.clear();
     attached_scripts_.clear();
 }
 
@@ -33,9 +32,6 @@ bool JSSandbox::initialize() {
     safe_wrapper_->set_object_registry(object_registry_.get());
     safe_wrapper_->set_sandbox_config(sandbox_config_.get());
     safe_wrapper_->set_execution_limiter(execution_limiter_.get());
-
-    // Track created objects - DISABLED due to hang issue
-    // safe_wrapper_->set_object_created_callback(&JSSandbox::on_object_created_static, this);
 
     // Configure DeletionTracker
     deletion_tracker_->set_object_registry(object_registry_.get());
@@ -211,12 +207,11 @@ Array JSSandbox::get_created_nodes() {
         return result;
     }
 
-    // Get all object IDs from the registry
-    Vector<uint64_t> all_ids = object_registry_->get_all_object_ids();
+    // Get only JS-created node IDs from the registry
+    Vector<uint64_t> js_node_ids = object_registry_->get_js_created_node_ids();
 
-    // Filter to only include Node-derived objects
-    for (int i = 0; i < all_ids.size(); i++) {
-        uint64_t obj_id = all_ids[i];
+    for (int i = 0; i < js_node_ids.size(); i++) {
+        uint64_t obj_id = js_node_ids[i];
         Object* obj = ObjectDB::get_instance(ObjectID(obj_id));
         if (obj) {
             Node* node = Object::cast_to<Node>(obj);
@@ -251,7 +246,6 @@ bool JSSandbox::is_valid() const {
 }
 
 void JSSandbox::reset() {
-    created_nodes_.clear();
     attached_scripts_.clear();
     last_error_ = "";
 
@@ -322,17 +316,6 @@ void JSSandbox::_bind_methods() {
 
     ADD_SIGNAL(MethodInfo("level_saved",
         PropertyInfo(Variant::STRING, "path")));
-}
-
-void JSSandbox::on_object_created_static(void* user_data, Object* obj, const StringName& class_name) {
-    JSSandbox* self = static_cast<JSSandbox*>(user_data);
-    if (self && obj) {
-        // Only track Node-derived objects
-        Node* node = Object::cast_to<Node>(obj);
-        if (node) {
-            self->created_nodes_.push_back((uint64_t)obj->get_instance_id());
-        }
-    }
 }
 
 } // namespace jsb
