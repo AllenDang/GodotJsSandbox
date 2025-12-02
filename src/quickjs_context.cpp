@@ -477,4 +477,199 @@ Variant QuickJSContext::js_to_variant(JSValue value) {
     return Variant();
 }
 
+// ============================================================================
+// Script Instance Management
+// ============================================================================
+
+int64_t QuickJSContext::create_script_instance(const String &source, const String &filename,
+                                                Object* owner, String &error) {
+    if (!is_valid()) {
+        error = "Context not initialized";
+        return 0;
+    }
+
+    if (source.is_empty()) {
+        error = "Empty script source";
+        return 0;
+    }
+
+    // Wrap the script source to create an object with methods
+    // The script can define _ready(), _process(delta), etc. as functions
+    // We create an object that captures these as methods
+    String wrapped_source = String(R"(
+(function() {
+    var __instance = {};
+    var __owner = null;
+
+    // Store owner reference for 'this' context
+    __instance.__set_owner = function(ownerHandle) {
+        __owner = ownerHandle;
+    };
+
+    // Execute the script in this scope
+    (function() {
+)") + source + String(R"(
+
+        // Capture any defined lifecycle methods
+        if (typeof _ready === 'function') __instance._ready = _ready;
+        if (typeof _process === 'function') __instance._process = _process;
+        if (typeof _physics_process === 'function') __instance._physics_process = _physics_process;
+        if (typeof _input === 'function') __instance._input = _input;
+        if (typeof _unhandled_input === 'function') __instance._unhandled_input = _unhandled_input;
+        if (typeof _enter_tree === 'function') __instance._enter_tree = _enter_tree;
+        if (typeof _exit_tree === 'function') __instance._exit_tree = _exit_tree;
+
+        // Also capture any other properties/methods defined
+        for (var key in this) {
+            if (this.hasOwnProperty(key) && typeof this[key] === 'function' && !__instance[key]) {
+                __instance[key] = this[key];
+            }
+        }
+    })();
+
+    return __instance;
+})()
+)");
+
+    // Set deadline for timeout
+    if (timeout_ms_ > 0) {
+        deadline_ = Time::get_singleton()->get_ticks_msec() + timeout_ms_;
+    } else {
+        deadline_ = 0;
+    }
+
+    CharString code_utf8 = wrapped_source.utf8();
+    CharString filename_utf8 = filename.utf8();
+
+    JSValue result = JS_Eval(ctx_, code_utf8.get_data(), code_utf8.length(),
+                              filename_utf8.get_data(), JS_EVAL_TYPE_GLOBAL);
+
+    deadline_ = 0;
+
+    if (JS_IsException(result)) {
+        error = get_exception_message();
+        JS_FreeValue(ctx_, result);
+        return 0;
+    }
+
+    if (!JS_IsObject(result)) {
+        error = "Script did not return an object";
+        JS_FreeValue(ctx_, result);
+        return 0;
+    }
+
+    // Store the instance
+    int64_t instance_id = next_instance_id_++;
+
+    ScriptInstanceData data;
+    data.js_object = result;  // Takes ownership of the JSValue
+    data.owner = owner;
+    data.valid = true;
+
+    script_instances_[instance_id] = data;
+
+    // Set the owner handle on the instance if we have object registry
+    if (owner && object_registry_) {
+        uint64_t owner_handle = object_registry_->get_or_create_handle(owner);
+        JSValue set_owner_fn = JS_GetPropertyStr(ctx_, result, "__set_owner");
+        if (JS_IsFunction(ctx_, set_owner_fn)) {
+            JSValue args[1] = { JS_NewInt64(ctx_, owner_handle) };
+            JSValue call_result = JS_Call(ctx_, set_owner_fn, result, 1, args);
+            JS_FreeValue(ctx_, call_result);
+            JS_FreeValue(ctx_, args[0]);
+        }
+        JS_FreeValue(ctx_, set_owner_fn);
+    }
+
+    return instance_id;
+}
+
+bool QuickJSContext::call_instance_method(int64_t instance_id, const StringName &method,
+                                           const Variant** args, int argc,
+                                           Variant &result, String &error) {
+    if (!is_valid()) {
+        error = "Context not initialized";
+        return false;
+    }
+
+    if (!script_instances_.has(instance_id)) {
+        error = "Invalid script instance ID";
+        return false;
+    }
+
+    ScriptInstanceData& data = script_instances_[instance_id];
+    if (!data.valid) {
+        error = "Script instance has been invalidated";
+        return false;
+    }
+
+    // Get the method from the instance
+    String method_str = String(method);
+    JSValue method_fn = JS_GetPropertyStr(ctx_, data.js_object, method_str.utf8().get_data());
+
+    if (!JS_IsFunction(ctx_, method_fn)) {
+        JS_FreeValue(ctx_, method_fn);
+        // Not an error - method simply doesn't exist
+        result = Variant();
+        return true;
+    }
+
+    // Convert arguments to JS
+    JSValue* js_args = nullptr;
+    if (argc > 0) {
+        js_args = (JSValue*)alloca(sizeof(JSValue) * argc);
+        for (int i = 0; i < argc; i++) {
+            js_args[i] = variant_to_js(*args[i]);
+        }
+    }
+
+    // Set deadline for timeout
+    if (timeout_ms_ > 0) {
+        deadline_ = Time::get_singleton()->get_ticks_msec() + timeout_ms_;
+    } else {
+        deadline_ = 0;
+    }
+
+    // Call the method
+    JSValue call_result = JS_Call(ctx_, method_fn, data.js_object, argc, js_args);
+
+    deadline_ = 0;
+
+    // Free JS arguments
+    for (int i = 0; i < argc; i++) {
+        JS_FreeValue(ctx_, js_args[i]);
+    }
+    JS_FreeValue(ctx_, method_fn);
+
+    if (JS_IsException(call_result)) {
+        error = get_exception_message();
+        JS_FreeValue(ctx_, call_result);
+        return false;
+    }
+
+    result = js_to_variant(call_result);
+    JS_FreeValue(ctx_, call_result);
+
+    return true;
+}
+
+void QuickJSContext::release_script_instance(int64_t instance_id) {
+    if (!script_instances_.has(instance_id)) {
+        return;
+    }
+
+    ScriptInstanceData& data = script_instances_[instance_id];
+
+    // Free the JS object
+    if (ctx_ && data.valid) {
+        JS_FreeValue(ctx_, data.js_object);
+    }
+
+    script_instances_.erase(instance_id);
+}
+
+bool QuickJSContext::has_script_instance(int64_t instance_id) const {
+    return script_instances_.has(instance_id) && script_instances_[instance_id].valid;
+}
+
 } // namespace jsb

@@ -43,7 +43,7 @@
     ],
     "blocked_methods": {
         "Object": ["call", "callv", "set_script", "get_script", "set", "emit_signal", "free"],
-        "Node": ["set_script", "get_script", "set_process_thread_group", "queue_free", "get_node", "get_node_or_null"],
+        "Node": ["set_script", "get_script", "set_process_thread_group", "get_node", "get_node_or_null"],
         "RefCounted": ["reference", "unreference"],
         "Resource": ["emit_changed"]
     },

@@ -15,7 +15,18 @@ JSScript::~JSScript() {
 }
 
 void JSScript::_bind_methods() {
-    // No additional methods to bind
+    // Bind source_code property so it can be set from GDScript
+    ClassDB::bind_method(D_METHOD("set_source_code", "code"), &JSScript::set_source_code);
+    ClassDB::bind_method(D_METHOD("get_source_code"), &JSScript::get_source_code);
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_MULTILINE_TEXT), "set_source_code", "get_source_code");
+}
+
+void JSScript::set_source_code(const String &p_code) {
+    _set_source_code(p_code);
+}
+
+String JSScript::get_source_code() const {
+    return _get_source_code();
 }
 
 bool JSScript::_can_instantiate() const {
@@ -69,7 +80,7 @@ String JSScript::_get_source_code() const {
 
 void JSScript::_set_source_code(const String &p_code) {
     source_code_ = p_code;
-    parse_script();
+    is_valid_ = parse_script();
 }
 
 Error JSScript::_reload(bool p_keep_state) {

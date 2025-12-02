@@ -40,6 +40,12 @@ func _ready() -> void:
 	# Test singleton bindings
 	test_singleton_bindings()
 
+	# Test queue_free
+	test_queue_free()
+
+	# Test persistent script state (Phase 1 fix)
+	test_persistent_script_state()
+
 	print("\n=== All tests completed ===")
 
 func test_basic_eval() -> void:
@@ -301,6 +307,76 @@ func test_singleton_bindings() -> void:
 	""")
 
 	print("\nSingleton bindings tests completed")
+
+func test_queue_free() -> void:
+	print("\n--- Test: queue_free() ---")
+
+	# Test calling queue_free from JavaScript
+	sandbox.eval("""
+		console.log('Testing queue_free...');
+
+		// Create a node
+		let nodeToDelete = new Node3D();
+		nodeToDelete.name = 'NodeToDelete';
+		console.log('Created node:', nodeToDelete.name);
+
+		// Call queue_free
+		try {
+			nodeToDelete.queue_free();
+			console.log('SUCCESS: queue_free() called');
+		} catch (e) {
+			console.log('FAIL: queue_free() error:', e.message);
+		}
+	""")
+
+	print("queue_free test completed")
+
+func test_persistent_script_state() -> void:
+	print("\n--- Test: Persistent Script State (Phase 1 Fix) ---")
+	print("This tests that variables set in _ready() persist to _process()")
+
+	# Create script with state that should persist
+	var js_script = JSScript.new()
+	js_script.source_code = """
+var counter = 0;
+var initialized = false;
+
+function _ready() {
+	counter = 100;
+	initialized = true;
+	console.log('[PersistentState] _ready called, counter set to:', counter);
+}
+
+function _process(delta) {
+	counter = counter + 1;
+	console.log('[PersistentState] _process #' + (counter - 100) + ', counter=' + counter + ', initialized=' + initialized);
+
+	// After 3 frames, verify state persisted
+	if (counter == 103) {
+		if (initialized && counter == 103) {
+			console.log('[PersistentState] SUCCESS: State persisted across _ready and _process calls!');
+		} else {
+			console.log('[PersistentState] FAIL: State was lost! initialized=' + initialized + ', counter=' + counter);
+		}
+	}
+}
+"""
+
+	# Create a node and set script BEFORE adding to tree
+	# This ensures _ready() is called when node enters tree
+	var test_node = Node3D.new()
+	test_node.name = "PersistentStateTest"
+	test_node.set_script(js_script)
+
+	print("Script attached to node, now adding to tree...")
+	add_child(test_node)
+	print("Node added to tree. Watch for [PersistentState] messages...")
+	print("After 3 frames, counter should be 103 (100 from _ready + 3 from _process)")
+
+	# Let it run for a few frames then clean up
+	await get_tree().create_timer(0.2).timeout
+	test_node.queue_free()
+	print("Persistent state test node cleaned up")
 
 func _on_level_saved(path: String) -> void:
 	print("Level saved signal received: ", path)

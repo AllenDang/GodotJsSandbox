@@ -31,6 +31,9 @@ public:
     void unblock_method(const godot::String& class_name, const godot::String& method_name);
     bool is_method_blocked(const godot::String& class_name, const godot::String& method_name) const;
 
+    // Inheritance-aware method check (checks class and all parent classes)
+    bool is_method_blocked_with_inheritance(const godot::StringName& class_name, const godot::String& method_name) const;
+
     // Property blocklist
     void block_property(const godot::String& class_name, const godot::String& property_name);
     bool is_property_blocked(const godot::String& class_name, const godot::String& property_name) const;

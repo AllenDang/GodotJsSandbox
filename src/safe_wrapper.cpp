@@ -59,16 +59,11 @@ bool SafeWrapper::is_class_allowed(const StringName& class_name) const {
 bool SafeWrapper::is_method_allowed(const StringName& class_name, const StringName& method) const {
     if (!sandbox_config_) return true;
 
-    // Security: Block methods in two layers
-    // 1. Global blocks (Object.*): Apply to ALL classes via inheritance
-    //    e.g., blocking "Object.free" blocks free() on every Godot object
-    if (sandbox_config_->is_method_blocked("Object", String(method))) {
-        return false;
-    }
-
-    // 2. Class-specific blocks: Apply only to the specified class
-    //    e.g., blocking "FileAccess.open" only blocks FileAccess.open()
-    return !sandbox_config_->is_method_blocked(String(class_name), String(method));
+    // Security: Block methods using inheritance-aware checking
+    // This walks up the class hierarchy, so blocking "Object.call" will block
+    // call() on Node, Node3D, CharacterBody3D, etc.
+    // And blocking "Node.set_script" will block set_script() on Node3D, Control, etc.
+    return !sandbox_config_->is_method_blocked_with_inheritance(class_name, String(method));
 }
 
 bool SafeWrapper::is_property_allowed(const StringName& class_name, const StringName& property) const {

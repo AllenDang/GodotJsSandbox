@@ -84,6 +84,9 @@ private:
     JSScript* script_ = nullptr;
     bool initialized_ = false;
 
+    // JS instance ID (from QuickJSContext)
+    int64_t js_instance_id_ = 0;
+
     // Property storage
     mutable godot::HashMap<godot::StringName, godot::Variant> properties_;
 

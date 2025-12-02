@@ -206,6 +206,21 @@ bool SandboxConfig::is_method_blocked(const String& class_name, const String& me
     return blocked_methods_.has(class_name + String(".") + method_name);
 }
 
+bool SandboxConfig::is_method_blocked_with_inheritance(const StringName& class_name, const String& method_name) const {
+    // Walk up the inheritance chain to check if any parent class has this method blocked
+    StringName current = class_name;
+
+    while (!current.is_empty()) {
+        if (blocked_methods_.has(String(current) + String(".") + method_name)) {
+            return true;
+        }
+        // Get parent class using ClassDB
+        current = ClassDB::get_parent_class(current);
+    }
+
+    return false;
+}
+
 void SandboxConfig::block_property(const String& class_name, const String& property_name) {
     blocked_properties_.insert(class_name + String(".") + property_name);
 }

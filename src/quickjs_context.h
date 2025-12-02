@@ -5,7 +5,9 @@
 
 #include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/templates/hash_map.hpp>
 
 #include <memory>
 
@@ -48,6 +50,23 @@ public:
     JSValue variant_to_js(const godot::Variant &value);
     godot::Variant js_to_variant(JSValue value);
 
+    // Script instance management
+    // Creates a persistent JS object for a script instance and returns its ID
+    // The script source is evaluated and the object is stored internally
+    int64_t create_script_instance(const godot::String &source, const godot::String &filename,
+                                   godot::Object* owner, godot::String &error);
+
+    // Call a method on a script instance
+    bool call_instance_method(int64_t instance_id, const godot::StringName &method,
+                              const godot::Variant** args, int argc,
+                              godot::Variant &result, godot::String &error);
+
+    // Release a script instance (called when JSScriptInstance is destroyed)
+    void release_script_instance(int64_t instance_id);
+
+    // Check if instance exists
+    bool has_script_instance(int64_t instance_id) const;
+
     // Sandbox components
     void set_object_registry(ObjectRegistry* registry) { object_registry_ = registry; }
     void set_sandbox_config(SandboxConfig* config) { sandbox_config_ = config; }
@@ -73,6 +92,15 @@ private:
 
     int64_t timeout_ms_ = 1000;
     mutable int64_t deadline_ = 0;  // mutable: accessed from const interrupt_handler
+
+    // Script instance storage: maps instance_id -> JSValue (persistent object)
+    struct ScriptInstanceData {
+        JSValue js_object;      // The JS object instance
+        godot::Object* owner;   // The Godot object this script is attached to
+        bool valid;
+    };
+    godot::HashMap<int64_t, ScriptInstanceData> script_instances_;
+    int64_t next_instance_id_ = 1;
 
     void setup_builtins();
     void setup_godot_bindings();

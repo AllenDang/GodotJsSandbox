@@ -12,6 +12,7 @@
 #include "js_script.h"
 #include "js_script_language.h"
 #include "js_resource_loader.h"
+#include "deletion_tracker.h"
 
 using namespace godot;
 
@@ -30,6 +31,7 @@ void initialize_godot_js_runtime_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<jsb::JSScriptLanguage>();
     ClassDB::register_class<jsb::JSResourceLoader>();
     ClassDB::register_class<jsb::JSResourceSaver>();
+    ClassDB::register_class<jsb::DeletionCallback>();
 
     // Create and register script language
     script_language = memnew(jsb::JSScriptLanguage);

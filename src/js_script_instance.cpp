@@ -19,6 +19,15 @@ JSScriptInstance::JSScriptInstance() {
 }
 
 JSScriptInstance::~JSScriptInstance() {
+    // Release the JS instance
+    if (js_instance_id_ != 0) {
+        QuickJSContext* ctx = get_context();
+        if (ctx) {
+            ctx->release_script_instance(js_instance_id_);
+        }
+        js_instance_id_ = 0;
+    }
+
     if (script_) {
         script_->unregister_instance(owner_);
     }
@@ -37,6 +46,15 @@ bool JSScriptInstance::initialize() {
 
     String source = script_->_get_source_code();
     if (source.is_empty()) return false;
+
+    // Create persistent JS instance
+    String error;
+    js_instance_id_ = ctx->create_script_instance(source, script_->get_path(), owner_, error);
+
+    if (js_instance_id_ == 0) {
+        UtilityFunctions::printerr("Failed to create JS instance: ", error);
+        return false;
+    }
 
     initialized_ = true;
     return true;
@@ -157,37 +175,13 @@ bool JSScriptInstance::call_js_method(const StringName &p_method, const Variant*
         return false;
     }
 
-    String source = script_->_get_source_code();
-    if (source.is_empty()) {
-        r_error = "Script has no source code";
+    if (js_instance_id_ == 0) {
+        r_error = "No JS instance created";
         return false;
     }
 
-    String method_name = String(p_method);
-
-    // Build arguments string
-    String args_str;
-    for (int i = 0; i < p_argcount; i++) {
-        if (i > 0) args_str += String(", ");
-        const Variant& arg = *p_args[i];
-        switch (arg.get_type()) {
-            case Variant::NIL: args_str += String("null"); break;
-            case Variant::BOOL: args_str += arg.operator bool() ? String("true") : String("false"); break;
-            case Variant::INT: args_str += String::num_int64(arg.operator int64_t()); break;
-            case Variant::FLOAT: args_str += String::num(arg.operator double()); break;
-            case Variant::STRING:
-                args_str += String("\"") + String(arg).replace("\"", "\\\"") + String("\"");
-                break;
-            default: args_str += String("null"); break;
-        }
-    }
-
-    String call_source = String("(function() {\n") + source +
-        String("\nif (typeof ") + method_name + String(" === 'function') {\n") +
-        String("return ") + method_name + String("(") + args_str + String(");\n") +
-        String("}\nreturn undefined;\n})()");
-
-    return ctx->eval(call_source, script_->get_path(), r_result, r_error);
+    // Call the method on the persistent JS instance
+    return ctx->call_instance_method(js_instance_id_, p_method, p_args, p_argcount, r_result, r_error);
 }
 
 void JSScriptInstance::call(const StringName &p_method, const GDExtensionConstVariantPtr *p_args,

@@ -2594,6 +2594,36 @@ static JSValue js_Node_get_viewport(JSContext* ctx, JSValueConst this_val, int a
     return ret_obj;
 }
 
+// Method: Node::queue_free
+static JSValue js_Node_queue_free(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node.queue_free: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node.queue_free: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node.queue_free: invalid or freed object");
+    }
+
+    Node* typed_obj = Object::cast_to<Node>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node.queue_free: object is not a Node");
+    }
+
+    typed_obj->queue_free();
+    return JS_UNDEFINED;
+}
+
 // Method: Node::request_ready
 static JSValue js_Node_request_ready(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -3931,6 +3961,8 @@ void register_Node_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Node_is_editable_instance, "is_editable_instance", 2));
     JS_SetPropertyStr(ctx, methods, "get_viewport",
         JS_NewCFunction(ctx, js_Node_get_viewport, "get_viewport", 1));
+    JS_SetPropertyStr(ctx, methods, "queue_free",
+        JS_NewCFunction(ctx, js_Node_queue_free, "queue_free", 1));
     JS_SetPropertyStr(ctx, methods, "request_ready",
         JS_NewCFunction(ctx, js_Node_request_ready, "request_ready", 1));
     JS_SetPropertyStr(ctx, methods, "is_node_ready",

@@ -75,6 +75,10 @@ public:
     void set_path(const godot::String &p_path);
     godot::String get_path() const { return path_; }
 
+    // Source code property (for GDScript access)
+    void set_source_code(const godot::String &p_code);
+    godot::String get_source_code() const;
+
     // Instance management
     void register_instance(godot::Object* p_object, JSScriptInstance* p_instance);
     void unregister_instance(godot::Object* p_object);
