@@ -41,6 +41,9 @@ public:
     // Find handle by object ID
     uint64_t find_handle_by_object_id(uint64_t object_id) const;
 
+    // Get all valid object IDs (for tracking created objects)
+    godot::Vector<uint64_t> get_all_object_ids() const;
+
 private:
     struct HandleEntry {
         godot::Object* object = nullptr;

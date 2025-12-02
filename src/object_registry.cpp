@@ -172,4 +172,14 @@ int ObjectRegistry::get_handle_count() const {
     return handles_.size();
 }
 
+Vector<uint64_t> ObjectRegistry::get_all_object_ids() const {
+    Vector<uint64_t> result;
+    for (const KeyValue<uint64_t, HandleEntry>& E : handles_) {
+        if (E.value.is_valid) {
+            result.push_back(E.value.object_id);
+        }
+    }
+    return result;
+}
+
 } // namespace jsb

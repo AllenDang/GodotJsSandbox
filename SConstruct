@@ -21,10 +21,10 @@ env.Append(CPPPATH=[
     "quickjs/",
 ])
 
-# QuickJS source files (C code)
+# QuickJS-ng source files (C code) - v0.11.0
 quickjs_sources = [
     "quickjs/cutils.c",
-    "quickjs/libbf.c",
+    "quickjs/dtoa.c",
     "quickjs/libregexp.c",
     "quickjs/libunicode.c",
     "quickjs/quickjs.c",

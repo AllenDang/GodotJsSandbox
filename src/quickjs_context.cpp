@@ -355,7 +355,7 @@ Variant QuickJSContext::js_to_variant(JSValue value) {
         return result;
     }
 
-    if (JS_IsArray(ctx_, value)) {
+    if (JS_IsArray(value)) {
         Array arr;
         JSValue length_val = JS_GetPropertyStr(ctx_, value, "length");
         int64_t length = 0;
@@ -371,7 +371,7 @@ Variant QuickJSContext::js_to_variant(JSValue value) {
     }
 
     if (JS_IsObject(value)) {
-        // Try to get as GodotObject first
+        // Try to get as GodotObject first (via opaque pointer)
         if (bindings_ && object_registry_) {
             void* ptr = JS_GetOpaque(value, bindings_->get_godot_object_class_id());
             if (ptr) {
@@ -381,6 +381,77 @@ Variant QuickJSContext::js_to_variant(JSValue value) {
                     return obj;
                 }
             }
+        }
+
+        // Check if this is a Proxy-wrapped Godot object (has __handle property)
+        if (object_registry_) {
+            JSValue handle_val = JS_GetPropertyStr(ctx_, value, "__handle");
+            if (JS_IsNumber(handle_val)) {
+                int64_t handle;
+                JS_ToInt64(ctx_, &handle, handle_val);
+                JS_FreeValue(ctx_, handle_val);
+                Object* obj = object_registry_->get_object(handle);
+                if (obj) {
+                    return obj;
+                }
+            } else {
+                JS_FreeValue(ctx_, handle_val);
+            }
+        }
+
+        // Check for Vector2 (has x, y but not z)
+        JSValue x_val = JS_GetPropertyStr(ctx_, value, "x");
+        JSValue y_val = JS_GetPropertyStr(ctx_, value, "y");
+        JSValue z_val = JS_GetPropertyStr(ctx_, value, "z");
+
+        if (JS_IsNumber(x_val) && JS_IsNumber(y_val)) {
+            double x, y;
+            JS_ToFloat64(ctx_, &x, x_val);
+            JS_ToFloat64(ctx_, &y, y_val);
+            JS_FreeValue(ctx_, x_val);
+            JS_FreeValue(ctx_, y_val);
+
+            if (JS_IsNumber(z_val)) {
+                // Vector3
+                double z;
+                JS_ToFloat64(ctx_, &z, z_val);
+                JS_FreeValue(ctx_, z_val);
+                return Vector3(x, y, z);
+            } else {
+                JS_FreeValue(ctx_, z_val);
+                return Vector2(x, y);
+            }
+        } else {
+            JS_FreeValue(ctx_, x_val);
+            JS_FreeValue(ctx_, y_val);
+            JS_FreeValue(ctx_, z_val);
+        }
+
+        // Check for Color (has r, g, b, a)
+        JSValue r_val = JS_GetPropertyStr(ctx_, value, "r");
+        JSValue g_val = JS_GetPropertyStr(ctx_, value, "g");
+        JSValue b_val = JS_GetPropertyStr(ctx_, value, "b");
+
+        if (JS_IsNumber(r_val) && JS_IsNumber(g_val) && JS_IsNumber(b_val)) {
+            double r, g, b, a = 1.0;
+            JS_ToFloat64(ctx_, &r, r_val);
+            JS_ToFloat64(ctx_, &g, g_val);
+            JS_ToFloat64(ctx_, &b, b_val);
+            JS_FreeValue(ctx_, r_val);
+            JS_FreeValue(ctx_, g_val);
+            JS_FreeValue(ctx_, b_val);
+
+            JSValue a_val = JS_GetPropertyStr(ctx_, value, "a");
+            if (JS_IsNumber(a_val)) {
+                JS_ToFloat64(ctx_, &a, a_val);
+            }
+            JS_FreeValue(ctx_, a_val);
+
+            return Color(r, g, b, a);
+        } else {
+            JS_FreeValue(ctx_, r_val);
+            JS_FreeValue(ctx_, g_val);
+            JS_FreeValue(ctx_, b_val);
         }
 
         Dictionary dict;

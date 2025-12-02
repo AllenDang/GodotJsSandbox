@@ -30,6 +30,12 @@ public:
     // Convert JSValue to Variant
     godot::Variant js_to_variant(JSValue value);
 
+    // Helper to get QuickJSContext from JSContext (public for proxy functions)
+    static QuickJSContext* get_context(JSContext* ctx);
+
+    // Method call handler (public for proxy functions)
+    static JSValue godot_object_call_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv, int magic, JSValue* func_data);
+
 private:
     QuickJSContext* context_;
     JSClassID godot_object_class_id_ = 0;
@@ -38,6 +44,7 @@ private:
     void setup_global_functions();
     void setup_math_types();
     void setup_godot_class_constructor();
+    void setup_proxy_handler();
 
     // Register common Godot classes
     void register_node_classes();
@@ -48,18 +55,12 @@ private:
     static JSValue js_load(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
     // GodotObject class callbacks
-    static void godot_object_finalizer(JSRuntime* rt, JSValue val);
-    static JSValue godot_object_get_property(JSContext* ctx, JSValueConst obj, JSAtom atom, JSValueConst receiver);
-    static int godot_object_set_property(JSContext* ctx, JSValueConst obj, JSAtom atom, JSValueConst value, JSValueConst receiver, int flags);
-    static JSValue godot_object_call_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv, int magic, JSValue* func_data);
+    static void godot_object_finalizer(JSRuntime* rt, JSValueConst val);
 
     // Math type constructors
     static JSValue js_vector2_constructor(JSContext* ctx, JSValueConst new_target, int argc, JSValueConst* argv);
     static JSValue js_vector3_constructor(JSContext* ctx, JSValueConst new_target, int argc, JSValueConst* argv);
     static JSValue js_color_constructor(JSContext* ctx, JSValueConst new_target, int argc, JSValueConst* argv);
-
-    // Helper to get QuickJSContext from JSContext
-    static QuickJSContext* get_context(JSContext* ctx);
 };
 
 } // namespace jsb

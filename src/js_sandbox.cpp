@@ -1,8 +1,11 @@
 #include "js_sandbox.h"
+#include "scene_saver.h"
 
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/time.hpp>
+#include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/core/object_id.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -30,6 +33,9 @@ bool JSSandbox::initialize() {
     safe_wrapper_->set_object_registry(object_registry_.get());
     safe_wrapper_->set_sandbox_config(sandbox_config_.get());
     safe_wrapper_->set_execution_limiter(execution_limiter_.get());
+
+    // Track created objects - DISABLED due to hang issue
+    // safe_wrapper_->set_object_created_callback(&JSSandbox::on_object_created_static, this);
 
     // Configure DeletionTracker
     deletion_tracker_->set_object_registry(object_registry_.get());
@@ -170,31 +176,73 @@ Variant JSSandbox::get_global(const String &name) {
     return context_->get_global(name);
 }
 
-Error JSSandbox::save_level(const String &directory) {
-    if (!directory.begins_with("user://")) {
-        last_error_ = "Levels can only be saved to user:// directory";
+Error JSSandbox::save_level(Node *root, const String &directory) {
+    if (!root) {
+        last_error_ = "Root node is null";
         return ERR_INVALID_PARAMETER;
     }
 
-    if (directory.find("..") != -1) {
-        last_error_ = "Path traversal not allowed";
-        return ERR_INVALID_PARAMETER;
+    SceneSaver::SaveOptions options;
+    options.include_external_resources = false;
+    options.fail_on_gdscript = true;
+
+    SceneSaver::SaveResult result = SceneSaver::save(root, directory, options);
+
+    if (result.error != OK) {
+        last_error_ = result.error_message;
+        return result.error;
     }
 
-    // TODO: Implement scene saving
-    last_error_ = "save_level not yet implemented";
-    return ERR_UNAVAILABLE;
+    // Report warnings
+    for (int i = 0; i < result.warnings.size(); i++) {
+        UtilityFunctions::print_rich("[color=yellow]Warning: ", result.warnings[i], "[/color]");
+    }
+
+    // Emit signal
+    emit_signal("level_saved", result.scene_path);
+
+    return OK;
 }
 
 Array JSSandbox::get_created_nodes() {
     Array result;
-    // TODO: Implement when node creation is added
+
+    if (!object_registry_) {
+        return result;
+    }
+
+    // Get all object IDs from the registry
+    Vector<uint64_t> all_ids = object_registry_->get_all_object_ids();
+
+    // Filter to only include Node-derived objects
+    for (int i = 0; i < all_ids.size(); i++) {
+        uint64_t obj_id = all_ids[i];
+        Object* obj = ObjectDB::get_instance(ObjectID(obj_id));
+        if (obj) {
+            Node* node = Object::cast_to<Node>(obj);
+            if (node) {
+                result.push_back(node);
+            }
+        }
+    }
+
     return result;
 }
 
 Dictionary JSSandbox::get_attached_scripts() {
     Dictionary result;
-    // TODO: Implement when script attachment is added
+
+    // Get all valid nodes with scripts
+    for (const KeyValue<uint64_t, String>& E : attached_scripts_) {
+        Object* obj = ObjectDB::get_instance(ObjectID(E.key));
+        if (obj) {
+            Node* node = Object::cast_to<Node>(obj);
+            if (node) {
+                result[node] = E.value;
+            }
+        }
+    }
+
     return result;
 }
 
@@ -254,7 +302,7 @@ void JSSandbox::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_global", "name"), &JSSandbox::get_global);
 
     // Level persistence
-    ClassDB::bind_method(D_METHOD("save_level", "directory"), &JSSandbox::save_level);
+    ClassDB::bind_method(D_METHOD("save_level", "root", "directory"), &JSSandbox::save_level);
     ClassDB::bind_method(D_METHOD("get_created_nodes"), &JSSandbox::get_created_nodes);
     ClassDB::bind_method(D_METHOD("get_attached_scripts"), &JSSandbox::get_attached_scripts);
 
@@ -274,6 +322,17 @@ void JSSandbox::_bind_methods() {
 
     ADD_SIGNAL(MethodInfo("level_saved",
         PropertyInfo(Variant::STRING, "path")));
+}
+
+void JSSandbox::on_object_created_static(void* user_data, Object* obj, const StringName& class_name) {
+    JSSandbox* self = static_cast<JSSandbox*>(user_data);
+    if (self && obj) {
+        // Only track Node-derived objects
+        Node* node = Object::cast_to<Node>(obj);
+        if (node) {
+            self->created_nodes_.push_back((uint64_t)obj->get_instance_id());
+        }
+    }
 }
 
 } // namespace jsb

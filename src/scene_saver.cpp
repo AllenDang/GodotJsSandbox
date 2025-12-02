@@ -1,0 +1,361 @@
+#include "scene_saver.h"
+#include "js_script.h"
+
+#include <godot_cpp/classes/dir_access.hpp>
+#include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/resource_saver.hpp>
+#include <godot_cpp/classes/json.hpp>
+#include <godot_cpp/classes/time.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
+
+using namespace godot;
+
+namespace jsb {
+
+bool SceneSaver::validate_path(const String& path, String& error) {
+    if (!path.begins_with("user://")) {
+        error = "Levels can only be saved to user:// directory";
+        return false;
+    }
+
+    if (path.find("..") != -1) {
+        error = "Path traversal not allowed";
+        return false;
+    }
+
+    return true;
+}
+
+SceneSaver::SaveResult SceneSaver::save(Node* root, const String& directory,
+                                         const SaveOptions& options) {
+    SaveResult result;
+
+    // Validate path
+    if (!validate_path(directory, result.error_message)) {
+        result.error = ERR_INVALID_PARAMETER;
+        return result;
+    }
+
+    if (!root) {
+        result.error = ERR_INVALID_PARAMETER;
+        result.error_message = "Root node is null";
+        return result;
+    }
+
+    // Ensure directory exists
+    Ref<DirAccess> dir = DirAccess::open("user://");
+    if (!dir.is_valid()) {
+        result.error = ERR_CANT_OPEN;
+        result.error_message = "Cannot access user:// directory";
+        return result;
+    }
+
+    // Extract relative path from user://
+    String relative_path = directory.substr(7);  // Remove "user://"
+    if (!relative_path.is_empty() && !dir->dir_exists(relative_path)) {
+        Error err = dir->make_dir_recursive(relative_path);
+        if (err != OK) {
+            result.error = err;
+            result.error_message = "Failed to create directory: " + directory;
+            return result;
+        }
+    }
+
+    // Collect JS scripts from the tree
+    Dictionary script_map = collect_js_scripts(root, result.warnings);
+
+    // Save each script file
+    Array script_names = script_map.keys();
+    for (int i = 0; i < script_names.size(); i++) {
+        String script_name = script_names[i];
+        String source_code = script_map[script_name];
+
+        String script_path = directory;
+        if (!script_path.ends_with("/")) script_path += "/";
+        script_path += script_name;
+
+        Error err = save_script(source_code, script_path);
+        if (err != OK) {
+            result.warnings.push_back("Failed to save script: " + script_name);
+        } else {
+            result.script_paths.push_back(script_path);
+        }
+    }
+
+    // Save the scene file
+    String scene_path = directory;
+    if (!scene_path.ends_with("/")) scene_path += "/";
+    scene_path += "level.tscn";
+
+    Error scene_err = save_scene(root, scene_path, script_map, result.error_message);
+    if (scene_err != OK) {
+        result.error = scene_err;
+        return result;
+    }
+    result.scene_path = scene_path;
+
+    // Save metadata
+    save_metadata(directory, result.script_paths);
+
+    result.error = OK;
+    return result;
+}
+
+Dictionary SceneSaver::collect_js_scripts(Node* root, PackedStringArray& warnings) {
+    Dictionary scripts;
+
+    // Process root
+    process_node_for_save(root, "", scripts, warnings);
+
+    // Process all children recursively
+    TypedArray<Node> children = root->get_children();
+    for (int i = 0; i < children.size(); i++) {
+        Node* child = Object::cast_to<Node>(children[i].operator Object*());
+        if (child) {
+            collect_js_scripts_recursive(child, scripts, warnings);
+        }
+    }
+
+    return scripts;
+}
+
+void SceneSaver::collect_js_scripts_recursive(Node* node, Dictionary& scripts, PackedStringArray& warnings) {
+    // Check for JS script
+    Ref<Script> script = node->get_script();
+    if (script.is_valid()) {
+        JSScript* js_script = Object::cast_to<JSScript>(script.ptr());
+        if (js_script) {
+            String source = js_script->_get_source_code();
+            if (!source.is_empty()) {
+                // Generate filename from node name
+                String filename = node->get_name().to_lower().replace(" ", "_") + ".js";
+
+                // Ensure unique filename
+                int counter = 1;
+                String base_name = filename.get_basename();
+                while (scripts.has(filename)) {
+                    filename = base_name + "_" + String::num_int64(counter) + ".js";
+                    counter++;
+                }
+
+                scripts[filename] = source;
+
+                // Store mapping on the node (for scene saving)
+                node->set_meta("_js_script_file", filename);
+            }
+        } else {
+            // Non-JS script - add warning
+            warnings.push_back("Node '" + String(node->get_name()) +
+                              "' has non-JS script, it will not be saved");
+        }
+    }
+
+    // Process children
+    TypedArray<Node> children = node->get_children();
+    for (int i = 0; i < children.size(); i++) {
+        Node* child = Object::cast_to<Node>(children[i].operator Object*());
+        if (child) {
+            collect_js_scripts_recursive(child, scripts, warnings);
+        }
+    }
+}
+
+void SceneSaver::process_node_for_save(Node* node, const String& directory,
+                                        Dictionary& script_map,
+                                        PackedStringArray& warnings) {
+    if (!node) return;
+
+    Ref<Script> script = node->get_script();
+    if (script.is_valid()) {
+        JSScript* js_script = Object::cast_to<JSScript>(script.ptr());
+        if (js_script) {
+            String source = js_script->_get_source_code();
+            if (!source.is_empty()) {
+                String filename = generate_script_filename(node, script_map);
+                script_map[filename] = source;
+                node->set_meta("_js_script_file", filename);
+            }
+        }
+    }
+}
+
+String SceneSaver::generate_script_filename(Node* node, const Dictionary& existing) {
+    String base = node->get_name().to_lower().validate_filename();
+    if (base.is_empty()) base = "script";
+
+    String filename = base + ".js";
+    int counter = 1;
+
+    while (existing.has(filename)) {
+        filename = base + "_" + String::num_int64(counter) + ".js";
+        counter++;
+    }
+
+    return filename;
+}
+
+Error SceneSaver::save_script(const String& source, const String& path) {
+    Ref<FileAccess> file = FileAccess::open(path, FileAccess::WRITE);
+    if (!file.is_valid()) {
+        return ERR_FILE_CANT_WRITE;
+    }
+
+    file->store_string(source);
+    file->close();
+
+    return OK;
+}
+
+Error SceneSaver::save_scene(Node* root, const String& path,
+                              const Dictionary& script_map, String& error) {
+    // Create a duplicate of the root for saving
+    // We need to modify script references to point to file paths
+    // Use DUPLICATE_SCRIPTS | DUPLICATE_GROUPS | DUPLICATE_SIGNALS to get everything
+    Node* save_root = Object::cast_to<Node>(root->duplicate(15)); // DUPLICATE_ALL = 15
+    if (!save_root) {
+        error = "Failed to duplicate root node for saving";
+        return ERR_CANT_CREATE;
+    }
+
+    // Get directory from path
+    String directory = path.get_base_dir();
+
+    // Clear scripts first (before setting owners) to avoid crashes during pack
+    // The scripts have already been saved as separate .js files
+    clear_scripts_recursive(save_root);
+
+    // Set owner for all children so they get included in the packed scene
+    set_owners_recursive(save_root, save_root);
+
+    // Create PackedScene
+    Ref<PackedScene> packed_scene;
+    packed_scene.instantiate();
+    Error pack_err = packed_scene->pack(save_root);
+
+    // Clean up the duplicate
+    memdelete(save_root);
+
+    if (pack_err != OK) {
+        error = "Failed to pack scene";
+        return pack_err;
+    }
+
+    // Save the PackedScene
+    Error save_err = ResourceSaver::get_singleton()->save(packed_scene, path);
+    if (save_err != OK) {
+        error = "Failed to save scene file: " + path;
+        return save_err;
+    }
+
+    return OK;
+}
+
+void SceneSaver::update_script_references(Node* node, const String& directory) {
+    if (!node) return;
+
+    // Check if this node has a JS script filename stored
+    if (node->has_meta("_js_script_file")) {
+        String script_filename = node->get_meta("_js_script_file");
+        String script_path = directory;
+        if (!script_path.ends_with("/")) script_path += "/";
+        script_path += script_filename;
+
+        // Load the JS script from the saved file
+        // For now, we'll clear the script - it will be loaded when the scene is loaded
+        // The .tscn file will reference the .js file
+        node->set_script(Variant());
+
+        // Remove the temporary meta
+        node->remove_meta("_js_script_file");
+    }
+
+    // Process children
+    TypedArray<Node> children = node->get_children();
+    for (int i = 0; i < children.size(); i++) {
+        Node* child = Object::cast_to<Node>(children[i].operator Object*());
+        if (child) {
+            update_script_references(child, directory);
+        }
+    }
+}
+
+void SceneSaver::clear_scripts_recursive(Node* node) {
+    if (!node) return;
+
+    // Clear the script from this node
+    if (node->get_script().get_type() != Variant::NIL) {
+        node->set_script(Variant());
+    }
+
+    // Remove temporary meta
+    if (node->has_meta("_js_script_file")) {
+        node->remove_meta("_js_script_file");
+    }
+
+    // Process children
+    TypedArray<Node> children = node->get_children();
+    for (int i = 0; i < children.size(); i++) {
+        Node* child = Object::cast_to<Node>(children[i].operator Object*());
+        if (child) {
+            clear_scripts_recursive(child);
+        }
+    }
+}
+
+void SceneSaver::set_owners_recursive(Node* node, Node* owner) {
+    // Set the owner for this node (skip the root itself)
+    if (node != owner) {
+        node->set_owner(owner);
+    }
+
+    // Process children
+    TypedArray<Node> children = node->get_children();
+    for (int i = 0; i < children.size(); i++) {
+        Node* child = Object::cast_to<Node>(children[i].operator Object*());
+        if (child) {
+            set_owners_recursive(child, owner);
+        }
+    }
+}
+
+Error SceneSaver::save_metadata(const String& directory, const PackedStringArray& scripts) {
+    String meta_path = directory;
+    if (!meta_path.ends_with("/")) meta_path += "/";
+    meta_path += "level.json";
+
+    Dictionary metadata;
+    metadata["version"] = 1;
+    metadata["sandbox_version"] = "1.0.0";
+
+    // Get current time as ISO string
+    Dictionary datetime = Time::get_singleton()->get_datetime_dict_from_system();
+    String timestamp = String::num_int64((int)datetime["year"]) + "-" +
+                      String::num_int64((int)datetime["month"]).pad_zeros(2) + "-" +
+                      String::num_int64((int)datetime["day"]).pad_zeros(2) + "T" +
+                      String::num_int64((int)datetime["hour"]).pad_zeros(2) + ":" +
+                      String::num_int64((int)datetime["minute"]).pad_zeros(2) + ":" +
+                      String::num_int64((int)datetime["second"]).pad_zeros(2) + "Z";
+    metadata["created_at"] = timestamp;
+
+    // Script list (just filenames)
+    Array script_list;
+    for (int i = 0; i < scripts.size(); i++) {
+        String full_path = scripts[i];
+        script_list.push_back(full_path.get_file());
+    }
+    metadata["scripts"] = script_list;
+
+    // Write JSON
+    Ref<FileAccess> file = FileAccess::open(meta_path, FileAccess::WRITE);
+    if (!file.is_valid()) {
+        return ERR_FILE_CANT_WRITE;
+    }
+
+    String json_str = JSON::stringify(metadata, "\t");
+    file->store_string(json_str);
+    file->close();
+
+    return OK;
+}
+
+} // namespace jsb

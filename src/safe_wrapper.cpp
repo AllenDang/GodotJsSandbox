@@ -113,6 +113,12 @@ uint64_t SafeWrapper::create_object(const StringName& class_name, String& error)
     }
 
     uint64_t handle = object_registry_->create_handle(obj);
+
+    // Notify callback if set
+    if (on_object_created_) {
+        on_object_created_(on_object_created_user_data_, obj, class_name);
+    }
+
     return handle;
 }
 

@@ -40,7 +40,7 @@ public:
     godot::Variant get_global(const godot::String &name);
 
     // Level persistence
-    godot::Error save_level(const godot::String &directory);
+    godot::Error save_level(godot::Node *root, const godot::String &directory);
     godot::Array get_created_nodes();
     godot::Dictionary get_attached_scripts();
 
@@ -67,6 +67,9 @@ private:
     godot::String last_error_;
 
     bool initialize();
+
+    // Static callback for object creation tracking
+    static void on_object_created_static(void* user_data, godot::Object* obj, const godot::StringName& class_name);
 };
 
 } // namespace jsb
