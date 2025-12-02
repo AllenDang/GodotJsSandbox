@@ -3,3 +3,8 @@ ref
 bin/macos
 demo/.godot
 demo/bin
+
+# Build artifacts
+*.os
+*.o
+.sconsign.dblite
