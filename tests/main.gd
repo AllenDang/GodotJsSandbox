@@ -2,6 +2,7 @@ extends Node3D
 
 const TestRefCountedTypesClass = preload("res://test_cases/test_refcounted_types.gd")
 const TestCustomSignalsClass = preload("res://test_cases/test_custom_signals.gd")
+const TestLevelPersistenceClass = preload("res://test_cases/test_level_persistence.gd")
 
 var sandbox: JSSandbox
 
@@ -55,6 +56,9 @@ func run_tests() -> void:
 
 	# Custom signals
 	runner.add_suite(TestCustomSignalsClass.new())
+
+	# Level persistence
+	runner.add_suite(TestLevelPersistenceClass.new())
 
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())

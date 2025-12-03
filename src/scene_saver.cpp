@@ -211,16 +211,13 @@ Error SceneSaver::save_scene(Node* root, const String& path,
     // Get directory from path
     String directory = path.get_base_dir();
 
-    // IMPORTANT: Clear all scripts from the original tree BEFORE duplicating
-    // This avoids crashes during duplication/packing with JSScript instances
-    // We've already saved the script source code to .js files
-    // Store the script paths as metadata first
+    // Store the script paths as metadata on the original tree first
+    // This records which .js file corresponds to each node
     store_script_paths_recursive(root, directory);
 
     // Create a duplicate of the root for saving
-    // Use flags that exclude scripts to avoid serialization issues
-    // DUPLICATE_GROUPS (4) | DUPLICATE_SIGNALS (1) = 5
-    Node* save_root = Object::cast_to<Node>(root->duplicate(5));
+    // We'll clear scripts from the duplicate to avoid serialization crashes
+    Node* save_root = Object::cast_to<Node>(root->duplicate());
     if (!save_root) {
         error = "Failed to duplicate root node for saving";
         return ERR_CANT_CREATE;
@@ -228,6 +225,11 @@ Error SceneSaver::save_scene(Node* root, const String& path,
 
     // Copy the script path metadata to the duplicated tree
     copy_script_metadata_recursive(root, save_root);
+
+    // CRITICAL: Clear all scripts from the duplicated tree before packing
+    // JSScript instances cannot be serialized by Godot's PackedScene system
+    // The script paths are preserved in metadata for later reconstruction
+    clear_scripts_recursive(save_root);
 
     // Set owner for all children so they get included in the packed scene
     set_owners_recursive(save_root, save_root);

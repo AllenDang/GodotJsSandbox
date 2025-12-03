@@ -7,5 +7,6 @@ demo/bin
 # Build artifacts
 *.os
 *.o
+*.dylib
 .sconsign.dblite
 tests/.godot
