@@ -272,6 +272,38 @@ bool JSScript::parse_script() {
         }
     }
 
+    // Look for signal declarations
+    // Pattern: // @signal signal_name
+    // or: // @signal signal_name(arg1, arg2)
+    pos = 0;
+    while ((pos = source_code_.find("@signal", pos)) >= 0) {
+        pos += 7; // Skip "@signal"
+
+        // Skip whitespace
+        while (pos < source_code_.length() && (source_code_[pos] == ' ' || source_code_[pos] == '\t')) {
+            pos++;
+        }
+
+        // Read signal name
+        int name_start = pos;
+        while (pos < source_code_.length()) {
+            char32_t c = source_code_[pos];
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                (c >= '0' && c <= '9') || c == '_') {
+                pos++;
+            } else {
+                break;
+            }
+        }
+
+        if (pos > name_start) {
+            String signal_name = source_code_.substr(name_start, pos - name_start);
+            if (!signal_name.is_empty()) {
+                signals_.push_back(StringName(signal_name));
+            }
+        }
+    }
+
     // Look for export declarations
     // Pattern: // @export var_name = default_value
     // or: /* @export */ let var_name = default_value

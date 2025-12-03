@@ -1,6 +1,7 @@
 extends Node3D
 
 const TestRefCountedTypesClass = preload("res://test_cases/test_refcounted_types.gd")
+const TestCustomSignalsClass = preload("res://test_cases/test_custom_signals.gd")
 
 var sandbox: JSSandbox
 
@@ -51,6 +52,9 @@ func run_tests() -> void:
 
 	# RefCounted types (Resource subclasses)
 	runner.add_suite(TestRefCountedTypesClass.new())
+
+	# Custom signals
+	runner.add_suite(TestCustomSignalsClass.new())
 
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())

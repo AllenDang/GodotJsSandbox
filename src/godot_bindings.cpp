@@ -196,6 +196,10 @@ void GodotBindings::setup_global_functions() {
     JS_SetPropertyStr(ctx, global, "__godot_connect",
         JS_NewCFunction(ctx, js_godot_connect, "__godot_connect", 3));
 
+    // __godot_emit_signal(handle, signal_name, ...args) - emit a signal from an object
+    JS_SetPropertyStr(ctx, global, "__godot_emit_signal",
+        JS_NewCFunction(ctx, js_godot_emit_signal, "__godot_emit_signal", 2));
+
     // Time singleton (safe subset of methods)
     JSValue time_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, time_obj, "get_ticks_msec",
@@ -319,6 +323,23 @@ void GodotBindings::setup_godot_class_constructor() {
                     };
                 }
 
+                // Special handling for emit_signal() - emit custom signals
+                if (prop === 'emit_signal') {
+                    var handle = target.__handle;
+                    return function(signalName) {
+                        var args = [handle, signalName];
+                        for (var i = 1; i < arguments.length; i++) {
+                            var arg = arguments[i];
+                            if (arg && typeof arg === 'object' && arg.__handle !== undefined) {
+                                args.push(arg.__handle);
+                            } else {
+                                args.push(arg);
+                            }
+                        }
+                        return __godot_emit_signal.apply(null, args);
+                    };
+                }
+
                 var methodFn = __findBinding(target.__class, prop, 'method');
                 if (methodFn) {
                     var handle = target.__handle;
@@ -391,7 +412,7 @@ void GodotBindings::setup_godot_class_constructor() {
             },
             has: function(target, prop) {
                 if (prop === '__handle' || prop === '__class') return true;
-                if (prop === 'connect') return true;
+                if (prop === 'connect' || prop === 'emit_signal') return true;
                 // Check for get_/set_ method patterns
                 if (prop.startsWith('get_') || prop.startsWith('set_')) {
                     var propName = prop.substring(4);
@@ -626,6 +647,71 @@ JSValue GodotBindings::js_godot_connect(JSContext* ctx, JSValueConst this_val, i
     }
 
     return JS_NewInt64(ctx, connection_id);
+}
+
+// Global function: __godot_emit_signal(handle, signal_name, ...args) - emits a signal from an object
+JSValue GodotBindings::js_godot_emit_signal(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "__godot_emit_signal requires at least 2 arguments: handle, signal_name");
+    }
+
+    // Get object handle
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_ThrowTypeError(ctx, "First argument must be an object handle");
+    }
+
+    // Get signal name
+    const char* signal_name_cstr = JS_ToCString(ctx, argv[1]);
+    if (!signal_name_cstr) {
+        return JS_ThrowTypeError(ctx, "Second argument must be a signal name string");
+    }
+    String signal_name = signal_name_cstr;
+    JS_FreeCString(ctx, signal_name_cstr);
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Get the target object from the registry
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_ThrowInternalError(ctx, "ObjectRegistry not initialized");
+    }
+
+    Object* target = registry->get_object(handle);
+    if (!target) {
+        return JS_ThrowTypeError(ctx, "Invalid object handle");
+    }
+
+    // Convert additional arguments to Godot Variants
+    Array args;
+    for (int i = 2; i < argc; i++) {
+        args.append(qjs_ctx->js_to_variant(argv[i]));
+    }
+
+    // Emit the signal using emit_signal with array of arguments
+    Error err;
+    if (args.size() == 0) {
+        err = target->emit_signal(StringName(signal_name));
+    } else if (args.size() == 1) {
+        err = target->emit_signal(StringName(signal_name), args[0]);
+    } else if (args.size() == 2) {
+        err = target->emit_signal(StringName(signal_name), args[0], args[1]);
+    } else if (args.size() == 3) {
+        err = target->emit_signal(StringName(signal_name), args[0], args[1], args[2]);
+    } else if (args.size() == 4) {
+        err = target->emit_signal(StringName(signal_name), args[0], args[1], args[2], args[3]);
+    } else {
+        return JS_ThrowTypeError(ctx, "emit_signal supports at most 4 arguments");
+    }
+
+    if (err != OK) {
+        return JS_ThrowTypeError(ctx, "Failed to emit signal: %d", (int)err);
+    }
+
+    return JS_UNDEFINED;
 }
 
 // GodotObject finalizer - called when JS object is garbage collected
