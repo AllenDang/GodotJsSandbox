@@ -24,6 +24,14 @@ func get_tests() -> Array[String]:
 		# Load and verify
 		"test_saved_scene_can_be_loaded",
 		"test_loaded_scene_has_correct_structure",
+		# Load level with script reattachment
+		"test_load_level_returns_node",
+		"test_load_level_reattaches_script",
+		"test_load_level_script_has_source",
+		"test_load_level_multiple_scripts",
+		"test_load_level_security_blocks_res_path",
+		"test_load_level_security_blocks_path_traversal",
+		"test_load_level_nonexistent_returns_null",
 	]
 
 func run_test(test_name: String) -> Dictionary:
@@ -335,6 +343,187 @@ function _process(delta) {
 				return { "passed": false, "message": "Expected 2 children, got %d" % child_count }
 
 			return { "passed": true, "message": "" }
+
+		# ======================================================================
+		# Load Level Tests (with script reattachment)
+		# ======================================================================
+
+		"test_load_level_returns_node":
+			var test_dir = "user://test_load_returns/"
+			_cleanup_directory(test_dir)
+
+			# Create and save a simple level
+			var root = Node3D.new()
+			root.name = "LoadReturnTest"
+
+			var err = sandbox.save_level(root, test_dir)
+			root.queue_free()
+
+			if err != OK:
+				_cleanup_directory(test_dir)
+				return { "passed": false, "message": "save_level failed" }
+
+			# Load using sandbox.load_level
+			var loaded = sandbox.load_level(test_dir)
+
+			if loaded == null:
+				_cleanup_directory(test_dir)
+				return { "passed": false, "message": "load_level returned null" }
+
+			var is_node = loaded is Node
+			loaded.queue_free()
+			_cleanup_directory(test_dir)
+
+			return assert_true(is_node, "load_level should return a Node")
+
+		"test_load_level_reattaches_script":
+			var test_dir = "user://test_load_script/"
+			_cleanup_directory(test_dir)
+
+			# Create node with JS script
+			var root = Node3D.new()
+			root.name = "ScriptedLevel"
+
+			var child = Node3D.new()
+			child.name = "Player"
+			root.add_child(child)
+			child.owner = root
+
+			var script = JSScript.new()
+			script.source_code = """
+				function _ready() {
+					console.log('Player ready');
+				}
+			"""
+			child.set_script(script)
+
+			var err = sandbox.save_level(root, test_dir)
+			root.queue_free()
+
+			if err != OK:
+				_cleanup_directory(test_dir)
+				return { "passed": false, "message": "save_level failed" }
+
+			# Load using sandbox.load_level
+			var loaded = sandbox.load_level(test_dir)
+
+			if loaded == null:
+				_cleanup_directory(test_dir)
+				return { "passed": false, "message": "load_level returned null" }
+
+			# Check if Player node has a script attached
+			var player = loaded.get_node_or_null("Player")
+			var has_script = player != null and player.get_script() != null
+
+			loaded.queue_free()
+			_cleanup_directory(test_dir)
+
+			return assert_true(has_script, "Loaded node should have script reattached")
+
+		"test_load_level_script_has_source":
+			var test_dir = "user://test_load_source/"
+			_cleanup_directory(test_dir)
+
+			var root = Node3D.new()
+			root.name = "SourceLevel"
+
+			var child = Node3D.new()
+			child.name = "Enemy"
+			root.add_child(child)
+			child.owner = root
+
+			var expected_content = "_process"
+			var script = JSScript.new()
+			script.source_code = """
+				function _ready() {}
+				function _process(delta) {
+					// Update enemy
+				}
+			"""
+			child.set_script(script)
+
+			var err = sandbox.save_level(root, test_dir)
+			root.queue_free()
+
+			if err != OK:
+				_cleanup_directory(test_dir)
+				return { "passed": false, "message": "save_level failed" }
+
+			# Load using sandbox.load_level
+			var loaded = sandbox.load_level(test_dir)
+
+			if loaded == null:
+				_cleanup_directory(test_dir)
+				return { "passed": false, "message": "load_level returned null" }
+
+			var enemy = loaded.get_node_or_null("Enemy")
+			var source_ok = false
+			if enemy and enemy.get_script():
+				var loaded_script = enemy.get_script() as JSScript
+				if loaded_script:
+					var source = loaded_script.source_code
+					source_ok = source.contains(expected_content)
+
+			loaded.queue_free()
+			_cleanup_directory(test_dir)
+
+			return assert_true(source_ok, "Loaded script should contain original source")
+
+		"test_load_level_multiple_scripts":
+			var test_dir = "user://test_load_multi/"
+			_cleanup_directory(test_dir)
+
+			var root = Node3D.new()
+			root.name = "MultiScriptLevel"
+
+			# Add 3 scripted nodes
+			for i in range(3):
+				var child = Node3D.new()
+				child.name = "Entity%d" % i
+				root.add_child(child)
+				child.owner = root
+
+				var script = JSScript.new()
+				script.source_code = "function _ready() { console.log('Entity %d'); }" % i
+				child.set_script(script)
+
+			var err = sandbox.save_level(root, test_dir)
+			root.queue_free()
+
+			if err != OK:
+				_cleanup_directory(test_dir)
+				return { "passed": false, "message": "save_level failed" }
+
+			# Load using sandbox.load_level
+			var loaded = sandbox.load_level(test_dir)
+
+			if loaded == null:
+				_cleanup_directory(test_dir)
+				return { "passed": false, "message": "load_level returned null" }
+
+			# Count nodes with scripts
+			var script_count = 0
+			for i in range(3):
+				var entity = loaded.get_node_or_null("Entity%d" % i)
+				if entity and entity.get_script():
+					script_count += 1
+
+			loaded.queue_free()
+			_cleanup_directory(test_dir)
+
+			return assert_eq(script_count, 3, "All 3 nodes should have scripts reattached")
+
+		"test_load_level_security_blocks_res_path":
+			var loaded = sandbox.load_level("res://levels/test/")
+			return assert_eq(loaded, null, "Should block res:// path")
+
+		"test_load_level_security_blocks_path_traversal":
+			var loaded = sandbox.load_level("user://../etc/")
+			return assert_eq(loaded, null, "Should block path traversal")
+
+		"test_load_level_nonexistent_returns_null":
+			var loaded = sandbox.load_level("user://nonexistent_level_xyz/")
+			return assert_eq(loaded, null, "Should return null for nonexistent level")
 
 		_:
 			return { "passed": false, "message": "Unknown test: " + test_name }

@@ -1,6 +1,7 @@
 #include "js_sandbox.h"
 #include "js_script.h"
 #include "scene_saver.h"
+#include "scene_loader.h"
 
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/dir_access.hpp>
@@ -204,6 +205,25 @@ Error JSSandbox::save_level(Node *root, const String &directory) {
     return OK;
 }
 
+Node* JSSandbox::load_level(const String& directory) {
+    SceneLoader::LoadResult result = SceneLoader::load(this, directory);
+
+    if (result.error != OK) {
+        last_error_ = result.error_message;
+        return nullptr;
+    }
+
+    // Report warnings
+    for (int i = 0; i < result.warnings.size(); i++) {
+        UtilityFunctions::print_rich("[color=yellow]Warning: ", result.warnings[i], "[/color]");
+    }
+
+    // Emit signal
+    emit_signal("level_loaded", directory, result.loaded_scripts.size());
+
+    return result.root;
+}
+
 Array JSSandbox::get_created_nodes() {
     Array result;
 
@@ -312,6 +332,7 @@ void JSSandbox::_bind_methods() {
 
     // Level persistence
     ClassDB::bind_method(D_METHOD("save_level", "root", "directory"), &JSSandbox::save_level);
+    ClassDB::bind_method(D_METHOD("load_level", "directory"), &JSSandbox::load_level);
     ClassDB::bind_method(D_METHOD("get_created_nodes"), &JSSandbox::get_created_nodes);
     ClassDB::bind_method(D_METHOD("get_attached_scripts"), &JSSandbox::get_attached_scripts);
 
@@ -331,6 +352,10 @@ void JSSandbox::_bind_methods() {
 
     ADD_SIGNAL(MethodInfo("level_saved",
         PropertyInfo(Variant::STRING, "path")));
+
+    ADD_SIGNAL(MethodInfo("level_loaded",
+        PropertyInfo(Variant::STRING, "directory"),
+        PropertyInfo(Variant::INT, "script_count")));
 }
 
 } // namespace jsb

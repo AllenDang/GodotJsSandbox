@@ -42,6 +42,7 @@ public:
 
     // Level persistence
     godot::Error save_level(godot::Node *root, const godot::String &directory);
+    godot::Node* load_level(const godot::String &directory);
     godot::Array get_created_nodes();
     godot::Dictionary get_attached_scripts();
 
