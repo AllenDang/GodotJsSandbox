@@ -19,7 +19,17 @@ JSSandbox::JSSandbox() {
 }
 
 JSSandbox::~JSSandbox() {
+    // Explicit cleanup order to ensure JS resources are freed before context
+    // SignalRegistry must cleanup while JSContext is still valid
+    if (signal_registry_) {
+        signal_registry_->cleanup_all();
+    }
+
+    // Clear script references before context destruction
     attached_scripts_.clear();
+
+    // Note: unique_ptr members are destroyed in reverse declaration order
+    // context_ is destroyed last, which is correct
 }
 
 bool JSSandbox::initialize() {

@@ -637,12 +637,10 @@ JSValue GodotBindings::js_godot_connect(JSContext* ctx, JSValueConst this_val, i
     }
 
     // Connect the callback
-    // Duplicate the callback to keep it alive
-    JSValue callback_dup = JS_DupValue(ctx, argv[2]);
-    uint64_t connection_id = signal_registry->connect(target, StringName(signal_name), callback_dup);
+    // Note: SignalRegistry::connect() handles JS_DupValue internally
+    uint64_t connection_id = signal_registry->connect(target, StringName(signal_name), argv[2]);
 
     if (connection_id == 0) {
-        JS_FreeValue(ctx, callback_dup);
         return JS_ThrowTypeError(ctx, "Failed to connect signal");
     }
 

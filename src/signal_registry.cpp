@@ -115,7 +115,16 @@ uint64_t SignalRegistry::connect(Object* target, const StringName& signal, JSVal
         // Clean up on failure
         JS_FreeValue(ctx_, conn.callback);
         connections_.erase(connection_id);
-        connections_by_object_[object_id].erase(connections_by_object_[object_id].find(connection_id));
+        if (connections_by_object_.has(object_id)) {
+            Vector<uint64_t>& obj_conns = connections_by_object_[object_id];
+            int idx = obj_conns.find(connection_id);
+            if (idx >= 0) {
+                obj_conns.remove_at(idx);
+            }
+            if (obj_conns.is_empty()) {
+                connections_by_object_.erase(object_id);
+            }
+        }
         return 0;
     }
 
@@ -191,11 +200,13 @@ void SignalRegistry::disconnect_all_from_object(uint64_t object_id) {
 
 void SignalRegistry::cleanup_all() {
     // Free all JS callback references
-    if (ctx_) {
+    // Must be called while JSContext is still valid
+    if (ctx_ && !connections_.is_empty()) {
         for (auto& pair : connections_) {
             SignalConnection& conn = pair.value;
             if (conn.connected) {
                 JS_FreeValue(ctx_, conn.callback);
+                conn.callback = JS_UNDEFINED;
                 conn.connected = false;
             }
         }
@@ -203,6 +214,9 @@ void SignalRegistry::cleanup_all() {
 
     connections_.clear();
     connections_by_object_.clear();
+
+    // Clear context reference to prevent use-after-free on double cleanup
+    ctx_ = nullptr;
 }
 
 int SignalRegistry::get_connection_count() const {

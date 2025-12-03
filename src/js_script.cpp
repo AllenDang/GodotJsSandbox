@@ -233,10 +233,22 @@ bool JSScript::parse_script() {
     signals_.clear();
     properties_.clear();
 
-    // Parse all function declarations: "function name(" pattern
-    // This captures both lifecycle methods (_ready, _process) and custom methods
+    // Simple function detection - looks for "function name(" patterns
+    // This is a heuristic that works for most common JS code patterns.
+    // Note: A full JS parser would be overkill; QuickJS doesn't expose its parser API
+    // in a way that's easily usable for this purpose.
     int pos = 0;
     while ((pos = source_code_.find("function ", pos)) >= 0) {
+        // Basic check: skip if this appears to be in a single-line comment
+        // Look backwards for "//" on the same line
+        int line_start = source_code_.rfind("\n", pos);
+        if (line_start < 0) line_start = 0;
+        String line_before = source_code_.substr(line_start, pos - line_start);
+        if (line_before.find("//") >= 0) {
+            pos += 9;
+            continue;  // Skip - likely in a comment
+        }
+
         pos += 9; // Skip "function "
 
         // Skip whitespace
@@ -272,10 +284,17 @@ bool JSScript::parse_script() {
         }
     }
 
-    // Look for signal declarations
+    // Parse annotation comments (@signal, @export)
+    parse_annotations();
+
+    is_valid_ = true;
+    return true;
+}
+
+void JSScript::parse_annotations() {
+    // Parse @signal annotations (in comments, safe to search)
     // Pattern: // @signal signal_name
-    // or: // @signal signal_name(arg1, arg2)
-    pos = 0;
+    int pos = 0;
     while ((pos = source_code_.find("@signal", pos)) >= 0) {
         pos += 7; // Skip "@signal"
 
@@ -284,7 +303,7 @@ bool JSScript::parse_script() {
             pos++;
         }
 
-        // Read signal name
+        // Read signal name (valid JS identifier)
         int name_start = pos;
         while (pos < source_code_.length()) {
             char32_t c = source_code_[pos];
@@ -304,23 +323,22 @@ bool JSScript::parse_script() {
         }
     }
 
-    // Look for export declarations
-    // Pattern: // @export var_name = default_value
-    // or: /* @export */ let var_name = default_value
+    // Parse @export annotations
+    // Pattern: // @export var_name
     pos = 0;
     while ((pos = source_code_.find("@export", pos)) >= 0) {
-        // Find the variable name after @export
         int line_end = source_code_.find("\n", pos);
         if (line_end < 0) line_end = source_code_.length();
 
         String line = source_code_.substr(pos, line_end - pos);
-        // Simple parsing - look for var/let/const followed by name
+
+        // Look for variable declaration keywords
         int var_pos = line.find("var ");
         if (var_pos < 0) var_pos = line.find("let ");
         if (var_pos < 0) var_pos = line.find("const ");
 
         if (var_pos >= 0) {
-            int name_start = var_pos + 4; // skip "var " or "let "
+            int name_start = var_pos + 4;
             if (line.substr(var_pos, 5) == "const") name_start = var_pos + 6;
 
             int name_end = name_start;
@@ -339,9 +357,6 @@ bool JSScript::parse_script() {
         }
         pos = line_end;
     }
-
-    is_valid_ = true;
-    return true;
 }
 
 } // namespace jsb

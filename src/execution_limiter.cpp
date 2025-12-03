@@ -22,6 +22,16 @@ void ExecutionLimiter::set_memory_limit_mb(int mb) {
 
 void ExecutionLimiter::set_max_api_calls_per_frame(int count) {
     max_api_calls_per_frame_ = count > 0 ? count : 1000;
+    // Also update write ops for backwards compatibility
+    max_write_ops_per_frame_ = count > 0 ? count : 500;
+}
+
+void ExecutionLimiter::set_write_ops_per_frame(int count) {
+    max_write_ops_per_frame_ = count > 0 ? count : 500;
+}
+
+void ExecutionLimiter::set_heavy_ops_per_frame(int count) {
+    max_heavy_ops_per_frame_ = count > 0 ? count : 50;
 }
 
 void ExecutionLimiter::begin_execution() {
@@ -58,11 +68,37 @@ int64_t ExecutionLimiter::get_remaining_time_ms() const {
 }
 
 bool ExecutionLimiter::check_api_rate_limit() {
-    api_calls_this_frame_++;
-    total_api_calls_++;
+    // Legacy: treat as WRITE operation
+    return check_api_rate_limit(ApiCategory::WRITE);
+}
 
-    if (max_api_calls_per_frame_ > 0 && api_calls_this_frame_ > max_api_calls_per_frame_) {
-        return false;  // Rate limit exceeded
+bool ExecutionLimiter::check_api_rate_limit(ApiCategory category) {
+    total_api_calls_++;
+    api_calls_this_frame_++;
+
+    switch (category) {
+        case ApiCategory::READ:
+            // Read operations are unlimited
+            return true;
+
+        case ApiCategory::WRITE:
+            write_ops_this_frame_++;
+            if (max_write_ops_per_frame_ > 0 && write_ops_this_frame_ > max_write_ops_per_frame_) {
+                return false;  // Write rate limit exceeded
+            }
+            return true;
+
+        case ApiCategory::HEAVY:
+            heavy_ops_this_frame_++;
+            // Heavy operations also count as write operations
+            write_ops_this_frame_++;
+            if (max_heavy_ops_per_frame_ > 0 && heavy_ops_this_frame_ > max_heavy_ops_per_frame_) {
+                return false;  // Heavy rate limit exceeded
+            }
+            if (max_write_ops_per_frame_ > 0 && write_ops_this_frame_ > max_write_ops_per_frame_) {
+                return false;  // Write rate limit exceeded
+            }
+            return true;
     }
 
     return true;
@@ -70,6 +106,8 @@ bool ExecutionLimiter::check_api_rate_limit() {
 
 void ExecutionLimiter::reset_frame_counters() {
     api_calls_this_frame_ = 0;
+    write_ops_this_frame_ = 0;
+    heavy_ops_this_frame_ = 0;
 }
 
 void ExecutionLimiter::set_current_memory_usage(size_t bytes) {
@@ -84,6 +122,8 @@ void ExecutionLimiter::reset_stats() {
     last_execution_time_ms_ = 0;
     total_api_calls_ = 0;
     api_calls_this_frame_ = 0;
+    write_ops_this_frame_ = 0;
+    heavy_ops_this_frame_ = 0;
     current_memory_usage_ = 0;
 }
 

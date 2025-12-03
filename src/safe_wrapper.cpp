@@ -344,7 +344,13 @@ Variant SafeWrapper::load_resource(const String& path, String& error) {
         return Variant();
     }
 
-    if (path.find("..") != -1) {
+    // Check for path traversal patterns
+    // Detect "/../", "/..\" or paths ending/starting with ".."
+    // But NOT reject legitimate filenames like "file..name.png"
+    if (path.find("/../") != -1 ||
+        path.ends_with("/..") ||
+        path.find("\\..") != -1 ||
+        path.find("..\\") != -1) {
         error = "Path traversal not allowed";
         return Variant();
     }

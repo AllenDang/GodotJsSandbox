@@ -80,6 +80,7 @@ void SandboxConfig::setup_default_blocklist() {
     blocked_methods_.insert("Object.get_script");
     blocked_methods_.insert("Object.set_deferred");  // Also blocks deferred setting
     blocked_methods_.insert("Object.call_deferred"); // Block deferred calls too
+    blocked_methods_.insert("Object.free");          // Block immediate free, use queue_free instead
 
     // ClassDB - block dynamic instantiation
     blocked_methods_.insert("ClassDB.instantiate");
@@ -238,8 +239,16 @@ bool SandboxConfig::is_property_blocked(const String& class_name, const String& 
 }
 
 bool SandboxConfig::is_path_allowed(const String& path) const {
-    // Check for path traversal
-    if (path.find("..") != -1) {
+    // Check for path traversal patterns
+    // We need to detect "/../" or paths ending with "/.." or starting with "../"
+    // But NOT reject legitimate filenames like "file..name.png"
+    if (path.find("/../") != -1 ||      // Middle traversal
+        path.find("/..") == path.length() - 3 ||  // Ends with /..*
+        path.ends_with("/..") ||         // Ends with /..
+        path.begins_with("../") ||       // Starts with ../
+        path == ".." ||                  // Just ..
+        path.find("\\..") != -1 ||       // Windows-style traversal
+        path.find("..\\") != -1) {       // Windows-style traversal
         return false;
     }
 

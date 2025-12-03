@@ -107,7 +107,10 @@ private:
     godot::Vector<godot::StringName> signals_;
     godot::HashMap<godot::StringName, godot::Variant> properties_;
 
+    // Parse script - uses QuickJS at runtime for actual method detection
+    // Only parses annotation comments (@signal, @export) here
     bool parse_script();
+    void parse_annotations();
 };
 
 } // namespace jsb

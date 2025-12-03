@@ -104,40 +104,24 @@ SceneSaver::SaveResult SceneSaver::save(Node* root, const String& directory,
 Dictionary SceneSaver::collect_js_scripts(Node* root, PackedStringArray& warnings) {
     Dictionary scripts;
 
-    // Process root
-    process_node_for_save(root, "", scripts, warnings);
-
-    // Process all children recursively
-    TypedArray<Node> children = root->get_children();
-    for (int i = 0; i < children.size(); i++) {
-        Node* child = Object::cast_to<Node>(children[i].operator Object*());
-        if (child) {
-            collect_js_scripts_recursive(child, scripts, warnings);
-        }
-    }
+    // Process entire tree starting from root
+    collect_js_scripts_recursive(root, scripts, warnings);
 
     return scripts;
 }
 
 void SceneSaver::collect_js_scripts_recursive(Node* node, Dictionary& scripts, PackedStringArray& warnings) {
-    // Check for JS script
+    if (!node) return;
+
+    // Check for JS script on this node
     Ref<Script> script = node->get_script();
     if (script.is_valid()) {
         JSScript* js_script = Object::cast_to<JSScript>(script.ptr());
         if (js_script) {
             String source = js_script->_get_source_code();
             if (!source.is_empty()) {
-                // Generate filename from node name
-                String filename = node->get_name().to_lower().replace(" ", "_") + ".js";
-
-                // Ensure unique filename
-                int counter = 1;
-                String base_name = filename.get_basename();
-                while (scripts.has(filename)) {
-                    filename = base_name + "_" + String::num_int64(counter) + ".js";
-                    counter++;
-                }
-
+                // Generate unique filename using consolidated helper
+                String filename = generate_script_filename(node, scripts);
                 scripts[filename] = source;
 
                 // Store mapping on the node (for scene saving)
@@ -150,7 +134,7 @@ void SceneSaver::collect_js_scripts_recursive(Node* node, Dictionary& scripts, P
         }
     }
 
-    // Process children
+    // Process children recursively
     TypedArray<Node> children = node->get_children();
     for (int i = 0; i < children.size(); i++) {
         Node* child = Object::cast_to<Node>(children[i].operator Object*());
@@ -160,9 +144,11 @@ void SceneSaver::collect_js_scripts_recursive(Node* node, Dictionary& scripts, P
     }
 }
 
+// Deprecated: use collect_js_scripts_recursive instead
 void SceneSaver::process_node_for_save(Node* node, const String& directory,
                                         Dictionary& script_map,
                                         PackedStringArray& warnings) {
+    // Delegate to collect_js_scripts_recursive for single node (no recursion)
     if (!node) return;
 
     Ref<Script> script = node->get_script();

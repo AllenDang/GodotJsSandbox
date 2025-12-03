@@ -315,12 +315,34 @@ JSModuleDef* QuickJSContext::module_loader(JSContext* ctx, const char* module_na
 
 int QuickJSContext::interrupt_handler(JSRuntime* rt, void* opaque) {
     const QuickJSContext* self = static_cast<const QuickJSContext*>(opaque);
+
+    // Check timeout via deadline
     if (self->deadline_ > 0) {
         int64_t now = Time::get_singleton()->get_ticks_msec();
         if (now >= self->deadline_) {
-            return 1;
+            return 1;  // Interrupt: timeout exceeded
         }
     }
+
+    // Check ExecutionLimiter timeout (more granular check)
+    if (self->execution_limiter_ && self->execution_limiter_->is_timeout_exceeded()) {
+        return 1;  // Interrupt: execution limiter timeout
+    }
+
+    // Check memory limit
+    if (self->execution_limiter_) {
+        // Update current memory usage from QuickJS runtime
+        JSMemoryUsage mem;
+        JS_ComputeMemoryUsage(rt, &mem);
+        // Use a const_cast since set_current_memory_usage is non-const
+        // This is safe because we're updating stats, not modifying core state
+        const_cast<ExecutionLimiter*>(self->execution_limiter_)->set_current_memory_usage(mem.memory_used_size);
+
+        if (self->execution_limiter_->is_memory_limit_exceeded()) {
+            return 1;  // Interrupt: memory limit exceeded
+        }
+    }
+
     return 0;
 }
 
