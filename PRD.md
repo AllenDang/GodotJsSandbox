@@ -308,16 +308,22 @@ classes = [
 ]
 
 [blocked_methods]
-Object = ["call", "callv", "set_script", "set", "get_script"]
+Object = ["call", "callv", "set", "get_script"]
 ClassDB = ["instantiate", "instance", "can_instantiate", "get_class_list"]
 Engine = ["get_singleton", "register_singleton", "unregister_singleton"]
-Node = ["set_script"]  # 防止替换脚本绕过沙箱
 ```
 
 说明：
 - `call`/`callv`：防止绕过黑名单调用任意方法
-- `set_script`：防止动态加载 GDScript 绕过沙箱
 - `set`：防止通过属性名字符串设置任意属性
+- `get_script`：防止获取脚本对象后进行反射操作
+
+**注意：`set_script` 不在黑名单中！**
+
+JS 需要能够动态附加脚本到节点（核心功能）。安全性通过 SafeWrapper 保证：
+- 只允许附加 JSScript 类型的脚本
+- 禁止附加 GDScript、CSharpScript 等其他脚本类型
+- SafeWrapper 在执行 set_script 前验证脚本类型
 
 注意：
 

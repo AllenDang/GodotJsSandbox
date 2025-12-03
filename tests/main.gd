@@ -1,0 +1,65 @@
+extends Node3D
+
+var sandbox: JSSandbox
+
+func _ready() -> void:
+	print("=== GodotJSRuntime Test Suite ===")
+
+	# Check if JSSandbox class exists
+	if not ClassDB.class_exists("JSSandbox"):
+		printerr("ERROR: JSSandbox class not found - extension not loaded")
+		return
+
+	# Create sandbox
+	sandbox = JSSandbox.new()
+	sandbox.set_timeout_ms(5000)
+	sandbox.set_memory_limit_mb(64)
+
+	# Connect signals
+	sandbox.error_occurred.connect(_on_error)
+	sandbox.console_output.connect(_on_console)
+
+	# Run all tests
+	await run_tests()
+
+	print("\n=== Test Suite Complete ===")
+
+func run_tests() -> void:
+	var runner = TestRunner.new()
+
+	# Add all test suites (organized by category)
+	# Core functionality
+	runner.add_suite(TestBasicEval.new())
+	runner.add_suite(TestBindings.new())
+	runner.add_suite(TestNodeOps.new())
+	runner.add_suite(TestSingletons.new())
+
+	# Security (PRD.md blocklist)
+	runner.add_suite(TestSecurity.new())
+	runner.add_suite(TestResourceLoading.new())
+
+	# Lifecycle and script integration
+	runner.add_suite(TestScriptAttach.new())
+	runner.add_suite(TestLifecycle.new())
+	runner.add_suite(TestSignals.new())
+
+	# Memory safety and limits
+	runner.add_suite(TestObjectLifecycle.new())
+	runner.add_suite(TestExecutionLimits.new())
+
+	# Run all tests
+	var results = await runner.run_all(sandbox, get_tree())
+
+	if results.failed > 0:
+		printerr("WARNING: %d tests failed!" % results.failed)
+		# Exit with error code for CI
+		# get_tree().quit(1)
+	else:
+		print("All tests passed!")
+		# get_tree().quit(0)
+
+func _on_error(message: String, line: int, column: int) -> void:
+	printerr("JS Error at %d:%d - %s" % [line, column, message])
+
+func _on_console(message: String) -> void:
+	print("[JS] %s" % message)

@@ -3,7 +3,7 @@ import os
 import sys
 
 libname = "godot_js_runtime"
-projectdir = "demo"
+projectdir = "tests"
 
 # Try to detect godot-cpp location
 godot_cpp_path = "godot-cpp"

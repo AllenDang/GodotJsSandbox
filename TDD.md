@@ -494,10 +494,10 @@ classes = [
 ]
 
 [blocked_methods]
-Object = ["call", "callv", "set_script", "set", "get_script"]
+Object = ["call", "callv", "set", "get_script"]
 ClassDB = ["instantiate", "instance", "can_instantiate", "get_class_list"]
 Engine = ["get_singleton", "register_singleton", "unregister_singleton"]
-Node = ["set_script"]
+# 注意：set_script 不阻止，由 SafeWrapper 验证只允许 JSScript
 ```
 
 ## 6.5 资源加载安全（SafeResourceLoader）
