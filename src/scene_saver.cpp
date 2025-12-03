@@ -144,27 +144,6 @@ void SceneSaver::collect_js_scripts_recursive(Node* node, Dictionary& scripts, P
     }
 }
 
-// Deprecated: use collect_js_scripts_recursive instead
-void SceneSaver::process_node_for_save(Node* node, const String& directory,
-                                        Dictionary& script_map,
-                                        PackedStringArray& warnings) {
-    // Delegate to collect_js_scripts_recursive for single node (no recursion)
-    if (!node) return;
-
-    Ref<Script> script = node->get_script();
-    if (script.is_valid()) {
-        JSScript* js_script = Object::cast_to<JSScript>(script.ptr());
-        if (js_script) {
-            String source = js_script->_get_source_code();
-            if (!source.is_empty()) {
-                String filename = generate_script_filename(node, script_map);
-                script_map[filename] = source;
-                node->set_meta("_js_script_file", filename);
-            }
-        }
-    }
-}
-
 String SceneSaver::generate_script_filename(Node* node, const Dictionary& existing) {
     String base = node->get_name().to_lower().validate_filename();
     if (base.is_empty()) base = "script";
@@ -241,67 +220,6 @@ Error SceneSaver::save_scene(Node* root, const String& path,
     }
 
     return OK;
-}
-
-void SceneSaver::update_script_references(Node* node, const String& directory) {
-    if (!node) return;
-
-    // Check if this node has a JS script filename stored
-    if (node->has_meta("_js_script_file")) {
-        String script_filename = node->get_meta("_js_script_file");
-        String script_path = directory;
-        if (!script_path.ends_with("/")) script_path += "/";
-        script_path += script_filename;
-
-        // Load the JS script from the saved file
-        // For now, we'll clear the script - it will be loaded when the scene is loaded
-        // The .tscn file will reference the .js file
-        node->set_script(Variant());
-
-        // Remove the temporary meta
-        node->remove_meta("_js_script_file");
-    }
-
-    // Process children
-    TypedArray<Node> children = node->get_children();
-    for (int i = 0; i < children.size(); i++) {
-        Node* child = Object::cast_to<Node>(children[i].operator Object*());
-        if (child) {
-            update_script_references(child, directory);
-        }
-    }
-}
-
-void SceneSaver::update_script_paths_recursive(Node* node, const String& directory) {
-    if (!node) return;
-
-    // Check if this node has a JS script filename stored (from collect_js_scripts)
-    if (node->has_meta("_js_script_file")) {
-        String script_filename = node->get_meta("_js_script_file");
-        String script_path = directory;
-        if (!script_path.ends_with("/")) script_path += "/";
-        script_path += script_filename;
-
-        // Store the script path as metadata instead of trying to set a JSScript directly
-        // This avoids crashes during PackedScene serialization
-        // The metadata will be preserved in the .tscn file and can be used to reload scripts
-        node->set_meta("_js_script_path", script_path);
-
-        // Clear the existing script to avoid serialization issues
-        node->set_script(Variant());
-
-        // Remove the temporary meta
-        node->remove_meta("_js_script_file");
-    }
-
-    // Process children
-    TypedArray<Node> children = node->get_children();
-    for (int i = 0; i < children.size(); i++) {
-        Node* child = Object::cast_to<Node>(children[i].operator Object*());
-        if (child) {
-            update_script_paths_recursive(child, directory);
-        }
-    }
 }
 
 void SceneSaver::store_script_paths_recursive(Node* node, const String& directory) {

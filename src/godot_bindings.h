@@ -21,7 +21,7 @@ struct GodotObjectData {
 // This allows JS code to create Godot objects, call methods, and access properties
 class GodotBindings {
 public:
-    GodotBindings(QuickJSContext* context);
+    explicit GodotBindings(QuickJSContext* context);
     ~GodotBindings();
 
     // Initialize all bindings in the context

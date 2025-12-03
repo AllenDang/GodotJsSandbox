@@ -108,12 +108,11 @@ bool DeletionTracker::is_tracked(Node* node) const {
 void DeletionTracker::clear() {
     // Disconnect all signals
     for (const KeyValue<uint64_t, Ref<DeletionCallback>>& E : callbacks_) {
-        uint64_t object_id = E.key;
         Ref<DeletionCallback> callback = E.value;
 
         if (callback.is_valid()) {
             // Try to get the node - it might already be deleted
-            Object* obj = ObjectDB::get_instance(ObjectID(object_id));
+            Object* obj = ObjectDB::get_instance(ObjectID(E.key));
             if (obj) {
                 Node* node = Object::cast_to<Node>(obj);
                 if (node && node->is_connected("tree_exiting", Callable(callback.ptr(), "on_tree_exiting"))) {
