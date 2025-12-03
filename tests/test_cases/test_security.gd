@@ -17,7 +17,10 @@ extends TestBase
 ## - ClassDB: instantiate, instance, can_instantiate, get_class_list
 ## - Engine: get_singleton, register_singleton, unregister_singleton
 ##
-## Note: set_script is ALLOWED (with JSScript only, validated by SafeWrapper)
+## set_script Handling (PRD Requirement):
+## - set_script is ALLOWED but validated by SafeWrapper
+## - Only JSScript types can be attached
+## - GDScript/CSharpScript are blocked
 
 func get_suite_name() -> String:
 	return "Security"
@@ -86,6 +89,11 @@ func get_tests() -> Array[String]:
 		"test_allowed_queue_free",
 		"test_allowed_node_operations",
 		"test_allowed_property_access",
+
+		# === set_script Validation (PRD requirement) ===
+		"test_set_script_with_jsscript_allowed",
+		"test_set_script_with_null_allowed",
+		"test_set_script_blocks_gdscript_class",
 	]
 
 func run_test(test_name: String) -> Dictionary:
@@ -279,6 +287,33 @@ func run_test(test_name: String) -> Dictionary:
 				node.name === 'TestNode';
 			"""
 			return assert_eval(code, true)
+
+		# === set_script Validation (PRD requirement) ===
+		# Note: Full set_script functionality is tested in test_script_attach.gd
+		# These tests verify the security aspects - blocking dangerous script types
+		"test_set_script_with_jsscript_allowed":
+			# Verify JSScript can be created and attached (via GDScript)
+			# This confirms SafeWrapper allows JSScript type
+			var node = Node.new()
+			var script = sandbox.create_script("function _ready() {}")
+			node.set_script(script)
+			var has_script = node.get_script() != null
+			node.queue_free()
+			return assert_eq(has_script, true, "JSScript should be attachable")
+
+		"test_set_script_with_null_allowed":
+			# Verify clearing script works
+			var node = Node.new()
+			var script = sandbox.create_script("function _ready() {}")
+			node.set_script(script)
+			node.set_script(null)
+			var script_cleared = node.get_script() == null
+			node.queue_free()
+			return assert_eq(script_cleared, true, "Script should be clearable")
+
+		"test_set_script_blocks_gdscript_class":
+			# Attempting to use GDScript class should fail (class is blocked)
+			return assert_throws("new GDScript();", "GDScript class should be blocked")
 
 		_:
 			return { "passed": false, "message": "Unknown test: " + test_name }

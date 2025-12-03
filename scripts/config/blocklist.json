@@ -42,8 +42,8 @@
         "ScriptCreateDialog"
     ],
     "blocked_methods": {
-        "Object": ["call", "callv", "set_script", "get_script", "set", "emit_signal", "free", "call_deferred", "set_deferred"],
-        "Node": ["set_script", "get_script", "set_process_thread_group", "call_group", "call_group_flags", "propagate_call"],
+        "Object": ["call", "callv", "get_script", "set", "emit_signal", "free", "call_deferred", "set_deferred"],
+        "Node": ["get_script", "set_process_thread_group", "call_group", "call_group_flags", "propagate_call"],
         "RefCounted": ["reference", "unreference"],
         "Resource": ["emit_changed"]
     },

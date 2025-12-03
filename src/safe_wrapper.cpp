@@ -3,11 +3,13 @@
 #include "sandbox_config.h"
 #include "execution_limiter.h"
 #include "deletion_tracker.h"
+#include "js_script.h"
 
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/resource.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
@@ -144,6 +146,46 @@ Variant SafeWrapper::call_method(uint64_t handle, const StringName& method,
     // Check if method is allowed
     if (!is_method_allowed(class_name, method)) {
         error = "Method is blocked: " + String(class_name) + "." + String(method);
+        return Variant();
+    }
+
+    // Special handling for set_script: only allow JSScript types (PRD requirement)
+    // This allows JS to attach scripts to nodes while preventing GDScript/CSharpScript injection
+    if (method == StringName("set_script")) {
+        if (argc < 1) {
+            error = "set_script requires a script argument";
+            return Variant();
+        }
+
+        const Variant& script_arg = *args[0];
+
+        // Allow null to clear the script
+        if (script_arg.get_type() == Variant::NIL) {
+            obj->set_script(Variant());
+            return Variant();
+        }
+
+        // Must be an Object
+        if (script_arg.get_type() != Variant::OBJECT) {
+            error = "set_script argument must be a Script or null";
+            return Variant();
+        }
+
+        Object* script_obj = script_arg;
+        if (!script_obj) {
+            error = "set_script argument is invalid";
+            return Variant();
+        }
+
+        // Verify it's a JSScript - block GDScript, CSharpScript, etc.
+        JSScript* js_script = Object::cast_to<JSScript>(script_obj);
+        if (!js_script) {
+            error = "Only JSScript can be attached via set_script (GDScript/CSharpScript not allowed)";
+            return Variant();
+        }
+
+        // Safe to set the script
+        obj->set_script(script_arg);
         return Variant();
     }
 
