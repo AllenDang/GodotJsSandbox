@@ -8,6 +8,7 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/text_edit.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -3817,9 +3818,28 @@ static JSValue js_TextEdit_get_v_scroll_bar(JSContext* ctx, JSValueConst this_va
     if (!result) return JS_NULL;
     Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
     JSValue ret_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
-    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_obj_ptr->get_class().utf8().get_data()));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
 }
 
@@ -3853,9 +3873,28 @@ static JSValue js_TextEdit_get_h_scroll_bar(JSContext* ctx, JSValueConst this_va
     if (!result) return JS_NULL;
     Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
     JSValue ret_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
-    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_obj_ptr->get_class().utf8().get_data()));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
 }
 
@@ -5140,6 +5179,125 @@ static JSValue js_TextEdit_get_line_gutter_text(JSContext* ctx, JSValueConst thi
     return JS_NewString(ctx, result.utf8().get_data());
 }
 
+// Method: TextEdit::set_line_gutter_icon
+static JSValue js_TextEdit_set_line_gutter_icon(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_line_gutter_icon: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_line_gutter_icon: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_line_gutter_icon: invalid or freed object");
+    }
+
+    TextEdit* typed_obj = Object::cast_to<TextEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_line_gutter_icon: object is not a TextEdit");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_line_gutter_icon: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_line; JS_ToInt64(ctx, &arg_line, argv[1]);
+    int64_t arg_gutter; JS_ToInt64(ctx, &arg_gutter, argv[2]);
+    Ref<Texture2D> arg_icon;
+    if (JS_IsNumber(argv[3])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_icon; JS_ToInt64(ctx, &h_icon, argv[3]);
+        Object* obj_icon = qjs_ctx->get_object_registry()->get_object(h_icon);
+        arg_icon = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_icon));
+    } else {
+        // Object with __handle property
+        JSValue jh_icon = JS_GetPropertyStr(ctx, argv[3], "__handle");
+        if (!JS_IsUndefined(jh_icon)) {
+            int64_t h_icon; JS_ToInt64(ctx, &h_icon, jh_icon);
+            Object* obj_icon = qjs_ctx->get_object_registry()->get_object(h_icon);
+            arg_icon = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_icon));
+        }
+        JS_FreeValue(ctx, jh_icon);
+    }
+
+    typed_obj->set_line_gutter_icon(arg_line, arg_gutter, arg_icon);
+    return JS_UNDEFINED;
+}
+
+// Method: TextEdit::get_line_gutter_icon
+static JSValue js_TextEdit_get_line_gutter_icon(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_gutter_icon: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_gutter_icon: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_gutter_icon: invalid or freed object");
+    }
+
+    TextEdit* typed_obj = Object::cast_to<TextEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_gutter_icon: object is not a TextEdit");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_gutter_icon: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_line; JS_ToInt64(ctx, &arg_line, argv[1]);
+    int64_t arg_gutter; JS_ToInt64(ctx, &arg_gutter, argv[2]);
+
+    Ref<Texture2D> result = typed_obj->get_line_gutter_icon(arg_line, arg_gutter);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
 // Method: TextEdit::set_line_gutter_item_color
 static JSValue js_TextEdit_set_line_gutter_item_color(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -5441,9 +5599,28 @@ static JSValue js_TextEdit_get_menu(JSContext* ctx, JSValueConst this_val, int a
     if (!result) return JS_NULL;
     Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
     JSValue ret_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
-    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_obj_ptr->get_class().utf8().get_data()));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
 }
 
@@ -8723,6 +8900,10 @@ void register_TextEdit_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_TextEdit_set_line_gutter_text, "set_line_gutter_text", 4));
     JS_SetPropertyStr(ctx, methods, "get_line_gutter_text",
         JS_NewCFunction(ctx, js_TextEdit_get_line_gutter_text, "get_line_gutter_text", 3));
+    JS_SetPropertyStr(ctx, methods, "set_line_gutter_icon",
+        JS_NewCFunction(ctx, js_TextEdit_set_line_gutter_icon, "set_line_gutter_icon", 4));
+    JS_SetPropertyStr(ctx, methods, "get_line_gutter_icon",
+        JS_NewCFunction(ctx, js_TextEdit_get_line_gutter_icon, "get_line_gutter_icon", 3));
     JS_SetPropertyStr(ctx, methods, "set_line_gutter_item_color",
         JS_NewCFunction(ctx, js_TextEdit_set_line_gutter_item_color, "set_line_gutter_item_color", 4));
     JS_SetPropertyStr(ctx, methods, "get_line_gutter_item_color",

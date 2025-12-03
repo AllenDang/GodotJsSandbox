@@ -8,6 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/node3d_gizmo.hpp>
+#include <godot_cpp/classes/world3d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -92,9 +94,28 @@ static JSValue js_Node3D_get_parent_node_3d(JSContext* ctx, JSValueConst this_va
     if (!result) return JS_NULL;
     Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
     JSValue ret_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
-    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_obj_ptr->get_class().utf8().get_data()));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
 }
 
@@ -204,6 +225,61 @@ static JSValue js_Node3D_is_scale_disabled(JSContext* ctx, JSValueConst this_val
     return JS_NewBool(ctx, result);
 }
 
+// Method: Node3D::get_world_3d
+static JSValue js_Node3D_get_world_3d(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node3D.get_world_3d: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node3D.get_world_3d: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node3D.get_world_3d: invalid or freed object");
+    }
+
+    Node3D* typed_obj = Object::cast_to<Node3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node3D.get_world_3d: object is not a Node3D");
+    }
+
+    Ref<World3D> result = typed_obj->get_world_3d();
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
 // Method: Node3D::force_update_transform
 static JSValue js_Node3D_force_update_transform(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -264,6 +340,59 @@ static JSValue js_Node3D_update_gizmos(JSContext* ctx, JSValueConst this_val, in
     return JS_UNDEFINED;
 }
 
+// Method: Node3D::add_gizmo
+static JSValue js_Node3D_add_gizmo(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node3D.add_gizmo: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node3D.add_gizmo: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node3D.add_gizmo: invalid or freed object");
+    }
+
+    Node3D* typed_obj = Object::cast_to<Node3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node3D.add_gizmo: object is not a Node3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Node3D.add_gizmo: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<Node3DGizmo> arg_gizmo;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_gizmo; JS_ToInt64(ctx, &h_gizmo, argv[1]);
+        Object* obj_gizmo = qjs_ctx->get_object_registry()->get_object(h_gizmo);
+        arg_gizmo = Ref<Node3DGizmo>(Object::cast_to<Node3DGizmo>(obj_gizmo));
+    } else {
+        // Object with __handle property
+        JSValue jh_gizmo = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_gizmo)) {
+            int64_t h_gizmo; JS_ToInt64(ctx, &h_gizmo, jh_gizmo);
+            Object* obj_gizmo = qjs_ctx->get_object_registry()->get_object(h_gizmo);
+            arg_gizmo = Ref<Node3DGizmo>(Object::cast_to<Node3DGizmo>(obj_gizmo));
+        }
+        JS_FreeValue(ctx, jh_gizmo);
+    }
+
+    typed_obj->add_gizmo(arg_gizmo);
+    return JS_UNDEFINED;
+}
+
 // Method: Node3D::clear_gizmos
 static JSValue js_Node3D_clear_gizmos(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -291,6 +420,61 @@ static JSValue js_Node3D_clear_gizmos(JSContext* ctx, JSValueConst this_val, int
     }
 
     typed_obj->clear_gizmos();
+    return JS_UNDEFINED;
+}
+
+// Method: Node3D::set_subgizmo_selection
+static JSValue js_Node3D_set_subgizmo_selection(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node3D.set_subgizmo_selection: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node3D.set_subgizmo_selection: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node3D.set_subgizmo_selection: invalid or freed object");
+    }
+
+    Node3D* typed_obj = Object::cast_to<Node3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node3D.set_subgizmo_selection: object is not a Node3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "Node3D.set_subgizmo_selection: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<Node3DGizmo> arg_gizmo;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_gizmo; JS_ToInt64(ctx, &h_gizmo, argv[1]);
+        Object* obj_gizmo = qjs_ctx->get_object_registry()->get_object(h_gizmo);
+        arg_gizmo = Ref<Node3DGizmo>(Object::cast_to<Node3DGizmo>(obj_gizmo));
+    } else {
+        // Object with __handle property
+        JSValue jh_gizmo = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_gizmo)) {
+            int64_t h_gizmo; JS_ToInt64(ctx, &h_gizmo, jh_gizmo);
+            Object* obj_gizmo = qjs_ctx->get_object_registry()->get_object(h_gizmo);
+            arg_gizmo = Ref<Node3DGizmo>(Object::cast_to<Node3DGizmo>(obj_gizmo));
+        }
+        JS_FreeValue(ctx, jh_gizmo);
+    }
+    int64_t arg_id; JS_ToInt64(ctx, &arg_id, argv[2]);
+    Transform3D arg_transform = qjs_ctx->js_to_variant(argv[3]);
+
+    typed_obj->set_subgizmo_selection(arg_gizmo, arg_id, arg_transform);
     return JS_UNDEFINED;
 }
 
@@ -2519,12 +2703,18 @@ void register_Node3D_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Node3D_set_disable_scale, "set_disable_scale", 2));
     JS_SetPropertyStr(ctx, methods, "is_scale_disabled",
         JS_NewCFunction(ctx, js_Node3D_is_scale_disabled, "is_scale_disabled", 1));
+    JS_SetPropertyStr(ctx, methods, "get_world_3d",
+        JS_NewCFunction(ctx, js_Node3D_get_world_3d, "get_world_3d", 1));
     JS_SetPropertyStr(ctx, methods, "force_update_transform",
         JS_NewCFunction(ctx, js_Node3D_force_update_transform, "force_update_transform", 1));
     JS_SetPropertyStr(ctx, methods, "update_gizmos",
         JS_NewCFunction(ctx, js_Node3D_update_gizmos, "update_gizmos", 1));
+    JS_SetPropertyStr(ctx, methods, "add_gizmo",
+        JS_NewCFunction(ctx, js_Node3D_add_gizmo, "add_gizmo", 2));
     JS_SetPropertyStr(ctx, methods, "clear_gizmos",
         JS_NewCFunction(ctx, js_Node3D_clear_gizmos, "clear_gizmos", 1));
+    JS_SetPropertyStr(ctx, methods, "set_subgizmo_selection",
+        JS_NewCFunction(ctx, js_Node3D_set_subgizmo_selection, "set_subgizmo_selection", 4));
     JS_SetPropertyStr(ctx, methods, "clear_subgizmo_selection",
         JS_NewCFunction(ctx, js_Node3D_clear_subgizmo_selection, "clear_subgizmo_selection", 1));
     JS_SetPropertyStr(ctx, methods, "is_visible_in_tree",

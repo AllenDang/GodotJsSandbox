@@ -8,6 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/control.hpp>
+#include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/style_box.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -805,9 +808,28 @@ static JSValue js_Control_find_prev_valid_focus(JSContext* ctx, JSValueConst thi
     if (!result) return JS_NULL;
     Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
     JSValue ret_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
-    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_obj_ptr->get_class().utf8().get_data()));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
 }
 
@@ -841,9 +863,28 @@ static JSValue js_Control_find_next_valid_focus(JSContext* ctx, JSValueConst thi
     if (!result) return JS_NULL;
     Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
     JSValue ret_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
-    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_obj_ptr->get_class().utf8().get_data()));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
 }
 
@@ -885,9 +926,28 @@ static JSValue js_Control_find_valid_focus_neighbor(JSContext* ctx, JSValueConst
     if (!result) return JS_NULL;
     Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
     JSValue ret_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
-    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_obj_ptr->get_class().utf8().get_data()));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
 }
 
@@ -948,6 +1008,168 @@ static JSValue js_Control_end_bulk_theme_override(JSContext* ctx, JSValueConst t
     }
 
     typed_obj->end_bulk_theme_override();
+    return JS_UNDEFINED;
+}
+
+// Method: Control::add_theme_icon_override
+static JSValue js_Control_add_theme_icon_override(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_icon_override: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_icon_override: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_icon_override: invalid or freed object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_icon_override: object is not a Control");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_icon_override: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    Ref<Texture2D> arg_texture;
+    if (JS_IsNumber(argv[2])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_texture; JS_ToInt64(ctx, &h_texture, argv[2]);
+        Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+        arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+    } else {
+        // Object with __handle property
+        JSValue jh_texture = JS_GetPropertyStr(ctx, argv[2], "__handle");
+        if (!JS_IsUndefined(jh_texture)) {
+            int64_t h_texture; JS_ToInt64(ctx, &h_texture, jh_texture);
+            Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+            arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+        }
+        JS_FreeValue(ctx, jh_texture);
+    }
+
+    typed_obj->add_theme_icon_override(arg_name, arg_texture);
+    return JS_UNDEFINED;
+}
+
+// Method: Control::add_theme_stylebox_override
+static JSValue js_Control_add_theme_stylebox_override(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_stylebox_override: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_stylebox_override: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_stylebox_override: invalid or freed object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_stylebox_override: object is not a Control");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_stylebox_override: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    Ref<StyleBox> arg_stylebox;
+    if (JS_IsNumber(argv[2])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_stylebox; JS_ToInt64(ctx, &h_stylebox, argv[2]);
+        Object* obj_stylebox = qjs_ctx->get_object_registry()->get_object(h_stylebox);
+        arg_stylebox = Ref<StyleBox>(Object::cast_to<StyleBox>(obj_stylebox));
+    } else {
+        // Object with __handle property
+        JSValue jh_stylebox = JS_GetPropertyStr(ctx, argv[2], "__handle");
+        if (!JS_IsUndefined(jh_stylebox)) {
+            int64_t h_stylebox; JS_ToInt64(ctx, &h_stylebox, jh_stylebox);
+            Object* obj_stylebox = qjs_ctx->get_object_registry()->get_object(h_stylebox);
+            arg_stylebox = Ref<StyleBox>(Object::cast_to<StyleBox>(obj_stylebox));
+        }
+        JS_FreeValue(ctx, jh_stylebox);
+    }
+
+    typed_obj->add_theme_stylebox_override(arg_name, arg_stylebox);
+    return JS_UNDEFINED;
+}
+
+// Method: Control::add_theme_font_override
+static JSValue js_Control_add_theme_font_override(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_font_override: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_font_override: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_font_override: invalid or freed object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_font_override: object is not a Control");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "Control.add_theme_font_override: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    Ref<Font> arg_font;
+    if (JS_IsNumber(argv[2])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_font; JS_ToInt64(ctx, &h_font, argv[2]);
+        Object* obj_font = qjs_ctx->get_object_registry()->get_object(h_font);
+        arg_font = Ref<Font>(Object::cast_to<Font>(obj_font));
+    } else {
+        // Object with __handle property
+        JSValue jh_font = JS_GetPropertyStr(ctx, argv[2], "__handle");
+        if (!JS_IsUndefined(jh_font)) {
+            int64_t h_font; JS_ToInt64(ctx, &h_font, jh_font);
+            Object* obj_font = qjs_ctx->get_object_registry()->get_object(h_font);
+            arg_font = Ref<Font>(Object::cast_to<Font>(obj_font));
+        }
+        JS_FreeValue(ctx, jh_font);
+    }
+
+    typed_obj->add_theme_font_override(arg_name, arg_font);
     return JS_UNDEFINED;
 }
 
@@ -1307,6 +1529,213 @@ static JSValue js_Control_remove_theme_constant_override(JSContext* ctx, JSValue
 
     typed_obj->remove_theme_constant_override(arg_name);
     return JS_UNDEFINED;
+}
+
+// Method: Control::get_theme_icon
+static JSValue js_Control_get_theme_icon(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_icon: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_icon: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_icon: invalid or freed object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_icon: object is not a Control");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_icon: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    // Optional argument: theme_type (default: StringName())
+    StringName arg_theme_type = StringName();
+    if (argc > 2) {
+        // Override default with provided value
+        const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    }
+
+    Ref<Texture2D> result = typed_obj->get_theme_icon(arg_name, arg_theme_type);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Method: Control::get_theme_stylebox
+static JSValue js_Control_get_theme_stylebox(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_stylebox: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_stylebox: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_stylebox: invalid or freed object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_stylebox: object is not a Control");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_stylebox: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    // Optional argument: theme_type (default: StringName())
+    StringName arg_theme_type = StringName();
+    if (argc > 2) {
+        // Override default with provided value
+        const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    }
+
+    Ref<StyleBox> result = typed_obj->get_theme_stylebox(arg_name, arg_theme_type);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Method: Control::get_theme_font
+static JSValue js_Control_get_theme_font(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_font: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_font: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_font: invalid or freed object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_font: object is not a Control");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_font: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    // Optional argument: theme_type (default: StringName())
+    StringName arg_theme_type = StringName();
+    if (argc > 2) {
+        // Override default with provided value
+        const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    }
+
+    Ref<Font> result = typed_obj->get_theme_font(arg_name, arg_theme_type);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
 }
 
 // Method: Control::get_theme_font_size
@@ -1968,6 +2397,61 @@ static JSValue js_Control_get_theme_default_base_scale(JSContext* ctx, JSValueCo
     return JS_NewFloat64(ctx, result);
 }
 
+// Method: Control::get_theme_default_font
+static JSValue js_Control_get_theme_default_font(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_default_font: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_default_font: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_default_font: invalid or freed object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.get_theme_default_font: object is not a Control");
+    }
+
+    Ref<Font> result = typed_obj->get_theme_default_font();
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
 // Method: Control::get_theme_default_font_size
 static JSValue js_Control_get_theme_default_font_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2028,9 +2512,28 @@ static JSValue js_Control_get_parent_control(JSContext* ctx, JSValueConst this_v
     if (!result) return JS_NULL;
     Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
     JSValue ret_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
-    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_obj_ptr->get_class().utf8().get_data()));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
 }
 
@@ -4109,6 +4612,12 @@ void register_Control_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_NewCFunction(ctx, js_Control_begin_bulk_theme_override, "begin_bulk_theme_override", 1));
     JS_SetPropertyStr(ctx, methods, "end_bulk_theme_override",
         JS_NewCFunction(ctx, js_Control_end_bulk_theme_override, "end_bulk_theme_override", 1));
+    JS_SetPropertyStr(ctx, methods, "add_theme_icon_override",
+        JS_NewCFunction(ctx, js_Control_add_theme_icon_override, "add_theme_icon_override", 3));
+    JS_SetPropertyStr(ctx, methods, "add_theme_stylebox_override",
+        JS_NewCFunction(ctx, js_Control_add_theme_stylebox_override, "add_theme_stylebox_override", 3));
+    JS_SetPropertyStr(ctx, methods, "add_theme_font_override",
+        JS_NewCFunction(ctx, js_Control_add_theme_font_override, "add_theme_font_override", 3));
     JS_SetPropertyStr(ctx, methods, "add_theme_font_size_override",
         JS_NewCFunction(ctx, js_Control_add_theme_font_size_override, "add_theme_font_size_override", 3));
     JS_SetPropertyStr(ctx, methods, "add_theme_color_override",
@@ -4127,6 +4636,12 @@ void register_Control_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_NewCFunction(ctx, js_Control_remove_theme_color_override, "remove_theme_color_override", 2));
     JS_SetPropertyStr(ctx, methods, "remove_theme_constant_override",
         JS_NewCFunction(ctx, js_Control_remove_theme_constant_override, "remove_theme_constant_override", 2));
+    JS_SetPropertyStr(ctx, methods, "get_theme_icon",
+        JS_NewCFunction(ctx, js_Control_get_theme_icon, "get_theme_icon", 3));
+    JS_SetPropertyStr(ctx, methods, "get_theme_stylebox",
+        JS_NewCFunction(ctx, js_Control_get_theme_stylebox, "get_theme_stylebox", 3));
+    JS_SetPropertyStr(ctx, methods, "get_theme_font",
+        JS_NewCFunction(ctx, js_Control_get_theme_font, "get_theme_font", 3));
     JS_SetPropertyStr(ctx, methods, "get_theme_font_size",
         JS_NewCFunction(ctx, js_Control_get_theme_font_size, "get_theme_font_size", 3));
     JS_SetPropertyStr(ctx, methods, "get_theme_color",
@@ -4159,6 +4674,8 @@ void register_Control_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_NewCFunction(ctx, js_Control_has_theme_constant, "has_theme_constant", 3));
     JS_SetPropertyStr(ctx, methods, "get_theme_default_base_scale",
         JS_NewCFunction(ctx, js_Control_get_theme_default_base_scale, "get_theme_default_base_scale", 1));
+    JS_SetPropertyStr(ctx, methods, "get_theme_default_font",
+        JS_NewCFunction(ctx, js_Control_get_theme_default_font, "get_theme_default_font", 1));
     JS_SetPropertyStr(ctx, methods, "get_theme_default_font_size",
         JS_NewCFunction(ctx, js_Control_get_theme_default_font_size, "get_theme_default_font_size", 1));
     JS_SetPropertyStr(ctx, methods, "get_parent_control",

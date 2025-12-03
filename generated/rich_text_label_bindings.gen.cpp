@@ -8,6 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/rich_text_label.hpp>
+#include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/rich_text_effect.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -188,6 +191,156 @@ static JSValue js_RichTextLabel_add_hr(JSContext* ctx, JSValueConst this_val, in
     return JS_UNDEFINED;
 }
 
+// Method: RichTextLabel::add_image
+static JSValue js_RichTextLabel_add_image(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.add_image: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.add_image: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.add_image: invalid or freed object");
+    }
+
+    RichTextLabel* typed_obj = Object::cast_to<RichTextLabel>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.add_image: object is not a RichTextLabel");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.add_image: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<Texture2D> arg_image;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_image; JS_ToInt64(ctx, &h_image, argv[1]);
+        Object* obj_image = qjs_ctx->get_object_registry()->get_object(h_image);
+        arg_image = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_image));
+    } else {
+        // Object with __handle property
+        JSValue jh_image = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_image)) {
+            int64_t h_image; JS_ToInt64(ctx, &h_image, jh_image);
+            Object* obj_image = qjs_ctx->get_object_registry()->get_object(h_image);
+            arg_image = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_image));
+        }
+        JS_FreeValue(ctx, jh_image);
+    }
+    // Optional argument: width (default: 0)
+    int64_t arg_width = 0;
+    if (argc > 2) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_width, argv[2]);
+    }
+    // Optional argument: height (default: 0)
+    int64_t arg_height = 0;
+    if (argc > 3) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_height, argv[3]);
+    }
+    // Optional argument: color (default: Color(1, 1, 1, 1))
+    Color arg_color = Color(1, 1, 1, 1);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[4], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[4], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[4], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[4], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    }
+    // Optional argument: inline_align (default: (InlineAlignment)5)
+    InlineAlignment arg_inline_align = (InlineAlignment)5;
+    if (argc > 5) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        int64_t tmp_inline_align; JS_ToInt64(ctx, &tmp_inline_align, argv[5]); InlineAlignment arg_inline_align = (InlineAlignment)tmp_inline_align;
+    }
+    // Optional argument: region (default: Rect2(0, 0, 0, 0))
+    Rect2 arg_region = Rect2(0, 0, 0, 0);
+    if (argc > 6) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_x_region, tmp_y_region, tmp_w_region, tmp_h_region;
+    JSValue jpos_region = JS_GetPropertyStr(ctx, argv[6], "position");
+    JSValue jsize_region = JS_GetPropertyStr(ctx, argv[6], "size");
+    JSValue jpx_region = JS_GetPropertyStr(ctx, jpos_region, "x");
+    JSValue jpy_region = JS_GetPropertyStr(ctx, jpos_region, "y");
+    JSValue jsx_region = JS_GetPropertyStr(ctx, jsize_region, "x");
+    JSValue jsy_region = JS_GetPropertyStr(ctx, jsize_region, "y");
+    JS_ToFloat64(ctx, &tmp_x_region, jpx_region);
+    JS_ToFloat64(ctx, &tmp_y_region, jpy_region);
+    JS_ToFloat64(ctx, &tmp_w_region, jsx_region);
+    JS_ToFloat64(ctx, &tmp_h_region, jsy_region);
+    JS_FreeValue(ctx, jpx_region); JS_FreeValue(ctx, jpy_region);
+    JS_FreeValue(ctx, jsx_region); JS_FreeValue(ctx, jsy_region);
+    JS_FreeValue(ctx, jpos_region); JS_FreeValue(ctx, jsize_region);
+    Rect2 arg_region(tmp_x_region, tmp_y_region, tmp_w_region, tmp_h_region);
+    }
+    // Optional argument: key (default: nullptr)
+    Variant arg_key = nullptr;
+    if (argc > 7) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Variant arg_key = qjs_ctx->js_to_variant(argv[7]);
+    }
+    // Optional argument: pad (default: false)
+    bool arg_pad = false;
+    if (argc > 8) {
+        // Override default with provided value
+        arg_pad = JS_ToBool(ctx, argv[8]);
+    }
+    // Optional argument: tooltip (default: String())
+    String arg_tooltip = String();
+    if (argc > 9) {
+        // Override default with provided value
+        const char* cstr_tooltip = JS_ToCString(ctx, argv[9]); arg_tooltip = cstr_tooltip ? cstr_tooltip : ""; JS_FreeCString(ctx, cstr_tooltip);
+    }
+    // Optional argument: width_in_percent (default: false)
+    bool arg_width_in_percent = false;
+    if (argc > 10) {
+        // Override default with provided value
+        arg_width_in_percent = JS_ToBool(ctx, argv[10]);
+    }
+    // Optional argument: height_in_percent (default: false)
+    bool arg_height_in_percent = false;
+    if (argc > 11) {
+        // Override default with provided value
+        arg_height_in_percent = JS_ToBool(ctx, argv[11]);
+    }
+    // Optional argument: alt_text (default: String())
+    String arg_alt_text = String();
+    if (argc > 12) {
+        // Override default with provided value
+        const char* cstr_alt_text = JS_ToCString(ctx, argv[12]); arg_alt_text = cstr_alt_text ? cstr_alt_text : ""; JS_FreeCString(ctx, cstr_alt_text);
+    }
+
+    typed_obj->add_image(arg_image, arg_width, arg_height, arg_color, arg_inline_align, arg_region, arg_key, arg_pad, arg_tooltip, arg_width_in_percent, arg_height_in_percent, arg_alt_text);
+    return JS_UNDEFINED;
+}
+
 // Method: RichTextLabel::newline
 static JSValue js_RichTextLabel_newline(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -298,6 +451,65 @@ static JSValue js_RichTextLabel_invalidate_paragraph(JSContext* ctx, JSValueCons
 
     bool result = typed_obj->invalidate_paragraph(arg_paragraph);
     return JS_NewBool(ctx, result);
+}
+
+// Method: RichTextLabel::push_font
+static JSValue js_RichTextLabel_push_font(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_font: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_font: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_font: invalid or freed object");
+    }
+
+    RichTextLabel* typed_obj = Object::cast_to<RichTextLabel>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_font: object is not a RichTextLabel");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_font: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<Font> arg_font;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_font; JS_ToInt64(ctx, &h_font, argv[1]);
+        Object* obj_font = qjs_ctx->get_object_registry()->get_object(h_font);
+        arg_font = Ref<Font>(Object::cast_to<Font>(obj_font));
+    } else {
+        // Object with __handle property
+        JSValue jh_font = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_font)) {
+            int64_t h_font; JS_ToInt64(ctx, &h_font, jh_font);
+            Object* obj_font = qjs_ctx->get_object_registry()->get_object(h_font);
+            arg_font = Ref<Font>(Object::cast_to<Font>(obj_font));
+        }
+        JS_FreeValue(ctx, jh_font);
+    }
+    // Optional argument: font_size (default: 0)
+    int64_t arg_font_size = 0;
+    if (argc > 2) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_font_size, argv[2]);
+    }
+
+    typed_obj->push_font(arg_font, arg_font_size);
+    return JS_UNDEFINED;
 }
 
 // Method: RichTextLabel::push_font_size
@@ -1009,6 +1221,128 @@ static JSValue js_RichTextLabel_push_table(JSContext* ctx, JSValueConst this_val
     return JS_UNDEFINED;
 }
 
+// Method: RichTextLabel::push_dropcap
+static JSValue js_RichTextLabel_push_dropcap(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_dropcap: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_dropcap: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_dropcap: invalid or freed object");
+    }
+
+    RichTextLabel* typed_obj = Object::cast_to<RichTextLabel>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_dropcap: object is not a RichTextLabel");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_dropcap: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? cstr_string : ""; JS_FreeCString(ctx, cstr_string);
+    Ref<Font> arg_font;
+    if (JS_IsNumber(argv[2])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_font; JS_ToInt64(ctx, &h_font, argv[2]);
+        Object* obj_font = qjs_ctx->get_object_registry()->get_object(h_font);
+        arg_font = Ref<Font>(Object::cast_to<Font>(obj_font));
+    } else {
+        // Object with __handle property
+        JSValue jh_font = JS_GetPropertyStr(ctx, argv[2], "__handle");
+        if (!JS_IsUndefined(jh_font)) {
+            int64_t h_font; JS_ToInt64(ctx, &h_font, jh_font);
+            Object* obj_font = qjs_ctx->get_object_registry()->get_object(h_font);
+            arg_font = Ref<Font>(Object::cast_to<Font>(obj_font));
+        }
+        JS_FreeValue(ctx, jh_font);
+    }
+    int64_t arg_size; JS_ToInt64(ctx, &arg_size, argv[3]);
+    // Optional argument: dropcap_margins (default: Rect2(0, 0, 0, 0))
+    Rect2 arg_dropcap_margins = Rect2(0, 0, 0, 0);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_x_dropcap_margins, tmp_y_dropcap_margins, tmp_w_dropcap_margins, tmp_h_dropcap_margins;
+    JSValue jpos_dropcap_margins = JS_GetPropertyStr(ctx, argv[4], "position");
+    JSValue jsize_dropcap_margins = JS_GetPropertyStr(ctx, argv[4], "size");
+    JSValue jpx_dropcap_margins = JS_GetPropertyStr(ctx, jpos_dropcap_margins, "x");
+    JSValue jpy_dropcap_margins = JS_GetPropertyStr(ctx, jpos_dropcap_margins, "y");
+    JSValue jsx_dropcap_margins = JS_GetPropertyStr(ctx, jsize_dropcap_margins, "x");
+    JSValue jsy_dropcap_margins = JS_GetPropertyStr(ctx, jsize_dropcap_margins, "y");
+    JS_ToFloat64(ctx, &tmp_x_dropcap_margins, jpx_dropcap_margins);
+    JS_ToFloat64(ctx, &tmp_y_dropcap_margins, jpy_dropcap_margins);
+    JS_ToFloat64(ctx, &tmp_w_dropcap_margins, jsx_dropcap_margins);
+    JS_ToFloat64(ctx, &tmp_h_dropcap_margins, jsy_dropcap_margins);
+    JS_FreeValue(ctx, jpx_dropcap_margins); JS_FreeValue(ctx, jpy_dropcap_margins);
+    JS_FreeValue(ctx, jsx_dropcap_margins); JS_FreeValue(ctx, jsy_dropcap_margins);
+    JS_FreeValue(ctx, jpos_dropcap_margins); JS_FreeValue(ctx, jsize_dropcap_margins);
+    Rect2 arg_dropcap_margins(tmp_x_dropcap_margins, tmp_y_dropcap_margins, tmp_w_dropcap_margins, tmp_h_dropcap_margins);
+    }
+    // Optional argument: color (default: Color(1, 1, 1, 1))
+    Color arg_color = Color(1, 1, 1, 1);
+    if (argc > 5) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[5], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[5], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[5], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[5], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    }
+    // Optional argument: outline_size (default: 0)
+    int64_t arg_outline_size = 0;
+    if (argc > 6) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_outline_size, argv[6]);
+    }
+    // Optional argument: outline_color (default: Color(0, 0, 0, 0))
+    Color arg_outline_color = Color(0, 0, 0, 0);
+    if (argc > 7) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_outline_color, tmp_g_outline_color, tmp_b_outline_color, tmp_a_outline_color = 1.0;
+    JSValue jr_outline_color = JS_GetPropertyStr(ctx, argv[7], "r");
+    JSValue jg_outline_color = JS_GetPropertyStr(ctx, argv[7], "g");
+    JSValue jb_outline_color = JS_GetPropertyStr(ctx, argv[7], "b");
+    JSValue ja_outline_color = JS_GetPropertyStr(ctx, argv[7], "a");
+    JS_ToFloat64(ctx, &tmp_r_outline_color, jr_outline_color);
+    JS_ToFloat64(ctx, &tmp_g_outline_color, jg_outline_color);
+    JS_ToFloat64(ctx, &tmp_b_outline_color, jb_outline_color);
+    if (!JS_IsUndefined(ja_outline_color)) JS_ToFloat64(ctx, &tmp_a_outline_color, ja_outline_color);
+    JS_FreeValue(ctx, jr_outline_color);
+    JS_FreeValue(ctx, jg_outline_color);
+    JS_FreeValue(ctx, jb_outline_color);
+    JS_FreeValue(ctx, ja_outline_color);
+    Color arg_outline_color(tmp_r_outline_color, tmp_g_outline_color, tmp_b_outline_color, tmp_a_outline_color);
+    }
+
+    typed_obj->push_dropcap(arg_string, arg_font, arg_size, arg_dropcap_margins, arg_color, arg_outline_size, arg_outline_color);
+    return JS_UNDEFINED;
+}
+
 // Method: RichTextLabel::set_table_column_expand
 static JSValue js_RichTextLabel_set_table_column_expand(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1452,6 +1786,60 @@ static JSValue js_RichTextLabel_push_bgcolor(JSContext* ctx, JSValueConst this_v
     return JS_UNDEFINED;
 }
 
+// Method: RichTextLabel::push_customfx
+static JSValue js_RichTextLabel_push_customfx(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_customfx: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_customfx: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_customfx: invalid or freed object");
+    }
+
+    RichTextLabel* typed_obj = Object::cast_to<RichTextLabel>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_customfx: object is not a RichTextLabel");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_customfx: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<RichTextEffect> arg_effect;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_effect; JS_ToInt64(ctx, &h_effect, argv[1]);
+        Object* obj_effect = qjs_ctx->get_object_registry()->get_object(h_effect);
+        arg_effect = Ref<RichTextEffect>(Object::cast_to<RichTextEffect>(obj_effect));
+    } else {
+        // Object with __handle property
+        JSValue jh_effect = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_effect)) {
+            int64_t h_effect; JS_ToInt64(ctx, &h_effect, jh_effect);
+            Object* obj_effect = qjs_ctx->get_object_registry()->get_object(h_effect);
+            arg_effect = Ref<RichTextEffect>(Object::cast_to<RichTextEffect>(obj_effect));
+        }
+        JS_FreeValue(ctx, jh_effect);
+    }
+    Dictionary arg_env = qjs_ctx->js_to_variant(argv[2]);
+
+    typed_obj->push_customfx(arg_effect, arg_env);
+    return JS_UNDEFINED;
+}
+
 // Method: RichTextLabel::push_context
 static JSValue js_RichTextLabel_push_context(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1632,9 +2020,28 @@ static JSValue js_RichTextLabel_get_v_scroll_bar(JSContext* ctx, JSValueConst th
     if (!result) return JS_NULL;
     Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
     JSValue ret_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
-    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_obj_ptr->get_class().utf8().get_data()));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
 }
 
@@ -2664,9 +3071,28 @@ static JSValue js_RichTextLabel_get_menu(JSContext* ctx, JSValueConst this_val, 
     if (!result) return JS_NULL;
     Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
     JSValue ret_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
-    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_obj_ptr->get_class().utf8().get_data()));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
 }
 
@@ -4336,12 +4762,16 @@ void register_RichTextLabel_bindings(JSContext* ctx, JSValue global, JSValue cla
         JS_NewCFunction(ctx, js_RichTextLabel_add_text, "add_text", 2));
     JS_SetPropertyStr(ctx, methods, "add_hr",
         JS_NewCFunction(ctx, js_RichTextLabel_add_hr, "add_hr", 7));
+    JS_SetPropertyStr(ctx, methods, "add_image",
+        JS_NewCFunction(ctx, js_RichTextLabel_add_image, "add_image", 13));
     JS_SetPropertyStr(ctx, methods, "newline",
         JS_NewCFunction(ctx, js_RichTextLabel_newline, "newline", 1));
     JS_SetPropertyStr(ctx, methods, "remove_paragraph",
         JS_NewCFunction(ctx, js_RichTextLabel_remove_paragraph, "remove_paragraph", 3));
     JS_SetPropertyStr(ctx, methods, "invalidate_paragraph",
         JS_NewCFunction(ctx, js_RichTextLabel_invalidate_paragraph, "invalidate_paragraph", 2));
+    JS_SetPropertyStr(ctx, methods, "push_font",
+        JS_NewCFunction(ctx, js_RichTextLabel_push_font, "push_font", 3));
     JS_SetPropertyStr(ctx, methods, "push_font_size",
         JS_NewCFunction(ctx, js_RichTextLabel_push_font_size, "push_font_size", 2));
     JS_SetPropertyStr(ctx, methods, "push_normal",
@@ -4376,6 +4806,8 @@ void register_RichTextLabel_bindings(JSContext* ctx, JSValue global, JSValue cla
         JS_NewCFunction(ctx, js_RichTextLabel_push_strikethrough, "push_strikethrough", 2));
     JS_SetPropertyStr(ctx, methods, "push_table",
         JS_NewCFunction(ctx, js_RichTextLabel_push_table, "push_table", 5));
+    JS_SetPropertyStr(ctx, methods, "push_dropcap",
+        JS_NewCFunction(ctx, js_RichTextLabel_push_dropcap, "push_dropcap", 8));
     JS_SetPropertyStr(ctx, methods, "set_table_column_expand",
         JS_NewCFunction(ctx, js_RichTextLabel_set_table_column_expand, "set_table_column_expand", 5));
     JS_SetPropertyStr(ctx, methods, "set_table_column_name",
@@ -4394,6 +4826,8 @@ void register_RichTextLabel_bindings(JSContext* ctx, JSValue global, JSValue cla
         JS_NewCFunction(ctx, js_RichTextLabel_push_fgcolor, "push_fgcolor", 2));
     JS_SetPropertyStr(ctx, methods, "push_bgcolor",
         JS_NewCFunction(ctx, js_RichTextLabel_push_bgcolor, "push_bgcolor", 2));
+    JS_SetPropertyStr(ctx, methods, "push_customfx",
+        JS_NewCFunction(ctx, js_RichTextLabel_push_customfx, "push_customfx", 3));
     JS_SetPropertyStr(ctx, methods, "push_context",
         JS_NewCFunction(ctx, js_RichTextLabel_push_context, "push_context", 1));
     JS_SetPropertyStr(ctx, methods, "pop_context",

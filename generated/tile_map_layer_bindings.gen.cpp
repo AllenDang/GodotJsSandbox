@@ -8,6 +8,7 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/tile_map_layer.hpp>
+#include <godot_cpp/classes/tile_map_pattern.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -445,6 +446,60 @@ static JSValue js_TileMapLayer_get_used_rect(JSContext* ctx, JSValueConst this_v
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
+// Method: TileMapLayer::set_pattern
+static JSValue js_TileMapLayer_set_pattern(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMapLayer.set_pattern: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMapLayer.set_pattern: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMapLayer.set_pattern: invalid or freed object");
+    }
+
+    TileMapLayer* typed_obj = Object::cast_to<TileMapLayer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMapLayer.set_pattern: object is not a TileMapLayer");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "TileMapLayer.set_pattern: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Vector2i arg_position = qjs_ctx->js_to_variant(argv[1]);
+    Ref<TileMapPattern> arg_pattern;
+    if (JS_IsNumber(argv[2])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_pattern; JS_ToInt64(ctx, &h_pattern, argv[2]);
+        Object* obj_pattern = qjs_ctx->get_object_registry()->get_object(h_pattern);
+        arg_pattern = Ref<TileMapPattern>(Object::cast_to<TileMapPattern>(obj_pattern));
+    } else {
+        // Object with __handle property
+        JSValue jh_pattern = JS_GetPropertyStr(ctx, argv[2], "__handle");
+        if (!JS_IsUndefined(jh_pattern)) {
+            int64_t h_pattern; JS_ToInt64(ctx, &h_pattern, jh_pattern);
+            Object* obj_pattern = qjs_ctx->get_object_registry()->get_object(h_pattern);
+            arg_pattern = Ref<TileMapPattern>(Object::cast_to<TileMapPattern>(obj_pattern));
+        }
+        JS_FreeValue(ctx, jh_pattern);
+    }
+
+    typed_obj->set_pattern(arg_position, arg_pattern);
+    return JS_UNDEFINED;
+}
+
 // Method: TileMapLayer::update_internals
 static JSValue js_TileMapLayer_update_internals(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -503,6 +558,61 @@ static JSValue js_TileMapLayer_notify_runtime_tile_data_update(JSContext* ctx, J
 
     typed_obj->notify_runtime_tile_data_update();
     return JS_UNDEFINED;
+}
+
+// Method: TileMapLayer::map_pattern
+static JSValue js_TileMapLayer_map_pattern(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMapLayer.map_pattern: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMapLayer.map_pattern: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMapLayer.map_pattern: invalid or freed object");
+    }
+
+    TileMapLayer* typed_obj = Object::cast_to<TileMapLayer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMapLayer.map_pattern: object is not a TileMapLayer");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "TileMapLayer.map_pattern: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Vector2i arg_position_in_tilemap = qjs_ctx->js_to_variant(argv[1]);
+    Vector2i arg_coords_in_pattern = qjs_ctx->js_to_variant(argv[2]);
+    Ref<TileMapPattern> arg_pattern;
+    if (JS_IsNumber(argv[3])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_pattern; JS_ToInt64(ctx, &h_pattern, argv[3]);
+        Object* obj_pattern = qjs_ctx->get_object_registry()->get_object(h_pattern);
+        arg_pattern = Ref<TileMapPattern>(Object::cast_to<TileMapPattern>(obj_pattern));
+    } else {
+        // Object with __handle property
+        JSValue jh_pattern = JS_GetPropertyStr(ctx, argv[3], "__handle");
+        if (!JS_IsUndefined(jh_pattern)) {
+            int64_t h_pattern; JS_ToInt64(ctx, &h_pattern, jh_pattern);
+            Object* obj_pattern = qjs_ctx->get_object_registry()->get_object(h_pattern);
+            arg_pattern = Ref<TileMapPattern>(Object::cast_to<TileMapPattern>(obj_pattern));
+        }
+        JS_FreeValue(ctx, jh_pattern);
+    }
+
+    Vector2i result = typed_obj->map_pattern(arg_position_in_tilemap, arg_coords_in_pattern, arg_pattern);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: TileMapLayer::get_neighbor_cell
@@ -1329,10 +1439,14 @@ void register_TileMapLayer_bindings(JSContext* ctx, JSValue global, JSValue clas
         JS_NewCFunction(ctx, js_TileMapLayer_is_cell_transposed, "is_cell_transposed", 2));
     JS_SetPropertyStr(ctx, methods, "get_used_rect",
         JS_NewCFunction(ctx, js_TileMapLayer_get_used_rect, "get_used_rect", 1));
+    JS_SetPropertyStr(ctx, methods, "set_pattern",
+        JS_NewCFunction(ctx, js_TileMapLayer_set_pattern, "set_pattern", 3));
     JS_SetPropertyStr(ctx, methods, "update_internals",
         JS_NewCFunction(ctx, js_TileMapLayer_update_internals, "update_internals", 1));
     JS_SetPropertyStr(ctx, methods, "notify_runtime_tile_data_update",
         JS_NewCFunction(ctx, js_TileMapLayer_notify_runtime_tile_data_update, "notify_runtime_tile_data_update", 1));
+    JS_SetPropertyStr(ctx, methods, "map_pattern",
+        JS_NewCFunction(ctx, js_TileMapLayer_map_pattern, "map_pattern", 4));
     JS_SetPropertyStr(ctx, methods, "get_neighbor_cell",
         JS_NewCFunction(ctx, js_TileMapLayer_get_neighbor_cell, "get_neighbor_cell", 3));
     JS_SetPropertyStr(ctx, methods, "map_to_local",

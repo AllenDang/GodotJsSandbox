@@ -152,7 +152,7 @@ class MethodArg:
 
 @dataclass
 class MethodInfo:
-    name: str
+    name: str  # Name from API (used for function naming)
     return_type: str
     return_cpp_type: str
     return_conversion: str
@@ -161,6 +161,8 @@ class MethodInfo:
     is_static: bool = False
     is_virtual: bool = False
     required_arg_count: int = 0  # Number of required arguments (without defaults)
+    js_name: str = ""  # Name to expose in JS (if different from API name)
+    cpp_name: str = ""  # Actual C++ method name to call (if different from API name)
 
 
 @dataclass
@@ -233,6 +235,20 @@ class BindingGenerator:
             return True
         return method_name in blocked_methods.get(class_name, [])
 
+    def get_method_alias(self, class_name: str, method_name: str) -> str | None:
+        """Get JS alias for a method if one is defined.
+        Returns the alias name, or None if no alias exists."""
+        aliases = self.blocklist.get("method_aliases", {})
+        class_aliases = aliases.get(class_name, {})
+        return class_aliases.get(method_name)
+
+    def get_method_cpp_name(self, class_name: str, method_name: str) -> str:
+        """Get the actual C++ method name to call (handles API vs C++ name mismatches).
+        For example, 'get_node' in the API maps to 'get_node_internal' in C++."""
+        cpp_names = self.blocklist.get("method_cpp_names", {})
+        class_cpp_names = cpp_names.get(class_name, {})
+        return class_cpp_names.get(method_name, method_name)
+
     def is_property_blocked(self, class_name: str, property_name: str) -> bool:
         blocked_props = self.blocklist.get("blocked_properties", {})
         if property_name in blocked_props.get("Object", []):
@@ -262,9 +278,11 @@ class BindingGenerator:
         if godot_type in GODOT_TO_CPP_TYPE:
             return GODOT_TO_CPP_TYPE[godot_type]
 
-        # Object types - return as pointer
-        # Note: RefCounted types (Resource, etc.) are not supported as they require
-        # full type definitions - they must be accessed via methods that return Variant
+        # RefCounted types use Ref<T> smart pointers
+        if self.is_refcounted_type(godot_type):
+            return f"Ref<{godot_type}>"
+
+        # Node and other Object types use raw pointers
         return godot_type + "*"
 
     def convert_default_value(self, default_value: str, cpp_type: str, godot_type: str = None) -> str:
@@ -397,6 +415,26 @@ class BindingGenerator:
         if "::" in cpp_type and not cpp_type.endswith("*"):
             return f"int64_t tmp_{arg_name}; JS_ToInt64(ctx, &tmp_{arg_name}, argv[{arg_index}]); {cpp_type} arg_{arg_name} = ({cpp_type})tmp_{arg_name};"
 
+        # Ref<T> types (RefCounted objects) - extract handle and wrap in Ref
+        if cpp_type.startswith("Ref<") and cpp_type.endswith(">"):
+            inner_type = cpp_type[4:-1]  # Extract T from Ref<T>
+            return f"""{cpp_type} arg_{arg_name};
+    if (JS_IsNumber(argv[{arg_index}])) {{
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_{arg_name}; JS_ToInt64(ctx, &h_{arg_name}, argv[{arg_index}]);
+        Object* obj_{arg_name} = qjs_ctx->get_object_registry()->get_object(h_{arg_name});
+        arg_{arg_name} = Ref<{inner_type}>(Object::cast_to<{inner_type}>(obj_{arg_name}));
+    }} else {{
+        // Object with __handle property
+        JSValue jh_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "__handle");
+        if (!JS_IsUndefined(jh_{arg_name})) {{
+            int64_t h_{arg_name}; JS_ToInt64(ctx, &h_{arg_name}, jh_{arg_name});
+            Object* obj_{arg_name} = qjs_ctx->get_object_registry()->get_object(h_{arg_name});
+            arg_{arg_name} = Ref<{inner_type}>(Object::cast_to<{inner_type}>(obj_{arg_name}));
+        }}
+        JS_FreeValue(ctx, jh_{arg_name});
+    }}"""
+
         # Object pointer types - extract handle and look up object
         # Handle both: direct integer handle (from JS proxy unwrap) OR object with __handle property
         # Use reinterpret_cast to handle forward-declared types (runtime type safety handled by Godot)
@@ -468,18 +506,66 @@ class BindingGenerator:
             return "return JS_UNDEFINED;"
 
         # Enum types - return as int
-        if "::" in cpp_type and not cpp_type.endswith("*"):
+        if "::" in cpp_type and not cpp_type.endswith("*") and not cpp_type.startswith("Ref<"):
             return f"return JS_NewInt64(ctx, (int64_t){var_name});"
 
-        # Object pointer types - wrap in JS object with handle
+        # Ref<T> types (RefCounted objects) - unwrap and wrap as JS object
+        if cpp_type.startswith("Ref<") and cpp_type.endswith(">"):
+            return f"""if ({var_name}.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = {var_name}.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {{
+        JSValue args[2] = {{ JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) }};
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }}
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;"""
+
+        # Object pointer types - wrap with JS Proxy using __wrap_existing_godot_object
         # Use reinterpret_cast to handle forward-declared types (all Node types inherit from Object)
         if cpp_type.endswith("*"):
             return f"""if (!{var_name}) return JS_NULL;
     Object* ret_obj_ptr = reinterpret_cast<Object*>({var_name});
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {{
+        JSValue args[2] = {{ JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) }};
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }}
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
     JSValue ret_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
-    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_obj_ptr->get_class().utf8().get_data()));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;"""
 
         # Default: use variant conversion
@@ -522,9 +608,9 @@ class BindingGenerator:
         if godot_type in simple_types:
             return True
 
-        # Object pointer types - only support Node subclasses (not Resource/RefCounted)
-        # Resource types return Ref<T> which needs special include handling
-        if self.is_node_type(godot_type):
+        # Object pointer types - support Node and RefCounted subclasses
+        # Node types use T*, RefCounted types use Ref<T>
+        if self.is_node_type(godot_type) or self.is_refcounted_type(godot_type):
             return True
 
         return False
@@ -590,11 +676,9 @@ class BindingGenerator:
         if godot_type.startswith("bitfield::"):
             return False
 
-        # For object return types, allow any Node subclass
-        # We cast to Object* in the generated code to handle forward-declared types
-        # Note: RefCounted/Resource types are not supported - they require Ref<T>
-        # which needs full type definitions that may not be included
-        if self.is_node_type(godot_type):
+        # For object return types, allow Node and RefCounted subclasses
+        # Node types use T*, RefCounted types use Ref<T>
+        if self.is_node_type(godot_type) or self.is_refcounted_type(godot_type):
             return True
 
         return False
@@ -702,6 +786,13 @@ class BindingGenerator:
         # Calculate required argument count (args without default values)
         method.required_arg_count = sum(1 for arg in method.arguments if arg.default_value is None)
 
+        # Check for method alias (e.g., get_node_internal -> get_node in JS)
+        alias = self.get_method_alias(class_name, method_name)
+        method.js_name = alias if alias else method_name
+
+        # Check for C++ name override (e.g., API 'get_node' -> C++ 'get_node_internal')
+        method.cpp_name = self.get_method_cpp_name(class_name, method_name)
+
         return method
 
     def process_property(self, class_name: str, prop_data: dict, class_methods: list) -> PropertyInfo | None:
@@ -715,9 +806,14 @@ class BindingGenerator:
         prop_type = prop_data.get("type", "Variant")
 
         # Skip complex types that we don't support
-        # Only allow simple types (RefCounted types require additional includes per-class)
+        # Only allow simple types - explicitly exclude RefCounted types for properties
+        # because getters return Ref<T> which requires different handling
         is_simple = self.is_simple_type(prop_type)
         if not is_simple:
+            return None
+
+        # Properties with RefCounted types return Ref<T>, not T*, so skip them
+        if self.is_refcounted_type(prop_type):
             return None
 
         getter = prop_data.get("getter", "")
@@ -850,6 +946,9 @@ class BindingGenerator:
 
         class_methods = class_data.get("methods", [])
 
+        # Track RefCounted types that need extra includes
+        refcounted_includes = set()
+
         # Process methods (skip property accessors and conflicting names)
         for method_data in class_methods:
             method_name = method_data.get("name", "")
@@ -860,6 +959,17 @@ class BindingGenerator:
             method = self.process_method(class_name, method_data)
             if method:
                 class_info.methods.append(method)
+                # Collect RefCounted types used in method arguments and return type
+                return_type = method_data.get("return_value", {}).get("type", "void")
+                if self.is_refcounted_type(return_type):
+                    refcounted_includes.add(self.class_name_to_header(return_type))
+                for arg_data in method_data.get("arguments", []):
+                    arg_type = arg_data.get("type", "Variant")
+                    if self.is_refcounted_type(arg_type):
+                        refcounted_includes.add(self.class_name_to_header(arg_type))
+
+        # Add extra includes for RefCounted types
+        class_info.extra_includes = list(refcounted_includes)
 
         # Get all methods including from parent classes for property getter/setter lookup
         all_methods = self.get_all_methods_for_class(class_name)

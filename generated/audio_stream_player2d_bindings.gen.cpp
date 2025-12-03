@@ -8,6 +8,7 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/audio_stream_player2d.hpp>
+#include <godot_cpp/classes/audio_stream_playback.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -201,6 +202,61 @@ static JSValue js_AudioStreamPlayer2D_has_stream_playback(JSContext* ctx, JSValu
 
     bool result = typed_obj->has_stream_playback();
     return JS_NewBool(ctx, result);
+}
+
+// Method: AudioStreamPlayer2D::get_stream_playback
+static JSValue js_AudioStreamPlayer2D_get_stream_playback(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AudioStreamPlayer2D.get_stream_playback: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AudioStreamPlayer2D.get_stream_playback: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AudioStreamPlayer2D.get_stream_playback: invalid or freed object");
+    }
+
+    AudioStreamPlayer2D* typed_obj = Object::cast_to<AudioStreamPlayer2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AudioStreamPlayer2D.get_stream_playback: object is not a AudioStreamPlayer2D");
+    }
+
+    Ref<AudioStreamPlayback> result = typed_obj->get_stream_playback();
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
 }
 
 // Property getter: AudioStreamPlayer2D::volume_db
@@ -1012,6 +1068,8 @@ void register_AudioStreamPlayer2D_bindings(JSContext* ctx, JSValue global, JSVal
         JS_NewCFunction(ctx, js_AudioStreamPlayer2D_get_playback_position, "get_playback_position", 1));
     JS_SetPropertyStr(ctx, methods, "has_stream_playback",
         JS_NewCFunction(ctx, js_AudioStreamPlayer2D_has_stream_playback, "has_stream_playback", 1));
+    JS_SetPropertyStr(ctx, methods, "get_stream_playback",
+        JS_NewCFunction(ctx, js_AudioStreamPlayer2D_get_stream_playback, "get_stream_playback", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

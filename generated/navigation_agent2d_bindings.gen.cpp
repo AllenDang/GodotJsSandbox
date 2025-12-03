@@ -8,6 +8,7 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/navigation_agent2d.hpp>
+#include <godot_cpp/classes/navigation_path_query_result2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -245,6 +246,61 @@ static JSValue js_NavigationAgent2D_distance_to_target(JSContext* ctx, JSValueCo
 
     double result = typed_obj->distance_to_target();
     return JS_NewFloat64(ctx, result);
+}
+
+// Method: NavigationAgent2D::get_current_navigation_result
+static JSValue js_NavigationAgent2D_get_current_navigation_result(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent2D.get_current_navigation_result: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent2D.get_current_navigation_result: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent2D.get_current_navigation_result: invalid or freed object");
+    }
+
+    NavigationAgent2D* typed_obj = Object::cast_to<NavigationAgent2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent2D.get_current_navigation_result: object is not a NavigationAgent2D");
+    }
+
+    Ref<NavigationPathQueryResult2D> result = typed_obj->get_current_navigation_result();
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
 }
 
 // Method: NavigationAgent2D::get_current_navigation_path_index
@@ -2379,6 +2435,8 @@ void register_NavigationAgent2D_bindings(JSContext* ctx, JSValue global, JSValue
         JS_NewCFunction(ctx, js_NavigationAgent2D_set_velocity_forced, "set_velocity_forced", 2));
     JS_SetPropertyStr(ctx, methods, "distance_to_target",
         JS_NewCFunction(ctx, js_NavigationAgent2D_distance_to_target, "distance_to_target", 1));
+    JS_SetPropertyStr(ctx, methods, "get_current_navigation_result",
+        JS_NewCFunction(ctx, js_NavigationAgent2D_get_current_navigation_result, "get_current_navigation_result", 1));
     JS_SetPropertyStr(ctx, methods, "get_current_navigation_path_index",
         JS_NewCFunction(ctx, js_NavigationAgent2D_get_current_navigation_path_index, "get_current_navigation_path_index", 1));
     JS_SetPropertyStr(ctx, methods, "is_target_reached",

@@ -2,6 +2,7 @@
 #define GODOT_JS_RUNTIME_JS_SANDBOX_H
 
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -48,6 +49,12 @@ public:
     godot::String get_last_error() const { return last_error_; }
     bool is_valid() const;
     void reset();
+
+    // Context access (for JSScriptInstance integration)
+    QuickJSContext* get_context() const { return context_.get(); }
+
+    // Create a script that uses this sandbox's context
+    godot::Ref<godot::Script> create_script(const godot::String &source_code);
 
 protected:
     static void _bind_methods();

@@ -336,6 +336,34 @@ void GodotBindings::setup_godot_class_constructor() {
                     };
                 }
 
+                // Support get_<property>() method pattern (e.g., get_name() for name property)
+                if (prop.startsWith('get_')) {
+                    var propName = prop.substring(4);  // Remove 'get_' prefix
+                    var propBinding = __findBinding(target.__class, propName, 'property');
+                    if (propBinding && propBinding.get) {
+                        var handle = target.__handle;
+                        return function() {
+                            return propBinding.get(handle);
+                        };
+                    }
+                }
+
+                // Support set_<property>() method pattern (e.g., set_name() for name property)
+                if (prop.startsWith('set_')) {
+                    var propName = prop.substring(4);  // Remove 'set_' prefix
+                    var propBinding = __findBinding(target.__class, propName, 'property');
+                    if (propBinding && propBinding.set) {
+                        var handle = target.__handle;
+                        return function(value) {
+                            var unwrapped = value;
+                            if (value && typeof value === 'object' && value.__handle !== undefined) {
+                                unwrapped = value.__handle;
+                            }
+                            propBinding.set(handle, unwrapped);
+                        };
+                    }
+                }
+
                 var propBinding = __findBinding(target.__class, prop, 'property');
                 if (propBinding && propBinding.get) {
                     return propBinding.get(target.__handle);
@@ -364,6 +392,11 @@ void GodotBindings::setup_godot_class_constructor() {
             has: function(target, prop) {
                 if (prop === '__handle' || prop === '__class') return true;
                 if (prop === 'connect') return true;
+                // Check for get_/set_ method patterns
+                if (prop.startsWith('get_') || prop.startsWith('set_')) {
+                    var propName = prop.substring(4);
+                    if (__findBinding(target.__class, propName, 'property') !== null) return true;
+                }
                 return __findBinding(target.__class, prop, 'method') !== null ||
                        __findBinding(target.__class, prop, 'property') !== null;
             }

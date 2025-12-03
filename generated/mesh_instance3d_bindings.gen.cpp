@@ -8,6 +8,10 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/mesh_instance3d.hpp>
+#include <godot_cpp/classes/skin_reference.hpp>
+#include <godot_cpp/classes/material.hpp>
+#include <godot_cpp/classes/mesh_convex_decomposition_settings.hpp>
+#include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -31,6 +35,61 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
     } catch (...) { \
         return JS_ThrowInternalError(ctx, "MeshInstance3D: unknown error"); \
     }
+
+// Method: MeshInstance3D::get_skin_reference
+static JSValue js_MeshInstance3D_get_skin_reference(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_skin_reference: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_skin_reference: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_skin_reference: invalid or freed object");
+    }
+
+    MeshInstance3D* typed_obj = Object::cast_to<MeshInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_skin_reference: object is not a MeshInstance3D");
+    }
+
+    Ref<SkinReference> result = typed_obj->get_skin_reference();
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
 
 // Method: MeshInstance3D::get_surface_override_material_count
 static JSValue js_MeshInstance3D_get_surface_override_material_count(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
@@ -60,6 +119,186 @@ static JSValue js_MeshInstance3D_get_surface_override_material_count(JSContext* 
 
     int64_t result = typed_obj->get_surface_override_material_count();
     return JS_NewInt64(ctx, result);
+}
+
+// Method: MeshInstance3D::set_surface_override_material
+static JSValue js_MeshInstance3D_set_surface_override_material(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.set_surface_override_material: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.set_surface_override_material: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.set_surface_override_material: invalid or freed object");
+    }
+
+    MeshInstance3D* typed_obj = Object::cast_to<MeshInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.set_surface_override_material: object is not a MeshInstance3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.set_surface_override_material: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_surface; JS_ToInt64(ctx, &arg_surface, argv[1]);
+    Ref<Material> arg_material;
+    if (JS_IsNumber(argv[2])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_material; JS_ToInt64(ctx, &h_material, argv[2]);
+        Object* obj_material = qjs_ctx->get_object_registry()->get_object(h_material);
+        arg_material = Ref<Material>(Object::cast_to<Material>(obj_material));
+    } else {
+        // Object with __handle property
+        JSValue jh_material = JS_GetPropertyStr(ctx, argv[2], "__handle");
+        if (!JS_IsUndefined(jh_material)) {
+            int64_t h_material; JS_ToInt64(ctx, &h_material, jh_material);
+            Object* obj_material = qjs_ctx->get_object_registry()->get_object(h_material);
+            arg_material = Ref<Material>(Object::cast_to<Material>(obj_material));
+        }
+        JS_FreeValue(ctx, jh_material);
+    }
+
+    typed_obj->set_surface_override_material(arg_surface, arg_material);
+    return JS_UNDEFINED;
+}
+
+// Method: MeshInstance3D::get_surface_override_material
+static JSValue js_MeshInstance3D_get_surface_override_material(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_surface_override_material: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_surface_override_material: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_surface_override_material: invalid or freed object");
+    }
+
+    MeshInstance3D* typed_obj = Object::cast_to<MeshInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_surface_override_material: object is not a MeshInstance3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_surface_override_material: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_surface; JS_ToInt64(ctx, &arg_surface, argv[1]);
+
+    Ref<Material> result = typed_obj->get_surface_override_material(arg_surface);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Method: MeshInstance3D::get_active_material
+static JSValue js_MeshInstance3D_get_active_material(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_active_material: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_active_material: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_active_material: invalid or freed object");
+    }
+
+    MeshInstance3D* typed_obj = Object::cast_to<MeshInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_active_material: object is not a MeshInstance3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.get_active_material: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_surface; JS_ToInt64(ctx, &arg_surface, argv[1]);
+
+    Ref<Material> result = typed_obj->get_active_material(arg_surface);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
 }
 
 // Method: MeshInstance3D::create_trimesh_collision
@@ -138,6 +377,65 @@ static JSValue js_MeshInstance3D_create_convex_collision(JSContext* ctx, JSValue
     }
 
     typed_obj->create_convex_collision(arg_clean, arg_simplify);
+    return JS_UNDEFINED;
+}
+
+// Method: MeshInstance3D::create_multiple_convex_collisions
+static JSValue js_MeshInstance3D_create_multiple_convex_collisions(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.create_multiple_convex_collisions: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.create_multiple_convex_collisions: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.create_multiple_convex_collisions: invalid or freed object");
+    }
+
+    MeshInstance3D* typed_obj = Object::cast_to<MeshInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.create_multiple_convex_collisions: object is not a MeshInstance3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.create_multiple_convex_collisions: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: settings (default: nullptr)
+    Ref<MeshConvexDecompositionSettings> arg_settings = nullptr;
+    if (argc > 1) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Ref<MeshConvexDecompositionSettings> arg_settings;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_settings; JS_ToInt64(ctx, &h_settings, argv[1]);
+        Object* obj_settings = qjs_ctx->get_object_registry()->get_object(h_settings);
+        arg_settings = Ref<MeshConvexDecompositionSettings>(Object::cast_to<MeshConvexDecompositionSettings>(obj_settings));
+    } else {
+        // Object with __handle property
+        JSValue jh_settings = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_settings)) {
+            int64_t h_settings; JS_ToInt64(ctx, &h_settings, jh_settings);
+            Object* obj_settings = qjs_ctx->get_object_registry()->get_object(h_settings);
+            arg_settings = Ref<MeshConvexDecompositionSettings>(Object::cast_to<MeshConvexDecompositionSettings>(obj_settings));
+        }
+        JS_FreeValue(ctx, jh_settings);
+    }
+    }
+
+    typed_obj->create_multiple_convex_collisions(arg_settings);
     return JS_UNDEFINED;
 }
 
@@ -316,6 +614,174 @@ static JSValue js_MeshInstance3D_create_debug_tangents(JSContext* ctx, JSValueCo
     return JS_UNDEFINED;
 }
 
+// Method: MeshInstance3D::bake_mesh_from_current_blend_shape_mix
+static JSValue js_MeshInstance3D_bake_mesh_from_current_blend_shape_mix(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.bake_mesh_from_current_blend_shape_mix: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.bake_mesh_from_current_blend_shape_mix: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.bake_mesh_from_current_blend_shape_mix: invalid or freed object");
+    }
+
+    MeshInstance3D* typed_obj = Object::cast_to<MeshInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.bake_mesh_from_current_blend_shape_mix: object is not a MeshInstance3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.bake_mesh_from_current_blend_shape_mix: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: existing (default: nullptr)
+    Ref<ArrayMesh> arg_existing = nullptr;
+    if (argc > 1) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Ref<ArrayMesh> arg_existing;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_existing; JS_ToInt64(ctx, &h_existing, argv[1]);
+        Object* obj_existing = qjs_ctx->get_object_registry()->get_object(h_existing);
+        arg_existing = Ref<ArrayMesh>(Object::cast_to<ArrayMesh>(obj_existing));
+    } else {
+        // Object with __handle property
+        JSValue jh_existing = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_existing)) {
+            int64_t h_existing; JS_ToInt64(ctx, &h_existing, jh_existing);
+            Object* obj_existing = qjs_ctx->get_object_registry()->get_object(h_existing);
+            arg_existing = Ref<ArrayMesh>(Object::cast_to<ArrayMesh>(obj_existing));
+        }
+        JS_FreeValue(ctx, jh_existing);
+    }
+    }
+
+    Ref<ArrayMesh> result = typed_obj->bake_mesh_from_current_blend_shape_mix(arg_existing);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Method: MeshInstance3D::bake_mesh_from_current_skeleton_pose
+static JSValue js_MeshInstance3D_bake_mesh_from_current_skeleton_pose(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.bake_mesh_from_current_skeleton_pose: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.bake_mesh_from_current_skeleton_pose: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.bake_mesh_from_current_skeleton_pose: invalid or freed object");
+    }
+
+    MeshInstance3D* typed_obj = Object::cast_to<MeshInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.bake_mesh_from_current_skeleton_pose: object is not a MeshInstance3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.bake_mesh_from_current_skeleton_pose: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: existing (default: nullptr)
+    Ref<ArrayMesh> arg_existing = nullptr;
+    if (argc > 1) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Ref<ArrayMesh> arg_existing;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_existing; JS_ToInt64(ctx, &h_existing, argv[1]);
+        Object* obj_existing = qjs_ctx->get_object_registry()->get_object(h_existing);
+        arg_existing = Ref<ArrayMesh>(Object::cast_to<ArrayMesh>(obj_existing));
+    } else {
+        // Object with __handle property
+        JSValue jh_existing = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_existing)) {
+            int64_t h_existing; JS_ToInt64(ctx, &h_existing, jh_existing);
+            Object* obj_existing = qjs_ctx->get_object_registry()->get_object(h_existing);
+            arg_existing = Ref<ArrayMesh>(Object::cast_to<ArrayMesh>(obj_existing));
+        }
+        JS_FreeValue(ctx, jh_existing);
+    }
+    }
+
+    Ref<ArrayMesh> result = typed_obj->bake_mesh_from_current_skeleton_pose(arg_existing);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
 // Property getter: MeshInstance3D::skeleton
 static JSValue js_MeshInstance3D_get_skeleton(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -383,12 +849,22 @@ void register_MeshInstance3D_bindings(JSContext* ctx, JSValue global, JSValue cl
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "get_skin_reference",
+        JS_NewCFunction(ctx, js_MeshInstance3D_get_skin_reference, "get_skin_reference", 1));
     JS_SetPropertyStr(ctx, methods, "get_surface_override_material_count",
         JS_NewCFunction(ctx, js_MeshInstance3D_get_surface_override_material_count, "get_surface_override_material_count", 1));
+    JS_SetPropertyStr(ctx, methods, "set_surface_override_material",
+        JS_NewCFunction(ctx, js_MeshInstance3D_set_surface_override_material, "set_surface_override_material", 3));
+    JS_SetPropertyStr(ctx, methods, "get_surface_override_material",
+        JS_NewCFunction(ctx, js_MeshInstance3D_get_surface_override_material, "get_surface_override_material", 2));
+    JS_SetPropertyStr(ctx, methods, "get_active_material",
+        JS_NewCFunction(ctx, js_MeshInstance3D_get_active_material, "get_active_material", 2));
     JS_SetPropertyStr(ctx, methods, "create_trimesh_collision",
         JS_NewCFunction(ctx, js_MeshInstance3D_create_trimesh_collision, "create_trimesh_collision", 1));
     JS_SetPropertyStr(ctx, methods, "create_convex_collision",
         JS_NewCFunction(ctx, js_MeshInstance3D_create_convex_collision, "create_convex_collision", 3));
+    JS_SetPropertyStr(ctx, methods, "create_multiple_convex_collisions",
+        JS_NewCFunction(ctx, js_MeshInstance3D_create_multiple_convex_collisions, "create_multiple_convex_collisions", 2));
     JS_SetPropertyStr(ctx, methods, "get_blend_shape_count",
         JS_NewCFunction(ctx, js_MeshInstance3D_get_blend_shape_count, "get_blend_shape_count", 1));
     JS_SetPropertyStr(ctx, methods, "find_blend_shape_by_name",
@@ -399,6 +875,10 @@ void register_MeshInstance3D_bindings(JSContext* ctx, JSValue global, JSValue cl
         JS_NewCFunction(ctx, js_MeshInstance3D_set_blend_shape_value, "set_blend_shape_value", 3));
     JS_SetPropertyStr(ctx, methods, "create_debug_tangents",
         JS_NewCFunction(ctx, js_MeshInstance3D_create_debug_tangents, "create_debug_tangents", 1));
+    JS_SetPropertyStr(ctx, methods, "bake_mesh_from_current_blend_shape_mix",
+        JS_NewCFunction(ctx, js_MeshInstance3D_bake_mesh_from_current_blend_shape_mix, "bake_mesh_from_current_blend_shape_mix", 2));
+    JS_SetPropertyStr(ctx, methods, "bake_mesh_from_current_skeleton_pose",
+        JS_NewCFunction(ctx, js_MeshInstance3D_bake_mesh_from_current_skeleton_pose, "bake_mesh_from_current_skeleton_pose", 2));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

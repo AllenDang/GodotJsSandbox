@@ -110,10 +110,13 @@ func run_test(test_name: String) -> Dictionary:
 
 		"test_large_array_allocation_limited":
 			# Very large single allocation should fail
+			# Note: new Array(N) creates a sparse array that doesn't allocate memory
+			# We need to actually fill the array to trigger memory allocation
 			var code = """
 				try {
 					// Try to allocate array larger than memory limit
-					var huge = new Array(100000000);
+					// Using fill() to force actual memory allocation
+					var huge = new Array(50000000).fill(0);
 					false;
 				} catch (e) {
 					true;

@@ -76,6 +76,8 @@ void register_PointLight2D_bindings(JSContext* ctx, JSValue global, JSValue clas
 void register_ProgressBar_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RayCast2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RayCast3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RefCounted_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_Resource_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RichTextLabel_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RigidBody2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RigidBody3D_bindings(JSContext* ctx, JSValue global, JSValue classes);

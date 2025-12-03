@@ -548,39 +548,92 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
         return 0;
     }
 
+    // Parse method names from source code (same logic as JSScript::parse_script)
+    Vector<String> method_names;
+    int pos = 0;
+    while ((pos = source.find("function ", pos)) >= 0) {
+        pos += 9; // Skip "function "
+        // Skip whitespace
+        while (pos < source.length() && (source[pos] == ' ' || source[pos] == '\t')) {
+            pos++;
+        }
+        // Read function name
+        int name_start = pos;
+        while (pos < source.length()) {
+            char32_t c = source[pos];
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                (c >= '0' && c <= '9') || c == '_' || c == '$') {
+                pos++;
+            } else {
+                break;
+            }
+        }
+        int name_end = pos;
+        // Skip whitespace before '('
+        while (pos < source.length() && (source[pos] == ' ' || source[pos] == '\t')) {
+            pos++;
+        }
+        // Verify it's followed by '('
+        if (name_end > name_start && pos < source.length() && source[pos] == '(') {
+            String method_name = source.substr(name_start, name_end - name_start);
+            if (!method_name.is_empty()) {
+                method_names.push_back(method_name);
+            }
+        }
+    }
+
+    // Build JSON array of method names
+    String method_names_json = "[";
+    for (int i = 0; i < method_names.size(); i++) {
+        if (i > 0) method_names_json += ",";
+        method_names_json += "\"" + method_names[i] + "\"";
+    }
+    method_names_json += "]";
+
     // Wrap the script source to create an object with methods
     // The script can define _ready(), _process(delta), etc. as functions
-    // We create an object that captures these as methods
+    // We create an object that captures these as methods and binds 'this' to the owner node
     String wrapped_source = String(R"(
 (function() {
     var __instance = {};
-    var __owner = null;
+    var __owner_proxy = null;
+    var __method_names = )") + method_names_json + String(R"(;
 
     // Store owner reference for 'this' context
-    __instance.__set_owner = function(ownerHandle) {
-        __owner = ownerHandle;
+    __instance.__set_owner = function(ownerHandle, ownerClass) {
+        if (typeof __wrap_existing_godot_object === 'function') {
+            __owner_proxy = __wrap_existing_godot_object(ownerHandle, ownerClass);
+        } else {
+            __owner_proxy = { __handle: ownerHandle, __class: ownerClass };
+        }
     };
 
-    // Execute the script in this scope
-    (function() {
+    __instance.__get_owner = function() {
+        return __owner_proxy;
+    };
+
+    // Helper to register a function to the instance
+    var __registerMethod = function(name, fn) {
+        if (typeof fn === 'function' && !__instance[name]) {
+            __instance[name] = function() {
+                return fn.apply(__owner_proxy, arguments);
+            };
+        }
+    };
+
+    // Execute user script and capture functions
+    (function(__reg, __names) {
+        // User code - functions will be hoisted within this scope
 )") + source + String(R"(
 
-        // Capture any defined lifecycle methods
-        if (typeof _ready === 'function') __instance._ready = _ready;
-        if (typeof _process === 'function') __instance._process = _process;
-        if (typeof _physics_process === 'function') __instance._physics_process = _physics_process;
-        if (typeof _input === 'function') __instance._input = _input;
-        if (typeof _unhandled_input === 'function') __instance._unhandled_input = _unhandled_input;
-        if (typeof _enter_tree === 'function') __instance._enter_tree = _enter_tree;
-        if (typeof _exit_tree === 'function') __instance._exit_tree = _exit_tree;
-
-        // Also capture any other properties/methods defined
-        for (var key in this) {
-            if (this.hasOwnProperty(key) && typeof this[key] === 'function' && !__instance[key]) {
-                __instance[key] = this[key];
-            }
+        // Capture all parsed method names
+        for (var i = 0; i < __names.length; i++) {
+            try {
+                var fn = eval(__names[i]);
+                if (typeof fn === 'function') __reg(__names[i], fn);
+            } catch(e) {}
         }
-    })();
+    })(__registerMethod, __method_names);
 
     return __instance;
 })()
@@ -626,12 +679,17 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
     // Set the owner handle on the instance if we have object registry
     if (owner && object_registry_) {
         uint64_t owner_handle = object_registry_->get_or_create_handle(owner);
+        String owner_class = owner->get_class();
         JSValue set_owner_fn = JS_GetPropertyStr(ctx_, result, "__set_owner");
         if (JS_IsFunction(ctx_, set_owner_fn)) {
-            JSValue args[1] = { JS_NewInt64(ctx_, owner_handle) };
-            JSValue call_result = JS_Call(ctx_, set_owner_fn, result, 1, args);
+            JSValue args[2] = {
+                JS_NewInt64(ctx_, owner_handle),
+                JS_NewString(ctx_, owner_class.utf8().get_data())
+            };
+            JSValue call_result = JS_Call(ctx_, set_owner_fn, result, 2, args);
             JS_FreeValue(ctx_, call_result);
             JS_FreeValue(ctx_, args[0]);
+            JS_FreeValue(ctx_, args[1]);
         }
         JS_FreeValue(ctx_, set_owner_fn);
     }

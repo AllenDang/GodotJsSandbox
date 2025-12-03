@@ -8,6 +8,7 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/character_body3d.hpp>
+#include <godot_cpp/classes/kinematic_collision3d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -592,6 +593,124 @@ static JSValue js_CharacterBody3D_get_slide_collision_count(JSContext* ctx, JSVa
 
     int64_t result = typed_obj->get_slide_collision_count();
     return JS_NewInt64(ctx, result);
+}
+
+// Method: CharacterBody3D::get_slide_collision
+static JSValue js_CharacterBody3D_get_slide_collision(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CharacterBody3D.get_slide_collision: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CharacterBody3D.get_slide_collision: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CharacterBody3D.get_slide_collision: invalid or freed object");
+    }
+
+    CharacterBody3D* typed_obj = Object::cast_to<CharacterBody3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CharacterBody3D.get_slide_collision: object is not a CharacterBody3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CharacterBody3D.get_slide_collision: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_slide_idx; JS_ToInt64(ctx, &arg_slide_idx, argv[1]);
+
+    Ref<KinematicCollision3D> result = typed_obj->get_slide_collision(arg_slide_idx);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Method: CharacterBody3D::get_last_slide_collision
+static JSValue js_CharacterBody3D_get_last_slide_collision(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CharacterBody3D.get_last_slide_collision: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CharacterBody3D.get_last_slide_collision: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CharacterBody3D.get_last_slide_collision: invalid or freed object");
+    }
+
+    CharacterBody3D* typed_obj = Object::cast_to<CharacterBody3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CharacterBody3D.get_last_slide_collision: object is not a CharacterBody3D");
+    }
+
+    Ref<KinematicCollision3D> result = typed_obj->get_last_slide_collision();
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
 }
 
 // Property getter: CharacterBody3D::motion_mode
@@ -1577,6 +1696,10 @@ void register_CharacterBody3D_bindings(JSContext* ctx, JSValue global, JSValue c
         JS_NewCFunction(ctx, js_CharacterBody3D_get_platform_angular_velocity, "get_platform_angular_velocity", 1));
     JS_SetPropertyStr(ctx, methods, "get_slide_collision_count",
         JS_NewCFunction(ctx, js_CharacterBody3D_get_slide_collision_count, "get_slide_collision_count", 1));
+    JS_SetPropertyStr(ctx, methods, "get_slide_collision",
+        JS_NewCFunction(ctx, js_CharacterBody3D_get_slide_collision, "get_slide_collision", 2));
+    JS_SetPropertyStr(ctx, methods, "get_last_slide_collision",
+        JS_NewCFunction(ctx, js_CharacterBody3D_get_last_slide_collision, "get_last_slide_collision", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

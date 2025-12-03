@@ -8,6 +8,7 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/collision_shape3d.hpp>
+#include <godot_cpp/classes/resource.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -31,6 +32,59 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
     } catch (...) { \
         return JS_ThrowInternalError(ctx, "CollisionShape3D: unknown error"); \
     }
+
+// Method: CollisionShape3D::resource_changed
+static JSValue js_CollisionShape3D_resource_changed(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CollisionShape3D.resource_changed: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CollisionShape3D.resource_changed: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CollisionShape3D.resource_changed: invalid or freed object");
+    }
+
+    CollisionShape3D* typed_obj = Object::cast_to<CollisionShape3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CollisionShape3D.resource_changed: object is not a CollisionShape3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CollisionShape3D.resource_changed: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<Resource> arg_resource;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_resource; JS_ToInt64(ctx, &h_resource, argv[1]);
+        Object* obj_resource = qjs_ctx->get_object_registry()->get_object(h_resource);
+        arg_resource = Ref<Resource>(Object::cast_to<Resource>(obj_resource));
+    } else {
+        // Object with __handle property
+        JSValue jh_resource = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_resource)) {
+            int64_t h_resource; JS_ToInt64(ctx, &h_resource, jh_resource);
+            Object* obj_resource = qjs_ctx->get_object_registry()->get_object(h_resource);
+            arg_resource = Ref<Resource>(Object::cast_to<Resource>(obj_resource));
+        }
+        JS_FreeValue(ctx, jh_resource);
+    }
+
+    typed_obj->resource_changed(arg_resource);
+    return JS_UNDEFINED;
+}
 
 // Method: CollisionShape3D::make_convex_from_siblings
 static JSValue js_CollisionShape3D_make_convex_from_siblings(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
@@ -269,6 +323,8 @@ void register_CollisionShape3D_bindings(JSContext* ctx, JSValue global, JSValue 
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "resource_changed",
+        JS_NewCFunction(ctx, js_CollisionShape3D_resource_changed, "resource_changed", 2));
     JS_SetPropertyStr(ctx, methods, "make_convex_from_siblings",
         JS_NewCFunction(ctx, js_CollisionShape3D_make_convex_from_siblings, "make_convex_from_siblings", 1));
 

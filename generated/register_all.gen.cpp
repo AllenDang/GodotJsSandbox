@@ -75,6 +75,8 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_ProgressBar_bindings(ctx, global, classes);
     register_RayCast2D_bindings(ctx, global, classes);
     register_RayCast3D_bindings(ctx, global, classes);
+    register_RefCounted_bindings(ctx, global, classes);
+    register_Resource_bindings(ctx, global, classes);
     register_RichTextLabel_bindings(ctx, global, classes);
     register_RigidBody2D_bindings(ctx, global, classes);
     register_RigidBody3D_bindings(ctx, global, classes);

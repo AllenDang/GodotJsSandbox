@@ -1,6 +1,7 @@
 #include "js_script_instance.h"
 #include "js_script.h"
 #include "js_script_language.h"
+#include "js_sandbox.h"
 #include "quickjs_context.h"
 
 #include <godot_cpp/classes/node.hpp>
@@ -61,6 +62,14 @@ bool JSScriptInstance::initialize() {
 }
 
 QuickJSContext* JSScriptInstance::get_context() const {
+    // If script is associated with a sandbox, use its context
+    if (script_) {
+        JSSandbox* sandbox = script_->get_sandbox();
+        if (sandbox) {
+            return sandbox->get_context();
+        }
+    }
+    // Fallback to language context (for scripts without sandbox association)
     JSScriptLanguage* lang = JSScriptLanguage::get_singleton();
     return lang ? lang->get_context() : nullptr;
 }

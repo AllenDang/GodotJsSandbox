@@ -106,13 +106,13 @@ func run_test(test_name: String) -> Dictionary:
 			# When script is attached and node enters tree, instance should be created
 			var node = Node3D.new()
 			node.name = "InstanceTestNode"
-			var script = JSScript.new()
-			script.source_code = """
+			# Use sandbox.create_script() to ensure script runs in sandbox's context
+			var script = sandbox.create_script("""
 				globalThis.__instance_test_ready = false;
 				function _ready() {
 					globalThis.__instance_test_ready = true;
 				}
-			"""
+			""")
 			node.set_script(script)
 			test_root.add_child(node)
 

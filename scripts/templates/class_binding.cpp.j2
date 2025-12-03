@@ -99,10 +99,10 @@ static JSValue js_{{ class_name }}_{{ method.name }}(JSContext* ctx, JSValueCons
 
 {% endif %}
 {% if method.return_type == "void" %}
-    typed_obj->{{ method.name }}({{ method.call_args }});
+    typed_obj->{{ method.cpp_name if method.cpp_name else method.name }}({{ method.call_args }});
     return JS_UNDEFINED;
 {% else %}
-    {{ method.return_cpp_type }} result = typed_obj->{{ method.name }}({{ method.call_args }});
+    {{ method.return_cpp_type }} result = typed_obj->{{ method.cpp_name if method.cpp_name else method.name }}({{ method.call_args }});
     {{ method.return_conversion }}
 {% endif %}
 }
@@ -180,8 +180,8 @@ void register_{{ class_name }}_bindings(JSContext* ctx, JSValue global, JSValue 
     JSValue methods = JS_NewObject(ctx);
 
 {% for method in methods %}
-    JS_SetPropertyStr(ctx, methods, "{{ method.name }}",
-        JS_NewCFunction(ctx, js_{{ class_name }}_{{ method.name }}, "{{ method.name }}", {{ method.arguments|length + 1 }}));
+    JS_SetPropertyStr(ctx, methods, "{{ method.js_name }}",
+        JS_NewCFunction(ctx, js_{{ class_name }}_{{ method.name }}, "{{ method.js_name }}", {{ method.arguments|length + 1 }}));
 {% endfor %}
 
     // Create property getters/setters registry

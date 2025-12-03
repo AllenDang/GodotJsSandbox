@@ -1,6 +1,7 @@
 #include "js_script.h"
 #include "js_script_instance.h"
 #include "js_script_language.h"
+#include "js_sandbox.h"
 
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -219,6 +220,10 @@ void JSScript::unregister_instance(Object* p_object) {
     instances_.erase(p_object);
 }
 
+void JSScript::set_sandbox(JSSandbox* p_sandbox) {
+    sandbox_ = p_sandbox;
+}
+
 bool JSScript::parse_script() {
     if (source_code_.is_empty()) {
         return false;
@@ -228,28 +233,49 @@ bool JSScript::parse_script() {
     signals_.clear();
     properties_.clear();
 
-    // Parse common callback methods
-    // Look for: function _ready() or _ready() { or _ready = function
-    const char* common_methods[] = {
-        "_ready", "_process", "_physics_process", "_input",
-        "_unhandled_input", "_enter_tree", "_exit_tree", nullptr
-    };
+    // Parse all function declarations: "function name(" pattern
+    // This captures both lifecycle methods (_ready, _process) and custom methods
+    int pos = 0;
+    while ((pos = source_code_.find("function ", pos)) >= 0) {
+        pos += 9; // Skip "function "
 
-    for (int i = 0; common_methods[i] != nullptr; i++) {
-        String method = common_methods[i];
-        // Check various JS function declaration patterns
-        if (source_code_.find("function " + method) >= 0 ||
-            source_code_.find(method + "(") >= 0 ||
-            source_code_.find(method + " =") >= 0 ||
-            source_code_.find(method + "=") >= 0) {
-            methods_.push_back(StringName(method));
+        // Skip whitespace
+        while (pos < source_code_.length() && (source_code_[pos] == ' ' || source_code_[pos] == '\t')) {
+            pos++;
+        }
+
+        // Read function name (valid JS identifier: [a-zA-Z_$][a-zA-Z0-9_$]*)
+        int name_start = pos;
+        while (pos < source_code_.length()) {
+            char32_t c = source_code_[pos];
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                (c >= '0' && c <= '9') || c == '_' || c == '$') {
+                pos++;
+            } else {
+                break;
+            }
+        }
+
+        int name_end = pos;
+
+        // Skip whitespace before '('
+        while (pos < source_code_.length() && (source_code_[pos] == ' ' || source_code_[pos] == '\t')) {
+            pos++;
+        }
+
+        // Verify it's followed by '(' (it's actually a function declaration)
+        if (name_end > name_start && pos < source_code_.length() && source_code_[pos] == '(') {
+            String method_name = source_code_.substr(name_start, name_end - name_start);
+            if (!method_name.is_empty()) {
+                methods_.push_back(StringName(method_name));
+            }
         }
     }
 
     // Look for export declarations
     // Pattern: // @export var_name = default_value
     // or: /* @export */ let var_name = default_value
-    int pos = 0;
+    pos = 0;
     while ((pos = source_code_.find("@export", pos)) >= 0) {
         // Find the variable name after @export
         int line_end = source_code_.find("\n", pos);

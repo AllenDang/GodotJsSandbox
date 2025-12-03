@@ -8,6 +8,13 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/canvas_item.hpp>
+#include <godot_cpp/classes/multi_mesh.hpp>
+#include <godot_cpp/classes/input_event.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/style_box.hpp>
+#include <godot_cpp/classes/mesh.hpp>
+#include <godot_cpp/classes/world2d.hpp>
+#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -589,6 +596,948 @@ static JSValue js_CanvasItem_draw_circle(JSContext* ctx, JSValueConst this_val, 
     return JS_UNDEFINED;
 }
 
+// Method: CanvasItem::draw_texture
+static JSValue js_CanvasItem_draw_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<Texture2D> arg_texture;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_texture; JS_ToInt64(ctx, &h_texture, argv[1]);
+        Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+        arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+    } else {
+        // Object with __handle property
+        JSValue jh_texture = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_texture)) {
+            int64_t h_texture; JS_ToInt64(ctx, &h_texture, jh_texture);
+            Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+            arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+        }
+        JS_FreeValue(ctx, jh_texture);
+    }
+    double tmp_x_position, tmp_y_position;
+    JSValue jx_position = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_position = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_position, jx_position);
+    JS_ToFloat64(ctx, &tmp_y_position, jy_position);
+    JS_FreeValue(ctx, jx_position);
+    JS_FreeValue(ctx, jy_position);
+    Vector2 arg_position(tmp_x_position, tmp_y_position);
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 3) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[3], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[3], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[3], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[3], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+
+    typed_obj->draw_texture(arg_texture, arg_position, arg_modulate);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_texture_rect
+static JSValue js_CanvasItem_draw_texture_rect(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture_rect: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture_rect: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture_rect: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture_rect: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture_rect: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<Texture2D> arg_texture;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_texture; JS_ToInt64(ctx, &h_texture, argv[1]);
+        Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+        arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+    } else {
+        // Object with __handle property
+        JSValue jh_texture = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_texture)) {
+            int64_t h_texture; JS_ToInt64(ctx, &h_texture, jh_texture);
+            Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+            arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+        }
+        JS_FreeValue(ctx, jh_texture);
+    }
+    double tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect;
+    JSValue jpos_rect = JS_GetPropertyStr(ctx, argv[2], "position");
+    JSValue jsize_rect = JS_GetPropertyStr(ctx, argv[2], "size");
+    JSValue jpx_rect = JS_GetPropertyStr(ctx, jpos_rect, "x");
+    JSValue jpy_rect = JS_GetPropertyStr(ctx, jpos_rect, "y");
+    JSValue jsx_rect = JS_GetPropertyStr(ctx, jsize_rect, "x");
+    JSValue jsy_rect = JS_GetPropertyStr(ctx, jsize_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_rect, jpx_rect);
+    JS_ToFloat64(ctx, &tmp_y_rect, jpy_rect);
+    JS_ToFloat64(ctx, &tmp_w_rect, jsx_rect);
+    JS_ToFloat64(ctx, &tmp_h_rect, jsy_rect);
+    JS_FreeValue(ctx, jpx_rect); JS_FreeValue(ctx, jpy_rect);
+    JS_FreeValue(ctx, jsx_rect); JS_FreeValue(ctx, jsy_rect);
+    JS_FreeValue(ctx, jpos_rect); JS_FreeValue(ctx, jsize_rect);
+    Rect2 arg_rect(tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect);
+    bool arg_tile = JS_ToBool(ctx, argv[3]);
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[4], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[4], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[4], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[4], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: transpose (default: false)
+    bool arg_transpose = false;
+    if (argc > 5) {
+        // Override default with provided value
+        arg_transpose = JS_ToBool(ctx, argv[5]);
+    }
+
+    typed_obj->draw_texture_rect(arg_texture, arg_rect, arg_tile, arg_modulate, arg_transpose);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_texture_rect_region
+static JSValue js_CanvasItem_draw_texture_rect_region(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture_rect_region: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture_rect_region: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture_rect_region: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture_rect_region: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_texture_rect_region: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<Texture2D> arg_texture;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_texture; JS_ToInt64(ctx, &h_texture, argv[1]);
+        Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+        arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+    } else {
+        // Object with __handle property
+        JSValue jh_texture = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_texture)) {
+            int64_t h_texture; JS_ToInt64(ctx, &h_texture, jh_texture);
+            Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+            arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+        }
+        JS_FreeValue(ctx, jh_texture);
+    }
+    double tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect;
+    JSValue jpos_rect = JS_GetPropertyStr(ctx, argv[2], "position");
+    JSValue jsize_rect = JS_GetPropertyStr(ctx, argv[2], "size");
+    JSValue jpx_rect = JS_GetPropertyStr(ctx, jpos_rect, "x");
+    JSValue jpy_rect = JS_GetPropertyStr(ctx, jpos_rect, "y");
+    JSValue jsx_rect = JS_GetPropertyStr(ctx, jsize_rect, "x");
+    JSValue jsy_rect = JS_GetPropertyStr(ctx, jsize_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_rect, jpx_rect);
+    JS_ToFloat64(ctx, &tmp_y_rect, jpy_rect);
+    JS_ToFloat64(ctx, &tmp_w_rect, jsx_rect);
+    JS_ToFloat64(ctx, &tmp_h_rect, jsy_rect);
+    JS_FreeValue(ctx, jpx_rect); JS_FreeValue(ctx, jpy_rect);
+    JS_FreeValue(ctx, jsx_rect); JS_FreeValue(ctx, jsy_rect);
+    JS_FreeValue(ctx, jpos_rect); JS_FreeValue(ctx, jsize_rect);
+    Rect2 arg_rect(tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect);
+    double tmp_x_src_rect, tmp_y_src_rect, tmp_w_src_rect, tmp_h_src_rect;
+    JSValue jpos_src_rect = JS_GetPropertyStr(ctx, argv[3], "position");
+    JSValue jsize_src_rect = JS_GetPropertyStr(ctx, argv[3], "size");
+    JSValue jpx_src_rect = JS_GetPropertyStr(ctx, jpos_src_rect, "x");
+    JSValue jpy_src_rect = JS_GetPropertyStr(ctx, jpos_src_rect, "y");
+    JSValue jsx_src_rect = JS_GetPropertyStr(ctx, jsize_src_rect, "x");
+    JSValue jsy_src_rect = JS_GetPropertyStr(ctx, jsize_src_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_src_rect, jpx_src_rect);
+    JS_ToFloat64(ctx, &tmp_y_src_rect, jpy_src_rect);
+    JS_ToFloat64(ctx, &tmp_w_src_rect, jsx_src_rect);
+    JS_ToFloat64(ctx, &tmp_h_src_rect, jsy_src_rect);
+    JS_FreeValue(ctx, jpx_src_rect); JS_FreeValue(ctx, jpy_src_rect);
+    JS_FreeValue(ctx, jsx_src_rect); JS_FreeValue(ctx, jsy_src_rect);
+    JS_FreeValue(ctx, jpos_src_rect); JS_FreeValue(ctx, jsize_src_rect);
+    Rect2 arg_src_rect(tmp_x_src_rect, tmp_y_src_rect, tmp_w_src_rect, tmp_h_src_rect);
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[4], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[4], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[4], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[4], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: transpose (default: false)
+    bool arg_transpose = false;
+    if (argc > 5) {
+        // Override default with provided value
+        arg_transpose = JS_ToBool(ctx, argv[5]);
+    }
+    // Optional argument: clip_uv (default: true)
+    bool arg_clip_uv = true;
+    if (argc > 6) {
+        // Override default with provided value
+        arg_clip_uv = JS_ToBool(ctx, argv[6]);
+    }
+
+    typed_obj->draw_texture_rect_region(arg_texture, arg_rect, arg_src_rect, arg_modulate, arg_transpose, arg_clip_uv);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_msdf_texture_rect_region
+static JSValue js_CanvasItem_draw_msdf_texture_rect_region(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_msdf_texture_rect_region: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_msdf_texture_rect_region: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_msdf_texture_rect_region: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_msdf_texture_rect_region: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_msdf_texture_rect_region: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<Texture2D> arg_texture;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_texture; JS_ToInt64(ctx, &h_texture, argv[1]);
+        Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+        arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+    } else {
+        // Object with __handle property
+        JSValue jh_texture = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_texture)) {
+            int64_t h_texture; JS_ToInt64(ctx, &h_texture, jh_texture);
+            Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+            arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+        }
+        JS_FreeValue(ctx, jh_texture);
+    }
+    double tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect;
+    JSValue jpos_rect = JS_GetPropertyStr(ctx, argv[2], "position");
+    JSValue jsize_rect = JS_GetPropertyStr(ctx, argv[2], "size");
+    JSValue jpx_rect = JS_GetPropertyStr(ctx, jpos_rect, "x");
+    JSValue jpy_rect = JS_GetPropertyStr(ctx, jpos_rect, "y");
+    JSValue jsx_rect = JS_GetPropertyStr(ctx, jsize_rect, "x");
+    JSValue jsy_rect = JS_GetPropertyStr(ctx, jsize_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_rect, jpx_rect);
+    JS_ToFloat64(ctx, &tmp_y_rect, jpy_rect);
+    JS_ToFloat64(ctx, &tmp_w_rect, jsx_rect);
+    JS_ToFloat64(ctx, &tmp_h_rect, jsy_rect);
+    JS_FreeValue(ctx, jpx_rect); JS_FreeValue(ctx, jpy_rect);
+    JS_FreeValue(ctx, jsx_rect); JS_FreeValue(ctx, jsy_rect);
+    JS_FreeValue(ctx, jpos_rect); JS_FreeValue(ctx, jsize_rect);
+    Rect2 arg_rect(tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect);
+    double tmp_x_src_rect, tmp_y_src_rect, tmp_w_src_rect, tmp_h_src_rect;
+    JSValue jpos_src_rect = JS_GetPropertyStr(ctx, argv[3], "position");
+    JSValue jsize_src_rect = JS_GetPropertyStr(ctx, argv[3], "size");
+    JSValue jpx_src_rect = JS_GetPropertyStr(ctx, jpos_src_rect, "x");
+    JSValue jpy_src_rect = JS_GetPropertyStr(ctx, jpos_src_rect, "y");
+    JSValue jsx_src_rect = JS_GetPropertyStr(ctx, jsize_src_rect, "x");
+    JSValue jsy_src_rect = JS_GetPropertyStr(ctx, jsize_src_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_src_rect, jpx_src_rect);
+    JS_ToFloat64(ctx, &tmp_y_src_rect, jpy_src_rect);
+    JS_ToFloat64(ctx, &tmp_w_src_rect, jsx_src_rect);
+    JS_ToFloat64(ctx, &tmp_h_src_rect, jsy_src_rect);
+    JS_FreeValue(ctx, jpx_src_rect); JS_FreeValue(ctx, jpy_src_rect);
+    JS_FreeValue(ctx, jsx_src_rect); JS_FreeValue(ctx, jsy_src_rect);
+    JS_FreeValue(ctx, jpos_src_rect); JS_FreeValue(ctx, jsize_src_rect);
+    Rect2 arg_src_rect(tmp_x_src_rect, tmp_y_src_rect, tmp_w_src_rect, tmp_h_src_rect);
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[4], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[4], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[4], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[4], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: outline (default: 0.0)
+    double arg_outline = 0.0;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_outline, argv[5]);
+    }
+    // Optional argument: pixel_range (default: 4.0)
+    double arg_pixel_range = 4.0;
+    if (argc > 6) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_pixel_range, argv[6]);
+    }
+    // Optional argument: scale (default: 1.0)
+    double arg_scale = 1.0;
+    if (argc > 7) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_scale, argv[7]);
+    }
+
+    typed_obj->draw_msdf_texture_rect_region(arg_texture, arg_rect, arg_src_rect, arg_modulate, arg_outline, arg_pixel_range, arg_scale);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_lcd_texture_rect_region
+static JSValue js_CanvasItem_draw_lcd_texture_rect_region(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_lcd_texture_rect_region: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_lcd_texture_rect_region: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_lcd_texture_rect_region: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_lcd_texture_rect_region: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_lcd_texture_rect_region: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<Texture2D> arg_texture;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_texture; JS_ToInt64(ctx, &h_texture, argv[1]);
+        Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+        arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+    } else {
+        // Object with __handle property
+        JSValue jh_texture = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_texture)) {
+            int64_t h_texture; JS_ToInt64(ctx, &h_texture, jh_texture);
+            Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+            arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+        }
+        JS_FreeValue(ctx, jh_texture);
+    }
+    double tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect;
+    JSValue jpos_rect = JS_GetPropertyStr(ctx, argv[2], "position");
+    JSValue jsize_rect = JS_GetPropertyStr(ctx, argv[2], "size");
+    JSValue jpx_rect = JS_GetPropertyStr(ctx, jpos_rect, "x");
+    JSValue jpy_rect = JS_GetPropertyStr(ctx, jpos_rect, "y");
+    JSValue jsx_rect = JS_GetPropertyStr(ctx, jsize_rect, "x");
+    JSValue jsy_rect = JS_GetPropertyStr(ctx, jsize_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_rect, jpx_rect);
+    JS_ToFloat64(ctx, &tmp_y_rect, jpy_rect);
+    JS_ToFloat64(ctx, &tmp_w_rect, jsx_rect);
+    JS_ToFloat64(ctx, &tmp_h_rect, jsy_rect);
+    JS_FreeValue(ctx, jpx_rect); JS_FreeValue(ctx, jpy_rect);
+    JS_FreeValue(ctx, jsx_rect); JS_FreeValue(ctx, jsy_rect);
+    JS_FreeValue(ctx, jpos_rect); JS_FreeValue(ctx, jsize_rect);
+    Rect2 arg_rect(tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect);
+    double tmp_x_src_rect, tmp_y_src_rect, tmp_w_src_rect, tmp_h_src_rect;
+    JSValue jpos_src_rect = JS_GetPropertyStr(ctx, argv[3], "position");
+    JSValue jsize_src_rect = JS_GetPropertyStr(ctx, argv[3], "size");
+    JSValue jpx_src_rect = JS_GetPropertyStr(ctx, jpos_src_rect, "x");
+    JSValue jpy_src_rect = JS_GetPropertyStr(ctx, jpos_src_rect, "y");
+    JSValue jsx_src_rect = JS_GetPropertyStr(ctx, jsize_src_rect, "x");
+    JSValue jsy_src_rect = JS_GetPropertyStr(ctx, jsize_src_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_src_rect, jpx_src_rect);
+    JS_ToFloat64(ctx, &tmp_y_src_rect, jpy_src_rect);
+    JS_ToFloat64(ctx, &tmp_w_src_rect, jsx_src_rect);
+    JS_ToFloat64(ctx, &tmp_h_src_rect, jsy_src_rect);
+    JS_FreeValue(ctx, jpx_src_rect); JS_FreeValue(ctx, jpy_src_rect);
+    JS_FreeValue(ctx, jsx_src_rect); JS_FreeValue(ctx, jsy_src_rect);
+    JS_FreeValue(ctx, jpos_src_rect); JS_FreeValue(ctx, jsize_src_rect);
+    Rect2 arg_src_rect(tmp_x_src_rect, tmp_y_src_rect, tmp_w_src_rect, tmp_h_src_rect);
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[4], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[4], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[4], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[4], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+
+    typed_obj->draw_lcd_texture_rect_region(arg_texture, arg_rect, arg_src_rect, arg_modulate);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_style_box
+static JSValue js_CanvasItem_draw_style_box(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_style_box: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_style_box: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_style_box: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_style_box: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_style_box: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<StyleBox> arg_style_box;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_style_box; JS_ToInt64(ctx, &h_style_box, argv[1]);
+        Object* obj_style_box = qjs_ctx->get_object_registry()->get_object(h_style_box);
+        arg_style_box = Ref<StyleBox>(Object::cast_to<StyleBox>(obj_style_box));
+    } else {
+        // Object with __handle property
+        JSValue jh_style_box = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_style_box)) {
+            int64_t h_style_box; JS_ToInt64(ctx, &h_style_box, jh_style_box);
+            Object* obj_style_box = qjs_ctx->get_object_registry()->get_object(h_style_box);
+            arg_style_box = Ref<StyleBox>(Object::cast_to<StyleBox>(obj_style_box));
+        }
+        JS_FreeValue(ctx, jh_style_box);
+    }
+    double tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect;
+    JSValue jpos_rect = JS_GetPropertyStr(ctx, argv[2], "position");
+    JSValue jsize_rect = JS_GetPropertyStr(ctx, argv[2], "size");
+    JSValue jpx_rect = JS_GetPropertyStr(ctx, jpos_rect, "x");
+    JSValue jpy_rect = JS_GetPropertyStr(ctx, jpos_rect, "y");
+    JSValue jsx_rect = JS_GetPropertyStr(ctx, jsize_rect, "x");
+    JSValue jsy_rect = JS_GetPropertyStr(ctx, jsize_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_rect, jpx_rect);
+    JS_ToFloat64(ctx, &tmp_y_rect, jpy_rect);
+    JS_ToFloat64(ctx, &tmp_w_rect, jsx_rect);
+    JS_ToFloat64(ctx, &tmp_h_rect, jsy_rect);
+    JS_FreeValue(ctx, jpx_rect); JS_FreeValue(ctx, jpy_rect);
+    JS_FreeValue(ctx, jsx_rect); JS_FreeValue(ctx, jsy_rect);
+    JS_FreeValue(ctx, jpos_rect); JS_FreeValue(ctx, jsize_rect);
+    Rect2 arg_rect(tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect);
+
+    typed_obj->draw_style_box(arg_style_box, arg_rect);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_char
+static JSValue js_CanvasItem_draw_char(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_char: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_char: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_char: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_char: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_char: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<Font> arg_font;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_font; JS_ToInt64(ctx, &h_font, argv[1]);
+        Object* obj_font = qjs_ctx->get_object_registry()->get_object(h_font);
+        arg_font = Ref<Font>(Object::cast_to<Font>(obj_font));
+    } else {
+        // Object with __handle property
+        JSValue jh_font = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_font)) {
+            int64_t h_font; JS_ToInt64(ctx, &h_font, jh_font);
+            Object* obj_font = qjs_ctx->get_object_registry()->get_object(h_font);
+            arg_font = Ref<Font>(Object::cast_to<Font>(obj_font));
+        }
+        JS_FreeValue(ctx, jh_font);
+    }
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    const char* cstr_char = JS_ToCString(ctx, argv[3]); String arg_char = cstr_char ? cstr_char : ""; JS_FreeCString(ctx, cstr_char);
+    // Optional argument: font_size (default: 16)
+    int64_t arg_font_size = 16;
+    if (argc > 4) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_font_size, argv[4]);
+    }
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 5) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[5], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[5], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[5], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[5], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 6) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[6]);
+    }
+
+    typed_obj->draw_char(arg_font, arg_pos, arg_char, arg_font_size, arg_modulate, arg_oversampling);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_char_outline
+static JSValue js_CanvasItem_draw_char_outline(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_char_outline: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_char_outline: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_char_outline: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_char_outline: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_char_outline: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<Font> arg_font;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_font; JS_ToInt64(ctx, &h_font, argv[1]);
+        Object* obj_font = qjs_ctx->get_object_registry()->get_object(h_font);
+        arg_font = Ref<Font>(Object::cast_to<Font>(obj_font));
+    } else {
+        // Object with __handle property
+        JSValue jh_font = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_font)) {
+            int64_t h_font; JS_ToInt64(ctx, &h_font, jh_font);
+            Object* obj_font = qjs_ctx->get_object_registry()->get_object(h_font);
+            arg_font = Ref<Font>(Object::cast_to<Font>(obj_font));
+        }
+        JS_FreeValue(ctx, jh_font);
+    }
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    const char* cstr_char = JS_ToCString(ctx, argv[3]); String arg_char = cstr_char ? cstr_char : ""; JS_FreeCString(ctx, cstr_char);
+    // Optional argument: font_size (default: 16)
+    int64_t arg_font_size = 16;
+    if (argc > 4) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_font_size, argv[4]);
+    }
+    // Optional argument: size (default: -1)
+    int64_t arg_size = -1;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_size, argv[5]);
+    }
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 6) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[6], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[6], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[6], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[6], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 7) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[7]);
+    }
+
+    typed_obj->draw_char_outline(arg_font, arg_pos, arg_char, arg_font_size, arg_size, arg_modulate, arg_oversampling);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_mesh
+static JSValue js_CanvasItem_draw_mesh(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_mesh: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_mesh: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_mesh: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_mesh: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_mesh: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<Mesh> arg_mesh;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_mesh; JS_ToInt64(ctx, &h_mesh, argv[1]);
+        Object* obj_mesh = qjs_ctx->get_object_registry()->get_object(h_mesh);
+        arg_mesh = Ref<Mesh>(Object::cast_to<Mesh>(obj_mesh));
+    } else {
+        // Object with __handle property
+        JSValue jh_mesh = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_mesh)) {
+            int64_t h_mesh; JS_ToInt64(ctx, &h_mesh, jh_mesh);
+            Object* obj_mesh = qjs_ctx->get_object_registry()->get_object(h_mesh);
+            arg_mesh = Ref<Mesh>(Object::cast_to<Mesh>(obj_mesh));
+        }
+        JS_FreeValue(ctx, jh_mesh);
+    }
+    Ref<Texture2D> arg_texture;
+    if (JS_IsNumber(argv[2])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_texture; JS_ToInt64(ctx, &h_texture, argv[2]);
+        Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+        arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+    } else {
+        // Object with __handle property
+        JSValue jh_texture = JS_GetPropertyStr(ctx, argv[2], "__handle");
+        if (!JS_IsUndefined(jh_texture)) {
+            int64_t h_texture; JS_ToInt64(ctx, &h_texture, jh_texture);
+            Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+            arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+        }
+        JS_FreeValue(ctx, jh_texture);
+    }
+    // Optional argument: transform (default: Transform2D(1, 0, 0, 1, 0, 0))
+    Transform2D arg_transform = Transform2D(1, 0, 0, 1, 0, 0);
+    if (argc > 3) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Transform2D arg_transform = qjs_ctx->js_to_variant(argv[3]);
+    }
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[4], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[4], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[4], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[4], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+
+    typed_obj->draw_mesh(arg_mesh, arg_texture, arg_transform, arg_modulate);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_multimesh
+static JSValue js_CanvasItem_draw_multimesh(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multimesh: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multimesh: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multimesh: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multimesh: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multimesh: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<MultiMesh> arg_multimesh;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_multimesh; JS_ToInt64(ctx, &h_multimesh, argv[1]);
+        Object* obj_multimesh = qjs_ctx->get_object_registry()->get_object(h_multimesh);
+        arg_multimesh = Ref<MultiMesh>(Object::cast_to<MultiMesh>(obj_multimesh));
+    } else {
+        // Object with __handle property
+        JSValue jh_multimesh = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_multimesh)) {
+            int64_t h_multimesh; JS_ToInt64(ctx, &h_multimesh, jh_multimesh);
+            Object* obj_multimesh = qjs_ctx->get_object_registry()->get_object(h_multimesh);
+            arg_multimesh = Ref<MultiMesh>(Object::cast_to<MultiMesh>(obj_multimesh));
+        }
+        JS_FreeValue(ctx, jh_multimesh);
+    }
+    Ref<Texture2D> arg_texture;
+    if (JS_IsNumber(argv[2])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_texture; JS_ToInt64(ctx, &h_texture, argv[2]);
+        Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+        arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+    } else {
+        // Object with __handle property
+        JSValue jh_texture = JS_GetPropertyStr(ctx, argv[2], "__handle");
+        if (!JS_IsUndefined(jh_texture)) {
+            int64_t h_texture; JS_ToInt64(ctx, &h_texture, jh_texture);
+            Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+            arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+        }
+        JS_FreeValue(ctx, jh_texture);
+    }
+
+    typed_obj->draw_multimesh(arg_multimesh, arg_texture);
+    return JS_UNDEFINED;
+}
+
 // Method: CanvasItem::draw_set_transform
 static JSValue js_CanvasItem_draw_set_transform(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1083,9 +2032,83 @@ static JSValue js_CanvasItem_get_canvas_layer_node(JSContext* ctx, JSValueConst 
     if (!result) return JS_NULL;
     Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
     JSValue ret_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
-    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_obj_ptr->get_class().utf8().get_data()));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Method: CanvasItem::get_world_2d
+static JSValue js_CanvasItem_get_world_2d(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.get_world_2d: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.get_world_2d: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.get_world_2d: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.get_world_2d: object is not a CanvasItem");
+    }
+
+    Ref<World2D> result = typed_obj->get_world_2d();
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
 }
 
@@ -1377,6 +2400,84 @@ static JSValue js_CanvasItem_make_canvas_position_local(JSContext* ctx, JSValueC
     JSValue ret_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, ret_obj, "x", JS_NewFloat64(ctx, result.x));
     JS_SetPropertyStr(ctx, ret_obj, "y", JS_NewFloat64(ctx, result.y));
+    return ret_obj;
+}
+
+// Method: CanvasItem::make_input_local
+static JSValue js_CanvasItem_make_input_local(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.make_input_local: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.make_input_local: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.make_input_local: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.make_input_local: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.make_input_local: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<InputEvent> arg_event;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_event; JS_ToInt64(ctx, &h_event, argv[1]);
+        Object* obj_event = qjs_ctx->get_object_registry()->get_object(h_event);
+        arg_event = Ref<InputEvent>(Object::cast_to<InputEvent>(obj_event));
+    } else {
+        // Object with __handle property
+        JSValue jh_event = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_event)) {
+            int64_t h_event; JS_ToInt64(ctx, &h_event, jh_event);
+            Object* obj_event = qjs_ctx->get_object_registry()->get_object(h_event);
+            arg_event = Ref<InputEvent>(Object::cast_to<InputEvent>(obj_event));
+        }
+        JS_FreeValue(ctx, jh_event);
+    }
+
+    Ref<InputEvent> result = typed_obj->make_input_local(arg_event);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
 }
 
@@ -2373,6 +3474,26 @@ void register_CanvasItem_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_CanvasItem_draw_rect, "draw_rect", 6));
     JS_SetPropertyStr(ctx, methods, "draw_circle",
         JS_NewCFunction(ctx, js_CanvasItem_draw_circle, "draw_circle", 7));
+    JS_SetPropertyStr(ctx, methods, "draw_texture",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_texture, "draw_texture", 4));
+    JS_SetPropertyStr(ctx, methods, "draw_texture_rect",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_texture_rect, "draw_texture_rect", 6));
+    JS_SetPropertyStr(ctx, methods, "draw_texture_rect_region",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_texture_rect_region, "draw_texture_rect_region", 7));
+    JS_SetPropertyStr(ctx, methods, "draw_msdf_texture_rect_region",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_msdf_texture_rect_region, "draw_msdf_texture_rect_region", 8));
+    JS_SetPropertyStr(ctx, methods, "draw_lcd_texture_rect_region",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_lcd_texture_rect_region, "draw_lcd_texture_rect_region", 5));
+    JS_SetPropertyStr(ctx, methods, "draw_style_box",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_style_box, "draw_style_box", 3));
+    JS_SetPropertyStr(ctx, methods, "draw_char",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_char, "draw_char", 7));
+    JS_SetPropertyStr(ctx, methods, "draw_char_outline",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_char_outline, "draw_char_outline", 8));
+    JS_SetPropertyStr(ctx, methods, "draw_mesh",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_mesh, "draw_mesh", 5));
+    JS_SetPropertyStr(ctx, methods, "draw_multimesh",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_multimesh, "draw_multimesh", 3));
     JS_SetPropertyStr(ctx, methods, "draw_set_transform",
         JS_NewCFunction(ctx, js_CanvasItem_draw_set_transform, "draw_set_transform", 4));
     JS_SetPropertyStr(ctx, methods, "draw_set_transform_matrix",
@@ -2401,6 +3522,8 @@ void register_CanvasItem_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_CanvasItem_get_global_mouse_position, "get_global_mouse_position", 1));
     JS_SetPropertyStr(ctx, methods, "get_canvas_layer_node",
         JS_NewCFunction(ctx, js_CanvasItem_get_canvas_layer_node, "get_canvas_layer_node", 1));
+    JS_SetPropertyStr(ctx, methods, "get_world_2d",
+        JS_NewCFunction(ctx, js_CanvasItem_get_world_2d, "get_world_2d", 1));
     JS_SetPropertyStr(ctx, methods, "set_instance_shader_parameter",
         JS_NewCFunction(ctx, js_CanvasItem_set_instance_shader_parameter, "set_instance_shader_parameter", 3));
     JS_SetPropertyStr(ctx, methods, "get_instance_shader_parameter",
@@ -2417,6 +3540,8 @@ void register_CanvasItem_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_CanvasItem_force_update_transform, "force_update_transform", 1));
     JS_SetPropertyStr(ctx, methods, "make_canvas_position_local",
         JS_NewCFunction(ctx, js_CanvasItem_make_canvas_position_local, "make_canvas_position_local", 2));
+    JS_SetPropertyStr(ctx, methods, "make_input_local",
+        JS_NewCFunction(ctx, js_CanvasItem_make_input_local, "make_input_local", 2));
     JS_SetPropertyStr(ctx, methods, "set_visibility_layer_bit",
         JS_NewCFunction(ctx, js_CanvasItem_set_visibility_layer_bit, "set_visibility_layer_bit", 3));
     JS_SetPropertyStr(ctx, methods, "get_visibility_layer_bit",

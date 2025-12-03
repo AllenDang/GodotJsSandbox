@@ -9,6 +9,7 @@
 namespace jsb {
 
 class JSScriptInstance;
+class JSSandbox;
 
 // JSScript is the Script resource that represents a .js file
 // It can be attached to nodes like GDScript
@@ -83,6 +84,10 @@ public:
     void register_instance(godot::Object* p_object, JSScriptInstance* p_instance);
     void unregister_instance(godot::Object* p_object);
 
+    // Sandbox association - allows JSScript to use a specific sandbox's context
+    void set_sandbox(JSSandbox* p_sandbox);
+    JSSandbox* get_sandbox() const { return sandbox_; }
+
 protected:
     static void _bind_methods();
 
@@ -90,6 +95,9 @@ private:
     godot::String source_code_;
     godot::String path_;
     bool is_valid_ = false;
+
+    // Associated sandbox (if any) - script will use sandbox's context
+    JSSandbox* sandbox_ = nullptr;
 
     // Track instances
     mutable godot::HashMap<godot::Object*, JSScriptInstance*> instances_;

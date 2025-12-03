@@ -1,4 +1,5 @@
 #include "js_sandbox.h"
+#include "js_script.h"
 #include "scene_saver.h"
 
 #include <godot_cpp/classes/file_access.hpp>
@@ -248,6 +249,13 @@ bool JSSandbox::is_valid() const {
     return context_ && context_->is_valid();
 }
 
+Ref<Script> JSSandbox::create_script(const String &source_code) {
+    JSScript* script = memnew(JSScript);
+    script->set_sandbox(this);
+    script->set_source_code(source_code);
+    return Ref<Script>(script);
+}
+
 void JSSandbox::reset() {
     attached_scripts_.clear();
     last_error_ = "";
@@ -298,6 +306,9 @@ void JSSandbox::_bind_methods() {
     // Global variables
     ClassDB::bind_method(D_METHOD("set_global", "name", "value"), &JSSandbox::set_global);
     ClassDB::bind_method(D_METHOD("get_global", "name"), &JSSandbox::get_global);
+
+    // Script creation - creates scripts that use this sandbox's context
+    ClassDB::bind_method(D_METHOD("create_script", "source_code"), &JSSandbox::create_script);
 
     // Level persistence
     ClassDB::bind_method(D_METHOD("save_level", "root", "directory"), &JSSandbox::save_level);

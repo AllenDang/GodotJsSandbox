@@ -42,10 +42,17 @@
         "ScriptCreateDialog"
     ],
     "blocked_methods": {
-        "Object": ["call", "callv", "set_script", "get_script", "set", "emit_signal", "free"],
-        "Node": ["set_script", "get_script", "set_process_thread_group", "get_node", "get_node_or_null"],
+        "Object": ["call", "callv", "set_script", "get_script", "set", "emit_signal", "free", "call_deferred", "set_deferred"],
+        "Node": ["set_script", "get_script", "set_process_thread_group", "call_group", "call_group_flags", "propagate_call"],
         "RefCounted": ["reference", "unreference"],
         "Resource": ["emit_changed"]
+    },
+    "method_aliases": {
+    },
+    "method_cpp_names": {
+        "Node": {
+            "get_node": "get_node_internal"
+        }
     },
     "blocked_properties": {
         "Object": ["script"],
@@ -67,6 +74,8 @@
         "NavigationServer3D"
     ],
     "priority_classes": [
+        "RefCounted",
+        "Resource",
         "Node",
         "Node2D",
         "Node3D",

@@ -37,10 +37,10 @@ func get_tests() -> Array[String]:
 		"test_method_this_binding",
 	]
 
-func _create_js_script(source: String) -> JSScript:
-	var script = JSScript.new()
-	script.source_code = source
-	return script
+func _create_js_script(source: String) -> Script:
+	# Use sandbox.create_script() to ensure scripts run in sandbox's context
+	# This allows tests to verify script behavior via sandbox.eval()
+	return sandbox.create_script(source)
 
 func run_test(test_name: String) -> Dictionary:
 	match test_name:
