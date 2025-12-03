@@ -116,6 +116,42 @@ Variant JSSandbox::eval(const String &code) {
     return result;
 }
 
+Variant JSSandbox::eval_module(const String &code, const String &filename) {
+    if (!context_ || !context_->is_valid()) {
+        last_error_ = "Sandbox not initialized";
+        emit_signal("error_occurred", last_error_, 0, 0);
+        return Variant();
+    }
+
+    // Validate filename for module resolution
+    String module_path = filename;
+    if (!module_path.begins_with("res://") && !module_path.begins_with("user://")) {
+        // Default to user:// for sandbox safety
+        module_path = "user://" + module_path;
+    }
+
+    if (execution_limiter_) {
+        execution_limiter_->begin_execution();
+    }
+
+    Variant result;
+    String error;
+
+    bool success = context_->eval_module(code, module_path, result, error);
+
+    if (execution_limiter_) {
+        execution_limiter_->end_execution();
+    }
+
+    if (!success) {
+        last_error_ = error;
+        emit_signal("error_occurred", error, 0, 0);
+        return Variant();
+    }
+
+    return result;
+}
+
 Variant JSSandbox::eval_file(const String &path) {
     if (!context_ || !context_->is_valid()) {
         last_error_ = "Sandbox not initialized";
@@ -321,6 +357,7 @@ void JSSandbox::_bind_methods() {
 
     // Execution
     ClassDB::bind_method(D_METHOD("eval", "code"), &JSSandbox::eval);
+    ClassDB::bind_method(D_METHOD("eval_module", "code", "filename"), &JSSandbox::eval_module);
     ClassDB::bind_method(D_METHOD("eval_file", "path"), &JSSandbox::eval_file);
 
     // Global variables

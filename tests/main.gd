@@ -3,6 +3,7 @@ extends Node3D
 const TestRefCountedTypesClass = preload("res://test_cases/test_refcounted_types.gd")
 const TestCustomSignalsClass = preload("res://test_cases/test_custom_signals.gd")
 const TestLevelPersistenceClass = preload("res://test_cases/test_level_persistence.gd")
+const TestModulesClass = preload("res://test_cases/test_modules.gd")
 
 var sandbox: JSSandbox
 
@@ -59,6 +60,9 @@ func run_tests() -> void:
 
 	# Level persistence
 	runner.add_suite(TestLevelPersistenceClass.new())
+
+	# ES6 Modules
+	runner.add_suite(TestModulesClass.new())
 
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())

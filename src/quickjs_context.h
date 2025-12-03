@@ -38,6 +38,8 @@ public:
 
     bool eval(const godot::String &code, const godot::String &filename,
               godot::Variant &result, godot::String &error);
+    bool eval_module(const godot::String &code, const godot::String &filename,
+                     godot::Variant &result, godot::String &error);
     bool eval_file(const godot::String &path, godot::Variant &result, godot::String &error);
 
     void set_global(const godot::String &name, const godot::Variant &value);
@@ -112,8 +114,14 @@ private:
 
     void setup_builtins();
     void setup_godot_bindings();
+    void setup_module_loader();
 
     static int interrupt_handler(JSRuntime* rt, void* opaque);
+
+    // Module loader callbacks (called by QuickJS)
+    static char* module_normalize(JSContext* ctx, const char* base_name,
+                                  const char* module_name, void* opaque);
+    static JSModuleDef* module_loader(JSContext* ctx, const char* module_name, void* opaque);
 
     godot::String get_exception_message();
 };

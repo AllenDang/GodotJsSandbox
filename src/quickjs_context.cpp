@@ -99,6 +99,9 @@ bool QuickJSContext::initialize() {
     // Set up interrupt handler for timeout
     JS_SetInterruptHandler(rt_, interrupt_handler, this);
 
+    // Set up module loader for ES6 imports
+    setup_module_loader();
+
     setup_builtins();
     setup_godot_bindings();
 
@@ -152,6 +155,143 @@ void QuickJSContext::setup_godot_bindings() {
     bindings_->initialize();
 }
 
+void QuickJSContext::setup_module_loader() {
+    // Register module loader for ES6 import/export support
+    JS_SetModuleLoaderFunc(rt_, module_normalize, module_loader, this);
+}
+
+// Module path normalizer - converts relative paths to absolute Godot paths
+char* QuickJSContext::module_normalize(JSContext* ctx, const char* base_name,
+                                        const char* module_name, void* opaque) {
+    // QuickJSContext* self = static_cast<QuickJSContext*>(opaque);
+    String base = base_name ? String::utf8(base_name) : "";
+    String name = module_name ? String::utf8(module_name) : "";
+
+    // If module_name is already an absolute Godot path, use it directly
+    if (name.begins_with("res://") || name.begins_with("user://")) {
+        // Security: block path traversal
+        if (name.find("..") != -1) {
+            JS_ThrowReferenceError(ctx, "Path traversal not allowed in import: %s", module_name);
+            return nullptr;
+        }
+
+        // Ensure .js extension
+        if (!name.ends_with(".js")) {
+            name += ".js";
+        }
+
+        // Allocate and return the normalized path
+        CharString utf8 = name.utf8();
+        char* result = (char*)js_malloc(ctx, utf8.length() + 1);
+        memcpy(result, utf8.get_data(), utf8.length() + 1);
+        return result;
+    }
+
+    // Handle relative paths - resolve relative to base module
+    String resolved;
+
+    if (name.begins_with("./") || name.begins_with("../")) {
+        // Get directory of base module
+        String base_dir;
+        if (base.begins_with("res://") || base.begins_with("user://")) {
+            base_dir = base.get_base_dir();
+        } else {
+            // Default to user:// for script instances without a proper path
+            base_dir = "user://";
+        }
+
+        // Resolve the relative path
+        if (name.begins_with("./")) {
+            resolved = base_dir.path_join(name.substr(2));
+        } else {
+            // Handle ../ by going up directories
+            String rel_path = name;
+            String current_dir = base_dir;
+
+            while (rel_path.begins_with("../")) {
+                current_dir = current_dir.get_base_dir();
+                rel_path = rel_path.substr(3);
+            }
+            resolved = current_dir.path_join(rel_path);
+        }
+    } else {
+        // Bare module name - treat as relative to user:// (sandboxed modules)
+        resolved = String("user://") + name;
+    }
+
+    // Security: block path traversal in resolved path
+    if (resolved.find("..") != -1) {
+        JS_ThrowReferenceError(ctx, "Path traversal not allowed in import: %s", module_name);
+        return nullptr;
+    }
+
+    // Security: must resolve to user:// or res://
+    if (!resolved.begins_with("res://") && !resolved.begins_with("user://")) {
+        JS_ThrowReferenceError(ctx, "Import must resolve to res:// or user:// path: %s", module_name);
+        return nullptr;
+    }
+
+    // Ensure .js extension
+    if (!resolved.ends_with(".js")) {
+        resolved += ".js";
+    }
+
+    // Allocate and return the normalized path
+    CharString utf8 = resolved.utf8();
+    char* result = (char*)js_malloc(ctx, utf8.length() + 1);
+    memcpy(result, utf8.get_data(), utf8.length() + 1);
+    return result;
+}
+
+// Module loader - reads file content and compiles as ES6 module
+JSModuleDef* QuickJSContext::module_loader(JSContext* ctx, const char* module_name, void* opaque) {
+    QuickJSContext* self = static_cast<QuickJSContext*>(opaque);
+    String path = String::utf8(module_name);
+
+    // Security: verify path is allowed
+    if (!path.begins_with("res://") && !path.begins_with("user://")) {
+        JS_ThrowReferenceError(ctx, "Import path must be res:// or user://: %s", module_name);
+        return nullptr;
+    }
+
+    if (path.find("..") != -1) {
+        JS_ThrowReferenceError(ctx, "Path traversal not allowed: %s", module_name);
+        return nullptr;
+    }
+
+    // Check sandbox config if available
+    if (self->sandbox_config_ && !self->sandbox_config_->is_path_allowed(path)) {
+        JS_ThrowReferenceError(ctx, "Import path blocked by sandbox config: %s", module_name);
+        return nullptr;
+    }
+
+    // Read file content using Godot's FileAccess
+    Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ);
+    if (!file.is_valid()) {
+        JS_ThrowReferenceError(ctx, "Could not load module: %s", module_name);
+        return nullptr;
+    }
+
+    String source = file->get_as_text();
+    file->close();
+
+    // Compile as ES6 module
+    CharString source_utf8 = source.utf8();
+    JSValue func_val = JS_Eval(ctx, source_utf8.get_data(), source_utf8.length(),
+                               module_name, JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
+
+    if (JS_IsException(func_val)) {
+        // Exception is already set by JS_Eval
+        return nullptr;
+    }
+
+    // Get the module definition from the compiled value
+    JSModuleDef* m = (JSModuleDef*)JS_VALUE_GET_PTR(func_val);
+    JS_FreeValue(ctx, func_val);
+
+    return m;
+}
+
 int QuickJSContext::interrupt_handler(JSRuntime* rt, void* opaque) {
     const QuickJSContext* self = static_cast<const QuickJSContext*>(opaque);
     if (self->deadline_ > 0) {
@@ -190,6 +330,51 @@ bool QuickJSContext::eval(const String &code, const String &filename,
         return false;
     }
 
+    result = js_to_variant(ret);
+    JS_FreeValue(ctx_, ret);
+
+    return true;
+}
+
+bool QuickJSContext::eval_module(const String &code, const String &filename,
+                                  Variant &result, String &error) {
+    if (!is_valid()) {
+        error = "Context not initialized";
+        return false;
+    }
+
+    if (timeout_ms_ > 0) {
+        deadline_ = Time::get_singleton()->get_ticks_msec() + timeout_ms_;
+    } else {
+        deadline_ = 0;
+    }
+
+    CharString code_utf8 = code.utf8();
+    CharString filename_utf8 = filename.utf8();
+
+    // Compile the module
+    JSValue func_val = JS_Eval(ctx_, code_utf8.get_data(), code_utf8.length(),
+                                filename_utf8.get_data(),
+                                JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
+
+    if (JS_IsException(func_val)) {
+        deadline_ = 0;
+        error = get_exception_message();
+        return false;
+    }
+
+    // Evaluate (instantiate and run) the module
+    JSValue ret = JS_EvalFunction(ctx_, func_val);
+
+    deadline_ = 0;
+
+    if (JS_IsException(ret)) {
+        error = get_exception_message();
+        JS_FreeValue(ctx_, ret);
+        return false;
+    }
+
+    // Module evaluation returns undefined on success, but imports are executed
     result = js_to_variant(ret);
     JS_FreeValue(ctx_, ret);
 

@@ -34,6 +34,7 @@ public:
 
     // Execution
     godot::Variant eval(const godot::String &code);
+    godot::Variant eval_module(const godot::String &code, const godot::String &filename);
     godot::Variant eval_file(const godot::String &path);
 
     // Global variables
