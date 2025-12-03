@@ -16,6 +16,7 @@ void register_all_classes(JSContext* ctx, JSValue global);
 // Class registration functions
 void register_AnimatedSprite2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_AnimatedSprite3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_AnimationMixer_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_AnimationPlayer_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_AnimationTree_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Area2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
@@ -46,6 +47,8 @@ void register_CenterContainer_bindings(JSContext* ctx, JSValue global, JSValue c
 void register_CharacterBody2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_CharacterBody3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_CircleShape2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_CollisionObject2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_CollisionObject3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_CollisionPolygon2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_CollisionPolygon3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_CollisionShape2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
@@ -93,6 +96,8 @@ void register_Path2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Path3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_PathFollow2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_PathFollow3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_PhysicsBody2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_PhysicsBody3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_PlaneMesh_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_PointLight2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_PrimitiveMesh_bindings(JSContext* ctx, JSValue global, JSValue classes);

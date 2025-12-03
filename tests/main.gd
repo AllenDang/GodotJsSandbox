@@ -5,6 +5,9 @@ const TestCustomSignalsClass = preload("res://test_cases/test_custom_signals.gd"
 const TestLevelPersistenceClass = preload("res://test_cases/test_level_persistence.gd")
 const TestModulesClass = preload("res://test_cases/test_modules.gd")
 const TestInputClass = preload("res://test_cases/test_input.gd")
+const TestPhysicsClass = preload("res://test_cases/test_physics.gd")
+const TestAnimationClass = preload("res://test_cases/test_animation.gd")
+const TestAudioClass = preload("res://test_cases/test_audio.gd")
 
 var sandbox: JSSandbox
 
@@ -67,6 +70,15 @@ func run_tests() -> void:
 
 	# Input handling
 	runner.add_suite(TestInputClass.new())
+
+	# Physics bodies
+	runner.add_suite(TestPhysicsClass.new())
+
+	# Animation
+	runner.add_suite(TestAnimationClass.new())
+
+	# Audio
+	runner.add_suite(TestAudioClass.new())
 
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())

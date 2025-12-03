@@ -15,6 +15,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
 
     register_AnimatedSprite2D_bindings(ctx, global, classes);
     register_AnimatedSprite3D_bindings(ctx, global, classes);
+    register_AnimationMixer_bindings(ctx, global, classes);
     register_AnimationPlayer_bindings(ctx, global, classes);
     register_AnimationTree_bindings(ctx, global, classes);
     register_Area2D_bindings(ctx, global, classes);
@@ -45,6 +46,8 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_CharacterBody2D_bindings(ctx, global, classes);
     register_CharacterBody3D_bindings(ctx, global, classes);
     register_CircleShape2D_bindings(ctx, global, classes);
+    register_CollisionObject2D_bindings(ctx, global, classes);
+    register_CollisionObject3D_bindings(ctx, global, classes);
     register_CollisionPolygon2D_bindings(ctx, global, classes);
     register_CollisionPolygon3D_bindings(ctx, global, classes);
     register_CollisionShape2D_bindings(ctx, global, classes);
@@ -92,6 +95,8 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_Path3D_bindings(ctx, global, classes);
     register_PathFollow2D_bindings(ctx, global, classes);
     register_PathFollow3D_bindings(ctx, global, classes);
+    register_PhysicsBody2D_bindings(ctx, global, classes);
+    register_PhysicsBody3D_bindings(ctx, global, classes);
     register_PlaneMesh_bindings(ctx, global, classes);
     register_PointLight2D_bindings(ctx, global, classes);
     register_PrimitiveMesh_bindings(ctx, global, classes);
