@@ -4,6 +4,7 @@ const TestRefCountedTypesClass = preload("res://test_cases/test_refcounted_types
 const TestCustomSignalsClass = preload("res://test_cases/test_custom_signals.gd")
 const TestLevelPersistenceClass = preload("res://test_cases/test_level_persistence.gd")
 const TestModulesClass = preload("res://test_cases/test_modules.gd")
+const TestInputClass = preload("res://test_cases/test_input.gd")
 
 var sandbox: JSSandbox
 
@@ -63,6 +64,9 @@ func run_tests() -> void:
 
 	# ES6 Modules
 	runner.add_suite(TestModulesClass.new())
+
+	# Input handling
+	runner.add_suite(TestInputClass.new())
 
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())

@@ -7,6 +7,7 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/classes/input_event.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 
 #include <memory>
@@ -55,6 +56,7 @@ public:
     // Type conversion
     JSValue variant_to_js(const godot::Variant &value);
     godot::Variant js_to_variant(JSValue value);
+    JSValue input_event_to_js(godot::InputEvent* event);
 
     // Script instance management
     // Creates a persistent JS object for a script instance and returns its ID
@@ -66,6 +68,10 @@ public:
     bool call_instance_method(int64_t instance_id, const godot::StringName &method,
                               const godot::Variant** args, int argc,
                               godot::Variant &result, godot::String &error);
+
+    // Call an input method with InputEvent (uses optimized conversion)
+    bool call_instance_input_method(int64_t instance_id, const godot::StringName &method,
+                                    godot::InputEvent* event, godot::String &error);
 
     // Release a script instance (called when JSScriptInstance is destroyed)
     void release_script_instance(int64_t instance_id);

@@ -210,7 +210,32 @@ void JSScriptInstance::call(const StringName &p_method, const GDExtensionConstVa
         return;
     }
 
-    // Convert args
+    // Check if this is an input method - use optimized InputEvent conversion
+    static const StringName input_method("_input");
+    static const StringName unhandled_input_method("_unhandled_input");
+    static const StringName unhandled_key_input_method("_unhandled_key_input");
+    static const StringName shortcut_input_method("_shortcut_input");
+
+    if ((p_method == input_method || p_method == unhandled_input_method ||
+         p_method == unhandled_key_input_method || p_method == shortcut_input_method) &&
+        p_argument_count == 1) {
+        // Extract InputEvent from the Variant
+        const Variant* event_var = (const Variant*)p_args[0];
+        if (event_var->get_type() == Variant::OBJECT) {
+            Object* obj = *event_var;
+            InputEvent* event = Object::cast_to<InputEvent>(obj);
+            if (event) {
+                if (call_input_method(p_method, event)) {
+                    r_error->error = GDEXTENSION_CALL_OK;
+                } else {
+                    r_error->error = GDEXTENSION_CALL_ERROR_INVALID_METHOD;
+                }
+                return;
+            }
+        }
+    }
+
+    // Standard method call path
     Vector<const Variant*> args;
     for (int i = 0; i < p_argument_count; i++) {
         args.push_back((const Variant*)p_args[i]);
@@ -226,6 +251,28 @@ void JSScriptInstance::call(const StringName &p_method, const GDExtensionConstVa
         UtilityFunctions::printerr("JSScript call error: ", error);
         r_error->error = GDEXTENSION_CALL_ERROR_INVALID_METHOD;
     }
+}
+
+// ============================================================================
+// Input Method Helper
+// ============================================================================
+
+bool JSScriptInstance::call_input_method(const StringName &p_method, InputEvent* event) {
+    if (!initialized_ && !initialize()) {
+        return false;
+    }
+
+    QuickJSContext* ctx = get_context();
+    if (!ctx || js_instance_id_ == 0) {
+        return false;
+    }
+
+    String error;
+    bool success = ctx->call_instance_input_method(js_instance_id_, p_method, event, error);
+    if (!success && !error.is_empty()) {
+        UtilityFunctions::printerr("JSScript input error: ", error);
+    }
+    return success;
 }
 
 // ============================================================================

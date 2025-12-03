@@ -3,6 +3,7 @@
 
 #include <gdextension_interface.h>
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/classes/input_event.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/templates/vector.hpp>
 #include <godot_cpp/variant/variant.hpp>
@@ -100,6 +101,7 @@ private:
     QuickJSContext* get_context() const;
     bool call_js_method(const godot::StringName &p_method, const godot::Variant** p_args,
                         int p_argcount, godot::Variant &r_result, godot::String& r_error);
+    bool call_input_method(const godot::StringName &p_method, godot::InputEvent* event);
 
     // Static callback functions for GDExtensionScriptInstanceInfo3
     static GDExtensionBool _set(GDExtensionScriptInstanceDataPtr p_instance,

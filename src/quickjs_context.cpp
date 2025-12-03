@@ -9,6 +9,18 @@
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+// InputEvent includes
+#include <godot_cpp/classes/input_event.hpp>
+#include <godot_cpp/classes/input_event_key.hpp>
+#include <godot_cpp/classes/input_event_mouse.hpp>
+#include <godot_cpp/classes/input_event_mouse_button.hpp>
+#include <godot_cpp/classes/input_event_mouse_motion.hpp>
+#include <godot_cpp/classes/input_event_action.hpp>
+#include <godot_cpp/classes/input_event_joypad_button.hpp>
+#include <godot_cpp/classes/input_event_joypad_motion.hpp>
+#include <godot_cpp/classes/input_event_screen_touch.hpp>
+#include <godot_cpp/classes/input_event_screen_drag.hpp>
+
 using namespace godot;
 
 namespace jsb {
@@ -458,6 +470,146 @@ String QuickJSContext::get_exception_message() {
 
     JS_FreeValue(ctx_, exception);
     return message;
+}
+
+// Helper to convert InputEvent to a JS object with relevant properties
+JSValue QuickJSContext::input_event_to_js(InputEvent* event) {
+    if (!event) return JS_NULL;
+
+    JSValue obj = JS_NewObject(ctx_);
+
+    // Common InputEvent properties
+    JS_SetPropertyStr(ctx_, obj, "type", JS_NewString(ctx_, event->get_class().utf8().get_data()));
+    JS_SetPropertyStr(ctx_, obj, "device", JS_NewInt32(ctx_, event->get_device()));
+
+    // InputEventKey
+    if (InputEventKey* key_event = Object::cast_to<InputEventKey>(event)) {
+        JS_SetPropertyStr(ctx_, obj, "pressed", JS_NewBool(ctx_, key_event->is_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "echo", JS_NewBool(ctx_, key_event->is_echo()));
+        JS_SetPropertyStr(ctx_, obj, "keycode", JS_NewInt32(ctx_, (int)key_event->get_keycode()));
+        JS_SetPropertyStr(ctx_, obj, "physical_keycode", JS_NewInt32(ctx_, (int)key_event->get_physical_keycode()));
+        JS_SetPropertyStr(ctx_, obj, "key_label", JS_NewInt32(ctx_, (int)key_event->get_key_label()));
+        JS_SetPropertyStr(ctx_, obj, "unicode", JS_NewInt32(ctx_, key_event->get_unicode()));
+        JS_SetPropertyStr(ctx_, obj, "ctrl_pressed", JS_NewBool(ctx_, key_event->is_ctrl_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "alt_pressed", JS_NewBool(ctx_, key_event->is_alt_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "shift_pressed", JS_NewBool(ctx_, key_event->is_shift_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "meta_pressed", JS_NewBool(ctx_, key_event->is_meta_pressed()));
+    }
+    // InputEventMouseButton
+    else if (InputEventMouseButton* mb_event = Object::cast_to<InputEventMouseButton>(event)) {
+        JS_SetPropertyStr(ctx_, obj, "pressed", JS_NewBool(ctx_, mb_event->is_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "double_click", JS_NewBool(ctx_, mb_event->is_double_click()));
+        JS_SetPropertyStr(ctx_, obj, "button_index", JS_NewInt32(ctx_, (int)mb_event->get_button_index()));
+        JS_SetPropertyStr(ctx_, obj, "button_mask", JS_NewInt32(ctx_, (int)mb_event->get_button_mask()));
+
+        Vector2 pos = mb_event->get_position();
+        JSValue pos_obj = JS_NewObject(ctx_);
+        JS_SetPropertyStr(ctx_, pos_obj, "x", JS_NewFloat64(ctx_, pos.x));
+        JS_SetPropertyStr(ctx_, pos_obj, "y", JS_NewFloat64(ctx_, pos.y));
+        JS_SetPropertyStr(ctx_, obj, "position", pos_obj);
+
+        Vector2 global_pos = mb_event->get_global_position();
+        JSValue global_pos_obj = JS_NewObject(ctx_);
+        JS_SetPropertyStr(ctx_, global_pos_obj, "x", JS_NewFloat64(ctx_, global_pos.x));
+        JS_SetPropertyStr(ctx_, global_pos_obj, "y", JS_NewFloat64(ctx_, global_pos.y));
+        JS_SetPropertyStr(ctx_, obj, "global_position", global_pos_obj);
+
+        JS_SetPropertyStr(ctx_, obj, "ctrl_pressed", JS_NewBool(ctx_, mb_event->is_ctrl_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "alt_pressed", JS_NewBool(ctx_, mb_event->is_alt_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "shift_pressed", JS_NewBool(ctx_, mb_event->is_shift_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "meta_pressed", JS_NewBool(ctx_, mb_event->is_meta_pressed()));
+    }
+    // InputEventMouseMotion
+    else if (InputEventMouseMotion* mm_event = Object::cast_to<InputEventMouseMotion>(event)) {
+        JS_SetPropertyStr(ctx_, obj, "button_mask", JS_NewInt32(ctx_, (int)mm_event->get_button_mask()));
+
+        Vector2 pos = mm_event->get_position();
+        JSValue pos_obj = JS_NewObject(ctx_);
+        JS_SetPropertyStr(ctx_, pos_obj, "x", JS_NewFloat64(ctx_, pos.x));
+        JS_SetPropertyStr(ctx_, pos_obj, "y", JS_NewFloat64(ctx_, pos.y));
+        JS_SetPropertyStr(ctx_, obj, "position", pos_obj);
+
+        Vector2 global_pos = mm_event->get_global_position();
+        JSValue global_pos_obj = JS_NewObject(ctx_);
+        JS_SetPropertyStr(ctx_, global_pos_obj, "x", JS_NewFloat64(ctx_, global_pos.x));
+        JS_SetPropertyStr(ctx_, global_pos_obj, "y", JS_NewFloat64(ctx_, global_pos.y));
+        JS_SetPropertyStr(ctx_, obj, "global_position", global_pos_obj);
+
+        Vector2 relative = mm_event->get_relative();
+        JSValue rel_obj = JS_NewObject(ctx_);
+        JS_SetPropertyStr(ctx_, rel_obj, "x", JS_NewFloat64(ctx_, relative.x));
+        JS_SetPropertyStr(ctx_, rel_obj, "y", JS_NewFloat64(ctx_, relative.y));
+        JS_SetPropertyStr(ctx_, obj, "relative", rel_obj);
+
+        Vector2 velocity = mm_event->get_velocity();
+        JSValue vel_obj = JS_NewObject(ctx_);
+        JS_SetPropertyStr(ctx_, vel_obj, "x", JS_NewFloat64(ctx_, velocity.x));
+        JS_SetPropertyStr(ctx_, vel_obj, "y", JS_NewFloat64(ctx_, velocity.y));
+        JS_SetPropertyStr(ctx_, obj, "velocity", vel_obj);
+
+        JS_SetPropertyStr(ctx_, obj, "ctrl_pressed", JS_NewBool(ctx_, mm_event->is_ctrl_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "alt_pressed", JS_NewBool(ctx_, mm_event->is_alt_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "shift_pressed", JS_NewBool(ctx_, mm_event->is_shift_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "meta_pressed", JS_NewBool(ctx_, mm_event->is_meta_pressed()));
+    }
+    // InputEventAction
+    else if (InputEventAction* action_event = Object::cast_to<InputEventAction>(event)) {
+        JS_SetPropertyStr(ctx_, obj, "pressed", JS_NewBool(ctx_, action_event->is_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "action", JS_NewString(ctx_, String(action_event->get_action()).utf8().get_data()));
+        JS_SetPropertyStr(ctx_, obj, "strength", JS_NewFloat64(ctx_, action_event->get_strength()));
+    }
+    // InputEventJoypadButton
+    else if (InputEventJoypadButton* joy_btn = Object::cast_to<InputEventJoypadButton>(event)) {
+        JS_SetPropertyStr(ctx_, obj, "pressed", JS_NewBool(ctx_, joy_btn->is_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "button_index", JS_NewInt32(ctx_, (int)joy_btn->get_button_index()));
+        JS_SetPropertyStr(ctx_, obj, "pressure", JS_NewFloat64(ctx_, joy_btn->get_pressure()));
+    }
+    // InputEventJoypadMotion
+    else if (InputEventJoypadMotion* joy_motion = Object::cast_to<InputEventJoypadMotion>(event)) {
+        JS_SetPropertyStr(ctx_, obj, "axis", JS_NewInt32(ctx_, (int)joy_motion->get_axis()));
+        JS_SetPropertyStr(ctx_, obj, "axis_value", JS_NewFloat64(ctx_, joy_motion->get_axis_value()));
+    }
+    // InputEventScreenTouch
+    else if (InputEventScreenTouch* touch = Object::cast_to<InputEventScreenTouch>(event)) {
+        JS_SetPropertyStr(ctx_, obj, "pressed", JS_NewBool(ctx_, touch->is_pressed()));
+        JS_SetPropertyStr(ctx_, obj, "index", JS_NewInt32(ctx_, touch->get_index()));
+
+        Vector2 pos = touch->get_position();
+        JSValue pos_obj = JS_NewObject(ctx_);
+        JS_SetPropertyStr(ctx_, pos_obj, "x", JS_NewFloat64(ctx_, pos.x));
+        JS_SetPropertyStr(ctx_, pos_obj, "y", JS_NewFloat64(ctx_, pos.y));
+        JS_SetPropertyStr(ctx_, obj, "position", pos_obj);
+    }
+    // InputEventScreenDrag
+    else if (InputEventScreenDrag* drag = Object::cast_to<InputEventScreenDrag>(event)) {
+        JS_SetPropertyStr(ctx_, obj, "index", JS_NewInt32(ctx_, drag->get_index()));
+
+        Vector2 pos = drag->get_position();
+        JSValue pos_obj = JS_NewObject(ctx_);
+        JS_SetPropertyStr(ctx_, pos_obj, "x", JS_NewFloat64(ctx_, pos.x));
+        JS_SetPropertyStr(ctx_, pos_obj, "y", JS_NewFloat64(ctx_, pos.y));
+        JS_SetPropertyStr(ctx_, obj, "position", pos_obj);
+
+        Vector2 relative = drag->get_relative();
+        JSValue rel_obj = JS_NewObject(ctx_);
+        JS_SetPropertyStr(ctx_, rel_obj, "x", JS_NewFloat64(ctx_, relative.x));
+        JS_SetPropertyStr(ctx_, rel_obj, "y", JS_NewFloat64(ctx_, relative.y));
+        JS_SetPropertyStr(ctx_, obj, "relative", rel_obj);
+
+        Vector2 velocity = drag->get_velocity();
+        JSValue vel_obj = JS_NewObject(ctx_);
+        JS_SetPropertyStr(ctx_, vel_obj, "x", JS_NewFloat64(ctx_, velocity.x));
+        JS_SetPropertyStr(ctx_, vel_obj, "y", JS_NewFloat64(ctx_, velocity.y));
+        JS_SetPropertyStr(ctx_, obj, "velocity", vel_obj);
+    }
+
+    // Add common helper methods as properties
+    // is_action - checks if event matches an action
+    JS_SetPropertyStr(ctx_, obj, "is_pressed", JS_NewBool(ctx_, event->is_pressed()));
+    JS_SetPropertyStr(ctx_, obj, "is_released", JS_NewBool(ctx_, event->is_released()));
+    JS_SetPropertyStr(ctx_, obj, "is_echo", JS_NewBool(ctx_, event->is_echo()));
+
+    return obj;
 }
 
 JSValue QuickJSContext::variant_to_js(const Variant &value) {
@@ -948,6 +1100,63 @@ bool QuickJSContext::call_instance_method(int64_t instance_id, const StringName 
     result = js_to_variant(call_result);
     JS_FreeValue(ctx_, call_result);
 
+    return true;
+}
+
+bool QuickJSContext::call_instance_input_method(int64_t instance_id, const StringName &method,
+                                                 InputEvent* event, String &error) {
+    if (!is_valid()) {
+        error = "Context not initialized";
+        return false;
+    }
+
+    if (!script_instances_.has(instance_id)) {
+        error = "Invalid script instance ID";
+        return false;
+    }
+
+    ScriptInstanceData& data = script_instances_[instance_id];
+    if (!data.valid) {
+        error = "Script instance has been invalidated";
+        return false;
+    }
+
+    // Get the method from the instance
+    String method_str = String(method);
+    JSValue method_fn = JS_GetPropertyStr(ctx_, data.js_object, method_str.utf8().get_data());
+
+    if (!JS_IsFunction(ctx_, method_fn)) {
+        JS_FreeValue(ctx_, method_fn);
+        // Not an error - method simply doesn't exist
+        return true;
+    }
+
+    // Convert InputEvent to JS using optimized converter
+    JSValue js_event = input_event_to_js(event);
+
+    // Set deadline for timeout
+    if (timeout_ms_ > 0) {
+        deadline_ = Time::get_singleton()->get_ticks_msec() + timeout_ms_;
+    } else {
+        deadline_ = 0;
+    }
+
+    // Call the method
+    JSValue call_result = JS_Call(ctx_, method_fn, data.js_object, 1, &js_event);
+
+    deadline_ = 0;
+
+    // Free JS event and method
+    JS_FreeValue(ctx_, js_event);
+    JS_FreeValue(ctx_, method_fn);
+
+    if (JS_IsException(call_result)) {
+        error = get_exception_message();
+        JS_FreeValue(ctx_, call_result);
+        return false;
+    }
+
+    JS_FreeValue(ctx_, call_result);
     return true;
 }
 
