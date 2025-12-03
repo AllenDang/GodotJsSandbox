@@ -1,5 +1,7 @@
 extends Node3D
 
+const TestRefCountedTypesClass = preload("res://test_cases/test_refcounted_types.gd")
+
 var sandbox: JSSandbox
 
 func _ready() -> void:
@@ -46,6 +48,9 @@ func run_tests() -> void:
 	# Memory safety and limits
 	runner.add_suite(TestObjectLifecycle.new())
 	runner.add_suite(TestExecutionLimits.new())
+
+	# RefCounted types (Resource subclasses)
+	runner.add_suite(TestRefCountedTypesClass.new())
 
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())
