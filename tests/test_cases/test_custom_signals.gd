@@ -12,6 +12,7 @@ func get_tests() -> Array[String]:
 		"test_emit_signal_exists",
 		"test_emit_signal_basic",
 		"test_emit_signal_with_args",
+		"test_emit_signal_many_args",  # Test unlimited args support
 		# @signal annotation parsing
 		"test_signal_annotation_parsed",
 		"test_multiple_signals_parsed",
@@ -63,6 +64,49 @@ func run_test(test_name: String) -> Dictionary:
 				}
 			"""
 			return assert_eval(code, true)
+
+		"test_emit_signal_many_args":
+			# Test emit_signal with MORE than 4 arguments (tests the callv fix)
+			# Previously limited to 4 args, now supports unlimited
+			var emitter = Node.new()
+			emitter.name = "ManyArgsEmitter"
+			test_root.add_child(emitter)
+			await scene_tree.process_frame
+
+			# Add custom signal with 6 arguments
+			emitter.add_user_signal("many_args_signal", [
+				{ "name": "a", "type": TYPE_INT },
+				{ "name": "b", "type": TYPE_INT },
+				{ "name": "c", "type": TYPE_INT },
+				{ "name": "d", "type": TYPE_INT },
+				{ "name": "e", "type": TYPE_INT },
+				{ "name": "f", "type": TYPE_INT }
+			])
+
+			# Track received values
+			emitter.set_meta("args_sum", 0)
+			emitter.connect("many_args_signal", func(a: int, b: int, c: int, d: int, e: int, f: int):
+				emitter.set_meta("args_sum", a + b + c + d + e + f)
+			)
+
+			# Pass emitter to JS and emit signal with 6 args
+			sandbox.set_global("__test_emitter", emitter)
+			sandbox.eval("""
+				__test_emitter.emit_signal('many_args_signal', 1, 2, 3, 4, 5, 6);
+			""")
+
+			await scene_tree.process_frame
+
+			var args_sum = emitter.get_meta("args_sum")
+
+			# Cleanup
+			sandbox.eval("delete globalThis.__test_emitter;")
+			emitter.queue_free()
+
+			# 1+2+3+4+5+6 = 21
+			if args_sum != 21:
+				return { "passed": false, "message": "Expected sum=21 (1+2+3+4+5+6), got %d" % args_sum }
+			return { "passed": true, "message": "" }
 
 		"test_signal_annotation_parsed":
 			# Test that @signal annotation is parsed from JS code

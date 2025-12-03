@@ -7,6 +7,15 @@
 namespace jsb {
 
 class QuickJSContext;
+class ObjectRegistry;
+
+// Data stored in GodotObject JS wrapper opaque pointer
+// Contains both the handle and the registry that owns it
+// This allows the finalizer to work correctly even with multiple contexts sharing a runtime
+struct GodotObjectData {
+    uint64_t handle;
+    ObjectRegistry* registry;
+};
 
 // GodotBindings sets up JavaScript bindings for Godot classes
 // This allows JS code to create Godot objects, call methods, and access properties

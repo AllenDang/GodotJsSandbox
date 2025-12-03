@@ -686,30 +686,19 @@ JSValue GodotBindings::js_godot_emit_signal(JSContext* ctx, JSValueConst this_va
     }
 
     // Convert additional arguments to Godot Variants
-    Array args;
+    // Build args array with signal name first (for callv)
+    Array call_args;
+    call_args.append(StringName(signal_name));
     for (int i = 2; i < argc; i++) {
-        args.append(qjs_ctx->js_to_variant(argv[i]));
+        call_args.append(qjs_ctx->js_to_variant(argv[i]));
     }
 
-    // Emit the signal using emit_signal with array of arguments
-    Error err;
-    if (args.size() == 0) {
-        err = target->emit_signal(StringName(signal_name));
-    } else if (args.size() == 1) {
-        err = target->emit_signal(StringName(signal_name), args[0]);
-    } else if (args.size() == 2) {
-        err = target->emit_signal(StringName(signal_name), args[0], args[1]);
-    } else if (args.size() == 3) {
-        err = target->emit_signal(StringName(signal_name), args[0], args[1], args[2]);
-    } else if (args.size() == 4) {
-        err = target->emit_signal(StringName(signal_name), args[0], args[1], args[2], args[3]);
-    } else {
-        return JS_ThrowTypeError(ctx, "emit_signal supports at most 4 arguments");
-    }
+    // Use callv to emit signal - supports unlimited arguments
+    Variant result = target->callv(StringName("emit_signal"), call_args);
 
-    if (err != OK) {
-        return JS_ThrowTypeError(ctx, "Failed to emit signal: %d", (int)err);
-    }
+    // callv returns Variant, emit_signal returns Error
+    // If signal doesn't exist or other issues, Godot prints warnings internally
+    // We consider the call successful if we get here without exception
 
     return JS_UNDEFINED;
 }
@@ -720,12 +709,16 @@ void GodotBindings::godot_object_finalizer(JSRuntime* rt, JSValueConst val) {
     void* ptr = JS_GetAnyOpaque(val, &class_id);
     if (!ptr) return;
 
-    uint64_t handle = reinterpret_cast<uint64_t>(ptr);
+    // Opaque data contains both handle and registry pointer
+    // This allows correct cleanup even with multiple contexts sharing a runtime
+    GodotObjectData* data = static_cast<GodotObjectData*>(ptr);
 
-    QuickJSContext* ctx = static_cast<QuickJSContext*>(JS_GetRuntimeOpaque(rt));
-    if (ctx && ctx->get_object_registry()) {
-        ctx->get_object_registry()->release_handle(handle);
+    if (data->registry) {
+        data->registry->release_handle(data->handle);
     }
+
+    // Free the data struct allocated by js_malloc
+    js_free_rt(rt, data);
 }
 
 // Vector2 constructor

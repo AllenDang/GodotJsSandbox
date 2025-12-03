@@ -152,6 +152,15 @@ void QuickJSContext::shutdown() {
 void QuickJSContext::setup_builtins() {
     JSValue global = JS_GetGlobalObject(ctx_);
 
+    // Disable dangerous evaluation functions for sandbox security
+    // eval() - allows arbitrary code execution
+    JS_SetPropertyStr(ctx_, global, "eval", JS_UNDEFINED);
+
+    // Function constructor - allows dynamic function creation (equivalent to eval)
+    // We delete it from global scope to prevent: new Function('return 1')()
+    JS_DeleteProperty(ctx_, global, JS_NewAtom(ctx_, "Function"), 0);
+
+    // Setup console
     JSValue console = JS_NewObject(ctx_);
     JS_SetPropertyStr(ctx_, console, "log", JS_NewCFunction(ctx_, js_console_log, "log", 1));
     JS_SetPropertyStr(ctx_, console, "warn", JS_NewCFunction(ctx_, js_console_warn, "warn", 1));
@@ -710,7 +719,14 @@ JSValue QuickJSContext::variant_to_js(const Variant &value) {
 
                 // Fallback: create raw object (won't have method bindings)
                 JSValue js_obj = JS_NewObjectClass(ctx_, bindings_->get_godot_object_class_id());
-                JS_SetOpaque(js_obj, reinterpret_cast<void*>(handle));
+
+                // Allocate GodotObjectData to store both handle and registry
+                // This allows the finalizer to work correctly even with shared runtime
+                GodotObjectData* data = static_cast<GodotObjectData*>(js_malloc(ctx_, sizeof(GodotObjectData)));
+                data->handle = handle;
+                data->registry = object_registry_;
+                JS_SetOpaque(js_obj, data);
+
                 return js_obj;
             }
             return JS_NULL;
@@ -767,8 +783,9 @@ Variant QuickJSContext::js_to_variant(JSValue value) {
         if (bindings_ && object_registry_) {
             void* ptr = JS_GetOpaque(value, bindings_->get_godot_object_class_id());
             if (ptr) {
-                uint64_t handle = reinterpret_cast<uint64_t>(ptr);
-                Object* obj = object_registry_->get_object(handle);
+                // Opaque data is GodotObjectData struct containing handle and registry
+                GodotObjectData* data = static_cast<GodotObjectData*>(ptr);
+                Object* obj = object_registry_->get_object(data->handle);
                 if (obj) {
                     return obj;
                 }
@@ -930,11 +947,26 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
     // Wrap the script source to create an object with methods
     // The script can define _ready(), _process(delta), etc. as functions
     // We create an object that captures these as methods and binds 'this' to the owner node
+    //
+    // Strategy: We transform "function foo(...)" into "__methods.foo = function(...)"
+    // This captures functions directly without needing eval()
+
+    // Transform function declarations to method assignments
+    // "function _ready() { ... }" -> "__methods._ready = function() { ... }"
+    String transformed_source = source;
+    for (int i = 0; i < method_names.size(); i++) {
+        String fn_name = method_names[i];
+        // Match "function name" and replace with "__methods.name = function"
+        String search_pattern = "function " + fn_name;
+        String replace_pattern = "__methods." + fn_name + " = function";
+        transformed_source = transformed_source.replace(search_pattern, replace_pattern);
+    }
+
     String wrapped_source = String(R"(
 (function() {
     var __instance = {};
     var __owner_proxy = null;
-    var __method_names = )") + method_names_json + String(R"(;
+    var __methods = {};  // Capture methods here
 
     // Store owner reference for 'this' context
     __instance.__set_owner = function(ownerHandle, ownerClass) {
@@ -949,28 +981,21 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
         return __owner_proxy;
     };
 
-    // Helper to register a function to the instance
-    var __registerMethod = function(name, fn) {
-        if (typeof fn === 'function' && !__instance[name]) {
-            __instance[name] = function() {
-                return fn.apply(__owner_proxy, arguments);
-            };
-        }
-    };
+    // Execute user script - functions are captured into __methods
+    (function() {
+)") + transformed_source + String(R"(
+    })();
 
-    // Execute user script and capture functions
-    (function(__reg, __names) {
-        // User code - functions will be hoisted within this scope
-)") + source + String(R"(
-
-        // Capture all parsed method names
-        for (var i = 0; i < __names.length; i++) {
-            try {
-                var fn = eval(__names[i]);
-                if (typeof fn === 'function') __reg(__names[i], fn);
-            } catch(e) {}
+    // Wrap captured methods to bind 'this' to owner proxy
+    for (var name in __methods) {
+        if (typeof __methods[name] === 'function') {
+            (function(methodName, methodFn) {
+                __instance[methodName] = function() {
+                    return methodFn.apply(__owner_proxy, arguments);
+                };
+            })(name, __methods[name]);
         }
-    })(__registerMethod, __method_names);
+    }
 
     return __instance;
 })()
