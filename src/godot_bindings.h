@@ -50,6 +50,7 @@ private:
     // JS callback implementations
     static JSValue js_godot_new(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
     static JSValue js_load(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_godot_connect(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
     // GodotObject class callbacks
     static void godot_object_finalizer(JSRuntime* rt, JSValueConst val);

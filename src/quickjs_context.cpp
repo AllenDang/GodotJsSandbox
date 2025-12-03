@@ -1,4 +1,5 @@
 #include "quickjs_context.h"
+#include "js_runtime_manager.h"
 #include "object_registry.h"
 #include "sandbox_config.h"
 #include "execution_limiter.h"
@@ -63,26 +64,39 @@ QuickJSContext::~QuickJSContext() {
 }
 
 bool QuickJSContext::initialize() {
-    if (rt_ != nullptr) {
-        return true;
+    if (ctx_ != nullptr) {
+        return true;  // Already initialized
     }
 
-    rt_ = JS_NewRuntime();
-    if (!rt_) {
-        UtilityFunctions::printerr("Failed to create QuickJS runtime");
-        return false;
+    // Try to use JSRuntimeManager for shared runtime
+    JSRuntimeManager* manager = JSRuntimeManager::get_singleton();
+    if (manager) {
+        rt_ = manager->get_runtime();
+        ctx_ = manager->create_context();
+        owns_runtime_ = false;
+    } else {
+        // Fallback: create our own runtime (legacy mode)
+        rt_ = JS_NewRuntime();
+        if (!rt_) {
+            UtilityFunctions::printerr("Failed to create QuickJS runtime");
+            return false;
+        }
+        JS_SetMemoryLimit(rt_, 64 * 1024 * 1024);
+
+        ctx_ = JS_NewContext(rt_);
+        owns_runtime_ = true;
     }
 
-    JS_SetMemoryLimit(rt_, 64 * 1024 * 1024);
-
-    ctx_ = JS_NewContext(rt_);
     if (!ctx_) {
         UtilityFunctions::printerr("Failed to create QuickJS context");
-        JS_FreeRuntime(rt_);
-        rt_ = nullptr;
+        if (owns_runtime_ && rt_) {
+            JS_FreeRuntime(rt_);
+            rt_ = nullptr;
+        }
         return false;
     }
 
+    // Set up interrupt handler for timeout
     JS_SetInterruptHandler(rt_, interrupt_handler, this);
 
     setup_builtins();
@@ -92,16 +106,32 @@ bool QuickJSContext::initialize() {
 }
 
 void QuickJSContext::shutdown() {
+    // Free all script instances first (before freeing context)
+    for (auto& pair : script_instances_) {
+        if (pair.value.valid && ctx_) {
+            JS_FreeValue(ctx_, pair.value.js_object);
+        }
+    }
+    script_instances_.clear();
+
     bindings_.reset();
 
     if (ctx_) {
-        JS_FreeContext(ctx_);
+        // Use JSRuntimeManager to free context if available
+        JSRuntimeManager* manager = JSRuntimeManager::get_singleton();
+        if (manager && !owns_runtime_) {
+            manager->free_context(ctx_);
+        } else {
+            JS_FreeContext(ctx_);
+        }
         ctx_ = nullptr;
     }
-    if (rt_) {
+
+    if (owns_runtime_ && rt_) {
         JS_FreeRuntime(rt_);
-        rt_ = nullptr;
     }
+    rt_ = nullptr;
+    owns_runtime_ = false;
 }
 
 void QuickJSContext::setup_builtins() {
@@ -317,6 +347,31 @@ JSValue QuickJSContext::variant_to_js(const Variant &value) {
 
             if (object_registry_ && bindings_) {
                 uint64_t handle = object_registry_->create_handle(obj);
+
+                // Get the class name for proper proxy wrapping
+                String class_name = obj->get_class();
+
+                // Use __create_godot_object_from_handle to wrap with proxy
+                // This ensures the object has proper method bindings (like connect)
+                JSValue global = JS_GetGlobalObject(ctx_);
+
+                // Check if __wrap_existing_godot_object helper exists
+                JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_existing_godot_object");
+                if (JS_IsFunction(ctx_, wrap_fn)) {
+                    JSValue args[2];
+                    args[0] = JS_NewInt64(ctx_, handle);
+                    args[1] = JS_NewString(ctx_, class_name.utf8().get_data());
+                    JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 2, args);
+                    JS_FreeValue(ctx_, args[0]);
+                    JS_FreeValue(ctx_, args[1]);
+                    JS_FreeValue(ctx_, wrap_fn);
+                    JS_FreeValue(ctx_, global);
+                    return result;
+                }
+                JS_FreeValue(ctx_, wrap_fn);
+                JS_FreeValue(ctx_, global);
+
+                // Fallback: create raw object (won't have method bindings)
                 JSValue js_obj = JS_NewObjectClass(ctx_, bindings_->get_godot_object_class_id());
                 JS_SetOpaque(js_obj, reinterpret_cast<void*>(handle));
                 return js_obj;

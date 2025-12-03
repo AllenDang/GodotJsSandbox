@@ -94,6 +94,8 @@ private:
     mutable godot::Vector<GDExtensionPropertyInfo> cached_property_list_;
     mutable godot::Vector<GDExtensionMethodInfo> cached_method_list_;
     mutable godot::Vector<godot::StringName> cached_string_names_; // Keep StringNames alive
+    mutable godot::Vector<godot::StringName> cached_class_names_;  // Keep class names alive
+    mutable godot::Vector<godot::String> cached_hint_strings_;     // Keep hint strings alive
 
     QuickJSContext* get_context() const;
     bool call_js_method(const godot::StringName &p_method, const godot::Variant** p_args,

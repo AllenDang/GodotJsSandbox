@@ -85,17 +85,23 @@ bool JSScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 const GDExtensionPropertyInfo* JSScriptInstance::get_property_list(uint32_t *r_count) const {
     cached_property_list_.clear();
     cached_string_names_.clear();
+    cached_class_names_.clear();
+    cached_hint_strings_.clear();
 
     for (const KeyValue<StringName, Variant> &E : properties_) {
         cached_string_names_.push_back(E.key);
+        cached_class_names_.push_back(StringName());  // Empty class name
+        cached_hint_strings_.push_back(String());     // Empty hint string
+
+        int idx = cached_string_names_.size() - 1;
 
         GDExtensionPropertyInfo info = {};
         info.type = (GDExtensionVariantType)E.value.get_type();
-        info.name = cached_string_names_[cached_string_names_.size() - 1]._native_ptr();
-        info.class_name = nullptr;
+        info.name = cached_string_names_[idx]._native_ptr();
+        info.class_name = cached_class_names_[idx]._native_ptr();
         info.hint = PROPERTY_HINT_NONE;
-        info.hint_string = nullptr;
-        info.usage = PROPERTY_USAGE_DEFAULT;
+        info.hint_string = cached_hint_strings_[idx]._native_ptr();
+        info.usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE;
         cached_property_list_.push_back(info);
     }
 

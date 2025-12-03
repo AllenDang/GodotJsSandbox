@@ -12,6 +12,7 @@
 #include "js_script.h"
 #include "js_script_language.h"
 #include "js_resource_loader.h"
+#include "js_runtime_manager.h"
 #include "deletion_tracker.h"
 
 using namespace godot;
@@ -24,6 +25,9 @@ void initialize_godot_js_runtime_module(ModuleInitializationLevel p_level) {
     if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
         return;
     }
+
+    // Initialize the shared JSRuntimeManager first (TDD Section 14.2)
+    jsb::JSRuntimeManager::initialize();
 
     // Register classes
     ClassDB::register_class<jsb::JSSandbox>();
@@ -65,6 +69,9 @@ void uninitialize_godot_js_runtime_module(ModuleInitializationLevel p_level) {
         memdelete(script_language);
         script_language = nullptr;
     }
+
+    // Shutdown JSRuntimeManager last (after all contexts are freed)
+    jsb::JSRuntimeManager::shutdown();
 }
 
 extern "C" {

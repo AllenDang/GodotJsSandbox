@@ -208,21 +208,26 @@ Error SceneSaver::save_script(const String& source, const String& path) {
 
 Error SceneSaver::save_scene(Node* root, const String& path,
                               const Dictionary& script_map, String& error) {
+    // Get directory from path
+    String directory = path.get_base_dir();
+
+    // IMPORTANT: Clear all scripts from the original tree BEFORE duplicating
+    // This avoids crashes during duplication/packing with JSScript instances
+    // We've already saved the script source code to .js files
+    // Store the script paths as metadata first
+    store_script_paths_recursive(root, directory);
+
     // Create a duplicate of the root for saving
-    // We need to modify script references to point to file paths
-    // Use DUPLICATE_SCRIPTS | DUPLICATE_GROUPS | DUPLICATE_SIGNALS to get everything
-    Node* save_root = Object::cast_to<Node>(root->duplicate(15)); // DUPLICATE_ALL = 15
+    // Use flags that exclude scripts to avoid serialization issues
+    // DUPLICATE_GROUPS (4) | DUPLICATE_SIGNALS (1) = 5
+    Node* save_root = Object::cast_to<Node>(root->duplicate(5));
     if (!save_root) {
         error = "Failed to duplicate root node for saving";
         return ERR_CANT_CREATE;
     }
 
-    // Get directory from path
-    String directory = path.get_base_dir();
-
-    // Clear scripts first (before setting owners) to avoid crashes during pack
-    // The scripts have already been saved as separate .js files
-    clear_scripts_recursive(save_root);
+    // Copy the script path metadata to the duplicated tree
+    copy_script_metadata_recursive(root, save_root);
 
     // Set owner for all children so they get included in the packed scene
     set_owners_recursive(save_root, save_root);
@@ -275,6 +280,85 @@ void SceneSaver::update_script_references(Node* node, const String& directory) {
         Node* child = Object::cast_to<Node>(children[i].operator Object*());
         if (child) {
             update_script_references(child, directory);
+        }
+    }
+}
+
+void SceneSaver::update_script_paths_recursive(Node* node, const String& directory) {
+    if (!node) return;
+
+    // Check if this node has a JS script filename stored (from collect_js_scripts)
+    if (node->has_meta("_js_script_file")) {
+        String script_filename = node->get_meta("_js_script_file");
+        String script_path = directory;
+        if (!script_path.ends_with("/")) script_path += "/";
+        script_path += script_filename;
+
+        // Store the script path as metadata instead of trying to set a JSScript directly
+        // This avoids crashes during PackedScene serialization
+        // The metadata will be preserved in the .tscn file and can be used to reload scripts
+        node->set_meta("_js_script_path", script_path);
+
+        // Clear the existing script to avoid serialization issues
+        node->set_script(Variant());
+
+        // Remove the temporary meta
+        node->remove_meta("_js_script_file");
+    }
+
+    // Process children
+    TypedArray<Node> children = node->get_children();
+    for (int i = 0; i < children.size(); i++) {
+        Node* child = Object::cast_to<Node>(children[i].operator Object*());
+        if (child) {
+            update_script_paths_recursive(child, directory);
+        }
+    }
+}
+
+void SceneSaver::store_script_paths_recursive(Node* node, const String& directory) {
+    if (!node) return;
+
+    // If this node has _js_script_file metadata (from collect_js_scripts), convert to path
+    if (node->has_meta("_js_script_file")) {
+        String script_filename = node->get_meta("_js_script_file");
+        String script_path = directory;
+        if (!script_path.ends_with("/")) script_path += "/";
+        script_path += script_filename;
+
+        // Store the full path
+        node->set_meta("_js_script_path", script_path);
+        node->remove_meta("_js_script_file");
+    }
+
+    // Process children
+    TypedArray<Node> children = node->get_children();
+    for (int i = 0; i < children.size(); i++) {
+        Node* child = Object::cast_to<Node>(children[i].operator Object*());
+        if (child) {
+            store_script_paths_recursive(child, directory);
+        }
+    }
+}
+
+void SceneSaver::copy_script_metadata_recursive(Node* source, Node* dest) {
+    if (!source || !dest) return;
+
+    // Copy _js_script_path metadata if present
+    if (source->has_meta("_js_script_path")) {
+        dest->set_meta("_js_script_path", source->get_meta("_js_script_path"));
+    }
+
+    // Process children (assuming same structure)
+    TypedArray<Node> source_children = source->get_children();
+    TypedArray<Node> dest_children = dest->get_children();
+
+    int count = source_children.size() < dest_children.size() ? source_children.size() : dest_children.size();
+    for (int i = 0; i < count; i++) {
+        Node* src_child = Object::cast_to<Node>(source_children[i].operator Object*());
+        Node* dst_child = Object::cast_to<Node>(dest_children[i].operator Object*());
+        if (src_child && dst_child) {
+            copy_script_metadata_recursive(src_child, dst_child);
         }
     }
 }

@@ -18,8 +18,11 @@ class SandboxConfig;
 class ExecutionLimiter;
 class SafeWrapper;
 class GodotBindings;
+class SignalRegistry;
 
 // QuickJS context wrapper
+// Uses JSRuntimeManager for shared runtime (TDD Section 14.2)
+// Each QuickJSContext has its own JSContext but shares the JSRuntime
 class QuickJSContext {
 public:
     QuickJSContext();
@@ -29,6 +32,7 @@ public:
     QuickJSContext(const QuickJSContext&) = delete;
     QuickJSContext& operator=(const QuickJSContext&) = delete;
 
+    // Initialize with shared runtime from JSRuntimeManager
     bool initialize();
     void shutdown();
 
@@ -72,21 +76,25 @@ public:
     void set_sandbox_config(SandboxConfig* config) { sandbox_config_ = config; }
     void set_execution_limiter(ExecutionLimiter* limiter) { execution_limiter_ = limiter; }
     void set_safe_wrapper(SafeWrapper* wrapper) { safe_wrapper_ = wrapper; }
+    void set_signal_registry(SignalRegistry* registry) { signal_registry_ = registry; }
 
     ObjectRegistry* get_object_registry() const { return object_registry_; }
     SandboxConfig* get_sandbox_config() const { return sandbox_config_; }
     ExecutionLimiter* get_execution_limiter() const { return execution_limiter_; }
     SafeWrapper* get_safe_wrapper() const { return safe_wrapper_; }
+    SignalRegistry* get_signal_registry() const { return signal_registry_; }
     GodotBindings* get_bindings() const { return bindings_.get(); }
 
 private:
     JSRuntime* rt_ = nullptr;
     JSContext* ctx_ = nullptr;
+    bool owns_runtime_ = false;  // True if we created our own runtime (legacy mode)
 
     ObjectRegistry* object_registry_ = nullptr;
     SandboxConfig* sandbox_config_ = nullptr;
     ExecutionLimiter* execution_limiter_ = nullptr;
     SafeWrapper* safe_wrapper_ = nullptr;
+    SignalRegistry* signal_registry_ = nullptr;
 
     std::unique_ptr<GodotBindings> bindings_;
 

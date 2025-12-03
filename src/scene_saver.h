@@ -72,13 +72,23 @@ private:
                                               godot::Dictionary& scripts,
                                               godot::PackedStringArray& warnings);
 
-    // Update script references for saving
+    // Update script references for saving (legacy)
     static void update_script_references(godot::Node* node, const godot::String& directory);
+
+    // Update script paths to reference saved .js files
+    // Creates new JSScript resources with the proper path set
+    static void update_script_paths_recursive(godot::Node* node, const godot::String& directory);
+
+    // Store script paths as metadata (before duplication)
+    static void store_script_paths_recursive(godot::Node* node, const godot::String& directory);
+
+    // Copy script metadata from source to destination tree
+    static void copy_script_metadata_recursive(godot::Node* source, godot::Node* dest);
 
     // Set owner recursively for scene packing
     static void set_owners_recursive(godot::Node* node, godot::Node* owner);
 
-    // Clear scripts recursively before packing
+    // Clear scripts recursively before packing (deprecated - use update_script_paths_recursive)
     static void clear_scripts_recursive(godot::Node* node);
 };
 

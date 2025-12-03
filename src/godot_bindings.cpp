@@ -3,6 +3,7 @@
 #include "safe_wrapper.h"
 #include "object_registry.h"
 #include "sandbox_config.h"
+#include "signal_registry.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/node.hpp>
@@ -24,8 +25,7 @@ GodotBindings::~GodotBindings() {
 }
 
 QuickJSContext* GodotBindings::get_context(JSContext* ctx) {
-    JSRuntime* rt = JS_GetRuntime(ctx);
-    return static_cast<QuickJSContext*>(JS_GetRuntimeOpaque(rt));
+    return static_cast<QuickJSContext*>(JS_GetContextOpaque(ctx));
 }
 
 bool GodotBindings::initialize() {
@@ -36,8 +36,10 @@ bool GodotBindings::initialize() {
     JSContext* ctx = context_->ctx();
     JSRuntime* rt = context_->rt();
 
-    // Store context pointer in runtime for callbacks
-    JS_SetRuntimeOpaque(rt, context_);
+    // Store context pointer in context opaque for callbacks
+    // NOTE: We use context opaque, not runtime opaque, because multiple
+    // QuickJSContext instances share the same runtime via JSRuntimeManager
+    JS_SetContextOpaque(ctx, context_);
 
     // Create GodotObject class (simple class without exotic handlers)
     JS_NewClassID(rt, &godot_object_class_id_);
@@ -190,6 +192,10 @@ void GodotBindings::setup_global_functions() {
     JS_SetPropertyStr(ctx, global, "load",
         JS_NewCFunction(ctx, js_load, "load", 1));
 
+    // __godot_connect(handle, signal_name, callback) - connect JS callback to Godot signal
+    JS_SetPropertyStr(ctx, global, "__godot_connect",
+        JS_NewCFunction(ctx, js_godot_connect, "__godot_connect", 3));
+
     // Time singleton (safe subset of methods)
     JSValue time_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, time_obj, "get_ticks_msec",
@@ -305,6 +311,14 @@ void GodotBindings::setup_godot_class_constructor() {
                     return function() { return '[GodotObject ' + target.__class + ']'; };
                 }
 
+                // Special handling for connect() - uses SignalRegistry for JS callbacks
+                if (prop === 'connect') {
+                    var handle = target.__handle;
+                    return function(signalName, callback) {
+                        return __godot_connect(handle, signalName, callback);
+                    };
+                }
+
                 var methodFn = __findBinding(target.__class, prop, 'method');
                 if (methodFn) {
                     var handle = target.__handle;
@@ -349,6 +363,7 @@ void GodotBindings::setup_godot_class_constructor() {
             },
             has: function(target, prop) {
                 if (prop === '__handle' || prop === '__class') return true;
+                if (prop === 'connect') return true;
                 return __findBinding(target.__class, prop, 'method') !== null ||
                        __findBinding(target.__class, prop, 'property') !== null;
             }
@@ -378,6 +393,15 @@ void GodotBindings::setup_godot_class_constructor() {
             }
             var target = {
                 __handle: raw.__handle,
+                __class: className
+            };
+            return new Proxy(target, __godot_proxy_handler);
+        };
+
+        // Wrap an existing Godot object handle (used when objects come from GDScript)
+        globalThis.__wrap_existing_godot_object = function(handle, className) {
+            var target = {
+                __handle: handle,
                 __class: className
             };
             return new Proxy(target, __godot_proxy_handler);
@@ -509,6 +533,66 @@ JSValue GodotBindings::js_load(JSContext* ctx, JSValueConst this_val, int argc, 
     }
 
     return qjs_ctx->variant_to_js(result);
+}
+
+// Global function: __godot_connect(handle, signal_name, callback) - connects a JS callback to a Godot signal
+JSValue GodotBindings::js_godot_connect(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "__godot_connect requires 3 arguments: handle, signal_name, callback");
+    }
+
+    // Get object handle
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_ThrowTypeError(ctx, "First argument must be an object handle");
+    }
+
+    // Get signal name
+    const char* signal_name_cstr = JS_ToCString(ctx, argv[1]);
+    if (!signal_name_cstr) {
+        return JS_ThrowTypeError(ctx, "Second argument must be a signal name string");
+    }
+    String signal_name = signal_name_cstr;
+    JS_FreeCString(ctx, signal_name_cstr);
+
+    // Get callback (must be a function)
+    if (!JS_IsFunction(ctx, argv[2])) {
+        return JS_ThrowTypeError(ctx, "Third argument must be a callback function");
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Get the target object from the registry
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_ThrowInternalError(ctx, "ObjectRegistry not initialized");
+    }
+
+    Object* target = registry->get_object(handle);
+    if (!target) {
+        return JS_ThrowTypeError(ctx, "Invalid object handle");
+    }
+
+    // Get the signal registry
+    SignalRegistry* signal_registry = qjs_ctx->get_signal_registry();
+    if (!signal_registry) {
+        return JS_ThrowInternalError(ctx, "SignalRegistry not initialized");
+    }
+
+    // Connect the callback
+    // Duplicate the callback to keep it alive
+    JSValue callback_dup = JS_DupValue(ctx, argv[2]);
+    uint64_t connection_id = signal_registry->connect(target, StringName(signal_name), callback_dup);
+
+    if (connection_id == 0) {
+        JS_FreeValue(ctx, callback_dup);
+        return JS_ThrowTypeError(ctx, "Failed to connect signal");
+    }
+
+    return JS_NewInt64(ctx, connection_id);
 }
 
 // GodotObject finalizer - called when JS object is garbage collected

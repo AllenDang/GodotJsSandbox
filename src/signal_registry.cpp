@@ -8,6 +8,62 @@ using namespace godot;
 
 namespace jsb {
 
+// ============================================================================
+// JSSignalCallable implementation
+// ============================================================================
+
+JSSignalCallable::JSSignalCallable(SignalRegistry* registry, uint64_t connection_id)
+    : registry_(registry), connection_id_(connection_id) {
+}
+
+uint32_t JSSignalCallable::hash() const {
+    return static_cast<uint32_t>(connection_id_);
+}
+
+String JSSignalCallable::get_as_text() const {
+    return String("JSSignalCallable(") + String::num_int64(connection_id_) + ")";
+}
+
+CallableCustom::CompareEqualFunc JSSignalCallable::get_compare_equal_func() const {
+    return &JSSignalCallable::compare_equal;
+}
+
+CallableCustom::CompareLessFunc JSSignalCallable::get_compare_less_func() const {
+    return &JSSignalCallable::compare_less;
+}
+
+bool JSSignalCallable::is_valid() const {
+    return registry_ && registry_->is_connected(connection_id_);
+}
+
+ObjectID JSSignalCallable::get_object() const {
+    return ObjectID();  // No associated object
+}
+
+void JSSignalCallable::call(const Variant** p_arguments, int p_argcount, Variant& r_return_value, GDExtensionCallError& r_call_error) const {
+    if (registry_) {
+        registry_->invoke_callback(connection_id_, p_arguments, p_argcount);
+    }
+    r_return_value = Variant();
+    r_call_error.error = GDEXTENSION_CALL_OK;
+}
+
+bool JSSignalCallable::compare_equal(const CallableCustom* a, const CallableCustom* b) {
+    const JSSignalCallable* sa = static_cast<const JSSignalCallable*>(a);
+    const JSSignalCallable* sb = static_cast<const JSSignalCallable*>(b);
+    return sa->connection_id_ == sb->connection_id_ && sa->registry_ == sb->registry_;
+}
+
+bool JSSignalCallable::compare_less(const CallableCustom* a, const CallableCustom* b) {
+    const JSSignalCallable* sa = static_cast<const JSSignalCallable*>(a);
+    const JSSignalCallable* sb = static_cast<const JSSignalCallable*>(b);
+    return sa->connection_id_ < sb->connection_id_;
+}
+
+// ============================================================================
+// SignalRegistry implementation
+// ============================================================================
+
 SignalRegistry::SignalRegistry() {
 }
 
@@ -22,6 +78,7 @@ uint64_t SignalRegistry::connect(Object* target, const StringName& signal, JSVal
 
     // Check if signal exists
     if (!target->has_signal(signal)) {
+        UtilityFunctions::printerr("[JS] Signal '", signal, "' does not exist on target object");
         return 0;
     }
 
@@ -35,7 +92,7 @@ uint64_t SignalRegistry::connect(Object* target, const StringName& signal, JSVal
     conn.connection_id = connection_id;
     conn.connected = true;
 
-    // Store connection
+    // Store connection first (before creating callable, which needs it)
     connections_[connection_id] = conn;
 
     // Add to object's connection list
@@ -44,10 +101,23 @@ uint64_t SignalRegistry::connect(Object* target, const StringName& signal, JSVal
     }
     connections_by_object_[object_id].push_back(connection_id);
 
-    // Note: Actual Godot signal connection would require a Callable
-    // For now, we just track the connection. The actual signal dispatch
-    // would need to be implemented with custom Callable or polling mechanism.
-    // A full implementation would use a custom CallableCustom.
+    // Create the custom callable and connect to the actual Godot signal
+    JSSignalCallable* custom_callable = memnew(JSSignalCallable(this, connection_id));
+    Callable callable = Callable(custom_callable);
+
+    // Store the callable for later disconnection
+    connections_[connection_id].godot_callable = callable;
+
+    // Connect to the Godot signal
+    Error err = target->connect(signal, callable);
+    if (err != OK) {
+        UtilityFunctions::printerr("[JS] Failed to connect to signal '", signal, "': ", err);
+        // Clean up on failure
+        JS_FreeValue(ctx_, conn.callback);
+        connections_.erase(connection_id);
+        connections_by_object_[object_id].erase(connections_by_object_[object_id].find(connection_id));
+        return 0;
+    }
 
     return connection_id;
 }
@@ -70,8 +140,8 @@ void SignalRegistry::disconnect_internal(uint64_t connection_id, bool from_godot
     // Disconnect from Godot signal if not already disconnected
     if (!from_godot) {
         Object* target = ObjectDB::get_instance(ObjectID(conn.target_object_id));
-        if (target) {
-            // Would disconnect from actual Godot signal here
+        if (target && target->is_connected(conn.signal_name, conn.godot_callable)) {
+            target->disconnect(conn.signal_name, conn.godot_callable);
         }
     }
 
@@ -139,7 +209,7 @@ int SignalRegistry::get_connection_count() const {
     return connections_.size();
 }
 
-void SignalRegistry::invoke_callback(uint64_t connection_id, const Array& args) {
+void SignalRegistry::invoke_callback(uint64_t connection_id, const Variant** args, int argc) {
     if (!ctx_ || !connections_.has(connection_id)) {
         return;
     }
@@ -150,14 +220,13 @@ void SignalRegistry::invoke_callback(uint64_t connection_id, const Array& args) 
     }
 
     // Convert Godot args to JS args using QuickJSContext
-    int argc = args.size();
     JSValue* js_args = nullptr;
 
     if (argc > 0) {
         js_args = static_cast<JSValue*>(js_malloc(ctx_, sizeof(JSValue) * argc));
         for (int i = 0; i < argc; i++) {
             if (qjs_context_) {
-                js_args[i] = qjs_context_->variant_to_js(args[i]);
+                js_args[i] = qjs_context_->variant_to_js(*args[i]);
             } else {
                 js_args[i] = JS_UNDEFINED;
             }

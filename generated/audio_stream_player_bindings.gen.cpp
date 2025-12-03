@@ -16,9 +16,10 @@ namespace jsb {
 namespace generated {
 
 // Helper to get context from JSContext
+// NOTE: We use context opaque (not runtime opaque) because multiple
+// QuickJSContext instances share the same runtime via JSRuntimeManager
 static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
-    JSRuntime* rt = JS_GetRuntime(ctx);
-    return static_cast<QuickJSContext*>(JS_GetRuntimeOpaque(rt));
+    return static_cast<QuickJSContext*>(JS_GetContextOpaque(ctx));
 }
 
 // Safe wrapper for method calls - catches C++ exceptions and converts to JS errors

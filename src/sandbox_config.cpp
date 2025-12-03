@@ -27,17 +27,22 @@ void SandboxConfig::setup_default_blocklist() {
     // OS-level access
     blocked_classes_.insert("OS");
 
-    // Networking
+    // Networking (comprehensive list)
     blocked_classes_.insert("HTTPClient");
     blocked_classes_.insert("HTTPRequest");
+    blocked_classes_.insert("StreamPeer");          // Base class
     blocked_classes_.insert("StreamPeerTCP");
+    blocked_classes_.insert("StreamPeerTLS");
     blocked_classes_.insert("TCPServer");
     blocked_classes_.insert("UDPServer");
+    blocked_classes_.insert("PacketPeer");          // Base class
     blocked_classes_.insert("PacketPeerUDP");
+    blocked_classes_.insert("PacketPeerStream");
     blocked_classes_.insert("WebSocketPeer");
     blocked_classes_.insert("ENetConnection");
     blocked_classes_.insert("ENetMultiplayerPeer");
     blocked_classes_.insert("MultiplayerPeer");
+    blocked_classes_.insert("IP");                  // Network lookups
 
     // Threading
     blocked_classes_.insert("Thread");
@@ -70,8 +75,11 @@ void SandboxConfig::setup_default_blocklist() {
     // Object - block reflection and dynamic method calls
     blocked_methods_.insert("Object.call");
     blocked_methods_.insert("Object.callv");
+    blocked_methods_.insert("Object.set");          // PRD: prevent arbitrary property setting via string
     blocked_methods_.insert("Object.set_script");
     blocked_methods_.insert("Object.get_script");
+    blocked_methods_.insert("Object.set_deferred");  // Also blocks deferred setting
+    blocked_methods_.insert("Object.call_deferred"); // Block deferred calls too
 
     // ClassDB - block dynamic instantiation
     blocked_methods_.insert("ClassDB.instantiate");
