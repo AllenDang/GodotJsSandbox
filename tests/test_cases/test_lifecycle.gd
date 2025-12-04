@@ -32,9 +32,13 @@ func get_tests() -> Array[String]:
 		"test_closure_state_persists",
 		# Multiple scripts
 		"test_multiple_scripts_independent",
-		# Script methods
+		# Script methods (exports pattern)
 		"test_custom_method_callable",
 		"test_method_this_binding",
+		# Class-based exports pattern
+		"test_class_based_exports",
+		# Arrow function exports pattern
+		"test_arrow_function_exports",
 	]
 
 func _create_js_script(source: String) -> Script:
@@ -292,13 +296,14 @@ function _process(delta) {
 
 		"test_custom_method_callable":
 			# Custom methods defined in script should be callable from GDScript
+			# Using exports pattern for full JS syntax support (arrow functions, classes, etc.)
 			var node = Node3D.new()
 			node.name = "CustomMethodNode"
 
 			var script = _create_js_script("""
-function custom_add(a, b) {
+exports.custom_add = function(a, b) {
 	return a + b;
-}
+};
 """)
 
 			node.set_script(script)
@@ -316,16 +321,17 @@ function custom_add(a, b) {
 
 		"test_method_this_binding":
 			# Custom methods should have correct 'this' binding
+			# Using exports pattern for full JS syntax support
 			var unique_id = str(randi())
 			var node = Node3D.new()
 			node.name = "MethodThisNode"
 
 			var script = _create_js_script("""
 globalThis.__method_this_%s = null;
-function get_my_name() {
+exports.get_my_name = function() {
 	globalThis.__method_this_%s = this.name;
 	return this.name;
-}
+};
 """ % [unique_id, unique_id])
 
 			node.set_script(script)
@@ -341,6 +347,85 @@ function get_my_name() {
 			else:
 				sandbox.eval("delete globalThis.__method_this_%s;" % unique_id)
 				return { "passed": false, "message": "Custom methods not exposed to GDScript" }
+
+		"test_class_based_exports":
+			# Class-based exports pattern - recommended for complex scripts
+			var unique_id = str(randi())
+			var node = Node3D.new()
+			node.name = "ClassBasedNode"
+
+			var script = _create_js_script("""
+class PlayerController {
+	_ready() {
+		globalThis.__class_ready_%s = true;
+	}
+
+	get_speed() {
+		return 100;
+	}
+
+	calculate(a, b) {
+		return a * b + this.get_speed();
+	}
+}
+exports = new PlayerController();
+""" % [unique_id])
+
+			node.set_script(script)
+			test_root.add_child(node)
+
+			await scene_tree.process_frame
+			await scene_tree.process_frame
+
+			var ready_called = sandbox.eval("globalThis.__class_ready_%s" % unique_id)
+			sandbox.eval("delete globalThis.__class_ready_%s;" % unique_id)
+
+			if ready_called != true:
+				return { "passed": false, "message": "Class _ready() not called" }
+
+			if not node.has_method("get_speed"):
+				return { "passed": false, "message": "Class method get_speed not exposed" }
+
+			if not node.has_method("calculate"):
+				return { "passed": false, "message": "Class method calculate not exposed" }
+
+			var speed = node.call("get_speed")
+			if speed != 100:
+				return { "passed": false, "message": "get_speed() returned %s, expected 100" % speed }
+
+			var calc = node.call("calculate", 3, 4)
+			# 3 * 4 + 100 = 112
+			return assert_eq(calc, 112, "Class method should work with this binding")
+
+		"test_arrow_function_exports":
+			# Arrow function exports pattern
+			var node = Node3D.new()
+			node.name = "ArrowFuncNode"
+
+			var script = _create_js_script("""
+exports.multiply = (a, b) => a * b;
+exports.greet = (name) => {
+	return "Hello, " + name + "!";
+};
+""")
+
+			node.set_script(script)
+			test_root.add_child(node)
+
+			await scene_tree.process_frame
+
+			if not node.has_method("multiply"):
+				return { "passed": false, "message": "Arrow function multiply not exposed" }
+
+			if not node.has_method("greet"):
+				return { "passed": false, "message": "Arrow function greet not exposed" }
+
+			var product = node.call("multiply", 6, 7)
+			if product != 42:
+				return { "passed": false, "message": "multiply(6,7) returned %s, expected 42" % product }
+
+			var greeting = node.call("greet", "World")
+			return assert_eq(greeting, "Hello, World!", "Arrow function should return correct value")
 
 		_:
 			return { "passed": false, "message": "Unknown test: " + test_name }

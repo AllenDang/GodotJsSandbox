@@ -90,6 +90,24 @@ void JSSandbox::set_memory_limit_mb(int mb) {
     }
 }
 
+void JSSandbox::set_write_ops_per_frame(int count) {
+    if (execution_limiter_) {
+        execution_limiter_->set_write_ops_per_frame(count);
+    }
+}
+
+void JSSandbox::set_heavy_ops_per_frame(int count) {
+    if (execution_limiter_) {
+        execution_limiter_->set_heavy_ops_per_frame(count);
+    }
+}
+
+void JSSandbox::reset_frame_counters() {
+    if (execution_limiter_) {
+        execution_limiter_->reset_frame_counters();
+    }
+}
+
 Error JSSandbox::load_blocklist(const String &path) {
     if (!sandbox_config_) {
         return ERR_UNCONFIGURED;
@@ -364,6 +382,11 @@ void JSSandbox::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_timeout_ms", "ms"), &JSSandbox::set_timeout_ms);
     ClassDB::bind_method(D_METHOD("set_memory_limit_mb", "mb"), &JSSandbox::set_memory_limit_mb);
     ClassDB::bind_method(D_METHOD("load_blocklist", "path"), &JSSandbox::load_blocklist);
+
+    // Rate limiting configuration (per PRD Section 6.4)
+    ClassDB::bind_method(D_METHOD("set_write_ops_per_frame", "count"), &JSSandbox::set_write_ops_per_frame);
+    ClassDB::bind_method(D_METHOD("set_heavy_ops_per_frame", "count"), &JSSandbox::set_heavy_ops_per_frame);
+    ClassDB::bind_method(D_METHOD("reset_frame_counters"), &JSSandbox::reset_frame_counters);
 
     // Execution
     ClassDB::bind_method(D_METHOD("eval", "code"), &JSSandbox::eval);

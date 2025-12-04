@@ -38,9 +38,19 @@ Object* SafeWrapper::validate_handle(uint64_t handle, String& error) {
     return obj;
 }
 
-bool SafeWrapper::check_rate_limit(String& error) {
-    if (execution_limiter_ && !execution_limiter_->check_api_rate_limit()) {
-        error = "API rate limit exceeded";
+bool SafeWrapper::check_rate_limit(ApiCategory category, String& error) {
+    if (execution_limiter_ && !execution_limiter_->check_api_rate_limit(category)) {
+        switch (category) {
+            case ApiCategory::WRITE:
+                error = "Write operation rate limit exceeded (max 500/frame)";
+                break;
+            case ApiCategory::HEAVY:
+                error = "Heavy operation rate limit exceeded (max 50/frame)";
+                break;
+            default:
+                error = "API rate limit exceeded";
+                break;
+        }
         return false;
     }
     return true;
@@ -70,12 +80,13 @@ bool SafeWrapper::is_method_allowed(const StringName& class_name, const StringNa
 
 bool SafeWrapper::is_property_allowed(const StringName& class_name, const StringName& property) const {
     if (!sandbox_config_) return true;
-    return !sandbox_config_->is_property_blocked(String(class_name), String(property));
+    // Security: Use inheritance-aware check, so blocking "Object.script" blocks it on all subclasses
+    return !sandbox_config_->is_property_blocked_with_inheritance(class_name, String(property));
 }
 
 uint64_t SafeWrapper::create_object(const StringName& class_name, String& error) {
-    // Check rate limit
-    if (!check_rate_limit(error)) {
+    // Check rate limit - instantiate is a HEAVY operation per PRD Section 6.4
+    if (!check_rate_limit(ApiCategory::HEAVY, error)) {
         return 0;
     }
 
@@ -129,8 +140,8 @@ uint64_t SafeWrapper::create_object(const StringName& class_name, String& error)
 
 Variant SafeWrapper::call_method(uint64_t handle, const StringName& method,
                                   const Variant** args, int argc, String& error) {
-    // Check rate limit
-    if (!check_rate_limit(error)) {
+    // Check rate limit - method calls are WRITE operations per PRD Section 6.4
+    if (!check_rate_limit(ApiCategory::WRITE, error)) {
         return Variant();
     }
 
@@ -208,10 +219,8 @@ Variant SafeWrapper::call_method(uint64_t handle, const StringName& method,
 }
 
 Variant SafeWrapper::get_property(uint64_t handle, const StringName& property, String& error) {
-    // Check rate limit (property reads are usually not limited, but we check anyway)
-    if (!check_rate_limit(error)) {
-        return Variant();
-    }
+    // Property reads are READ operations - unlimited per PRD Section 6.4
+    // No rate limit check needed for reads
 
     // Validate handle
     Object* obj = validate_handle(handle, error);
@@ -236,8 +245,8 @@ Variant SafeWrapper::get_property(uint64_t handle, const StringName& property, S
 
 bool SafeWrapper::set_property(uint64_t handle, const StringName& property,
                                const Variant& value, String& error) {
-    // Check rate limit
-    if (!check_rate_limit(error)) {
+    // Property writes are WRITE operations per PRD Section 6.4
+    if (!check_rate_limit(ApiCategory::WRITE, error)) {
         return false;
     }
 
@@ -263,8 +272,8 @@ bool SafeWrapper::set_property(uint64_t handle, const StringName& property,
 }
 
 bool SafeWrapper::add_child(uint64_t parent_handle, uint64_t child_handle, String& error) {
-    // Check rate limit
-    if (!check_rate_limit(error)) {
+    // add_child is a WRITE operation per PRD Section 6.4
+    if (!check_rate_limit(ApiCategory::WRITE, error)) {
         return false;
     }
 
@@ -304,8 +313,8 @@ bool SafeWrapper::add_child(uint64_t parent_handle, uint64_t child_handle, Strin
 }
 
 bool SafeWrapper::remove_child(uint64_t parent_handle, uint64_t child_handle, String& error) {
-    // Check rate limit
-    if (!check_rate_limit(error)) {
+    // remove_child is a WRITE operation per PRD Section 6.4
+    if (!check_rate_limit(ApiCategory::WRITE, error)) {
         return false;
     }
 
@@ -345,8 +354,8 @@ bool SafeWrapper::remove_child(uint64_t parent_handle, uint64_t child_handle, St
 }
 
 bool SafeWrapper::queue_free(uint64_t handle, String& error) {
-    // Check rate limit
-    if (!check_rate_limit(error)) {
+    // queue_free is a HEAVY operation per PRD Section 6.4
+    if (!check_rate_limit(ApiCategory::HEAVY, error)) {
         return false;
     }
 
@@ -369,8 +378,8 @@ bool SafeWrapper::queue_free(uint64_t handle, String& error) {
 }
 
 Variant SafeWrapper::load_resource(const String& path, String& error) {
-    // Check rate limit
-    if (!check_rate_limit(error)) {
+    // Resource loading is a HEAVY operation per PRD Section 6.4
+    if (!check_rate_limit(ApiCategory::HEAVY, error)) {
         return Variant();
     }
 

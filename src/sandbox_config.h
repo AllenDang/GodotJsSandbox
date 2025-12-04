@@ -38,6 +38,9 @@ public:
     void block_property(const godot::String& class_name, const godot::String& property_name);
     bool is_property_blocked(const godot::String& class_name, const godot::String& property_name) const;
 
+    // Inheritance-aware property check (checks class and all parent classes)
+    bool is_property_blocked_with_inheritance(const godot::StringName& class_name, const godot::String& property_name) const;
+
     // Path checking
     bool is_path_allowed(const godot::String& path) const;
     void add_allowed_path_prefix(const godot::String& prefix);

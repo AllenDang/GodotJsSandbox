@@ -924,71 +924,60 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
         return 0;
     }
 
-    // Parse method names from source code (same logic as JSScript::parse_script)
-    Vector<String> method_names;
-    int pos = 0;
-    while ((pos = source.find("function ", pos)) >= 0) {
-        pos += 9; // Skip "function "
-        // Skip whitespace
-        while (pos < source.length() && (source[pos] == ' ' || source[pos] == '\t')) {
-            pos++;
-        }
-        // Read function name
-        int name_start = pos;
-        while (pos < source.length()) {
-            char32_t c = source[pos];
-            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
-                (c >= '0' && c <= '9') || c == '_' || c == '$') {
-                pos++;
-            } else {
-                break;
-            }
-        }
-        int name_end = pos;
-        // Skip whitespace before '('
-        while (pos < source.length() && (source[pos] == ' ' || source[pos] == '\t')) {
-            pos++;
-        }
-        // Verify it's followed by '('
-        if (name_end > name_start && pos < source.length() && source[pos] == '(') {
-            String method_name = source.substr(name_start, name_end - name_start);
-            if (!method_name.is_empty()) {
-                method_names.push_back(method_name);
-            }
-        }
-    }
-
-    // Build JSON array of method names
-    String method_names_json = "[";
-    for (int i = 0; i < method_names.size(); i++) {
-        if (i > 0) method_names_json += ",";
-        method_names_json += "\"" + method_names[i] + "\"";
-    }
-    method_names_json += "]";
-
-    // Wrap the script source to create an object with methods
-    // The script can define _ready(), _process(delta), etc. as functions
-    // We create an object that captures these as methods and binds 'this' to the owner node
+    // Script instance wrapper approach:
+    // We support multiple patterns for defining script methods:
     //
-    // Strategy: We transform "function foo(...)" into "__methods.foo = function(...)"
-    // This captures functions directly without needing eval()
+    // Pattern 1: exports object (RECOMMENDED - works with all JS syntax)
+    //   exports._ready = function() { console.log("ready"); };
+    //   exports._process = (delta) => { this.position.x += delta; };
+    //
+    // Pattern 2: Class-based (RECOMMENDED for complex scripts)
+    //   class PlayerController {
+    //       _ready() { this.speed = 100; }
+    //       _process(delta) { this.position.x += this.speed * delta; }
+    //   }
+    //   exports = new PlayerController();
+    //
+    // Pattern 3: Object literal
+    //   exports = {
+    //       _ready() { console.log("ready"); },
+    //       _process(delta) { /* ... */ }
+    //   };
+    //
+    // Pattern 4: Legacy function declarations (backward compatible)
+    //   function _ready() { console.log("ready"); }
+    //   function _process(delta) { /* ... */ }
+    //   NOTE: This pattern has limitations - only predefined lifecycle methods
+    //   are captured. For custom methods, use the exports pattern.
+    //
+    // The exports pattern is preferred because:
+    // - Works with all JS syntax (arrow functions, classes, async, etc.)
+    // - No parsing required - pure JS introspection
+    // - Explicit intent - clear what methods are exposed
+    // - Works on all platforms (iOS/Android/desktop)
 
-    // Transform function declarations to method assignments
-    // "function _ready() { ... }" -> "__methods._ready = function() { ... }"
-    String transformed_source = source;
-    for (int i = 0; i < method_names.size(); i++) {
-        String fn_name = method_names[i];
-        // Match "function name" and replace with "__methods.name = function"
-        String search_pattern = "function " + fn_name;
-        String replace_pattern = "__methods." + fn_name + " = function";
-        transformed_source = transformed_source.replace(search_pattern, replace_pattern);
+    // For legacy pattern, we still check for common lifecycle method names
+    // These are the Godot lifecycle methods plus common signal handlers
+    static const char* lifecycle_methods[] = {
+        "_ready", "_process", "_physics_process", "_input", "_unhandled_input",
+        "_enter_tree", "_exit_tree", "_draw", "_gui_input", "_notification",
+        "_init", "_to_string", "_get", "_set", "_get_property_list",
+        nullptr
+    };
+
+    // Build legacy method capture code for known lifecycle methods
+    String legacy_capture;
+    for (int i = 0; lifecycle_methods[i] != nullptr; i++) {
+        String method = lifecycle_methods[i];
+        legacy_capture += "    try { if (typeof " + method + " === 'function') __legacy['" + method + "'] = " + method + "; } catch(e) {}\n";
     }
 
     String wrapped_source = String(R"(
 (function() {
     var __instance = {};
     var __owner_proxy = null;
-    var __methods = {};  // Capture methods here
+    var __legacy = {};  // Captures legacy function declarations
+    var exports = {};   // User assigns methods here (recommended)
 
     // Store owner reference for 'this' context
     __instance.__set_owner = function(ownerHandle, ownerClass) {
@@ -1003,19 +992,47 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
         return __owner_proxy;
     };
 
-    // Execute user script - functions are captured into __methods
-    (function() {
-)") + transformed_source + String(R"(
-    })();
+    // Execute user script
+)") + source + String(R"(
 
-    // Wrap captured methods to bind 'this' to owner proxy
-    for (var name in __methods) {
-        if (typeof __methods[name] === 'function') {
-            (function(methodName, methodFn) {
-                __instance[methodName] = function() {
-                    return methodFn.apply(__owner_proxy, arguments);
-                };
-            })(name, __methods[name]);
+    // Try to capture legacy function declarations (predefined names only)
+)") + legacy_capture + String(R"(
+
+    // Helper to wrap a method with proper 'this' binding
+    var __wrapMethod = function(name, fn, context) {
+        __instance[name] = function() {
+            return fn.apply(__owner_proxy, arguments);
+        };
+    };
+
+    // First, capture legacy function declarations
+    for (var key in __legacy) {
+        if (typeof __legacy[key] === 'function') {
+            __wrapMethod(key, __legacy[key], null);
+        }
+    }
+
+    // Then, capture methods from exports (overrides legacy if same name)
+    var __source = exports;
+    if (__source !== null && typeof __source === 'object') {
+        // Get own properties (for object literals and direct assignments)
+        for (var key in __source) {
+            if (typeof __source[key] === 'function') {
+                __wrapMethod(key, __source[key], __source);
+            }
+        }
+
+        // Get prototype methods (for class instances)
+        var proto = Object.getPrototypeOf(__source);
+        while (proto && proto !== Object.prototype) {
+            var names = Object.getOwnPropertyNames(proto);
+            for (var i = 0; i < names.length; i++) {
+                var name = names[i];
+                if (name !== 'constructor' && typeof proto[name] === 'function' && !__instance[name]) {
+                    __wrapMethod(name, proto[name].bind(__source), __source);
+                }
+            }
+            proto = Object.getPrototypeOf(proto);
         }
     }
 

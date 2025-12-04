@@ -233,20 +233,30 @@ bool JSScript::parse_script() {
     signals_.clear();
     properties_.clear();
 
-    // Simple function detection - looks for "function name(" patterns
-    // This is a heuristic that works for most common JS code patterns.
-    // Note: A full JS parser would be overkill; QuickJS doesn't expose its parser API
-    // in a way that's easily usable for this purpose.
+    // Method detection supports multiple patterns:
+    //
+    // Pattern 1: Legacy function declarations
+    //   function _ready() { ... }
+    //
+    // Pattern 2: exports pattern (RECOMMENDED for full JS syntax support)
+    //   exports._ready = function() { ... };
+    //   exports._ready = () => { ... };
+    //   exports = { _ready() { ... } };
+    //   exports = new PlayerController();  // class-based
+    //
+    // The exports pattern is preferred because it supports all JS syntax
+    // (arrow functions, classes, async, etc.) and works on all platforms.
+
+    // 1. Detect legacy function declarations: function name(
     int pos = 0;
     while ((pos = source_code_.find("function ", pos)) >= 0) {
-        // Basic check: skip if this appears to be in a single-line comment
-        // Look backwards for "//" on the same line
+        // Skip if in a single-line comment
         int line_start = source_code_.rfind("\n", pos);
         if (line_start < 0) line_start = 0;
         String line_before = source_code_.substr(line_start, pos - line_start);
         if (line_before.find("//") >= 0) {
             pos += 9;
-            continue;  // Skip - likely in a comment
+            continue;
         }
 
         pos += 9; // Skip "function "
@@ -256,7 +266,7 @@ bool JSScript::parse_script() {
             pos++;
         }
 
-        // Read function name (valid JS identifier: [a-zA-Z_$][a-zA-Z0-9_$]*)
+        // Read function name (valid JS identifier)
         int name_start = pos;
         while (pos < source_code_.length()) {
             char32_t c = source_code_[pos];
@@ -275,13 +285,194 @@ bool JSScript::parse_script() {
             pos++;
         }
 
-        // Verify it's followed by '(' (it's actually a function declaration)
+        // Verify it's followed by '('
         if (name_end > name_start && pos < source_code_.length() && source_code_[pos] == '(') {
             String method_name = source_code_.substr(name_start, name_end - name_start);
-            if (!method_name.is_empty()) {
+            if (!method_name.is_empty() && methods_.find(StringName(method_name)) < 0) {
                 methods_.push_back(StringName(method_name));
             }
         }
+    }
+
+    // 2. Detect exports pattern: exports.methodName = or exports["methodName"] =
+    pos = 0;
+    while ((pos = source_code_.find("exports.", pos)) >= 0) {
+        // Skip if in a comment
+        int line_start = source_code_.rfind("\n", pos);
+        if (line_start < 0) line_start = 0;
+        String line_before = source_code_.substr(line_start, pos - line_start);
+        if (line_before.find("//") >= 0) {
+            pos += 8;
+            continue;
+        }
+
+        pos += 8; // Skip "exports."
+
+        // Read method name
+        int name_start = pos;
+        while (pos < source_code_.length()) {
+            char32_t c = source_code_[pos];
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                (c >= '0' && c <= '9') || c == '_' || c == '$') {
+                pos++;
+            } else {
+                break;
+            }
+        }
+
+        int name_end = pos;
+
+        // Skip whitespace
+        while (pos < source_code_.length() && (source_code_[pos] == ' ' || source_code_[pos] == '\t')) {
+            pos++;
+        }
+
+        // Verify it's followed by '=' (assignment)
+        if (name_end > name_start && pos < source_code_.length() && source_code_[pos] == '=') {
+            String method_name = source_code_.substr(name_start, name_end - name_start);
+            if (!method_name.is_empty() && methods_.find(StringName(method_name)) < 0) {
+                methods_.push_back(StringName(method_name));
+            }
+        }
+    }
+
+    // 3. Detect exports object literal: exports = { methodName( or methodName:
+    pos = 0;
+    while ((pos = source_code_.find("exports", pos)) >= 0) {
+        int check_pos = pos + 7;
+        // Skip whitespace
+        while (check_pos < source_code_.length() && (source_code_[check_pos] == ' ' || source_code_[check_pos] == '\t')) {
+            check_pos++;
+        }
+        // Check for = {
+        if (check_pos < source_code_.length() && source_code_[check_pos] == '=') {
+            check_pos++;
+            while (check_pos < source_code_.length() && (source_code_[check_pos] == ' ' || source_code_[check_pos] == '\t' || source_code_[check_pos] == '\n')) {
+                check_pos++;
+            }
+            if (check_pos < source_code_.length() && source_code_[check_pos] == '{') {
+                // Parse object literal methods
+                int brace_count = 1;
+                check_pos++;
+                while (check_pos < source_code_.length() && brace_count > 0) {
+                    if (source_code_[check_pos] == '{') brace_count++;
+                    else if (source_code_[check_pos] == '}') brace_count--;
+                    else if (brace_count == 1) {
+                        // Look for method shorthand: methodName( or methodName:
+                        // Skip whitespace/newlines
+                        while (check_pos < source_code_.length() &&
+                               (source_code_[check_pos] == ' ' || source_code_[check_pos] == '\t' ||
+                                source_code_[check_pos] == '\n' || source_code_[check_pos] == ',')) {
+                            check_pos++;
+                        }
+                        // Read identifier
+                        int id_start = check_pos;
+                        while (check_pos < source_code_.length()) {
+                            char32_t c = source_code_[check_pos];
+                            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                                (c >= '0' && c <= '9') || c == '_' || c == '$') {
+                                check_pos++;
+                            } else {
+                                break;
+                            }
+                        }
+                        int id_end = check_pos;
+                        // Skip whitespace
+                        while (check_pos < source_code_.length() && (source_code_[check_pos] == ' ' || source_code_[check_pos] == '\t')) {
+                            check_pos++;
+                        }
+                        // Check if followed by ( or :
+                        if (id_end > id_start && check_pos < source_code_.length() &&
+                            (source_code_[check_pos] == '(' || source_code_[check_pos] == ':')) {
+                            String method_name = source_code_.substr(id_start, id_end - id_start);
+                            if (!method_name.is_empty() && methods_.find(StringName(method_name)) < 0) {
+                                methods_.push_back(StringName(method_name));
+                            }
+                        }
+                    }
+                    check_pos++;
+                }
+            }
+        }
+        pos++;
+    }
+
+    // 4. Detect class methods: class ClassName { methodName( or methodName = (
+    pos = 0;
+    while ((pos = source_code_.find("class ", pos)) >= 0) {
+        // Skip if in a comment
+        int line_start = source_code_.rfind("\n", pos);
+        if (line_start < 0) line_start = 0;
+        String line_before = source_code_.substr(line_start, pos - line_start);
+        if (line_before.find("//") >= 0) {
+            pos += 6;
+            continue;
+        }
+
+        // Find the class body opening brace
+        int brace_start = source_code_.find("{", pos);
+        if (brace_start < 0) {
+            pos += 6;
+            continue;
+        }
+
+        // Parse class body
+        int brace_count = 1;
+        int check_pos = brace_start + 1;
+        while (check_pos < source_code_.length() && brace_count > 0) {
+            char32_t c = source_code_[check_pos];
+            if (c == '{') brace_count++;
+            else if (c == '}') brace_count--;
+            else if (brace_count == 1) {
+                // Look for method definitions at class level
+                // Skip whitespace/newlines
+                while (check_pos < source_code_.length() &&
+                       (source_code_[check_pos] == ' ' || source_code_[check_pos] == '\t' ||
+                        source_code_[check_pos] == '\n' || source_code_[check_pos] == '\r')) {
+                    check_pos++;
+                }
+                if (check_pos >= source_code_.length()) break;
+
+                // Check for constructor (skip it)
+                if (source_code_.substr(check_pos, 11) == "constructor") {
+                    check_pos += 11;
+                    continue;
+                }
+
+                // Read identifier (potential method name)
+                int id_start = check_pos;
+                while (check_pos < source_code_.length()) {
+                    char32_t mc = source_code_[check_pos];
+                    if ((mc >= 'a' && mc <= 'z') || (mc >= 'A' && mc <= 'Z') ||
+                        (mc >= '0' && mc <= '9') || mc == '_' || mc == '$') {
+                        check_pos++;
+                    } else {
+                        break;
+                    }
+                }
+                int id_end = check_pos;
+
+                // Skip whitespace
+                while (check_pos < source_code_.length() &&
+                       (source_code_[check_pos] == ' ' || source_code_[check_pos] == '\t')) {
+                    check_pos++;
+                }
+
+                // Check if followed by ( (method) or = (class field with arrow function)
+                if (id_end > id_start && check_pos < source_code_.length() &&
+                    (source_code_[check_pos] == '(' || source_code_[check_pos] == '=')) {
+                    String method_name = source_code_.substr(id_start, id_end - id_start);
+                    // Skip common non-method keywords
+                    if (!method_name.is_empty() && method_name != "static" && method_name != "get" &&
+                        method_name != "set" && method_name != "async" &&
+                        methods_.find(StringName(method_name)) < 0) {
+                        methods_.push_back(StringName(method_name));
+                    }
+                }
+            }
+            check_pos++;
+        }
+        pos = check_pos;
     }
 
     // Parse annotation comments (@signal, @export)

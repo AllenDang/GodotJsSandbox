@@ -685,6 +685,8 @@ JSValue GodotBindings::js_godot_emit_signal(JSContext* ctx, JSValueConst this_va
 
     // Convert additional arguments to Godot Variants
     // Build args array with signal name first (for callv)
+    // Note: The blocklist only affects JS->Godot calls through SafeWrapper.
+    // C++ code here is trusted and can use callv directly.
     Array call_args;
     call_args.append(StringName(signal_name));
     for (int i = 2; i < argc; i++) {
@@ -692,11 +694,10 @@ JSValue GodotBindings::js_godot_emit_signal(JSContext* ctx, JSValueConst this_va
     }
 
     // Use callv to emit signal - supports unlimited arguments
-    Variant result = target->callv(StringName("emit_signal"), call_args);
+    target->callv(StringName("emit_signal"), call_args);
 
     // callv returns Variant, emit_signal returns Error
     // If signal doesn't exist or other issues, Godot prints warnings internally
-    // We consider the call successful if we get here without exception
 
     return JS_UNDEFINED;
 }

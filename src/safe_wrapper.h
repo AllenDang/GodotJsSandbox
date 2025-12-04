@@ -5,12 +5,12 @@
 #include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include "execution_limiter.h"
 
 namespace jsb {
 
 class ObjectRegistry;
 class SandboxConfig;
-class ExecutionLimiter;
 class DeletionTracker;
 
 // SafeWrapper is the core security layer for all Godot API calls from JavaScript
@@ -67,8 +67,9 @@ private:
     // Validate object handle and return the object
     godot::Object* validate_handle(uint64_t handle, godot::String& error);
 
-    // Check rate limits
-    bool check_rate_limit(godot::String& error);
+    // Check rate limits (tiered per PRD Section 6.4)
+    // READ: unlimited, WRITE: 500/frame, HEAVY: 50/frame
+    bool check_rate_limit(ApiCategory category, godot::String& error);
 
     // Get the class name of an object (handles inheritance)
     godot::StringName get_object_class(godot::Object* obj) const;

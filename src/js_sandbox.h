@@ -32,6 +32,11 @@ public:
     void set_memory_limit_mb(int mb);
     godot::Error load_blocklist(const godot::String &path);
 
+    // Rate limiting configuration (per PRD Section 6.4)
+    void set_write_ops_per_frame(int count);
+    void set_heavy_ops_per_frame(int count);
+    void reset_frame_counters();  // Call at start of each frame or between tests
+
     // Execution
     godot::Variant eval(const godot::String &code);
     godot::Variant eval_module(const godot::String &code, const godot::String &filename);

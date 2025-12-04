@@ -50,6 +50,9 @@ func _run_suite(suite: TestBase, sandbox: JSSandbox, scene_tree: SceneTree) -> D
 	return { "passed": passed, "failed": failed }
 
 func _run_single_test(suite: TestBase, test_name: String) -> Dictionary:
+	# Reset rate limit counters before each test to avoid cross-test interference
+	suite.sandbox.reset_frame_counters()
+
 	# Run the test and handle any exceptions
 	var result = await suite.run_test(test_name)
 	if result == null:

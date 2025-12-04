@@ -76,7 +76,7 @@ void SandboxConfig::setup_default_blocklist() {
     blocked_methods_.insert("Object.call");
     blocked_methods_.insert("Object.callv");
     blocked_methods_.insert("Object.set");          // PRD: prevent arbitrary property setting via string
-    blocked_methods_.insert("Object.set_script");
+    // NOTE: set_script is NOT blocked per PRD requirement - SafeWrapper validates only JSScript allowed
     blocked_methods_.insert("Object.get_script");
     blocked_methods_.insert("Object.set_deferred");  // Also blocks deferred setting
     blocked_methods_.insert("Object.call_deferred"); // Block deferred calls too
@@ -93,8 +93,7 @@ void SandboxConfig::setup_default_blocklist() {
     blocked_methods_.insert("Engine.register_singleton");
     blocked_methods_.insert("Engine.unregister_singleton");
 
-    // Node - prevent script replacement
-    blocked_methods_.insert("Node.set_script");
+    // NOTE: Node.set_script is NOT blocked - SafeWrapper validates only JSScript types are allowed
 
     // ===== Allowed Paths =====
     allowed_path_prefixes_.insert("res://");
@@ -238,12 +237,26 @@ bool SandboxConfig::is_property_blocked(const String& class_name, const String& 
     return blocked_properties_.has(class_name + String(".") + property_name);
 }
 
+bool SandboxConfig::is_property_blocked_with_inheritance(const StringName& class_name, const String& property_name) const {
+    // Walk up the inheritance chain to check if any parent class has this property blocked
+    StringName current = class_name;
+
+    while (!current.is_empty()) {
+        if (blocked_properties_.has(String(current) + String(".") + property_name)) {
+            return true;
+        }
+        // Get parent class using ClassDB
+        current = ClassDB::get_parent_class(current);
+    }
+
+    return false;
+}
+
 bool SandboxConfig::is_path_allowed(const String& path) const {
     // Check for path traversal patterns
     // We need to detect "/../" or paths ending with "/.." or starting with "../"
     // But NOT reject legitimate filenames like "file..name.png"
-    if (path.find("/../") != -1 ||      // Middle traversal
-        path.find("/..") == path.length() - 3 ||  // Ends with /..*
+    if (path.find("/../") != -1 ||      // Middle traversal: /foo/../bar
         path.ends_with("/..") ||         // Ends with /..
         path.begins_with("../") ||       // Starts with ../
         path == ".." ||                  // Just ..
