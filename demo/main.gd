@@ -10,9 +10,7 @@ var current_sandbox: JSSandbox = null  # Per-game sandbox for isolation
 var games: Array[Dictionary] = []
 
 @onready var launcher_ui: VBoxContainer = $LauncherUI
-@onready var game_container: SubViewportContainer = $GameContainer
-@onready var game_viewport: SubViewport = $GameContainer/GameViewport
-@onready var game_root: Node3D = $GameContainer/GameViewport/GameRoot
+@onready var game_container: Node = $GameContainer
 @onready var back_button: Button = $BackButton
 @onready var game_list_container: VBoxContainer = $LauncherUI/GameList/GameListContainer
 @onready var status_label: Label = $LauncherUI/StatusLabel
@@ -142,23 +140,15 @@ func _on_game_selected(game: Dictionary) -> void:
 		cleanup_sandbox()
 		return
 
-	# Determine if 2D or 3D and add to appropriate parent
-	var scene_type: String = game.get("scene_type", "3D")
-
 	# Clear existing game content
-	for child in game_root.get_children():
+	for child in game_container.get_children():
 		child.queue_free()
 
-	if scene_type == "2D":
-		# For 2D games, add directly to viewport
-		game_viewport.add_child(current_game_scene)
-	else:
-		# 3D game - add to game_root
-		game_root.add_child(current_game_scene)
+	# Add game scene directly to game_container (no SubViewport overhead)
+	game_container.add_child(current_game_scene)
 
 	# Switch to game view
 	launcher_ui.hide()
-	game_container.show()
 	back_button.show()
 
 	status_label.text = "Playing: " + game["name"]
@@ -259,7 +249,6 @@ func _on_back_pressed() -> void:
 	cleanup_sandbox()
 
 	# Switch back to launcher
-	game_container.hide()
 	back_button.hide()
 	launcher_ui.show()
 

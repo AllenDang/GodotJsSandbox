@@ -89,7 +89,7 @@ surface_material_override/0 = SubResource("Material_platform")
 [node name="Collision" type="CollisionShape3D" parent="Platforms/Platform2"]
 shape = SubResource("BoxShape_small")
 
-[node name="MovingPlatform1" type="StaticBody3D" parent="Platforms"]
+[node name="MovingPlatform1" type="AnimatableBody3D" parent="Platforms"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.5, -2)
 script = ExtResource("3_moving")
 
@@ -130,7 +130,7 @@ surface_material_override/0 = SubResource("Material_platform")
 [node name="Collision" type="CollisionShape3D" parent="Platforms/Platform5"]
 shape = SubResource("BoxShape_small")
 
-[node name="MovingPlatform2" type="StaticBody3D" parent="Platforms"]
+[node name="MovingPlatform2" type="AnimatableBody3D" parent="Platforms"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 3.5, -2)
 script = ExtResource("3_moving")
 
