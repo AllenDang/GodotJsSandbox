@@ -2840,8 +2840,8 @@ static JSValue js_FontFile_set_font_style(JSContext* ctx, JSValueConst this_val,
         return JS_ThrowTypeError(ctx, "FontFile.font_style setter: wrong type");
     }
 
-    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<TextServer::FontStyle> value = (BitField<TextServer::FontStyle>)tmp_value;
-    typed_obj->set_font_style(value);
+    int64_t value; JS_ToInt64(ctx, &value, argv[1]);
+    typed_obj->set_font_style((BitField<TextServer::FontStyle>)value);
     return JS_UNDEFINED;
 }
 

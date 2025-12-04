@@ -1184,6 +1184,13 @@ class BindingGenerator:
         elif prop_type.startswith("enum::"):
             setter_cast = f"({cpp_type})"
             from_js_conv = "int64_t value; JS_ToInt64(ctx, &value, argv[1]);"
+        # Handle bitfield types - similar to enums
+        elif setter_param_type.startswith("bitfield::"):
+            setter_cast = f"({setter_cpp_type})"
+            from_js_conv = "int64_t value; JS_ToInt64(ctx, &value, argv[1]);"
+        elif prop_type.startswith("bitfield::"):
+            setter_cast = f"({cpp_type})"
+            from_js_conv = "int64_t value; JS_ToInt64(ctx, &value, argv[1]);"
         else:
             # Use setter param type for conversion (e.g., setter expects Node* even if property is Viewport)
             from_js_conv = self.get_js_to_cpp_conversion(setter_cpp_type, 1, "value").replace("arg_value", "value")

@@ -1211,8 +1211,8 @@ static JSValue js_NavigationAgent3D_set_path_metadata_flags(JSContext* ctx, JSVa
         return JS_ThrowTypeError(ctx, "NavigationAgent3D.path_metadata_flags setter: wrong type");
     }
 
-    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<NavigationPathQueryParameters3D::PathMetadataFlags> value = (BitField<NavigationPathQueryParameters3D::PathMetadataFlags>)tmp_value;
-    typed_obj->set_path_metadata_flags(value);
+    int64_t value; JS_ToInt64(ctx, &value, argv[1]);
+    typed_obj->set_path_metadata_flags((BitField<NavigationPathQueryParameters3D::PathMetadataFlags>)value);
     return JS_UNDEFINED;
 }
 

@@ -4054,8 +4054,8 @@ static JSValue js_Node_set_process_thread_messages(JSContext* ctx, JSValueConst 
         return JS_ThrowTypeError(ctx, "Node.process_thread_messages setter: wrong type");
     }
 
-    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<Node::ProcessThreadMessages> value = (BitField<Node::ProcessThreadMessages>)tmp_value;
-    typed_obj->set_process_thread_messages(value);
+    int64_t value; JS_ToInt64(ctx, &value, argv[1]);
+    typed_obj->set_process_thread_messages((BitField<Node::ProcessThreadMessages>)value);
     return JS_UNDEFINED;
 }
 

@@ -15,6 +15,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
 
     register_AnimatedSprite2D_bindings(ctx, global, classes);
     register_AnimatedSprite3D_bindings(ctx, global, classes);
+    register_Animation_bindings(ctx, global, classes);
     register_AnimationMixer_bindings(ctx, global, classes);
     register_AnimationPlayer_bindings(ctx, global, classes);
     register_AnimationTree_bindings(ctx, global, classes);
@@ -56,6 +57,9 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_ColorRect_bindings(ctx, global, classes);
     register_Container_bindings(ctx, global, classes);
     register_Control_bindings(ctx, global, classes);
+    register_Curve_bindings(ctx, global, classes);
+    register_Curve2D_bindings(ctx, global, classes);
+    register_Curve3D_bindings(ctx, global, classes);
     register_CylinderMesh_bindings(ctx, global, classes);
     register_CylinderShape3D_bindings(ctx, global, classes);
     register_DirectionalLight2D_bindings(ctx, global, classes);
@@ -65,9 +69,23 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_FontFile_bindings(ctx, global, classes);
     register_GPUParticles2D_bindings(ctx, global, classes);
     register_GPUParticles3D_bindings(ctx, global, classes);
+    register_Gradient_bindings(ctx, global, classes);
     register_GridContainer_bindings(ctx, global, classes);
     register_HBoxContainer_bindings(ctx, global, classes);
     register_ImageTexture_bindings(ctx, global, classes);
+    register_InputEvent_bindings(ctx, global, classes);
+    register_InputEventAction_bindings(ctx, global, classes);
+    register_InputEventFromWindow_bindings(ctx, global, classes);
+    register_InputEventGesture_bindings(ctx, global, classes);
+    register_InputEventJoypadButton_bindings(ctx, global, classes);
+    register_InputEventJoypadMotion_bindings(ctx, global, classes);
+    register_InputEventKey_bindings(ctx, global, classes);
+    register_InputEventMouse_bindings(ctx, global, classes);
+    register_InputEventMouseButton_bindings(ctx, global, classes);
+    register_InputEventMouseMotion_bindings(ctx, global, classes);
+    register_InputEventScreenDrag_bindings(ctx, global, classes);
+    register_InputEventScreenTouch_bindings(ctx, global, classes);
+    register_InputEventWithModifiers_bindings(ctx, global, classes);
     register_IntervalTweener_bindings(ctx, global, classes);
     register_Label_bindings(ctx, global, classes);
     register_Light2D_bindings(ctx, global, classes);
@@ -100,6 +118,14 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_PathFollow3D_bindings(ctx, global, classes);
     register_PhysicsBody2D_bindings(ctx, global, classes);
     register_PhysicsBody3D_bindings(ctx, global, classes);
+    register_PhysicsDirectSpaceState2D_bindings(ctx, global, classes);
+    register_PhysicsDirectSpaceState3D_bindings(ctx, global, classes);
+    register_PhysicsPointQueryParameters2D_bindings(ctx, global, classes);
+    register_PhysicsPointQueryParameters3D_bindings(ctx, global, classes);
+    register_PhysicsRayQueryParameters2D_bindings(ctx, global, classes);
+    register_PhysicsRayQueryParameters3D_bindings(ctx, global, classes);
+    register_PhysicsShapeQueryParameters2D_bindings(ctx, global, classes);
+    register_PhysicsShapeQueryParameters3D_bindings(ctx, global, classes);
     register_PlaneMesh_bindings(ctx, global, classes);
     register_PointLight2D_bindings(ctx, global, classes);
     register_PrimitiveMesh_bindings(ctx, global, classes);

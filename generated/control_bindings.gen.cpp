@@ -8,9 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/control.hpp>
+#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/font.hpp>
-#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -3636,8 +3636,8 @@ static JSValue js_Control_set_size_flags_horizontal(JSContext* ctx, JSValueConst
         return JS_ThrowTypeError(ctx, "Control.size_flags_horizontal setter: wrong type");
     }
 
-    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<Control::SizeFlags> value = (BitField<Control::SizeFlags>)tmp_value;
-    typed_obj->set_h_size_flags(value);
+    int64_t value; JS_ToInt64(ctx, &value, argv[1]);
+    typed_obj->set_h_size_flags((BitField<Control::SizeFlags>)value);
     return JS_UNDEFINED;
 }
 
@@ -3697,8 +3697,8 @@ static JSValue js_Control_set_size_flags_vertical(JSContext* ctx, JSValueConst t
         return JS_ThrowTypeError(ctx, "Control.size_flags_vertical setter: wrong type");
     }
 
-    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<Control::SizeFlags> value = (BitField<Control::SizeFlags>)tmp_value;
-    typed_obj->set_v_size_flags(value);
+    int64_t value; JS_ToInt64(ctx, &value, argv[1]);
+    typed_obj->set_v_size_flags((BitField<Control::SizeFlags>)value);
     return JS_UNDEFINED;
 }
 

@@ -393,8 +393,8 @@ static JSValue js_Button_set_autowrap_trim_flags(JSContext* ctx, JSValueConst th
         return JS_ThrowTypeError(ctx, "Button.autowrap_trim_flags setter: wrong type");
     }
 
-    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<TextServer::LineBreakFlag> value = (BitField<TextServer::LineBreakFlag>)tmp_value;
-    typed_obj->set_autowrap_trim_flags(value);
+    int64_t value; JS_ToInt64(ctx, &value, argv[1]);
+    typed_obj->set_autowrap_trim_flags((BitField<TextServer::LineBreakFlag>)value);
     return JS_UNDEFINED;
 }
 
