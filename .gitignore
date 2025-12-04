@@ -10,3 +10,4 @@ demo/bin
 *.dylib
 .sconsign.dblite
 tests/.godot
+scripts/__pycache__/generate_bindings.cpython-314.pyc

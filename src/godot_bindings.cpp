@@ -189,6 +189,18 @@ static JSValue js_input_get_mouse_button_mask(JSContext* ctx, JSValueConst this_
     return JS_NewInt64(ctx, (int64_t)Input::get_singleton()->get_mouse_button_mask());
 }
 
+static JSValue js_input_set_mouse_mode(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_ThrowTypeError(ctx, "set_mouse_mode: missing mode argument");
+    int64_t mode;
+    JS_ToInt64(ctx, &mode, argv[0]);
+    Input::get_singleton()->set_mouse_mode((Input::MouseMode)mode);
+    return JS_UNDEFINED;
+}
+
+static JSValue js_input_get_mouse_mode(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    return JS_NewInt64(ctx, (int64_t)Input::get_singleton()->get_mouse_mode());
+}
+
 void GodotBindings::setup_global_functions() {
     JSContext* ctx = context_->ctx();
     JSValue global = JS_GetGlobalObject(ctx);
@@ -259,6 +271,18 @@ void GodotBindings::setup_global_functions() {
         JS_NewCFunction(ctx, js_input_get_last_mouse_velocity, "get_last_mouse_velocity", 0));
     JS_SetPropertyStr(ctx, input_obj, "get_mouse_button_mask",
         JS_NewCFunction(ctx, js_input_get_mouse_button_mask, "get_mouse_button_mask", 0));
+    JS_SetPropertyStr(ctx, input_obj, "set_mouse_mode",
+        JS_NewCFunction(ctx, js_input_set_mouse_mode, "set_mouse_mode", 1));
+    JS_SetPropertyStr(ctx, input_obj, "get_mouse_mode",
+        JS_NewCFunction(ctx, js_input_get_mouse_mode, "get_mouse_mode", 0));
+
+    // Mouse mode constants
+    JS_SetPropertyStr(ctx, input_obj, "MOUSE_MODE_VISIBLE", JS_NewInt32(ctx, (int)Input::MOUSE_MODE_VISIBLE));
+    JS_SetPropertyStr(ctx, input_obj, "MOUSE_MODE_HIDDEN", JS_NewInt32(ctx, (int)Input::MOUSE_MODE_HIDDEN));
+    JS_SetPropertyStr(ctx, input_obj, "MOUSE_MODE_CAPTURED", JS_NewInt32(ctx, (int)Input::MOUSE_MODE_CAPTURED));
+    JS_SetPropertyStr(ctx, input_obj, "MOUSE_MODE_CONFINED", JS_NewInt32(ctx, (int)Input::MOUSE_MODE_CONFINED));
+    JS_SetPropertyStr(ctx, input_obj, "MOUSE_MODE_CONFINED_HIDDEN", JS_NewInt32(ctx, (int)Input::MOUSE_MODE_CONFINED_HIDDEN));
+
     JS_SetPropertyStr(ctx, global, "Input", input_obj);
 
     JS_FreeValue(ctx, global);

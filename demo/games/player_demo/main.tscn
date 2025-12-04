@@ -1,13 +1,26 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="scripts/player.js" id="1_player"]
 [ext_resource type="Script" path="scripts/goal.js" id="2_goal"]
+[ext_resource type="Script" path="scripts/moving_platform.js" id="3_moving"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_platform"]
 size = Vector3(4, 0.5, 4)
 
+[sub_resource type="BoxMesh" id="BoxMesh_small"]
+size = Vector3(2, 0.5, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_long"]
+size = Vector3(6, 0.5, 2)
+
 [sub_resource type="BoxShape3D" id="BoxShape_platform"]
 size = Vector3(4, 0.5, 4)
+
+[sub_resource type="BoxShape3D" id="BoxShape_small"]
+size = Vector3(2, 0.5, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape_long"]
+size = Vector3(6, 0.5, 2)
 
 [sub_resource type="StandardMaterial3D" id="Material_platform"]
 albedo_color = Color(0.4, 0.4, 0.5, 1.0)
@@ -17,6 +30,9 @@ albedo_color = Color(0.3, 0.5, 0.8, 1.0)
 
 [sub_resource type="StandardMaterial3D" id="Material_goal"]
 albedo_color = Color(0.2, 0.8, 0.3, 1.0)
+
+[sub_resource type="StandardMaterial3D" id="Material_moving"]
+albedo_color = Color(0.8, 0.6, 0.2, 1.0)
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_player"]
 radius = 0.4
@@ -30,12 +46,9 @@ radius = 0.4
 height = 1.8
 
 [sub_resource type="BoxShape3D" id="BoxShape_goal"]
-size = Vector3(4, 3, 4)
+size = Vector3(4, 0.5, 4)
 
 [node name="Main" type="Node3D"]
-
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.9, 0.44, 0, -0.44, 0.9, 8, 8, 15)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.707107, -0.408248, 0.577350, 0, 0.816497, 0.577350, -0.707107, -0.408248, 0.577350, 5, 10, 5)
@@ -57,37 +70,130 @@ surface_material_override/0 = SubResource("Material_start")
 shape = SubResource("BoxShape_platform")
 
 [node name="Platform1" type="StaticBody3D" parent="Platforms"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.5, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="Platforms/Platform1"]
-mesh = SubResource("BoxMesh_platform")
+mesh = SubResource("BoxMesh_small")
 surface_material_override/0 = SubResource("Material_platform")
 
 [node name="Collision" type="CollisionShape3D" parent="Platforms/Platform1"]
-shape = SubResource("BoxShape_platform")
+shape = SubResource("BoxShape_small")
 
 [node name="Platform2" type="StaticBody3D" parent="Platforms"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1, -2)
 
 [node name="Mesh" type="MeshInstance3D" parent="Platforms/Platform2"]
-mesh = SubResource("BoxMesh_platform")
+mesh = SubResource("BoxMesh_small")
 surface_material_override/0 = SubResource("Material_platform")
 
 [node name="Collision" type="CollisionShape3D" parent="Platforms/Platform2"]
-shape = SubResource("BoxShape_platform")
+shape = SubResource("BoxShape_small")
+
+[node name="MovingPlatform1" type="StaticBody3D" parent="Platforms"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.5, -2)
+script = ExtResource("3_moving")
+
+[node name="Mesh" type="MeshInstance3D" parent="Platforms/MovingPlatform1"]
+mesh = SubResource("BoxMesh_small")
+surface_material_override/0 = SubResource("Material_moving")
+
+[node name="Collision" type="CollisionShape3D" parent="Platforms/MovingPlatform1"]
+shape = SubResource("BoxShape_small")
 
 [node name="Platform3" type="StaticBody3D" parent="Platforms"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 4, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 2, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="Platforms/Platform3"]
-mesh = SubResource("BoxMesh_platform")
+mesh = SubResource("BoxMesh_small")
 surface_material_override/0 = SubResource("Material_platform")
 
 [node name="Collision" type="CollisionShape3D" parent="Platforms/Platform3"]
-shape = SubResource("BoxShape_platform")
+shape = SubResource("BoxShape_small")
+
+[node name="Platform4" type="StaticBody3D" parent="Platforms"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 2.5, -3)
+
+[node name="Mesh" type="MeshInstance3D" parent="Platforms/Platform4"]
+mesh = SubResource("BoxMesh_small")
+surface_material_override/0 = SubResource("Material_platform")
+
+[node name="Collision" type="CollisionShape3D" parent="Platforms/Platform4"]
+shape = SubResource("BoxShape_small")
+
+[node name="Platform5" type="StaticBody3D" parent="Platforms"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, 3, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Platforms/Platform5"]
+mesh = SubResource("BoxMesh_small")
+surface_material_override/0 = SubResource("Material_platform")
+
+[node name="Collision" type="CollisionShape3D" parent="Platforms/Platform5"]
+shape = SubResource("BoxShape_small")
+
+[node name="MovingPlatform2" type="StaticBody3D" parent="Platforms"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 3.5, -2)
+script = ExtResource("3_moving")
+
+[node name="Mesh" type="MeshInstance3D" parent="Platforms/MovingPlatform2"]
+mesh = SubResource("BoxMesh_small")
+surface_material_override/0 = SubResource("Material_moving")
+
+[node name="Collision" type="CollisionShape3D" parent="Platforms/MovingPlatform2"]
+shape = SubResource("BoxShape_small")
+
+[node name="Bridge1" type="StaticBody3D" parent="Platforms"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 5, -2)
+
+[node name="Mesh" type="MeshInstance3D" parent="Platforms/Bridge1"]
+mesh = SubResource("BoxMesh_long")
+surface_material_override/0 = SubResource("Material_platform")
+
+[node name="Collision" type="CollisionShape3D" parent="Platforms/Bridge1"]
+shape = SubResource("BoxShape_long")
+
+[node name="Bridge2" type="StaticBody3D" parent="Platforms"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 5, -2)
+
+[node name="Mesh" type="MeshInstance3D" parent="Platforms/Bridge2"]
+mesh = SubResource("BoxMesh_long")
+surface_material_override/0 = SubResource("Material_platform")
+
+[node name="Collision" type="CollisionShape3D" parent="Platforms/Bridge2"]
+shape = SubResource("BoxShape_long")
+
+[node name="MovingPlatform3" type="AnimatableBody3D" parent="Platforms"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 5, -2)
+script = ExtResource("3_moving")
+
+[node name="Mesh" type="MeshInstance3D" parent="Platforms/MovingPlatform3"]
+mesh = SubResource("BoxMesh_small")
+surface_material_override/0 = SubResource("Material_moving")
+
+[node name="Collision" type="CollisionShape3D" parent="Platforms/MovingPlatform3"]
+shape = SubResource("BoxShape_small")
+
+[node name="Platform6" type="StaticBody3D" parent="Platforms"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58, 5.5, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Platforms/Platform6"]
+mesh = SubResource("BoxMesh_small")
+surface_material_override/0 = SubResource("Material_platform")
+
+[node name="Collision" type="CollisionShape3D" parent="Platforms/Platform6"]
+shape = SubResource("BoxShape_small")
+
+[node name="Platform7" type="StaticBody3D" parent="Platforms"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 62, 6.5, -2)
+
+[node name="Mesh" type="MeshInstance3D" parent="Platforms/Platform7"]
+mesh = SubResource("BoxMesh_small")
+surface_material_override/0 = SubResource("Material_platform")
+
+[node name="Collision" type="CollisionShape3D" parent="Platforms/Platform7"]
+shape = SubResource("BoxShape_small")
 
 [node name="GoalPlatform" type="StaticBody3D" parent="Platforms"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 5.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, 7.5, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="Platforms/GoalPlatform"]
 mesh = SubResource("BoxMesh_platform")
@@ -97,7 +203,7 @@ surface_material_override/0 = SubResource("Material_goal")
 shape = SubResource("BoxShape_platform")
 
 [node name="GoalArea" type="Area3D" parent="Platforms/GoalPlatform"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 collision_layer = 2
 collision_mask = 1
 monitoring = true
@@ -118,3 +224,16 @@ surface_material_override/0 = SubResource("Material_player")
 
 [node name="Collision" type="CollisionShape3D" parent="Player"]
 shape = SubResource("CapsuleShape_player")
+
+[node name="CameraPivot" type="Node3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraPivot"]
+transform = Transform3D(1, 0, 0, 0, 0.94, 0.34, 0, -0.34, 0.94, 0, 0, 0)
+collision_mask = 1
+spring_length = 5.0
+margin = 0.5
+
+[node name="Camera3D" type="Camera3D" parent="Player/CameraPivot/SpringArm3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5)
+current = true

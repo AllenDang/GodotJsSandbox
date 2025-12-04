@@ -221,12 +221,101 @@ class BindingGenerator:
         self.blocklist: dict = {}
         self.classes: dict[str, ClassInfo] = {}
 
+        # godot-cpp headers directory for header name resolution
+        self.godot_cpp_headers_dir = Path("godot-cpp/gen/include/godot_cpp/classes")
+        self.header_cache: dict[str, str] = {}  # class_name -> actual header name
+
         # Setup Jinja2
         self.jinja_env = Environment(
             loader=FileSystemLoader(str(templates_dir)),
             trim_blocks=True,
             lstrip_blocks=True,
         )
+
+    def build_header_cache(self):
+        """Build a cache mapping class names to actual header file names."""
+        if not self.godot_cpp_headers_dir.exists():
+            print(f"Warning: godot-cpp headers directory not found: {self.godot_cpp_headers_dir}")
+            return
+
+        # Scan all .hpp files and build reverse mapping
+        for header_file in self.godot_cpp_headers_dir.glob("*.hpp"):
+            # Convert header name back to potential class name
+            # e.g., "animation_node_blend_space1_d.hpp" -> header stem "animation_node_blend_space1_d"
+            header_stem = header_file.stem
+
+            # Try to match with class names - we'll do this after loading API
+            self.header_cache[header_stem] = header_stem
+
+    def find_header_for_class(self, class_name: str) -> str:
+        """Find the actual header file name for a class.
+        Returns the header name without extension.
+
+        godot-cpp has inconsistent naming:
+        - 2D/3D stay as 2d/3d (e.g., node3d, area2d, compressed_texture2d_array)
+        - 1D becomes 1_d (e.g., animation_node_blend_space1_d, gradient_texture1_d)
+        - 6DOF becomes 6_dof (e.g., generic6_dof_joint3d)
+        """
+        # Generate candidate names using our conversion
+        base_name = self._class_name_to_snake_case(class_name)
+
+        # Check if the file exists directly
+        if (self.godot_cpp_headers_dir / f"{base_name}.hpp").exists():
+            return base_name
+
+        # Try alternative patterns for 1D classes (they use 1_d instead of 1d)
+        # e.g., AnimationNodeBlendSpace1D -> animation_node_blend_space1_d
+        if "1D" in class_name:
+            alt_name = base_name.replace("1d", "1_d")
+            if (self.godot_cpp_headers_dir / f"{alt_name}.hpp").exists():
+                return alt_name
+
+        # Return base name even if not found (will cause compile error, but that's better than silent skip)
+        return base_name
+
+    def _class_name_to_snake_case(self, class_name: str) -> str:
+        """Convert class name to snake_case.
+
+        Rules based on godot-cpp naming:
+        - Add underscore before uppercase when preceded by lowercase (CamelCase -> camel_case)
+        - Add underscore when uppercase followed by lowercase after uppercase sequence (CPUParticles -> cpu_particles)
+        - DO NOT add underscore after digits for 2D/3D (Node3DGizmo -> node3d_gizmo)
+        - DO add underscore after digit for multi-char sequences like 6DOF (Generic6DOFJoint3D -> generic6_dof_joint3d)
+        - DO add underscore after digit when followed by non-D uppercase (FBX2GLTF -> fbx2_gltf)
+        """
+        result = ""
+        i = 0
+
+        while i < len(class_name):
+            c = class_name[i]
+
+            if c.isupper() and i > 0:
+                prev = class_name[i-1]
+
+                # Check if this is part of 2D/3D pattern - these stay together as 2d/3d
+                # e.g., Node3D -> node3d, Texture2DArray -> texture2d_array
+                if prev.isdigit() and c == 'D' and prev in ('2', '3'):
+                    # Just append 'd', the next iteration will handle underscore if needed
+                    result += c.lower()
+                    i += 1
+                    continue
+
+                # Add underscore before uppercase if preceded by lowercase
+                if prev.islower():
+                    result += "_"
+                # Add underscore when uppercase followed by lowercase after uppercase sequence
+                elif prev.isupper() and i + 1 < len(class_name) and class_name[i+1].islower():
+                    result += "_"
+                # Handle digit followed by uppercase (not D for 2D/3D)
+                # e.g., FBX2GLTF -> fbx2_gltf, Generic6DOFJoint3D -> generic6_dof_joint3d
+                elif prev.isdigit():
+                    # Always add underscore after digit when followed by uppercase (except 2D/3D handled above)
+                    result += "_"
+
+            result += c.lower()
+            i += 1
+
+        return result
 
     def load_config(self):
         """Load blocklist and other config files."""
@@ -239,7 +328,6 @@ class BindingGenerator:
                 "blocked_classes": [],
                 "blocked_methods": {},
                 "blocked_properties": {},
-                "priority_classes": [],
             }
 
     def load_api(self):
@@ -247,8 +335,34 @@ class BindingGenerator:
         with open(self.api_json_path) as f:
             self.api_data = json.load(f)
 
+        # Extract singleton names - these should not be instantiated
+        self.singletons = set()
+        for singleton in self.api_data.get("singletons", []):
+            name = singleton.get("name", "")
+            if name:
+                self.singletons.add(name)
+
     def is_class_blocked(self, class_name: str) -> bool:
-        return class_name in self.blocklist.get("blocked_classes", [])
+        # Check exact match
+        if class_name in self.blocklist.get("blocked_classes", []):
+            return True
+
+        # Check prefix patterns
+        for prefix in self.blocklist.get("blocked_class_prefixes", []):
+            if class_name.startswith(prefix):
+                return True
+
+        # Check suffix patterns
+        for suffix in self.blocklist.get("blocked_class_suffixes", []):
+            if class_name.endswith(suffix):
+                return True
+
+        # Block singletons - they should not be instantiated directly
+        # (they're accessed via global variables like Input, Time, etc.)
+        if hasattr(self, 'singletons') and class_name in self.singletons:
+            return True
+
+        return False
 
     def is_method_blocked(self, class_name: str, method_name: str) -> bool:
         blocked_methods = self.blocklist.get("blocked_methods", {})
@@ -854,40 +968,15 @@ class BindingGenerator:
         return f"return qjs_ctx->variant_to_js(Variant({var_name}));"
 
     def class_name_to_header(self, class_name: str) -> str:
-        """Convert class name to header file name (snake_case).
+        """Convert class name to header file name by looking up actual godot-cpp headers.
 
-        Examples:
+        This handles godot-cpp's inconsistent naming:
         - Node3D -> node3d
-        - Node3DGizmo -> node3d_gizmo
-        - CPUParticles3D -> cpu_particles3d
+        - AnimationNodeBlendSpace1D -> animation_node_blend_space1_d (1D uses 1_d)
+        - AnimationNodeBlendSpace2D -> animation_node_blend_space2d (2D stays 2d)
         - Generic6DOFJoint3D -> generic6_dof_joint3d
         """
-        result = ""
-        for i, c in enumerate(class_name):
-            if c.isupper() and i > 0:
-                prev = class_name[i-1]
-                # Add underscore before uppercase if:
-                # - Previous char is lowercase (CamelCase -> camel_case)
-                # - Previous char is uppercase AND next char is lowercase (CPUParticles -> cpu_particles)
-                if prev.islower():
-                    result += "_"
-                elif prev.isupper() and i + 1 < len(class_name) and class_name[i+1].islower():
-                    result += "_"
-                # Special case: digit followed by 3+ uppercase chars (6DOF -> 6_dof)
-                # But NOT for digit + 2 uppercase (3DG -> 3d_g for Node3DGizmo)
-                elif prev.isdigit():
-                    # Count consecutive uppercase chars starting here
-                    consecutive = 0
-                    for j in range(i, len(class_name)):
-                        if class_name[j].isupper():
-                            consecutive += 1
-                        else:
-                            break
-                    # Only add underscore if 3+ consecutive uppercase (like DOF)
-                    if consecutive >= 3:
-                        result += "_"
-            result += c.lower()
-        return result
+        return self.find_header_for_class(class_name)
 
     def is_supported_type(self, godot_type: str) -> bool:
         """Check if a type is supported for binding."""
@@ -1319,15 +1408,12 @@ class BindingGenerator:
         self.load_config()
         self.load_api()
 
-        # Get priority classes to generate
-        priority_classes = set(self.blocklist.get("priority_classes", []))
-
-        # Process classes
+        # Process all classes except blocked ones
         for class_data in self.api_data.get("classes", []):
             class_name = class_data.get("name", "")
 
-            # Only generate for priority classes initially
-            if priority_classes and class_name not in priority_classes:
+            # Skip blocked classes
+            if self.is_class_blocked(class_name):
                 continue
 
             class_info = self.process_class(class_data)
