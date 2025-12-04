@@ -854,7 +854,14 @@ class BindingGenerator:
         return f"return qjs_ctx->variant_to_js(Variant({var_name}));"
 
     def class_name_to_header(self, class_name: str) -> str:
-        """Convert class name to header file name (snake_case)."""
+        """Convert class name to header file name (snake_case).
+
+        Examples:
+        - Node3D -> node3d
+        - Node3DGizmo -> node3d_gizmo
+        - CPUParticles3D -> cpu_particles3d
+        - Generic6DOFJoint3D -> generic6_dof_joint3d
+        """
         result = ""
         for i, c in enumerate(class_name):
             if c.isupper() and i > 0:
@@ -866,6 +873,19 @@ class BindingGenerator:
                     result += "_"
                 elif prev.isupper() and i + 1 < len(class_name) and class_name[i+1].islower():
                     result += "_"
+                # Special case: digit followed by 3+ uppercase chars (6DOF -> 6_dof)
+                # But NOT for digit + 2 uppercase (3DG -> 3d_g for Node3DGizmo)
+                elif prev.isdigit():
+                    # Count consecutive uppercase chars starting here
+                    consecutive = 0
+                    for j in range(i, len(class_name)):
+                        if class_name[j].isupper():
+                            consecutive += 1
+                        else:
+                            break
+                    # Only add underscore if 3+ consecutive uppercase (like DOF)
+                    if consecutive >= 3:
+                        result += "_"
             result += c.lower()
         return result
 
