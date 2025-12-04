@@ -1369,6 +1369,264 @@ static JSValue js_CPUParticles3D_set_emission_box_extents(JSContext* ctx, JSValu
     return JS_UNDEFINED;
 }
 
+// Property getter: CPUParticles3D::emission_points
+static JSValue js_CPUParticles3D_get_emission_points(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_points getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_points getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_points getter: invalid object");
+    }
+
+    CPUParticles3D* typed_obj = Object::cast_to<CPUParticles3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_points getter: wrong type");
+    }
+
+    PackedVector3Array value = typed_obj->get_emission_points();
+    JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < value.size(); i++) {
+        JSValue vec = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, vec, "x", JS_NewFloat64(ctx, value[i].x));
+        JS_SetPropertyStr(ctx, vec, "y", JS_NewFloat64(ctx, value[i].y));
+        JS_SetPropertyStr(ctx, vec, "z", JS_NewFloat64(ctx, value[i].z));
+        JS_SetPropertyUint32(ctx, arr, i, vec);
+    }
+    return arr;
+}
+
+// Property setter: CPUParticles3D::emission_points
+static JSValue js_CPUParticles3D_set_emission_points(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_points setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_points setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_points setter: invalid object");
+    }
+
+    CPUParticles3D* typed_obj = Object::cast_to<CPUParticles3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_points setter: wrong type");
+    }
+
+    PackedVector3Array value;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        value.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double x = 0, y = 0, z = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JSValue jz = JS_GetPropertyStr(ctx, elem, "z");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy); JS_ToFloat64(ctx, &z, jz);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy); JS_FreeValue(ctx, jz);
+            JS_FreeValue(ctx, elem);
+            value.set(i, Vector3(x, y, z));
+        }
+    }
+    typed_obj->set_emission_points(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: CPUParticles3D::emission_normals
+static JSValue js_CPUParticles3D_get_emission_normals(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_normals getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_normals getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_normals getter: invalid object");
+    }
+
+    CPUParticles3D* typed_obj = Object::cast_to<CPUParticles3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_normals getter: wrong type");
+    }
+
+    PackedVector3Array value = typed_obj->get_emission_normals();
+    JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < value.size(); i++) {
+        JSValue vec = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, vec, "x", JS_NewFloat64(ctx, value[i].x));
+        JS_SetPropertyStr(ctx, vec, "y", JS_NewFloat64(ctx, value[i].y));
+        JS_SetPropertyStr(ctx, vec, "z", JS_NewFloat64(ctx, value[i].z));
+        JS_SetPropertyUint32(ctx, arr, i, vec);
+    }
+    return arr;
+}
+
+// Property setter: CPUParticles3D::emission_normals
+static JSValue js_CPUParticles3D_set_emission_normals(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_normals setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_normals setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_normals setter: invalid object");
+    }
+
+    CPUParticles3D* typed_obj = Object::cast_to<CPUParticles3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_normals setter: wrong type");
+    }
+
+    PackedVector3Array value;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        value.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double x = 0, y = 0, z = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JSValue jz = JS_GetPropertyStr(ctx, elem, "z");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy); JS_ToFloat64(ctx, &z, jz);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy); JS_FreeValue(ctx, jz);
+            JS_FreeValue(ctx, elem);
+            value.set(i, Vector3(x, y, z));
+        }
+    }
+    typed_obj->set_emission_normals(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: CPUParticles3D::emission_colors
+static JSValue js_CPUParticles3D_get_emission_colors(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_colors getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_colors getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_colors getter: invalid object");
+    }
+
+    CPUParticles3D* typed_obj = Object::cast_to<CPUParticles3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_colors getter: wrong type");
+    }
+
+    PackedColorArray value = typed_obj->get_emission_colors();
+    JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < value.size(); i++) {
+        JSValue col = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, col, "r", JS_NewFloat64(ctx, value[i].r));
+        JS_SetPropertyStr(ctx, col, "g", JS_NewFloat64(ctx, value[i].g));
+        JS_SetPropertyStr(ctx, col, "b", JS_NewFloat64(ctx, value[i].b));
+        JS_SetPropertyStr(ctx, col, "a", JS_NewFloat64(ctx, value[i].a));
+        JS_SetPropertyUint32(ctx, arr, i, col);
+    }
+    return arr;
+}
+
+// Property setter: CPUParticles3D::emission_colors
+static JSValue js_CPUParticles3D_set_emission_colors(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_colors setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_colors setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_colors setter: invalid object");
+    }
+
+    CPUParticles3D* typed_obj = Object::cast_to<CPUParticles3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles3D.emission_colors setter: wrong type");
+    }
+
+    PackedColorArray value;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        value.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double r = 0, g = 0, b = 0, a = 1;
+            JSValue jr = JS_GetPropertyStr(ctx, elem, "r");
+            JSValue jg = JS_GetPropertyStr(ctx, elem, "g");
+            JSValue jb = JS_GetPropertyStr(ctx, elem, "b");
+            JSValue ja = JS_GetPropertyStr(ctx, elem, "a");
+            JS_ToFloat64(ctx, &r, jr); JS_ToFloat64(ctx, &g, jg); JS_ToFloat64(ctx, &b, jb);
+            if (!JS_IsUndefined(ja)) JS_ToFloat64(ctx, &a, ja);
+            JS_FreeValue(ctx, jr); JS_FreeValue(ctx, jg); JS_FreeValue(ctx, jb); JS_FreeValue(ctx, ja);
+            JS_FreeValue(ctx, elem);
+            value.set(i, Color(r, g, b, a));
+        }
+    }
+    typed_obj->set_emission_colors(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: CPUParticles3D::emission_ring_axis
 static JSValue js_CPUParticles3D_get_emission_ring_axis(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2269,6 +2527,30 @@ void register_CPUParticles3D_bindings(JSContext* ctx, JSValue global, JSValue cl
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_CPUParticles3D_set_emission_box_extents, "set_emission_box_extents", 2));
         JS_SetPropertyStr(ctx, props, "emission_box_extents", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_CPUParticles3D_get_emission_points, "get_emission_points", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_CPUParticles3D_set_emission_points, "set_emission_points", 2));
+        JS_SetPropertyStr(ctx, props, "emission_points", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_CPUParticles3D_get_emission_normals, "get_emission_normals", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_CPUParticles3D_set_emission_normals, "set_emission_normals", 2));
+        JS_SetPropertyStr(ctx, props, "emission_normals", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_CPUParticles3D_get_emission_colors, "get_emission_colors", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_CPUParticles3D_set_emission_colors, "set_emission_colors", 2));
+        JS_SetPropertyStr(ctx, props, "emission_colors", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

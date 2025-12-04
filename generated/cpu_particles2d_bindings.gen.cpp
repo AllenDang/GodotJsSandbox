@@ -1274,6 +1274,94 @@ static JSValue js_CPUParticles2D_set_emission_rect_extents(JSContext* ctx, JSVal
     return JS_UNDEFINED;
 }
 
+// Property getter: CPUParticles2D::emission_colors
+static JSValue js_CPUParticles2D_get_emission_colors(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.emission_colors getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.emission_colors getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.emission_colors getter: invalid object");
+    }
+
+    CPUParticles2D* typed_obj = Object::cast_to<CPUParticles2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.emission_colors getter: wrong type");
+    }
+
+    PackedColorArray value = typed_obj->get_emission_colors();
+    JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < value.size(); i++) {
+        JSValue col = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, col, "r", JS_NewFloat64(ctx, value[i].r));
+        JS_SetPropertyStr(ctx, col, "g", JS_NewFloat64(ctx, value[i].g));
+        JS_SetPropertyStr(ctx, col, "b", JS_NewFloat64(ctx, value[i].b));
+        JS_SetPropertyStr(ctx, col, "a", JS_NewFloat64(ctx, value[i].a));
+        JS_SetPropertyUint32(ctx, arr, i, col);
+    }
+    return arr;
+}
+
+// Property setter: CPUParticles2D::emission_colors
+static JSValue js_CPUParticles2D_set_emission_colors(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.emission_colors setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.emission_colors setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.emission_colors setter: invalid object");
+    }
+
+    CPUParticles2D* typed_obj = Object::cast_to<CPUParticles2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.emission_colors setter: wrong type");
+    }
+
+    PackedColorArray value;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        value.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double r = 0, g = 0, b = 0, a = 1;
+            JSValue jr = JS_GetPropertyStr(ctx, elem, "r");
+            JSValue jg = JS_GetPropertyStr(ctx, elem, "g");
+            JSValue jb = JS_GetPropertyStr(ctx, elem, "b");
+            JSValue ja = JS_GetPropertyStr(ctx, elem, "a");
+            JS_ToFloat64(ctx, &r, jr); JS_ToFloat64(ctx, &g, jg); JS_ToFloat64(ctx, &b, jb);
+            if (!JS_IsUndefined(ja)) JS_ToFloat64(ctx, &a, ja);
+            JS_FreeValue(ctx, jr); JS_FreeValue(ctx, jg); JS_FreeValue(ctx, jb); JS_FreeValue(ctx, ja);
+            JS_FreeValue(ctx, elem);
+            value.set(i, Color(r, g, b, a));
+        }
+    }
+    typed_obj->set_emission_colors(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: CPUParticles2D::direction
 static JSValue js_CPUParticles2D_get_direction(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1776,6 +1864,14 @@ void register_CPUParticles2D_bindings(JSContext* ctx, JSValue global, JSValue cl
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_CPUParticles2D_set_emission_rect_extents, "set_emission_rect_extents", 2));
         JS_SetPropertyStr(ctx, props, "emission_rect_extents", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_CPUParticles2D_get_emission_colors, "get_emission_colors", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_CPUParticles2D_set_emission_colors, "set_emission_colors", 2));
+        JS_SetPropertyStr(ctx, props, "emission_colors", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

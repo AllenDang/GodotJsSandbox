@@ -761,6 +761,82 @@ static JSValue js_Label_set_uppercase(JSContext* ctx, JSValueConst this_val, int
     return JS_UNDEFINED;
 }
 
+// Property getter: Label::tab_stops
+static JSValue js_Label_get_tab_stops(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Label.tab_stops getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Label.tab_stops getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Label.tab_stops getter: invalid object");
+    }
+
+    Label* typed_obj = Object::cast_to<Label>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Label.tab_stops getter: wrong type");
+    }
+
+    PackedFloat32Array value = typed_obj->get_tab_stops();
+    JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < value.size(); i++) {
+        JS_SetPropertyUint32(ctx, arr, i, JS_NewFloat64(ctx, value[i]));
+    }
+    return arr;
+}
+
+// Property setter: Label::tab_stops
+static JSValue js_Label_set_tab_stops(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Label.tab_stops setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Label.tab_stops setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Label.tab_stops setter: invalid object");
+    }
+
+    Label* typed_obj = Object::cast_to<Label>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Label.tab_stops setter: wrong type");
+    }
+
+    PackedFloat32Array value;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        value.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double val = 0; JS_ToFloat64(ctx, &val, elem);
+            JS_FreeValue(ctx, elem);
+            value.set(i, (float)val);
+        }
+    }
+    typed_obj->set_tab_stops(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: Label::lines_skipped
 static JSValue js_Label_get_lines_skipped(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1401,6 +1477,14 @@ void register_Label_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_Label_set_uppercase, "set_uppercase", 2));
         JS_SetPropertyStr(ctx, props, "uppercase", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_Label_get_tab_stops, "get_tab_stops", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_Label_set_tab_stops, "set_tab_stops", 2));
+        JS_SetPropertyStr(ctx, props, "tab_stops", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

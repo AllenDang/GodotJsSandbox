@@ -131,6 +131,32 @@ uint64_t SignalRegistry::connect(Object* target, const StringName& signal, JSVal
     return connection_id;
 }
 
+Callable SignalRegistry::create_callable(JSValue callback) {
+    if (!ctx_) {
+        return Callable();
+    }
+
+    uint64_t connection_id = next_connection_id_++;
+
+    SignalConnection conn;
+    conn.target_object_id = 0;  // No target object for standalone callables
+    conn.signal_name = StringName();
+    conn.callback = JS_DupValue(ctx_, callback);
+    conn.connection_id = connection_id;
+    conn.connected = true;
+
+    connections_[connection_id] = conn;
+
+    // Create the custom callable
+    JSSignalCallable* custom_callable = memnew(JSSignalCallable(this, connection_id));
+    Callable callable = Callable(custom_callable);
+
+    // Store the callable for cleanup
+    connections_[connection_id].godot_callable = callable;
+
+    return callable;
+}
+
 void SignalRegistry::disconnect(uint64_t connection_id) {
     disconnect_internal(connection_id, false);
 }

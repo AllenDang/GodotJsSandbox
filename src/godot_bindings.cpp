@@ -9,6 +9,9 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/classes/input.hpp>
+#include <godot_cpp/classes/tween.hpp>
+#include <godot_cpp/classes/callback_tweener.hpp>
+#include <godot_cpp/classes/method_tweener.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -204,6 +207,14 @@ void GodotBindings::setup_global_functions() {
     JS_SetPropertyStr(ctx, global, "__godot_await_signal",
         JS_NewCFunction(ctx, js_godot_await_signal, "__godot_await_signal", 2));
 
+    // __godot_tween_callback(tween_handle, callback) - add a callback to a tween
+    JS_SetPropertyStr(ctx, global, "__godot_tween_callback",
+        JS_NewCFunction(ctx, js_godot_tween_callback, "__godot_tween_callback", 2));
+
+    // __godot_tween_method(tween_handle, callback, from, to, duration) - add a method tween
+    JS_SetPropertyStr(ctx, global, "__godot_tween_method",
+        JS_NewCFunction(ctx, js_godot_tween_method, "__godot_tween_method", 5));
+
     // Time singleton (safe subset of methods)
     JSValue time_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, time_obj, "get_ticks_msec",
@@ -367,6 +378,22 @@ void GodotBindings::setup_godot_class_constructor() {
                     };
                 }
 
+                // Special handling for tween_callback() - for Tween objects
+                if (prop === 'tween_callback') {
+                    var handle = target.__handle;
+                    return function(callback) {
+                        return __godot_tween_callback(handle, callback);
+                    };
+                }
+
+                // Special handling for tween_method() - for Tween objects
+                if (prop === 'tween_method') {
+                    var handle = target.__handle;
+                    return function(callback, from, to, duration) {
+                        return __godot_tween_method(handle, callback, from, to, duration);
+                    };
+                }
+
                 var methodFn = __findBinding(target.__class, prop, 'method');
                 if (methodFn) {
                     var handle = target.__handle;
@@ -440,6 +467,7 @@ void GodotBindings::setup_godot_class_constructor() {
             has: function(target, prop) {
                 if (prop === '__handle' || prop === '__class') return true;
                 if (prop === 'connect' || prop === 'emit_signal' || prop === 'await_signal') return true;
+                if (prop === 'tween_callback' || prop === 'tween_method') return true;
                 // Check for get_/set_ method patterns
                 if (prop.startsWith('get_') || prop.startsWith('set_')) {
                     var propName = prop.substring(4);
@@ -994,6 +1022,168 @@ JSValue GodotBindings::variant_to_js(const Variant& value) {
 
 Variant GodotBindings::js_to_variant(JSValue value) {
     return context_->js_to_variant(value);
+}
+
+// Global function: __godot_tween_callback(tween_handle, callback) - add a callback to a tween
+JSValue GodotBindings::js_godot_tween_callback(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "__godot_tween_callback requires 2 arguments: tween_handle, callback");
+    }
+
+    // Get tween handle
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_ThrowTypeError(ctx, "First argument must be a tween handle");
+    }
+
+    // Get callback (must be a function)
+    if (!JS_IsFunction(ctx, argv[1])) {
+        return JS_ThrowTypeError(ctx, "Second argument must be a callback function");
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Get the tween object from the registry
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_ThrowInternalError(ctx, "ObjectRegistry not initialized");
+    }
+
+    Object* obj = registry->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Invalid tween handle");
+    }
+
+    Tween* tween = Object::cast_to<Tween>(obj);
+    if (!tween) {
+        return JS_ThrowTypeError(ctx, "Object is not a Tween");
+    }
+
+    // Get the signal registry to create a callable
+    SignalRegistry* signal_registry = qjs_ctx->get_signal_registry();
+    if (!signal_registry) {
+        return JS_ThrowInternalError(ctx, "SignalRegistry not initialized");
+    }
+
+    // Create a Callable from the JS function
+    Callable callable = signal_registry->create_callable(argv[1]);
+
+    // Call tween_callback with the callable
+    Ref<CallbackTweener> result = tween->tween_callback(callable);
+
+    if (result.is_null()) {
+        return JS_NULL;
+    }
+
+    // Return the CallbackTweener as a wrapped object
+    Object* ret_obj = result.ptr();
+    int64_t ret_handle = registry->get_or_create_handle(ret_obj);
+    String ret_class = ret_obj->get_class();
+
+    // Create wrapped object
+    const char* factory_code = "globalThis.__wrap_existing_godot_object";
+    JSValue factory = JS_Eval(ctx, factory_code, strlen(factory_code), "<tween_callback>", JS_EVAL_TYPE_GLOBAL);
+    if (JS_IsException(factory)) {
+        return factory;
+    }
+
+    JSValue args[2] = {
+        JS_NewInt64(ctx, ret_handle),
+        JS_NewString(ctx, ret_class.utf8().get_data())
+    };
+    JSValue wrapped = JS_Call(ctx, factory, JS_UNDEFINED, 2, args);
+    JS_FreeValue(ctx, factory);
+    JS_FreeValue(ctx, args[0]);
+    JS_FreeValue(ctx, args[1]);
+
+    return wrapped;
+}
+
+// Global function: __godot_tween_method(tween_handle, callback, from, to, duration) - add a method tween
+JSValue GodotBindings::js_godot_tween_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 5) {
+        return JS_ThrowTypeError(ctx, "__godot_tween_method requires 5 arguments: tween_handle, callback, from, to, duration");
+    }
+
+    // Get tween handle
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_ThrowTypeError(ctx, "First argument must be a tween handle");
+    }
+
+    // Get callback (must be a function)
+    if (!JS_IsFunction(ctx, argv[1])) {
+        return JS_ThrowTypeError(ctx, "Second argument must be a callback function");
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Get the tween object from the registry
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_ThrowInternalError(ctx, "ObjectRegistry not initialized");
+    }
+
+    Object* obj = registry->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Invalid tween handle");
+    }
+
+    Tween* tween = Object::cast_to<Tween>(obj);
+    if (!tween) {
+        return JS_ThrowTypeError(ctx, "Object is not a Tween");
+    }
+
+    // Get the signal registry to create a callable
+    SignalRegistry* signal_registry = qjs_ctx->get_signal_registry();
+    if (!signal_registry) {
+        return JS_ThrowInternalError(ctx, "SignalRegistry not initialized");
+    }
+
+    // Create a Callable from the JS function
+    Callable callable = signal_registry->create_callable(argv[1]);
+
+    // Convert from, to, and duration
+    Variant from_val = qjs_ctx->js_to_variant(argv[2]);
+    Variant to_val = qjs_ctx->js_to_variant(argv[3]);
+    double duration;
+    JS_ToFloat64(ctx, &duration, argv[4]);
+
+    // Call tween_method with the callable
+    Ref<MethodTweener> result = tween->tween_method(callable, from_val, to_val, duration);
+
+    if (result.is_null()) {
+        return JS_NULL;
+    }
+
+    // Return the MethodTweener as a wrapped object
+    Object* ret_obj = result.ptr();
+    int64_t ret_handle = registry->get_or_create_handle(ret_obj);
+    String ret_class = ret_obj->get_class();
+
+    // Create wrapped object
+    const char* factory_code = "globalThis.__wrap_existing_godot_object";
+    JSValue factory = JS_Eval(ctx, factory_code, strlen(factory_code), "<tween_method>", JS_EVAL_TYPE_GLOBAL);
+    if (JS_IsException(factory)) {
+        return factory;
+    }
+
+    JSValue args[2] = {
+        JS_NewInt64(ctx, ret_handle),
+        JS_NewString(ctx, ret_class.utf8().get_data())
+    };
+    JSValue wrapped = JS_Call(ctx, factory, JS_UNDEFINED, 2, args);
+    JS_FreeValue(ctx, factory);
+    JS_FreeValue(ctx, args[0]);
+    JS_FreeValue(ctx, args[1]);
+
+    return wrapped;
 }
 
 } // namespace jsb

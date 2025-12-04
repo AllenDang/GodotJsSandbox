@@ -557,6 +557,63 @@ class BindingGenerator:
         JS_FreeValue(ctx, jh_{arg_name});
     }}"""
 
+        # PackedVector3Array - convert from JS array of Vector3 objects
+        if cpp_type == "PackedVector3Array":
+            return f"""PackedVector3Array arg_{arg_name};
+    if (JS_IsArray(argv[{arg_index}])) {{
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[{arg_index}], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_{arg_name}.resize(len);
+        for (int64_t i = 0; i < len; i++) {{
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[{arg_index}], i);
+            double x = 0, y = 0, z = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JSValue jz = JS_GetPropertyStr(ctx, elem, "z");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy); JS_ToFloat64(ctx, &z, jz);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy); JS_FreeValue(ctx, jz);
+            JS_FreeValue(ctx, elem);
+            arg_{arg_name}.set(i, Vector3(x, y, z));
+        }}
+    }}"""
+
+        # PackedColorArray - convert from JS array of Color objects
+        if cpp_type == "PackedColorArray":
+            return f"""PackedColorArray arg_{arg_name};
+    if (JS_IsArray(argv[{arg_index}])) {{
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[{arg_index}], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_{arg_name}.resize(len);
+        for (int64_t i = 0; i < len; i++) {{
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[{arg_index}], i);
+            double r = 0, g = 0, b = 0, a = 1;
+            JSValue jr = JS_GetPropertyStr(ctx, elem, "r");
+            JSValue jg = JS_GetPropertyStr(ctx, elem, "g");
+            JSValue jb = JS_GetPropertyStr(ctx, elem, "b");
+            JSValue ja = JS_GetPropertyStr(ctx, elem, "a");
+            JS_ToFloat64(ctx, &r, jr); JS_ToFloat64(ctx, &g, jg); JS_ToFloat64(ctx, &b, jb);
+            if (!JS_IsUndefined(ja)) JS_ToFloat64(ctx, &a, ja);
+            JS_FreeValue(ctx, jr); JS_FreeValue(ctx, jg); JS_FreeValue(ctx, jb); JS_FreeValue(ctx, ja);
+            JS_FreeValue(ctx, elem);
+            arg_{arg_name}.set(i, Color(r, g, b, a));
+        }}
+    }}"""
+
+        # PackedFloat32Array - convert from JS array of numbers
+        if cpp_type == "PackedFloat32Array":
+            return f"""PackedFloat32Array arg_{arg_name};
+    if (JS_IsArray(argv[{arg_index}])) {{
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[{arg_index}], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_{arg_name}.resize(len);
+        for (int64_t i = 0; i < len; i++) {{
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[{arg_index}], i);
+            double val = 0; JS_ToFloat64(ctx, &val, elem);
+            JS_FreeValue(ctx, elem);
+            arg_{arg_name}.set(i, (float)val);
+        }}
+    }}"""
+
         # Default: use variant conversion
         return f"{cpp_type} arg_{arg_name} = qjs_ctx->js_to_variant(argv[{arg_index}]);"
 
@@ -659,6 +716,39 @@ class BindingGenerator:
         if cpp_type == "void":
             return "return JS_UNDEFINED;"
 
+        # PackedVector3Array - return as JS array of Vector3 objects
+        if cpp_type == "PackedVector3Array":
+            return f"""JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < {var_name}.size(); i++) {{
+        JSValue vec = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, vec, "x", JS_NewFloat64(ctx, {var_name}[i].x));
+        JS_SetPropertyStr(ctx, vec, "y", JS_NewFloat64(ctx, {var_name}[i].y));
+        JS_SetPropertyStr(ctx, vec, "z", JS_NewFloat64(ctx, {var_name}[i].z));
+        JS_SetPropertyUint32(ctx, arr, i, vec);
+    }}
+    return arr;"""
+
+        # PackedColorArray - return as JS array of Color objects
+        if cpp_type == "PackedColorArray":
+            return f"""JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < {var_name}.size(); i++) {{
+        JSValue col = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, col, "r", JS_NewFloat64(ctx, {var_name}[i].r));
+        JS_SetPropertyStr(ctx, col, "g", JS_NewFloat64(ctx, {var_name}[i].g));
+        JS_SetPropertyStr(ctx, col, "b", JS_NewFloat64(ctx, {var_name}[i].b));
+        JS_SetPropertyStr(ctx, col, "a", JS_NewFloat64(ctx, {var_name}[i].a));
+        JS_SetPropertyUint32(ctx, arr, i, col);
+    }}
+    return arr;"""
+
+        # PackedFloat32Array - return as JS array of numbers
+        if cpp_type == "PackedFloat32Array":
+            return f"""JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < {var_name}.size(); i++) {{
+        JS_SetPropertyUint32(ctx, arr, i, JS_NewFloat64(ctx, {var_name}[i]));
+    }}
+    return arr;"""
+
         # Enum types - return as int
         if "::" in cpp_type and not cpp_type.endswith("*") and not cpp_type.startswith("Ref<"):
             return f"return JS_NewInt64(ctx, (int64_t){var_name});"
@@ -758,7 +848,8 @@ class BindingGenerator:
                         "Vector2", "Vector2i", "Vector3", "Vector3i", "Color",
                         "Variant", "NodePath", "Rect2", "Rect2i",
                         "Transform2D", "Transform3D", "Basis", "Quaternion",
-                        "AABB", "Plane", "Array", "Dictionary"}
+                        "AABB", "Plane", "Array", "Dictionary",
+                        "PackedVector3Array", "PackedColorArray", "PackedFloat32Array"}
         if godot_type in simple_types:
             return True
 
@@ -833,7 +924,8 @@ class BindingGenerator:
                         "Vector2", "Vector2i", "Vector3", "Vector3i", "Color",
                         "Variant", "NodePath", "Rect2", "Rect2i",
                         "Transform2D", "Transform3D", "Basis", "Quaternion",
-                        "AABB", "Plane", "Array", "Dictionary"}
+                        "AABB", "Plane", "Array", "Dictionary",
+                        "PackedVector3Array", "PackedColorArray", "PackedFloat32Array"}
         if godot_type in simple_types:
             return True
 

@@ -33,6 +33,11 @@ public:
     // Returns connection ID (0 on failure)
     uint64_t connect(godot::Object* target, const godot::StringName& signal, JSValue callback);
 
+    // Create a Callable from a JS callback (for use with tween_callback, etc.)
+    // Returns a Callable that will invoke the JS function when called
+    // The callback is stored and will be freed when cleanup_all() is called
+    godot::Callable create_callable(JSValue callback);
+
     // Disconnect by connection ID
     void disconnect(uint64_t connection_id);
 

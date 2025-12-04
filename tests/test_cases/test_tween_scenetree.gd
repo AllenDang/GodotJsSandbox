@@ -26,6 +26,9 @@ func get_tests() -> Array[String]:
 		"test_tween_property_returns_tweener",
 		"test_tween_property_position",
 		"test_tween_property_chaining",
+		# tween_callback() and tween_method()
+		"test_tween_callback_returns_tweener",
+		"test_tween_method_returns_tweener",
 		# Math type constructors
 		"test_quaternion_constructor",
 		"test_basis_constructor",
@@ -246,6 +249,42 @@ func run_test(test_name: String) -> Dictionary:
 			""")
 
 			return assert_eq(result, true, "Multiple tween_property calls should work with parallel")
+
+		"test_tween_callback_returns_tweener":
+			# Test tween_callback() returns a CallbackTweener
+			var node = Node3D.new()
+			node.name = "TweenCallbackNode"
+			test_root.add_child(node)
+
+			sandbox.set_global("test_node", node)
+			var result = sandbox.eval("""
+				var node = test_node;
+				var tween = node.create_tween();
+				var tweener = tween.tween_callback(function() {
+					// This callback will be called when tween reaches this point
+				});
+				tweener !== null && typeof tweener === 'object'
+			""")
+
+			return assert_eq(result, true, "tween_callback should return CallbackTweener object")
+
+		"test_tween_method_returns_tweener":
+			# Test tween_method() returns a MethodTweener
+			var node = Node3D.new()
+			node.name = "TweenMethodNode"
+			test_root.add_child(node)
+
+			sandbox.set_global("test_node", node)
+			var result = sandbox.eval("""
+				var node = test_node;
+				var tween = node.create_tween();
+				var tweener = tween.tween_method(function(value) {
+					// This will be called with interpolated value
+				}, 0.0, 1.0, 0.5);
+				tweener !== null && typeof tweener === 'object'
+			""")
+
+			return assert_eq(result, true, "tween_method should return MethodTweener object")
 
 		"test_quaternion_constructor":
 			# Test Quaternion constructor

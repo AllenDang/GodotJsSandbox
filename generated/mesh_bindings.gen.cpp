@@ -8,12 +8,12 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/mesh.hpp>
-#include <godot_cpp/classes/mesh.hpp>
-#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/convex_polygon_shape3d.hpp>
-#include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/classes/resource.hpp>
+#include <godot_cpp/classes/material.hpp>
+#include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/triangle_mesh.hpp>
+#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -66,6 +66,44 @@ static JSValue js_Mesh_get_aabb(JSContext* ctx, JSValueConst this_val, int argc,
 
     AABB result = typed_obj->get_aabb();
     return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Mesh::get_faces
+static JSValue js_Mesh_get_faces(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Mesh.get_faces: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Mesh.get_faces: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Mesh.get_faces: invalid or freed object");
+    }
+
+    Mesh* typed_obj = Object::cast_to<Mesh>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Mesh.get_faces: object is not a Mesh");
+    }
+
+    PackedVector3Array result = typed_obj->get_faces();
+    JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < result.size(); i++) {
+        JSValue vec = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, vec, "x", JS_NewFloat64(ctx, result[i].x));
+        JS_SetPropertyStr(ctx, vec, "y", JS_NewFloat64(ctx, result[i].y));
+        JS_SetPropertyStr(ctx, vec, "z", JS_NewFloat64(ctx, result[i].z));
+        JS_SetPropertyUint32(ctx, arr, i, vec);
+    }
+    return arr;
 }
 
 // Method: Mesh::get_surface_count
@@ -624,6 +662,8 @@ void register_Mesh_bindings(JSContext* ctx, JSValue global, JSValue classes) {
 
     JS_SetPropertyStr(ctx, methods, "get_aabb",
         JS_NewCFunction(ctx, js_Mesh_get_aabb, "get_aabb", 1));
+    JS_SetPropertyStr(ctx, methods, "get_faces",
+        JS_NewCFunction(ctx, js_Mesh_get_faces, "get_faces", 1));
     JS_SetPropertyStr(ctx, methods, "get_surface_count",
         JS_NewCFunction(ctx, js_Mesh_get_surface_count, "get_surface_count", 1));
     JS_SetPropertyStr(ctx, methods, "surface_get_arrays",
