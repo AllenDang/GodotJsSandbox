@@ -58,6 +58,8 @@ public:
 
     // Utility
     godot::String get_last_error() const { return last_error_; }
+    godot::Array get_all_errors() const { return errors_; }
+    void clear_errors();
     bool is_valid() const;
     void reset();
 
@@ -85,8 +87,11 @@ private:
     godot::HashMap<uint64_t, godot::String> attached_scripts_;
 
     godot::String last_error_;
+    godot::Array errors_;  // Accumulated errors for AI feedback
 
     bool initialize();
+    void add_error(const godot::String& type, const godot::String& message,
+                   const godot::String& file = "", int line = 0, int column = 0);
 
     // Helper to recursively reattach JS scripts to this sandbox
     void reattach_scripts_recursive(godot::Node* node);

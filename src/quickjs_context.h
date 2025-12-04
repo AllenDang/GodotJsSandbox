@@ -93,6 +93,19 @@ public:
     SignalRegistry* get_signal_registry() const { return signal_registry_; }
     GodotBindings* get_bindings() const { return bindings_.get(); }
 
+    // Error handling
+    godot::String get_exception_message();
+
+    // Structured exception info for AI feedback
+    struct ExceptionInfo {
+        godot::String message;
+        godot::String file;
+        int line = 0;
+        int column = 0;
+        godot::String stack;
+    };
+    ExceptionInfo get_exception_info();
+
 private:
     JSRuntime* rt_ = nullptr;
     JSContext* ctx_ = nullptr;
@@ -128,8 +141,6 @@ private:
     static char* module_normalize(JSContext* ctx, const char* base_name,
                                   const char* module_name, void* opaque);
     static JSModuleDef* module_loader(JSContext* ctx, const char* module_name, void* opaque);
-
-    godot::String get_exception_message();
 };
 
 } // namespace jsb

@@ -477,30 +477,103 @@ void QuickJSContext::set_timeout_ms(int64_t ms) {
 }
 
 String QuickJSContext::get_exception_message() {
+    ExceptionInfo info = get_exception_info();
+    String message = info.message;
+    if (!info.stack.is_empty()) {
+        message += "\nStack trace:\n" + info.stack;
+    }
+    return message;
+}
+
+QuickJSContext::ExceptionInfo QuickJSContext::get_exception_info() {
+    ExceptionInfo info;
     JSValue exception = JS_GetException(ctx_);
-    String message;
 
     if (!JS_IsNull(exception) && !JS_IsUndefined(exception)) {
         const char* str = JS_ToCString(ctx_, exception);
         if (str) {
-            message = str;
+            info.message = str;
             JS_FreeCString(ctx_, str);
         }
 
+        // Try to get lineNumber and columnNumber properties (QuickJS provides these)
+        JSValue line_val = JS_GetPropertyStr(ctx_, exception, "lineNumber");
+        if (JS_IsNumber(line_val)) {
+            int64_t line;
+            JS_ToInt64(ctx_, &line, line_val);
+            info.line = (int)line;
+        }
+        JS_FreeValue(ctx_, line_val);
+
+        JSValue col_val = JS_GetPropertyStr(ctx_, exception, "columnNumber");
+        if (JS_IsNumber(col_val)) {
+            int64_t col;
+            JS_ToInt64(ctx_, &col, col_val);
+            info.column = (int)col;
+        }
+        JS_FreeValue(ctx_, col_val);
+
+        // Get fileName property
+        JSValue file_val = JS_GetPropertyStr(ctx_, exception, "fileName");
+        if (JS_IsString(file_val)) {
+            const char* file_str = JS_ToCString(ctx_, file_val);
+            if (file_str) {
+                info.file = file_str;
+                JS_FreeCString(ctx_, file_str);
+            }
+        }
+        JS_FreeValue(ctx_, file_val);
+
+        // Get stack trace
         JSValue stack = JS_GetPropertyStr(ctx_, exception, "stack");
         if (!JS_IsUndefined(stack)) {
             const char* stack_str = JS_ToCString(ctx_, stack);
             if (stack_str) {
-                message += "\nStack trace:\n";
-                message += stack_str;
+                info.stack = stack_str;
                 JS_FreeCString(ctx_, stack_str);
+
+                // If line/file not set, try to parse from first stack line
+                // Format: "    at function (file:line:col)" or "    at file:line:col"
+                if (info.line == 0 && !info.stack.is_empty()) {
+                    int at_pos = info.stack.find(" at ");
+                    if (at_pos >= 0) {
+                        int paren_pos = info.stack.find("(", at_pos);
+                        int colon_pos = -1;
+                        if (paren_pos >= 0) {
+                            colon_pos = info.stack.find(":", paren_pos);
+                        } else {
+                            colon_pos = info.stack.find(":", at_pos + 4);
+                        }
+                        if (colon_pos >= 0) {
+                            // Parse "file:line:col" pattern
+                            int start = (paren_pos >= 0) ? paren_pos + 1 : at_pos + 4;
+                            String location = info.stack.substr(start, info.stack.find("\n", start) - start);
+                            location = location.strip_edges();
+                            if (location.ends_with(")")) {
+                                location = location.substr(0, location.length() - 1);
+                            }
+                            PackedStringArray parts = location.split(":");
+                            if (parts.size() >= 2) {
+                                if (info.file.is_empty()) {
+                                    info.file = parts[0];
+                                }
+                                if (parts.size() >= 2) {
+                                    info.line = parts[1].to_int();
+                                }
+                                if (parts.size() >= 3) {
+                                    info.column = parts[2].to_int();
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         JS_FreeValue(ctx_, stack);
     }
 
     JS_FreeValue(ctx_, exception);
-    return message;
+    return info;
 }
 
 // Helper to convert InputEvent to a JS object with relevant properties

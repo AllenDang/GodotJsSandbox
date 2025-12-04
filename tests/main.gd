@@ -10,6 +10,7 @@ const TestAnimationClass = preload("res://test_cases/test_animation.gd")
 const TestAudioClass = preload("res://test_cases/test_audio.gd")
 const TestTweenSceneTreeClass = preload("res://test_cases/test_tween_scenetree.gd")
 const TestAsyncAwaitClass = preload("res://test_cases/test_async_await.gd")
+const TestErrorCaptureClass = preload("res://test_cases/test_error_capture.gd")
 
 var sandbox: JSSandbox
 
@@ -90,6 +91,9 @@ func run_tests() -> void:
 
 	# Cross-script method calls (calling JS methods on other nodes)
 	runner.add_suite(TestCrossScript.new())
+
+	# Error capture for AI feedback
+	runner.add_suite(TestErrorCaptureClass.new())
 
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())

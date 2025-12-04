@@ -119,8 +119,7 @@ Error JSSandbox::load_blocklist(const String &path) {
 
 Variant JSSandbox::eval(const String &code) {
     if (!context_ || !context_->is_valid()) {
-        last_error_ = "Sandbox not initialized";
-        emit_signal("error_occurred", last_error_, 0, 0);
+        add_error("sandbox", "Sandbox not initialized", "<eval>");
         return Variant();
     }
 
@@ -138,8 +137,9 @@ Variant JSSandbox::eval(const String &code) {
     }
 
     if (!success) {
-        last_error_ = error;
-        emit_signal("error_occurred", error, 0, 0);
+        // Get structured error info from QuickJS
+        auto info = context_->get_exception_info();
+        add_error("javascript", error, info.file.is_empty() ? "<eval>" : info.file, info.line, info.column);
         return Variant();
     }
 
@@ -148,8 +148,7 @@ Variant JSSandbox::eval(const String &code) {
 
 Variant JSSandbox::eval_module(const String &code, const String &filename) {
     if (!context_ || !context_->is_valid()) {
-        last_error_ = "Sandbox not initialized";
-        emit_signal("error_occurred", last_error_, 0, 0);
+        add_error("sandbox", "Sandbox not initialized", filename);
         return Variant();
     }
 
@@ -174,8 +173,8 @@ Variant JSSandbox::eval_module(const String &code, const String &filename) {
     }
 
     if (!success) {
-        last_error_ = error;
-        emit_signal("error_occurred", error, 0, 0);
+        auto info = context_->get_exception_info();
+        add_error("javascript", error, info.file.is_empty() ? module_path : info.file, info.line, info.column);
         return Variant();
     }
 
@@ -184,15 +183,13 @@ Variant JSSandbox::eval_module(const String &code, const String &filename) {
 
 Variant JSSandbox::eval_file(const String &path) {
     if (!context_ || !context_->is_valid()) {
-        last_error_ = "Sandbox not initialized";
-        emit_signal("error_occurred", last_error_, 0, 0);
+        add_error("sandbox", "Sandbox not initialized", path);
         return Variant();
     }
 
     // Check path security
     if (sandbox_config_ && !sandbox_config_->is_path_allowed(path)) {
-        last_error_ = "Path not allowed: " + path;
-        emit_signal("error_occurred", last_error_, 0, 0);
+        add_error("security", "Path not allowed: " + path, path);
         return Variant();
     }
 
@@ -210,8 +207,8 @@ Variant JSSandbox::eval_file(const String &path) {
     }
 
     if (!success) {
-        last_error_ = error;
-        emit_signal("error_occurred", error, 0, 0);
+        auto info = context_->get_exception_info();
+        add_error("javascript", error, info.file.is_empty() ? path : info.file, info.line, info.column);
         return Variant();
     }
 
@@ -345,27 +342,67 @@ Ref<Script> JSSandbox::create_script(const String &source_code) {
 
 Node* JSSandbox::load_scene(const String &scene_path) {
     if (!context_ || !context_->is_valid()) {
-        last_error_ = "Sandbox not initialized";
+        add_error("sandbox", "Sandbox not initialized", scene_path);
         return nullptr;
     }
 
     // Check if scene file exists
     if (!FileAccess::file_exists(scene_path)) {
-        last_error_ = "Scene file not found: " + scene_path;
+        add_error("scene", "Scene file not found: " + scene_path, scene_path);
         return nullptr;
+    }
+
+    // Try to read and validate the scene file first
+    Ref<FileAccess> file = FileAccess::open(scene_path, FileAccess::READ);
+    if (!file.is_valid()) {
+        add_error("scene", "Cannot read scene file: " + scene_path, scene_path);
+        return nullptr;
+    }
+    String scene_content = file->get_as_text();
+    file->close();
+
+    // Basic scene format validation
+    if (!scene_content.begins_with("[gd_scene") && !scene_content.begins_with("[gd_resource")) {
+        add_error("scene", "Invalid scene format - must start with [gd_scene or [gd_resource", scene_path, 1);
+        return nullptr;
+    }
+
+    // Validate external resource references before loading
+    int line_num = 0;
+    PackedStringArray lines = scene_content.split("\n");
+    for (int i = 0; i < lines.size(); i++) {
+        line_num = i + 1;
+        String line = lines[i].strip_edges();
+
+        // Check for ext_resource paths
+        if (line.begins_with("[ext_resource")) {
+            int path_start = line.find("path=\"");
+            if (path_start != -1) {
+                path_start += 6;
+                int path_end = line.find("\"", path_start);
+                if (path_end != -1) {
+                    String resource_path = line.substr(path_start, path_end - path_start);
+                    // Check if JS script exists
+                    if (resource_path.ends_with(".js") && !FileAccess::file_exists(resource_path)) {
+                        add_error("resource", "Referenced JS script not found: " + resource_path, scene_path, line_num);
+                        // Continue to collect all errors
+                    }
+                }
+            }
+        }
     }
 
     // Load the PackedScene
     Ref<PackedScene> packed_scene = ResourceLoader::get_singleton()->load(scene_path, "PackedScene");
     if (!packed_scene.is_valid()) {
-        last_error_ = "Failed to load scene: " + scene_path;
+        add_error("scene", "Failed to parse scene - check for syntax errors", scene_path);
         return nullptr;
     }
 
     // Instantiate the scene
     Node* root = packed_scene->instantiate();
     if (!root) {
-        last_error_ = "Failed to instantiate scene";
+        add_error("scene", "Failed to instantiate scene - check node types and properties", scene_path);
         return nullptr;
     }
 
@@ -393,6 +430,8 @@ void JSSandbox::reattach_scripts_recursive(Node* node) {
                 if (file.is_valid()) {
                     source_code = file->get_as_text();
                     file->close();
+                } else {
+                    add_error("script", "Cannot read JS script file: " + script_path, script_path);
                 }
             }
 
@@ -411,7 +450,11 @@ void JSSandbox::reattach_scripts_recursive(Node* node) {
 
                     // Track the attached script
                     attached_scripts_[node->get_instance_id()] = script_path;
+                } else {
+                    add_error("script", "Failed to create sandbox script for: " + script_path, script_path);
                 }
+            } else if (!script_path.is_empty()) {
+                add_error("script", "Empty script source for: " + script_path, script_path);
             }
         }
     }
@@ -426,9 +469,28 @@ void JSSandbox::reattach_scripts_recursive(Node* node) {
     }
 }
 
+void JSSandbox::add_error(const String& type, const String& message,
+                          const String& file, int line, int column) {
+    Dictionary error;
+    error["type"] = type;
+    error["message"] = message;
+    error["file"] = file;
+    error["line"] = line;
+    error["column"] = column;
+    errors_.push_back(error);
+    last_error_ = message;
+    emit_signal("error_occurred", message, line, column);
+}
+
+void JSSandbox::clear_errors() {
+    errors_.clear();
+    last_error_ = "";
+}
+
 void JSSandbox::reset() {
     attached_scripts_.clear();
     last_error_ = "";
+    errors_.clear();
 
     // Clean up signal connections first
     if (signal_registry_) {
@@ -519,6 +581,8 @@ void JSSandbox::_bind_methods() {
 
     // Utility
     ClassDB::bind_method(D_METHOD("get_last_error"), &JSSandbox::get_last_error);
+    ClassDB::bind_method(D_METHOD("get_all_errors"), &JSSandbox::get_all_errors);
+    ClassDB::bind_method(D_METHOD("clear_errors"), &JSSandbox::clear_errors);
     ClassDB::bind_method(D_METHOD("is_valid"), &JSSandbox::is_valid);
     ClassDB::bind_method(D_METHOD("reset"), &JSSandbox::reset);
 
