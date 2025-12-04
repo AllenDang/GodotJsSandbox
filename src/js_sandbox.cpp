@@ -7,6 +7,8 @@
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/core/object_id.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -335,9 +337,93 @@ bool JSSandbox::is_valid() const {
 
 Ref<Script> JSSandbox::create_script(const String &source_code) {
     JSScript* script = memnew(JSScript);
-    script->set_sandbox(this);
+    // Pass Ref<JSSandbox> to keep sandbox alive as long as script exists
+    script->set_sandbox(Ref<JSSandbox>(this));
     script->set_source_code(source_code);
     return Ref<Script>(script);
+}
+
+Node* JSSandbox::load_scene(const String &scene_path) {
+    if (!context_ || !context_->is_valid()) {
+        last_error_ = "Sandbox not initialized";
+        return nullptr;
+    }
+
+    // Check if scene file exists
+    if (!FileAccess::file_exists(scene_path)) {
+        last_error_ = "Scene file not found: " + scene_path;
+        return nullptr;
+    }
+
+    // Load the PackedScene
+    Ref<PackedScene> packed_scene = ResourceLoader::get_singleton()->load(scene_path, "PackedScene");
+    if (!packed_scene.is_valid()) {
+        last_error_ = "Failed to load scene: " + scene_path;
+        return nullptr;
+    }
+
+    // Instantiate the scene
+    Node* root = packed_scene->instantiate();
+    if (!root) {
+        last_error_ = "Failed to instantiate scene";
+        return nullptr;
+    }
+
+    // Reattach all JS scripts to use this sandbox's context
+    reattach_scripts_recursive(root);
+
+    return root;
+}
+
+void JSSandbox::reattach_scripts_recursive(Node* node) {
+    if (!node) return;
+
+    // Check if this node has a script attached
+    Ref<Script> current_script = node->get_script();
+    if (current_script.is_valid()) {
+        // Check if it's a JSScript
+        JSScript* js_script = Object::cast_to<JSScript>(current_script.ptr());
+        if (js_script) {
+            String script_path = js_script->get_path();
+            String source_code = js_script->_get_source_code();
+
+            // If source is empty, try to load from path
+            if (source_code.is_empty() && !script_path.is_empty()) {
+                Ref<FileAccess> file = FileAccess::open(script_path, FileAccess::READ);
+                if (file.is_valid()) {
+                    source_code = file->get_as_text();
+                    file->close();
+                }
+            }
+
+            if (!source_code.is_empty()) {
+                // Create new script using this sandbox's context
+                Ref<Script> sandbox_script = create_script(source_code);
+                if (sandbox_script.is_valid()) {
+                    // Set the path on the new script for debugging
+                    JSScript* new_js_script = Object::cast_to<JSScript>(sandbox_script.ptr());
+                    if (new_js_script && !script_path.is_empty()) {
+                        new_js_script->set_path(script_path);
+                    }
+
+                    // Replace the script with sandbox version
+                    node->set_script(sandbox_script);
+
+                    // Track the attached script
+                    attached_scripts_[node->get_instance_id()] = script_path;
+                }
+            }
+        }
+    }
+
+    // Recursively process children
+    TypedArray<Node> children = node->get_children();
+    for (int i = 0; i < children.size(); i++) {
+        Node* child = Object::cast_to<Node>(children[i].operator Object*());
+        if (child) {
+            reattach_scripts_recursive(child);
+        }
+    }
 }
 
 void JSSandbox::reset() {
@@ -421,6 +507,9 @@ void JSSandbox::_bind_methods() {
 
     // Script creation - creates scripts that use this sandbox's context
     ClassDB::bind_method(D_METHOD("create_script", "source_code"), &JSSandbox::create_script);
+
+    // Scene loading with sandbox isolation
+    ClassDB::bind_method(D_METHOD("load_scene", "scene_path"), &JSSandbox::load_scene);
 
     // Level persistence
     ClassDB::bind_method(D_METHOD("save_level", "root", "directory"), &JSSandbox::save_level);

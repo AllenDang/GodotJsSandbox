@@ -1,0 +1,11 @@
+{
+  "name": "Spinning Cube",
+  "version": "1.0.0",
+  "description": "A simple 3D spinning cube. Press Space to reverse direction.",
+  "author": "Demo",
+  "entry_scene": "main.tscn",
+  "scene_type": "3D",
+  "input_actions": {
+    "reverse": {"keys": ["Space"]}
+  }
+}

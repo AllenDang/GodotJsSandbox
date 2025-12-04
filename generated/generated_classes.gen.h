@@ -38,6 +38,7 @@ void register_AudioStreamPlayer2D_bindings(JSContext* ctx, JSValue global, JSVal
 void register_AudioStreamPlayer3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_AudioStreamWAV_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_BackBufferCopy_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_BaseButton_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_BitMap_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Bone2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_BoneAttachment3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
@@ -103,6 +104,7 @@ void register_FontFile_bindings(JSContext* ctx, JSValue global, JSValue classes)
 void register_GPUParticles2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_GPUParticles3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Generic6DOFJoint3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_GeometryInstance3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Gradient_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_GradientTexture2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_GraphEdit_bindings(JSContext* ctx, JSValue global, JSValue classes);
@@ -277,6 +279,7 @@ void register_VisibleOnScreenEnabler2D_bindings(JSContext* ctx, JSValue global, 
 void register_VisibleOnScreenEnabler3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_VisibleOnScreenNotifier2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_VisibleOnScreenNotifier3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_VisualInstance3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Window_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_WorldBoundaryShape2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_WorldBoundaryShape3D_bindings(JSContext* ctx, JSValue global, JSValue classes);

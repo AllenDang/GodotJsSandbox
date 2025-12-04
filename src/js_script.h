@@ -3,6 +3,7 @@
 
 #include <godot_cpp/classes/script_extension.hpp>
 #include <godot_cpp/classes/script_language.hpp>
+#include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/templates/vector.hpp>
 
@@ -85,8 +86,9 @@ public:
     void unregister_instance(godot::Object* p_object);
 
     // Sandbox association - allows JSScript to use a specific sandbox's context
-    void set_sandbox(JSSandbox* p_sandbox);
-    JSSandbox* get_sandbox() const { return sandbox_; }
+    // Uses Ref to keep sandbox alive as long as any script references it
+    void set_sandbox(const godot::Ref<JSSandbox>& p_sandbox);
+    JSSandbox* get_sandbox() const { return sandbox_.ptr(); }
 
 protected:
     static void _bind_methods();
@@ -97,7 +99,8 @@ private:
     bool is_valid_ = false;
 
     // Associated sandbox (if any) - script will use sandbox's context
-    JSSandbox* sandbox_ = nullptr;
+    // Ref keeps sandbox alive until all scripts are destroyed
+    godot::Ref<JSSandbox> sandbox_;
 
     // Track instances
     mutable godot::HashMap<godot::Object*, JSScriptInstance*> instances_;

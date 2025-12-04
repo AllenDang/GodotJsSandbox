@@ -37,6 +37,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_AudioStreamPlayer3D_bindings(ctx, global, classes);
     register_AudioStreamWAV_bindings(ctx, global, classes);
     register_BackBufferCopy_bindings(ctx, global, classes);
+    register_BaseButton_bindings(ctx, global, classes);
     register_BitMap_bindings(ctx, global, classes);
     register_Bone2D_bindings(ctx, global, classes);
     register_BoneAttachment3D_bindings(ctx, global, classes);
@@ -102,6 +103,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_GPUParticles2D_bindings(ctx, global, classes);
     register_GPUParticles3D_bindings(ctx, global, classes);
     register_Generic6DOFJoint3D_bindings(ctx, global, classes);
+    register_GeometryInstance3D_bindings(ctx, global, classes);
     register_Gradient_bindings(ctx, global, classes);
     register_GradientTexture2D_bindings(ctx, global, classes);
     register_GraphEdit_bindings(ctx, global, classes);
@@ -276,6 +278,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_VisibleOnScreenEnabler3D_bindings(ctx, global, classes);
     register_VisibleOnScreenNotifier2D_bindings(ctx, global, classes);
     register_VisibleOnScreenNotifier3D_bindings(ctx, global, classes);
+    register_VisualInstance3D_bindings(ctx, global, classes);
     register_Window_bindings(ctx, global, classes);
     register_WorldBoundaryShape2D_bindings(ctx, global, classes);
     register_WorldBoundaryShape3D_bindings(ctx, global, classes);

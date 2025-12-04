@@ -46,6 +46,10 @@ public:
     void set_global(const godot::String &name, const godot::Variant &value);
     godot::Variant get_global(const godot::String &name);
 
+    // Scene loading with sandbox isolation
+    // Loads a .tscn scene and reattaches all JS scripts to use this sandbox's context
+    godot::Node* load_scene(const godot::String &scene_path);
+
     // Level persistence
     godot::Error save_level(godot::Node *root, const godot::String &directory);
     godot::Node* load_level(const godot::String &directory);
@@ -83,6 +87,9 @@ private:
     godot::String last_error_;
 
     bool initialize();
+
+    // Helper to recursively reattach JS scripts to this sandbox
+    void reattach_scripts_recursive(godot::Node* node);
 };
 
 } // namespace jsb

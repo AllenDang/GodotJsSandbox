@@ -1,0 +1,74 @@
+[gd_scene load_steps=2 format=3 uid="uid://bwa5q0j8jtkai"]
+
+[ext_resource type="Script" uid="uid://dnbrx05meuslx" path="res://main.gd" id="1_main"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+
+[node name="LauncherUI" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Header" type="HBoxContainer" parent="LauncherUI"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="LauncherUI/Header"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "JS Game Launcher"
+
+[node name="HSeparator" type="HSeparator" parent="LauncherUI/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RefreshButton" type="Button" parent="LauncherUI/Header"]
+layout_mode = 2
+text = "Refresh"
+
+[node name="GameList" type="ScrollContainer" parent="LauncherUI"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GameListContainer" type="VBoxContainer" parent="LauncherUI/GameList"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusLabel" type="Label" parent="LauncherUI"]
+layout_mode = 2
+text = "Scanning for games..."
+
+[node name="GameContainer" type="SubViewportContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+
+[node name="GameViewport" type="SubViewport" parent="GameContainer"]
+handle_input_locally = false
+size = Vector2i(1280, 1080)
+render_target_update_mode = 0
+
+[node name="GameRoot" type="Node3D" parent="GameContainer/GameViewport"]
+
+[node name="BackButton" type="Button" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 110.0
+offset_bottom = 40.0
+text = "< Back (ESC)"

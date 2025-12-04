@@ -220,7 +220,7 @@ void JSScript::unregister_instance(Object* p_object) {
     instances_.erase(p_object);
 }
 
-void JSScript::set_sandbox(JSSandbox* p_sandbox) {
+void JSScript::set_sandbox(const Ref<JSSandbox>& p_sandbox) {
     sandbox_ = p_sandbox;
 }
 

@@ -1,0 +1,15 @@
+{
+  "name": "Player Movement Demo",
+  "version": "1.0.0",
+  "description": "Move a character with WASD. Shows physics and input handling.",
+  "author": "Demo",
+  "entry_scene": "main.tscn",
+  "scene_type": "3D",
+  "input_actions": {
+    "move_forward": {"keys": ["W", "Up"]},
+    "move_back": {"keys": ["S", "Down"]},
+    "move_left": {"keys": ["A", "Left"]},
+    "move_right": {"keys": ["D", "Right"]},
+    "jump": {"keys": ["Space"]}
+  }
+}
