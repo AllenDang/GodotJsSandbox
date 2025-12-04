@@ -3998,6 +3998,67 @@ static JSValue js_Node_set_process_thread_group_order(JSContext* ctx, JSValueCon
     return JS_UNDEFINED;
 }
 
+// Property getter: Node::process_thread_messages
+static JSValue js_Node_get_process_thread_messages(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node.process_thread_messages getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node.process_thread_messages getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node.process_thread_messages getter: invalid object");
+    }
+
+    Node* typed_obj = Object::cast_to<Node>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node.process_thread_messages getter: wrong type");
+    }
+
+    int64_t value = typed_obj->get_process_thread_messages();
+    return JS_NewInt64(ctx, value);
+}
+
+// Property setter: Node::process_thread_messages
+static JSValue js_Node_set_process_thread_messages(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Node.process_thread_messages setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node.process_thread_messages setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node.process_thread_messages setter: invalid object");
+    }
+
+    Node* typed_obj = Object::cast_to<Node>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node.process_thread_messages setter: wrong type");
+    }
+
+    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<Node::ProcessThreadMessages> value = (BitField<Node::ProcessThreadMessages>)tmp_value;
+    typed_obj->set_process_thread_messages(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: Node::physics_interpolation_mode
 static JSValue js_Node_get_physics_interpolation_mode(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -4422,6 +4483,14 @@ void register_Node_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_Node_set_process_thread_group_order, "set_process_thread_group_order", 2));
         JS_SetPropertyStr(ctx, props, "process_thread_group_order", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_Node_get_process_thread_messages, "get_process_thread_messages", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_Node_set_process_thread_messages, "set_process_thread_messages", 2));
+        JS_SetPropertyStr(ctx, props, "process_thread_messages", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

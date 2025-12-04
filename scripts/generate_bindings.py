@@ -362,10 +362,14 @@ class BindingGenerator:
 
     def get_js_to_cpp_conversion(self, cpp_type: str, arg_index: int, arg_name: str, godot_type: str = None) -> str:
         """Generate code to convert JS argument to C++ type.
-        godot_type: The original Godot type (e.g., "enum::Side") if different from cpp_type.
+        godot_type: The original Godot type (e.g., "enum::Side" or "bitfield::...") if different from cpp_type.
         """
         # Handle enum types first
         if godot_type and godot_type.startswith("enum::"):
+            return f"int64_t tmp_{arg_name}; JS_ToInt64(ctx, &tmp_{arg_name}, argv[{arg_index}]); {cpp_type} arg_{arg_name} = ({cpp_type})tmp_{arg_name};"
+
+        # Handle bitfield types - similar to enums, convert from int64
+        if godot_type and godot_type.startswith("bitfield::"):
             return f"int64_t tmp_{arg_name}; JS_ToInt64(ctx, &tmp_{arg_name}, argv[{arg_index}]); {cpp_type} arg_{arg_name} = ({cpp_type})tmp_{arg_name};"
 
         if cpp_type == "bool":
@@ -780,7 +784,11 @@ class BindingGenerator:
     return arr;"""
 
         # Enum types - return as int
-        if "::" in cpp_type and not cpp_type.endswith("*") and not cpp_type.startswith("Ref<"):
+        if "::" in cpp_type and not cpp_type.endswith("*") and not cpp_type.startswith("Ref<") and not cpp_type.startswith("BitField<"):
+            return f"return JS_NewInt64(ctx, (int64_t){var_name});"
+
+        # BitField types - return as int64
+        if cpp_type.startswith("BitField<"):
             return f"return JS_NewInt64(ctx, (int64_t){var_name});"
 
         # Ref<T> types (RefCounted objects) - unwrap and wrap as JS object
@@ -866,11 +874,13 @@ class BindingGenerator:
         # Skip complex types that need special handling
         if godot_type.startswith("typedarray::"):
             return False
-        if godot_type.startswith("bitfield::"):
-            return False
 
         # Support enum types - they're converted to int
         if godot_type.startswith("enum::"):
+            return True
+
+        # Support bitfield types - they're converted to int64
+        if godot_type.startswith("bitfield::"):
             return True
 
         # Basic types we fully support
@@ -963,10 +973,12 @@ class BindingGenerator:
         if godot_type.startswith("enum::"):
             return True
 
+        # Bitfields are supported (converted to int64)
+        if godot_type.startswith("bitfield::"):
+            return True
+
         # Skip complex types
         if godot_type.startswith("typedarray::"):
-            return False
-        if godot_type.startswith("bitfield::"):
             return False
 
         # For object return types, allow Node, RefCounted, and other Object subclasses

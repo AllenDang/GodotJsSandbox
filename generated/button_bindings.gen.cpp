@@ -337,6 +337,67 @@ static JSValue js_Button_set_autowrap_mode(JSContext* ctx, JSValueConst this_val
     return JS_UNDEFINED;
 }
 
+// Property getter: Button::autowrap_trim_flags
+static JSValue js_Button_get_autowrap_trim_flags(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Button.autowrap_trim_flags getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Button.autowrap_trim_flags getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Button.autowrap_trim_flags getter: invalid object");
+    }
+
+    Button* typed_obj = Object::cast_to<Button>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Button.autowrap_trim_flags getter: wrong type");
+    }
+
+    int64_t value = typed_obj->get_autowrap_trim_flags();
+    return JS_NewInt64(ctx, value);
+}
+
+// Property setter: Button::autowrap_trim_flags
+static JSValue js_Button_set_autowrap_trim_flags(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Button.autowrap_trim_flags setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Button.autowrap_trim_flags setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Button.autowrap_trim_flags setter: invalid object");
+    }
+
+    Button* typed_obj = Object::cast_to<Button>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Button.autowrap_trim_flags setter: wrong type");
+    }
+
+    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<TextServer::LineBreakFlag> value = (BitField<TextServer::LineBreakFlag>)tmp_value;
+    typed_obj->set_autowrap_trim_flags(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: Button::clip_text
 static JSValue js_Button_get_clip_text(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -752,6 +813,14 @@ void register_Button_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_Button_set_autowrap_mode, "set_autowrap_mode", 2));
         JS_SetPropertyStr(ctx, props, "autowrap_mode", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_Button_get_autowrap_trim_flags, "get_autowrap_trim_flags", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_Button_set_autowrap_trim_flags, "set_autowrap_trim_flags", 2));
+        JS_SetPropertyStr(ctx, props, "autowrap_trim_flags", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

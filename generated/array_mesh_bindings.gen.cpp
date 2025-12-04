@@ -351,6 +351,44 @@ static JSValue js_ArrayMesh_surface_get_array_index_len(JSContext* ctx, JSValueC
     return JS_NewInt64(ctx, result);
 }
 
+// Method: ArrayMesh::surface_get_format
+static JSValue js_ArrayMesh_surface_get_format(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_get_format: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_get_format: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_get_format: invalid or freed object");
+    }
+
+    ArrayMesh* typed_obj = Object::cast_to<ArrayMesh>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_get_format: object is not a ArrayMesh");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_get_format: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_surf_idx; JS_ToInt64(ctx, &arg_surf_idx, argv[1]);
+
+    BitField<Mesh::ArrayFormat> result = typed_obj->surface_get_format(arg_surf_idx);
+    return JS_NewInt64(ctx, (int64_t)result);
+}
+
 // Method: ArrayMesh::surface_get_primitive_type
 static JSValue js_ArrayMesh_surface_get_primitive_type(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -753,6 +791,8 @@ void register_ArrayMesh_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_NewCFunction(ctx, js_ArrayMesh_surface_get_array_len, "surface_get_array_len", 2));
     JS_SetPropertyStr(ctx, methods, "surface_get_array_index_len",
         JS_NewCFunction(ctx, js_ArrayMesh_surface_get_array_index_len, "surface_get_array_index_len", 2));
+    JS_SetPropertyStr(ctx, methods, "surface_get_format",
+        JS_NewCFunction(ctx, js_ArrayMesh_surface_get_format, "surface_get_format", 2));
     JS_SetPropertyStr(ctx, methods, "surface_get_primitive_type",
         JS_NewCFunction(ctx, js_ArrayMesh_surface_get_primitive_type, "surface_get_primitive_type", 2));
     JS_SetPropertyStr(ctx, methods, "surface_find_by_name",

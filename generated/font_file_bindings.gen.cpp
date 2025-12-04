@@ -2784,6 +2784,67 @@ static JSValue js_FontFile_set_style_name(JSContext* ctx, JSValueConst this_val,
     return JS_UNDEFINED;
 }
 
+// Property getter: FontFile::font_style
+static JSValue js_FontFile_get_font_style(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FontFile.font_style getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FontFile.font_style getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.font_style getter: invalid object");
+    }
+
+    FontFile* typed_obj = Object::cast_to<FontFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.font_style getter: wrong type");
+    }
+
+    int64_t value = typed_obj->get_font_style();
+    return JS_NewInt64(ctx, value);
+}
+
+// Property setter: FontFile::font_style
+static JSValue js_FontFile_set_font_style(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "FontFile.font_style setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FontFile.font_style setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.font_style setter: invalid object");
+    }
+
+    FontFile* typed_obj = Object::cast_to<FontFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.font_style setter: wrong type");
+    }
+
+    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<TextServer::FontStyle> value = (BitField<TextServer::FontStyle>)tmp_value;
+    typed_obj->set_font_style(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: FontFile::font_weight
 static JSValue js_FontFile_get_font_weight(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -3868,6 +3929,14 @@ void register_FontFile_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_FontFile_set_style_name, "set_style_name", 2));
         JS_SetPropertyStr(ctx, props, "style_name", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_FontFile_get_font_style, "get_font_style", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_FontFile_set_font_style, "set_font_style", 2));
+        JS_SetPropertyStr(ctx, props, "font_style", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

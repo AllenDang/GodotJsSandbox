@@ -1155,6 +1155,67 @@ static JSValue js_NavigationAgent3D_set_path_postprocessing(JSContext* ctx, JSVa
     return JS_UNDEFINED;
 }
 
+// Property getter: NavigationAgent3D::path_metadata_flags
+static JSValue js_NavigationAgent3D_get_path_metadata_flags(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent3D.path_metadata_flags getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent3D.path_metadata_flags getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent3D.path_metadata_flags getter: invalid object");
+    }
+
+    NavigationAgent3D* typed_obj = Object::cast_to<NavigationAgent3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent3D.path_metadata_flags getter: wrong type");
+    }
+
+    int64_t value = typed_obj->get_path_metadata_flags();
+    return JS_NewInt64(ctx, value);
+}
+
+// Property setter: NavigationAgent3D::path_metadata_flags
+static JSValue js_NavigationAgent3D_set_path_metadata_flags(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent3D.path_metadata_flags setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent3D.path_metadata_flags setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent3D.path_metadata_flags setter: invalid object");
+    }
+
+    NavigationAgent3D* typed_obj = Object::cast_to<NavigationAgent3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent3D.path_metadata_flags setter: wrong type");
+    }
+
+    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<NavigationPathQueryParameters3D::PathMetadataFlags> value = (BitField<NavigationPathQueryParameters3D::PathMetadataFlags>)tmp_value;
+    typed_obj->set_path_metadata_flags(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: NavigationAgent3D::simplify_path
 static JSValue js_NavigationAgent3D_get_simplify_path(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2758,6 +2819,14 @@ void register_NavigationAgent3D_bindings(JSContext* ctx, JSValue global, JSValue
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_NavigationAgent3D_set_path_postprocessing, "set_path_postprocessing", 2));
         JS_SetPropertyStr(ctx, props, "path_postprocessing", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_NavigationAgent3D_get_path_metadata_flags, "get_path_metadata_flags", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_NavigationAgent3D_set_path_metadata_flags, "set_path_metadata_flags", 2));
+        JS_SetPropertyStr(ctx, props, "path_metadata_flags", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

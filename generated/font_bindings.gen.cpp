@@ -337,6 +337,36 @@ static JSValue js_Font_get_ot_name_strings(JSContext* ctx, JSValueConst this_val
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
+// Method: Font::get_font_style
+static JSValue js_Font_get_font_style(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Font.get_font_style: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Font.get_font_style: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Font.get_font_style: invalid or freed object");
+    }
+
+    Font* typed_obj = Object::cast_to<Font>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Font.get_font_style: object is not a Font");
+    }
+
+    BitField<TextServer::FontStyle> result = typed_obj->get_font_style();
+    return JS_NewInt64(ctx, (int64_t)result);
+}
+
 // Method: Font::get_font_weight
 static JSValue js_Font_get_font_weight(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -502,6 +532,174 @@ static JSValue js_Font_set_cache_capacity(JSContext* ctx, JSValueConst this_val,
 
     typed_obj->set_cache_capacity(arg_single_line, arg_multi_line);
     return JS_UNDEFINED;
+}
+
+// Method: Font::get_string_size
+static JSValue js_Font_get_string_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Font.get_string_size: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Font.get_string_size: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Font.get_string_size: invalid or freed object");
+    }
+
+    Font* typed_obj = Object::cast_to<Font>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Font.get_string_size: object is not a Font");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Font.get_string_size: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    // Optional argument: alignment (default: (HorizontalAlignment)0)
+    HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
+    if (argc > 2) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        int64_t tmp_alignment; JS_ToInt64(ctx, &tmp_alignment, argv[2]); HorizontalAlignment arg_alignment = (HorizontalAlignment)tmp_alignment;
+    }
+    // Optional argument: width (default: -1)
+    double arg_width = -1;
+    if (argc > 3) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_width, argv[3]);
+    }
+    // Optional argument: font_size (default: 16)
+    int64_t arg_font_size = 16;
+    if (argc > 4) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_font_size, argv[4]);
+    }
+    // Optional argument: justification_flags (default: 3)
+    BitField<TextServer::JustificationFlag> arg_justification_flags = 3;
+    if (argc > 5) {
+        // Override default with provided value
+        int64_t tmp_justification_flags; JS_ToInt64(ctx, &tmp_justification_flags, argv[5]); arg_justification_flags = (BitField<TextServer::JustificationFlag>)tmp_justification_flags;
+    }
+    // Optional argument: direction (default: (TextServer::Direction)0)
+    TextServer::Direction arg_direction = (TextServer::Direction)0;
+    if (argc > 6) {
+        // Override default with provided value
+        int64_t tmp_direction; JS_ToInt64(ctx, &tmp_direction, argv[6]); arg_direction = (TextServer::Direction)tmp_direction;
+    }
+    // Optional argument: orientation (default: (TextServer::Orientation)0)
+    TextServer::Orientation arg_orientation = (TextServer::Orientation)0;
+    if (argc > 7) {
+        // Override default with provided value
+        int64_t tmp_orientation; JS_ToInt64(ctx, &tmp_orientation, argv[7]); arg_orientation = (TextServer::Orientation)tmp_orientation;
+    }
+
+    Vector2 result = typed_obj->get_string_size(arg_text, arg_alignment, arg_width, arg_font_size, arg_justification_flags, arg_direction, arg_orientation);
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "x", JS_NewFloat64(ctx, result.x));
+    JS_SetPropertyStr(ctx, ret_obj, "y", JS_NewFloat64(ctx, result.y));
+    return ret_obj;
+}
+
+// Method: Font::get_multiline_string_size
+static JSValue js_Font_get_multiline_string_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Font.get_multiline_string_size: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Font.get_multiline_string_size: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Font.get_multiline_string_size: invalid or freed object");
+    }
+
+    Font* typed_obj = Object::cast_to<Font>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Font.get_multiline_string_size: object is not a Font");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Font.get_multiline_string_size: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    // Optional argument: alignment (default: (HorizontalAlignment)0)
+    HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
+    if (argc > 2) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        int64_t tmp_alignment; JS_ToInt64(ctx, &tmp_alignment, argv[2]); HorizontalAlignment arg_alignment = (HorizontalAlignment)tmp_alignment;
+    }
+    // Optional argument: width (default: -1)
+    double arg_width = -1;
+    if (argc > 3) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_width, argv[3]);
+    }
+    // Optional argument: font_size (default: 16)
+    int64_t arg_font_size = 16;
+    if (argc > 4) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_font_size, argv[4]);
+    }
+    // Optional argument: max_lines (default: -1)
+    int64_t arg_max_lines = -1;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_max_lines, argv[5]);
+    }
+    // Optional argument: brk_flags (default: 3)
+    BitField<TextServer::LineBreakFlag> arg_brk_flags = 3;
+    if (argc > 6) {
+        // Override default with provided value
+        int64_t tmp_brk_flags; JS_ToInt64(ctx, &tmp_brk_flags, argv[6]); arg_brk_flags = (BitField<TextServer::LineBreakFlag>)tmp_brk_flags;
+    }
+    // Optional argument: justification_flags (default: 3)
+    BitField<TextServer::JustificationFlag> arg_justification_flags = 3;
+    if (argc > 7) {
+        // Override default with provided value
+        int64_t tmp_justification_flags; JS_ToInt64(ctx, &tmp_justification_flags, argv[7]); arg_justification_flags = (BitField<TextServer::JustificationFlag>)tmp_justification_flags;
+    }
+    // Optional argument: direction (default: (TextServer::Direction)0)
+    TextServer::Direction arg_direction = (TextServer::Direction)0;
+    if (argc > 8) {
+        // Override default with provided value
+        int64_t tmp_direction; JS_ToInt64(ctx, &tmp_direction, argv[8]); arg_direction = (TextServer::Direction)tmp_direction;
+    }
+    // Optional argument: orientation (default: (TextServer::Orientation)0)
+    TextServer::Orientation arg_orientation = (TextServer::Orientation)0;
+    if (argc > 9) {
+        // Override default with provided value
+        int64_t tmp_orientation; JS_ToInt64(ctx, &tmp_orientation, argv[9]); arg_orientation = (TextServer::Orientation)tmp_orientation;
+    }
+
+    Vector2 result = typed_obj->get_multiline_string_size(arg_text, arg_alignment, arg_width, arg_font_size, arg_max_lines, arg_brk_flags, arg_justification_flags, arg_direction, arg_orientation);
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "x", JS_NewFloat64(ctx, result.x));
+    JS_SetPropertyStr(ctx, ret_obj, "y", JS_NewFloat64(ctx, result.y));
+    return ret_obj;
 }
 
 // Method: Font::get_char_size
@@ -802,6 +1000,8 @@ void register_Font_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Font_get_font_style_name, "get_font_style_name", 1));
     JS_SetPropertyStr(ctx, methods, "get_ot_name_strings",
         JS_NewCFunction(ctx, js_Font_get_ot_name_strings, "get_ot_name_strings", 1));
+    JS_SetPropertyStr(ctx, methods, "get_font_style",
+        JS_NewCFunction(ctx, js_Font_get_font_style, "get_font_style", 1));
     JS_SetPropertyStr(ctx, methods, "get_font_weight",
         JS_NewCFunction(ctx, js_Font_get_font_weight, "get_font_weight", 1));
     JS_SetPropertyStr(ctx, methods, "get_font_stretch",
@@ -812,6 +1012,10 @@ void register_Font_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Font_get_opentype_features, "get_opentype_features", 1));
     JS_SetPropertyStr(ctx, methods, "set_cache_capacity",
         JS_NewCFunction(ctx, js_Font_set_cache_capacity, "set_cache_capacity", 3));
+    JS_SetPropertyStr(ctx, methods, "get_string_size",
+        JS_NewCFunction(ctx, js_Font_get_string_size, "get_string_size", 8));
+    JS_SetPropertyStr(ctx, methods, "get_multiline_string_size",
+        JS_NewCFunction(ctx, js_Font_get_multiline_string_size, "get_multiline_string_size", 10));
     JS_SetPropertyStr(ctx, methods, "get_char_size",
         JS_NewCFunction(ctx, js_Font_get_char_size, "get_char_size", 3));
     JS_SetPropertyStr(ctx, methods, "has_char",

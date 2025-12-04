@@ -8,9 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/rich_text_label.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/rich_text_effect.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -338,6 +338,145 @@ static JSValue js_RichTextLabel_add_image(JSContext* ctx, JSValueConst this_val,
     }
 
     typed_obj->add_image(arg_image, arg_width, arg_height, arg_color, arg_inline_align, arg_region, arg_key, arg_pad, arg_tooltip, arg_width_in_percent, arg_height_in_percent, arg_alt_text);
+    return JS_UNDEFINED;
+}
+
+// Method: RichTextLabel::update_image
+static JSValue js_RichTextLabel_update_image(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.update_image: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.update_image: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.update_image: invalid or freed object");
+    }
+
+    RichTextLabel* typed_obj = Object::cast_to<RichTextLabel>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.update_image: object is not a RichTextLabel");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.update_image: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Variant arg_key = qjs_ctx->js_to_variant(argv[1]);
+    int64_t tmp_mask; JS_ToInt64(ctx, &tmp_mask, argv[2]); BitField<RichTextLabel::ImageUpdateMask> arg_mask = (BitField<RichTextLabel::ImageUpdateMask>)tmp_mask;
+    Ref<Texture2D> arg_image;
+    if (JS_IsNumber(argv[3])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_image; JS_ToInt64(ctx, &h_image, argv[3]);
+        Object* obj_image = qjs_ctx->get_object_registry()->get_object(h_image);
+        arg_image = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_image));
+    } else {
+        // Object with __handle property
+        JSValue jh_image = JS_GetPropertyStr(ctx, argv[3], "__handle");
+        if (!JS_IsUndefined(jh_image)) {
+            int64_t h_image; JS_ToInt64(ctx, &h_image, jh_image);
+            Object* obj_image = qjs_ctx->get_object_registry()->get_object(h_image);
+            arg_image = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_image));
+        }
+        JS_FreeValue(ctx, jh_image);
+    }
+    // Optional argument: width (default: 0)
+    int64_t arg_width = 0;
+    if (argc > 4) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_width, argv[4]);
+    }
+    // Optional argument: height (default: 0)
+    int64_t arg_height = 0;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_height, argv[5]);
+    }
+    // Optional argument: color (default: Color(1, 1, 1, 1))
+    Color arg_color = Color(1, 1, 1, 1);
+    if (argc > 6) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[6], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[6], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[6], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[6], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    }
+    // Optional argument: inline_align (default: (InlineAlignment)5)
+    InlineAlignment arg_inline_align = (InlineAlignment)5;
+    if (argc > 7) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        int64_t tmp_inline_align; JS_ToInt64(ctx, &tmp_inline_align, argv[7]); InlineAlignment arg_inline_align = (InlineAlignment)tmp_inline_align;
+    }
+    // Optional argument: region (default: Rect2(0, 0, 0, 0))
+    Rect2 arg_region = Rect2(0, 0, 0, 0);
+    if (argc > 8) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_x_region, tmp_y_region, tmp_w_region, tmp_h_region;
+    JSValue jpos_region = JS_GetPropertyStr(ctx, argv[8], "position");
+    JSValue jsize_region = JS_GetPropertyStr(ctx, argv[8], "size");
+    JSValue jpx_region = JS_GetPropertyStr(ctx, jpos_region, "x");
+    JSValue jpy_region = JS_GetPropertyStr(ctx, jpos_region, "y");
+    JSValue jsx_region = JS_GetPropertyStr(ctx, jsize_region, "x");
+    JSValue jsy_region = JS_GetPropertyStr(ctx, jsize_region, "y");
+    JS_ToFloat64(ctx, &tmp_x_region, jpx_region);
+    JS_ToFloat64(ctx, &tmp_y_region, jpy_region);
+    JS_ToFloat64(ctx, &tmp_w_region, jsx_region);
+    JS_ToFloat64(ctx, &tmp_h_region, jsy_region);
+    JS_FreeValue(ctx, jpx_region); JS_FreeValue(ctx, jpy_region);
+    JS_FreeValue(ctx, jsx_region); JS_FreeValue(ctx, jsy_region);
+    JS_FreeValue(ctx, jpos_region); JS_FreeValue(ctx, jsize_region);
+    Rect2 arg_region(tmp_x_region, tmp_y_region, tmp_w_region, tmp_h_region);
+    }
+    // Optional argument: pad (default: false)
+    bool arg_pad = false;
+    if (argc > 9) {
+        // Override default with provided value
+        arg_pad = JS_ToBool(ctx, argv[9]);
+    }
+    // Optional argument: tooltip (default: String())
+    String arg_tooltip = String();
+    if (argc > 10) {
+        // Override default with provided value
+        const char* cstr_tooltip = JS_ToCString(ctx, argv[10]); arg_tooltip = cstr_tooltip ? cstr_tooltip : ""; JS_FreeCString(ctx, cstr_tooltip);
+    }
+    // Optional argument: width_in_percent (default: false)
+    bool arg_width_in_percent = false;
+    if (argc > 11) {
+        // Override default with provided value
+        arg_width_in_percent = JS_ToBool(ctx, argv[11]);
+    }
+    // Optional argument: height_in_percent (default: false)
+    bool arg_height_in_percent = false;
+    if (argc > 12) {
+        // Override default with provided value
+        arg_height_in_percent = JS_ToBool(ctx, argv[12]);
+    }
+
+    typed_obj->update_image(arg_key, arg_mask, arg_image, arg_width, arg_height, arg_color, arg_inline_align, arg_region, arg_pad, arg_tooltip, arg_width_in_percent, arg_height_in_percent);
     return JS_UNDEFINED;
 }
 
@@ -837,6 +976,86 @@ static JSValue js_RichTextLabel_push_outline_color(JSContext* ctx, JSValueConst 
     Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
 
     typed_obj->push_outline_color(arg_color);
+    return JS_UNDEFINED;
+}
+
+// Method: RichTextLabel::push_paragraph
+static JSValue js_RichTextLabel_push_paragraph(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_paragraph: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_paragraph: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_paragraph: invalid or freed object");
+    }
+
+    RichTextLabel* typed_obj = Object::cast_to<RichTextLabel>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_paragraph: object is not a RichTextLabel");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.push_paragraph: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t tmp_alignment; JS_ToInt64(ctx, &tmp_alignment, argv[1]); HorizontalAlignment arg_alignment = (HorizontalAlignment)tmp_alignment;
+    // Optional argument: base_direction (default: (Control::TextDirection)0)
+    Control::TextDirection arg_base_direction = (Control::TextDirection)0;
+    if (argc > 2) {
+        // Override default with provided value
+        int64_t tmp_base_direction; JS_ToInt64(ctx, &tmp_base_direction, argv[2]); arg_base_direction = (Control::TextDirection)tmp_base_direction;
+    }
+    // Optional argument: language (default: String())
+    String arg_language = String();
+    if (argc > 3) {
+        // Override default with provided value
+        const char* cstr_language = JS_ToCString(ctx, argv[3]); arg_language = cstr_language ? cstr_language : ""; JS_FreeCString(ctx, cstr_language);
+    }
+    // Optional argument: st_parser (default: (TextServer::StructuredTextParser)0)
+    TextServer::StructuredTextParser arg_st_parser = (TextServer::StructuredTextParser)0;
+    if (argc > 4) {
+        // Override default with provided value
+        int64_t tmp_st_parser; JS_ToInt64(ctx, &tmp_st_parser, argv[4]); arg_st_parser = (TextServer::StructuredTextParser)tmp_st_parser;
+    }
+    // Optional argument: justification_flags (default: 163)
+    BitField<TextServer::JustificationFlag> arg_justification_flags = 163;
+    if (argc > 5) {
+        // Override default with provided value
+        int64_t tmp_justification_flags; JS_ToInt64(ctx, &tmp_justification_flags, argv[5]); arg_justification_flags = (BitField<TextServer::JustificationFlag>)tmp_justification_flags;
+    }
+    // Optional argument: tab_stops (default: PackedFloat32Array())
+    PackedFloat32Array arg_tab_stops = PackedFloat32Array();
+    if (argc > 6) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        PackedFloat32Array arg_tab_stops;
+    if (JS_IsArray(argv[6])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[6], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_tab_stops.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[6], i);
+            double val = 0; JS_ToFloat64(ctx, &val, elem);
+            JS_FreeValue(ctx, elem);
+            arg_tab_stops.set(i, (float)val);
+        }
+    }
+    }
+
+    typed_obj->push_paragraph(arg_alignment, arg_base_direction, arg_language, arg_st_parser, arg_justification_flags, arg_tab_stops);
     return JS_UNDEFINED;
 }
 
@@ -3591,6 +3810,67 @@ static JSValue js_RichTextLabel_set_autowrap_mode(JSContext* ctx, JSValueConst t
     return JS_UNDEFINED;
 }
 
+// Property getter: RichTextLabel::autowrap_trim_flags
+static JSValue js_RichTextLabel_get_autowrap_trim_flags(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.autowrap_trim_flags getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.autowrap_trim_flags getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.autowrap_trim_flags getter: invalid object");
+    }
+
+    RichTextLabel* typed_obj = Object::cast_to<RichTextLabel>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.autowrap_trim_flags getter: wrong type");
+    }
+
+    int64_t value = typed_obj->get_autowrap_trim_flags();
+    return JS_NewInt64(ctx, value);
+}
+
+// Property setter: RichTextLabel::autowrap_trim_flags
+static JSValue js_RichTextLabel_set_autowrap_trim_flags(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.autowrap_trim_flags setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.autowrap_trim_flags setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.autowrap_trim_flags setter: invalid object");
+    }
+
+    RichTextLabel* typed_obj = Object::cast_to<RichTextLabel>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.autowrap_trim_flags setter: wrong type");
+    }
+
+    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<TextServer::LineBreakFlag> value = (BitField<TextServer::LineBreakFlag>)tmp_value;
+    typed_obj->set_autowrap_trim_flags(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: RichTextLabel::tab_size
 static JSValue js_RichTextLabel_get_tab_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -3893,6 +4173,67 @@ static JSValue js_RichTextLabel_set_vertical_alignment(JSContext* ctx, JSValueCo
 
     int64_t value; JS_ToInt64(ctx, &value, argv[1]);
     typed_obj->set_vertical_alignment((VerticalAlignment)value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: RichTextLabel::justification_flags
+static JSValue js_RichTextLabel_get_justification_flags(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.justification_flags getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.justification_flags getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.justification_flags getter: invalid object");
+    }
+
+    RichTextLabel* typed_obj = Object::cast_to<RichTextLabel>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.justification_flags getter: wrong type");
+    }
+
+    int64_t value = typed_obj->get_justification_flags();
+    return JS_NewInt64(ctx, value);
+}
+
+// Property setter: RichTextLabel::justification_flags
+static JSValue js_RichTextLabel_set_justification_flags(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.justification_flags setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.justification_flags setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.justification_flags setter: invalid object");
+    }
+
+    RichTextLabel* typed_obj = Object::cast_to<RichTextLabel>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.justification_flags setter: wrong type");
+    }
+
+    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<TextServer::JustificationFlag> value = (BitField<TextServer::JustificationFlag>)tmp_value;
+    typed_obj->set_justification_flags(value);
     return JS_UNDEFINED;
 }
 
@@ -4840,6 +5181,8 @@ void register_RichTextLabel_bindings(JSContext* ctx, JSValue global, JSValue cla
         JS_NewCFunction(ctx, js_RichTextLabel_add_hr, "add_hr", 7));
     JS_SetPropertyStr(ctx, methods, "add_image",
         JS_NewCFunction(ctx, js_RichTextLabel_add_image, "add_image", 13));
+    JS_SetPropertyStr(ctx, methods, "update_image",
+        JS_NewCFunction(ctx, js_RichTextLabel_update_image, "update_image", 13));
     JS_SetPropertyStr(ctx, methods, "newline",
         JS_NewCFunction(ctx, js_RichTextLabel_newline, "newline", 1));
     JS_SetPropertyStr(ctx, methods, "remove_paragraph",
@@ -4866,6 +5209,8 @@ void register_RichTextLabel_bindings(JSContext* ctx, JSValue global, JSValue cla
         JS_NewCFunction(ctx, js_RichTextLabel_push_outline_size, "push_outline_size", 2));
     JS_SetPropertyStr(ctx, methods, "push_outline_color",
         JS_NewCFunction(ctx, js_RichTextLabel_push_outline_color, "push_outline_color", 2));
+    JS_SetPropertyStr(ctx, methods, "push_paragraph",
+        JS_NewCFunction(ctx, js_RichTextLabel_push_paragraph, "push_paragraph", 7));
     JS_SetPropertyStr(ctx, methods, "push_indent",
         JS_NewCFunction(ctx, js_RichTextLabel_push_indent, "push_indent", 2));
     JS_SetPropertyStr(ctx, methods, "push_list",
@@ -5045,6 +5390,14 @@ void register_RichTextLabel_bindings(JSContext* ctx, JSValue global, JSValue cla
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_RichTextLabel_get_autowrap_trim_flags, "get_autowrap_trim_flags", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_RichTextLabel_set_autowrap_trim_flags, "set_autowrap_trim_flags", 2));
+        JS_SetPropertyStr(ctx, props, "autowrap_trim_flags", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
             JS_NewCFunction(ctx, js_RichTextLabel_get_tab_size, "get_tab_size", 1));
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_RichTextLabel_set_tab_size, "set_tab_size", 2));
@@ -5081,6 +5434,14 @@ void register_RichTextLabel_bindings(JSContext* ctx, JSValue global, JSValue cla
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_RichTextLabel_set_vertical_alignment, "set_vertical_alignment", 2));
         JS_SetPropertyStr(ctx, props, "vertical_alignment", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_RichTextLabel_get_justification_flags, "get_justification_flags", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_RichTextLabel_set_justification_flags, "set_justification_flags", 2));
+        JS_SetPropertyStr(ctx, props, "justification_flags", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

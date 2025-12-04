@@ -8,9 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/control.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/style_box.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -3580,6 +3580,128 @@ static JSValue js_Control_set_pivot_offset(JSContext* ctx, JSValueConst this_val
     return JS_UNDEFINED;
 }
 
+// Property getter: Control::size_flags_horizontal
+static JSValue js_Control_get_size_flags_horizontal(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_horizontal getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_horizontal getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_horizontal getter: invalid object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_horizontal getter: wrong type");
+    }
+
+    int64_t value = typed_obj->get_h_size_flags();
+    return JS_NewInt64(ctx, value);
+}
+
+// Property setter: Control::size_flags_horizontal
+static JSValue js_Control_set_size_flags_horizontal(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_horizontal setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_horizontal setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_horizontal setter: invalid object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_horizontal setter: wrong type");
+    }
+
+    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<Control::SizeFlags> value = (BitField<Control::SizeFlags>)tmp_value;
+    typed_obj->set_h_size_flags(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: Control::size_flags_vertical
+static JSValue js_Control_get_size_flags_vertical(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_vertical getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_vertical getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_vertical getter: invalid object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_vertical getter: wrong type");
+    }
+
+    int64_t value = typed_obj->get_v_size_flags();
+    return JS_NewInt64(ctx, value);
+}
+
+// Property setter: Control::size_flags_vertical
+static JSValue js_Control_set_size_flags_vertical(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_vertical setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_vertical setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_vertical setter: invalid object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.size_flags_vertical setter: wrong type");
+    }
+
+    int64_t tmp_value; JS_ToInt64(ctx, &tmp_value, argv[1]); BitField<Control::SizeFlags> value = (BitField<Control::SizeFlags>)tmp_value;
+    typed_obj->set_v_size_flags(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: Control::size_flags_stretch_ratio
 static JSValue js_Control_get_size_flags_stretch_ratio(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -4779,6 +4901,22 @@ void register_Control_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_Control_set_pivot_offset, "set_pivot_offset", 2));
         JS_SetPropertyStr(ctx, props, "pivot_offset", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_Control_get_size_flags_horizontal, "get_size_flags_horizontal", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_Control_set_size_flags_horizontal, "set_size_flags_horizontal", 2));
+        JS_SetPropertyStr(ctx, props, "size_flags_horizontal", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_Control_get_size_flags_vertical, "get_size_flags_vertical", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_Control_set_size_flags_vertical, "set_size_flags_vertical", 2));
+        JS_SetPropertyStr(ctx, props, "size_flags_vertical", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);
