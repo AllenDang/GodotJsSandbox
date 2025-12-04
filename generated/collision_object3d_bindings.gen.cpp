@@ -187,6 +187,59 @@ static JSValue js_CollisionObject3D_get_collision_mask_value(JSContext* ctx, JSV
     return JS_NewBool(ctx, result);
 }
 
+// Method: CollisionObject3D::create_shape_owner
+static JSValue js_CollisionObject3D_create_shape_owner(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.create_shape_owner: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.create_shape_owner: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.create_shape_owner: invalid or freed object");
+    }
+
+    CollisionObject3D* typed_obj = Object::cast_to<CollisionObject3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.create_shape_owner: object is not a CollisionObject3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.create_shape_owner: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Object* arg_owner = nullptr;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_owner; JS_ToInt64(ctx, &h_owner, argv[1]);
+        Object* obj_owner = qjs_ctx->get_object_registry()->get_object(h_owner);
+        arg_owner = reinterpret_cast<Object*>(obj_owner);
+    } else {
+        // Object with __handle property
+        JSValue jh_owner = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_owner)) {
+            int64_t h_owner; JS_ToInt64(ctx, &h_owner, jh_owner);
+            Object* obj_owner = qjs_ctx->get_object_registry()->get_object(h_owner);
+            arg_owner = reinterpret_cast<Object*>(obj_owner);
+        }
+        JS_FreeValue(ctx, jh_owner);
+    }
+
+    int64_t result = typed_obj->create_shape_owner(arg_owner);
+    return JS_NewInt64(ctx, result);
+}
+
 // Method: CollisionObject3D::remove_shape_owner
 static JSValue js_CollisionObject3D_remove_shape_owner(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -258,7 +311,41 @@ static JSValue js_CollisionObject3D_shape_owner_set_transform(JSContext* ctx, JS
 
     // Convert arguments
     int64_t arg_owner_id; JS_ToInt64(ctx, &arg_owner_id, argv[1]);
-    Transform3D arg_transform = qjs_ctx->js_to_variant(argv[2]);
+    Transform3D arg_transform;
+    JSValue jbasis_transform = JS_GetPropertyStr(ctx, argv[2], "basis");
+    JSValue jorigin_transform = JS_GetPropertyStr(ctx, argv[2], "origin");
+    if (!JS_IsUndefined(jorigin_transform)) {
+        double ox, oy, oz;
+        JSValue jox_transform = JS_GetPropertyStr(ctx, jorigin_transform, "x");
+        JSValue joy_transform = JS_GetPropertyStr(ctx, jorigin_transform, "y");
+        JSValue joz_transform = JS_GetPropertyStr(ctx, jorigin_transform, "z");
+        JS_ToFloat64(ctx, &ox, jox_transform);
+        JS_ToFloat64(ctx, &oy, joy_transform);
+        JS_ToFloat64(ctx, &oz, joz_transform);
+        arg_transform.origin = Vector3(ox, oy, oz);
+        JS_FreeValue(ctx, jox_transform); JS_FreeValue(ctx, joy_transform); JS_FreeValue(ctx, joz_transform);
+    }
+    if (!JS_IsUndefined(jbasis_transform)) {
+        JSValue jbx_transform = JS_GetPropertyStr(ctx, jbasis_transform, "x");
+        JSValue jby_transform = JS_GetPropertyStr(ctx, jbasis_transform, "y");
+        JSValue jbz_transform = JS_GetPropertyStr(ctx, jbasis_transform, "z");
+        if (!JS_IsUndefined(jbx_transform) && !JS_IsUndefined(jby_transform) && !JS_IsUndefined(jbz_transform)) {
+            double xx, xy, xz, yx, yy, yz, zx, zy, zz;
+            JSValue jbxx = JS_GetPropertyStr(ctx, jbx_transform, "x"); JSValue jbxy = JS_GetPropertyStr(ctx, jbx_transform, "y"); JSValue jbxz = JS_GetPropertyStr(ctx, jbx_transform, "z");
+            JSValue jbyx = JS_GetPropertyStr(ctx, jby_transform, "x"); JSValue jbyy = JS_GetPropertyStr(ctx, jby_transform, "y"); JSValue jbyz = JS_GetPropertyStr(ctx, jby_transform, "z");
+            JSValue jbzx = JS_GetPropertyStr(ctx, jbz_transform, "x"); JSValue jbzy = JS_GetPropertyStr(ctx, jbz_transform, "y"); JSValue jbzz = JS_GetPropertyStr(ctx, jbz_transform, "z");
+            JS_ToFloat64(ctx, &xx, jbxx); JS_ToFloat64(ctx, &xy, jbxy); JS_ToFloat64(ctx, &xz, jbxz);
+            JS_ToFloat64(ctx, &yx, jbyx); JS_ToFloat64(ctx, &yy, jbyy); JS_ToFloat64(ctx, &yz, jbyz);
+            JS_ToFloat64(ctx, &zx, jbzx); JS_ToFloat64(ctx, &zy, jbzy); JS_ToFloat64(ctx, &zz, jbzz);
+            arg_transform.basis = Basis(Vector3(xx, xy, xz), Vector3(yx, yy, yz), Vector3(zx, zy, zz));
+            JS_FreeValue(ctx, jbxx); JS_FreeValue(ctx, jbxy); JS_FreeValue(ctx, jbxz);
+            JS_FreeValue(ctx, jbyx); JS_FreeValue(ctx, jbyy); JS_FreeValue(ctx, jbyz);
+            JS_FreeValue(ctx, jbzx); JS_FreeValue(ctx, jbzy); JS_FreeValue(ctx, jbzz);
+        }
+        JS_FreeValue(ctx, jbx_transform); JS_FreeValue(ctx, jby_transform); JS_FreeValue(ctx, jbz_transform);
+    }
+    JS_FreeValue(ctx, jbasis_transform);
+    JS_FreeValue(ctx, jorigin_transform);
 
     typed_obj->shape_owner_set_transform(arg_owner_id, arg_transform);
     return JS_UNDEFINED;
@@ -299,7 +386,93 @@ static JSValue js_CollisionObject3D_shape_owner_get_transform(JSContext* ctx, JS
     int64_t arg_owner_id; JS_ToInt64(ctx, &arg_owner_id, argv[1]);
 
     Transform3D result = typed_obj->shape_owner_get_transform(arg_owner_id);
-    return qjs_ctx->variant_to_js(Variant(result));
+    JSValue ret_obj = JS_NewObject(ctx);
+    JSValue basis_obj = JS_NewObject(ctx);
+    JSValue origin_obj = JS_NewObject(ctx);
+    JSValue bx_obj = JS_NewObject(ctx);
+    JSValue by_obj = JS_NewObject(ctx);
+    JSValue bz_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, bx_obj, "x", JS_NewFloat64(ctx, result.basis.rows[0].x));
+    JS_SetPropertyStr(ctx, bx_obj, "y", JS_NewFloat64(ctx, result.basis.rows[0].y));
+    JS_SetPropertyStr(ctx, bx_obj, "z", JS_NewFloat64(ctx, result.basis.rows[0].z));
+    JS_SetPropertyStr(ctx, by_obj, "x", JS_NewFloat64(ctx, result.basis.rows[1].x));
+    JS_SetPropertyStr(ctx, by_obj, "y", JS_NewFloat64(ctx, result.basis.rows[1].y));
+    JS_SetPropertyStr(ctx, by_obj, "z", JS_NewFloat64(ctx, result.basis.rows[1].z));
+    JS_SetPropertyStr(ctx, bz_obj, "x", JS_NewFloat64(ctx, result.basis.rows[2].x));
+    JS_SetPropertyStr(ctx, bz_obj, "y", JS_NewFloat64(ctx, result.basis.rows[2].y));
+    JS_SetPropertyStr(ctx, bz_obj, "z", JS_NewFloat64(ctx, result.basis.rows[2].z));
+    JS_SetPropertyStr(ctx, basis_obj, "x", bx_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "y", by_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "z", bz_obj);
+    JS_SetPropertyStr(ctx, origin_obj, "x", JS_NewFloat64(ctx, result.origin.x));
+    JS_SetPropertyStr(ctx, origin_obj, "y", JS_NewFloat64(ctx, result.origin.y));
+    JS_SetPropertyStr(ctx, origin_obj, "z", JS_NewFloat64(ctx, result.origin.z));
+    JS_SetPropertyStr(ctx, ret_obj, "basis", basis_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "origin", origin_obj);
+    return ret_obj;
+}
+
+// Method: CollisionObject3D::shape_owner_get_owner
+static JSValue js_CollisionObject3D_shape_owner_get_owner(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.shape_owner_get_owner: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.shape_owner_get_owner: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.shape_owner_get_owner: invalid or freed object");
+    }
+
+    CollisionObject3D* typed_obj = Object::cast_to<CollisionObject3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.shape_owner_get_owner: object is not a CollisionObject3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.shape_owner_get_owner: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_owner_id; JS_ToInt64(ctx, &arg_owner_id, argv[1]);
+
+    Object* result = typed_obj->shape_owner_get_owner(arg_owner_id);
+    if (!result) return JS_NULL;
+    Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
 }
 
 // Method: CollisionObject3D::shape_owner_set_disabled
@@ -1069,12 +1242,16 @@ void register_CollisionObject3D_bindings(JSContext* ctx, JSValue global, JSValue
         JS_NewCFunction(ctx, js_CollisionObject3D_set_collision_mask_value, "set_collision_mask_value", 3));
     JS_SetPropertyStr(ctx, methods, "get_collision_mask_value",
         JS_NewCFunction(ctx, js_CollisionObject3D_get_collision_mask_value, "get_collision_mask_value", 2));
+    JS_SetPropertyStr(ctx, methods, "create_shape_owner",
+        JS_NewCFunction(ctx, js_CollisionObject3D_create_shape_owner, "create_shape_owner", 2));
     JS_SetPropertyStr(ctx, methods, "remove_shape_owner",
         JS_NewCFunction(ctx, js_CollisionObject3D_remove_shape_owner, "remove_shape_owner", 2));
     JS_SetPropertyStr(ctx, methods, "shape_owner_set_transform",
         JS_NewCFunction(ctx, js_CollisionObject3D_shape_owner_set_transform, "shape_owner_set_transform", 3));
     JS_SetPropertyStr(ctx, methods, "shape_owner_get_transform",
         JS_NewCFunction(ctx, js_CollisionObject3D_shape_owner_get_transform, "shape_owner_get_transform", 2));
+    JS_SetPropertyStr(ctx, methods, "shape_owner_get_owner",
+        JS_NewCFunction(ctx, js_CollisionObject3D_shape_owner_get_owner, "shape_owner_get_owner", 2));
     JS_SetPropertyStr(ctx, methods, "shape_owner_set_disabled",
         JS_NewCFunction(ctx, js_CollisionObject3D_shape_owner_set_disabled, "shape_owner_set_disabled", 3));
     JS_SetPropertyStr(ctx, methods, "is_shape_owner_disabled",

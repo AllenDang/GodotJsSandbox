@@ -64,11 +64,68 @@ static JSValue js_PathFollow3D_correct_posture(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    Transform3D arg_transform = qjs_ctx->js_to_variant(argv[1]);
+    Transform3D arg_transform;
+    JSValue jbasis_transform = JS_GetPropertyStr(ctx, argv[1], "basis");
+    JSValue jorigin_transform = JS_GetPropertyStr(ctx, argv[1], "origin");
+    if (!JS_IsUndefined(jorigin_transform)) {
+        double ox, oy, oz;
+        JSValue jox_transform = JS_GetPropertyStr(ctx, jorigin_transform, "x");
+        JSValue joy_transform = JS_GetPropertyStr(ctx, jorigin_transform, "y");
+        JSValue joz_transform = JS_GetPropertyStr(ctx, jorigin_transform, "z");
+        JS_ToFloat64(ctx, &ox, jox_transform);
+        JS_ToFloat64(ctx, &oy, joy_transform);
+        JS_ToFloat64(ctx, &oz, joz_transform);
+        arg_transform.origin = Vector3(ox, oy, oz);
+        JS_FreeValue(ctx, jox_transform); JS_FreeValue(ctx, joy_transform); JS_FreeValue(ctx, joz_transform);
+    }
+    if (!JS_IsUndefined(jbasis_transform)) {
+        JSValue jbx_transform = JS_GetPropertyStr(ctx, jbasis_transform, "x");
+        JSValue jby_transform = JS_GetPropertyStr(ctx, jbasis_transform, "y");
+        JSValue jbz_transform = JS_GetPropertyStr(ctx, jbasis_transform, "z");
+        if (!JS_IsUndefined(jbx_transform) && !JS_IsUndefined(jby_transform) && !JS_IsUndefined(jbz_transform)) {
+            double xx, xy, xz, yx, yy, yz, zx, zy, zz;
+            JSValue jbxx = JS_GetPropertyStr(ctx, jbx_transform, "x"); JSValue jbxy = JS_GetPropertyStr(ctx, jbx_transform, "y"); JSValue jbxz = JS_GetPropertyStr(ctx, jbx_transform, "z");
+            JSValue jbyx = JS_GetPropertyStr(ctx, jby_transform, "x"); JSValue jbyy = JS_GetPropertyStr(ctx, jby_transform, "y"); JSValue jbyz = JS_GetPropertyStr(ctx, jby_transform, "z");
+            JSValue jbzx = JS_GetPropertyStr(ctx, jbz_transform, "x"); JSValue jbzy = JS_GetPropertyStr(ctx, jbz_transform, "y"); JSValue jbzz = JS_GetPropertyStr(ctx, jbz_transform, "z");
+            JS_ToFloat64(ctx, &xx, jbxx); JS_ToFloat64(ctx, &xy, jbxy); JS_ToFloat64(ctx, &xz, jbxz);
+            JS_ToFloat64(ctx, &yx, jbyx); JS_ToFloat64(ctx, &yy, jbyy); JS_ToFloat64(ctx, &yz, jbyz);
+            JS_ToFloat64(ctx, &zx, jbzx); JS_ToFloat64(ctx, &zy, jbzy); JS_ToFloat64(ctx, &zz, jbzz);
+            arg_transform.basis = Basis(Vector3(xx, xy, xz), Vector3(yx, yy, yz), Vector3(zx, zy, zz));
+            JS_FreeValue(ctx, jbxx); JS_FreeValue(ctx, jbxy); JS_FreeValue(ctx, jbxz);
+            JS_FreeValue(ctx, jbyx); JS_FreeValue(ctx, jbyy); JS_FreeValue(ctx, jbyz);
+            JS_FreeValue(ctx, jbzx); JS_FreeValue(ctx, jbzy); JS_FreeValue(ctx, jbzz);
+        }
+        JS_FreeValue(ctx, jbx_transform); JS_FreeValue(ctx, jby_transform); JS_FreeValue(ctx, jbz_transform);
+    }
+    JS_FreeValue(ctx, jbasis_transform);
+    JS_FreeValue(ctx, jorigin_transform);
     int64_t tmp_rotation_mode; JS_ToInt64(ctx, &tmp_rotation_mode, argv[2]); PathFollow3D::RotationMode arg_rotation_mode = (PathFollow3D::RotationMode)tmp_rotation_mode;
 
     Transform3D result = typed_obj->correct_posture(arg_transform, arg_rotation_mode);
-    return qjs_ctx->variant_to_js(Variant(result));
+    JSValue ret_obj = JS_NewObject(ctx);
+    JSValue basis_obj = JS_NewObject(ctx);
+    JSValue origin_obj = JS_NewObject(ctx);
+    JSValue bx_obj = JS_NewObject(ctx);
+    JSValue by_obj = JS_NewObject(ctx);
+    JSValue bz_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, bx_obj, "x", JS_NewFloat64(ctx, result.basis.rows[0].x));
+    JS_SetPropertyStr(ctx, bx_obj, "y", JS_NewFloat64(ctx, result.basis.rows[0].y));
+    JS_SetPropertyStr(ctx, bx_obj, "z", JS_NewFloat64(ctx, result.basis.rows[0].z));
+    JS_SetPropertyStr(ctx, by_obj, "x", JS_NewFloat64(ctx, result.basis.rows[1].x));
+    JS_SetPropertyStr(ctx, by_obj, "y", JS_NewFloat64(ctx, result.basis.rows[1].y));
+    JS_SetPropertyStr(ctx, by_obj, "z", JS_NewFloat64(ctx, result.basis.rows[1].z));
+    JS_SetPropertyStr(ctx, bz_obj, "x", JS_NewFloat64(ctx, result.basis.rows[2].x));
+    JS_SetPropertyStr(ctx, bz_obj, "y", JS_NewFloat64(ctx, result.basis.rows[2].y));
+    JS_SetPropertyStr(ctx, bz_obj, "z", JS_NewFloat64(ctx, result.basis.rows[2].z));
+    JS_SetPropertyStr(ctx, basis_obj, "x", bx_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "y", by_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "z", bz_obj);
+    JS_SetPropertyStr(ctx, origin_obj, "x", JS_NewFloat64(ctx, result.origin.x));
+    JS_SetPropertyStr(ctx, origin_obj, "y", JS_NewFloat64(ctx, result.origin.y));
+    JS_SetPropertyStr(ctx, origin_obj, "z", JS_NewFloat64(ctx, result.origin.z));
+    JS_SetPropertyStr(ctx, ret_obj, "basis", basis_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "origin", origin_obj);
+    return ret_obj;
 }
 
 // Property getter: PathFollow3D::progress

@@ -35,6 +35,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_Button_bindings(ctx, global, classes);
     register_CPUParticles2D_bindings(ctx, global, classes);
     register_CPUParticles3D_bindings(ctx, global, classes);
+    register_CallbackTweener_bindings(ctx, global, classes);
     register_Camera2D_bindings(ctx, global, classes);
     register_Camera3D_bindings(ctx, global, classes);
     register_CanvasItem_bindings(ctx, global, classes);
@@ -67,6 +68,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_GridContainer_bindings(ctx, global, classes);
     register_HBoxContainer_bindings(ctx, global, classes);
     register_ImageTexture_bindings(ctx, global, classes);
+    register_IntervalTweener_bindings(ctx, global, classes);
     register_Label_bindings(ctx, global, classes);
     register_Light2D_bindings(ctx, global, classes);
     register_Light3D_bindings(ctx, global, classes);
@@ -76,6 +78,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_Mesh_bindings(ctx, global, classes);
     register_MeshInstance2D_bindings(ctx, global, classes);
     register_MeshInstance3D_bindings(ctx, global, classes);
+    register_MethodTweener_bindings(ctx, global, classes);
     register_MultiMeshInstance2D_bindings(ctx, global, classes);
     register_MultiMeshInstance3D_bindings(ctx, global, classes);
     register_NavigationAgent2D_bindings(ctx, global, classes);
@@ -101,6 +104,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_PointLight2D_bindings(ctx, global, classes);
     register_PrimitiveMesh_bindings(ctx, global, classes);
     register_ProgressBar_bindings(ctx, global, classes);
+    register_PropertyTweener_bindings(ctx, global, classes);
     register_RayCast2D_bindings(ctx, global, classes);
     register_RayCast3D_bindings(ctx, global, classes);
     register_RectangleShape2D_bindings(ctx, global, classes);
@@ -109,6 +113,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_RichTextLabel_bindings(ctx, global, classes);
     register_RigidBody2D_bindings(ctx, global, classes);
     register_RigidBody3D_bindings(ctx, global, classes);
+    register_SceneTree_bindings(ctx, global, classes);
     register_ScrollContainer_bindings(ctx, global, classes);
     register_ShaderMaterial_bindings(ctx, global, classes);
     register_Shape2D_bindings(ctx, global, classes);
@@ -132,6 +137,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_TileMap_bindings(ctx, global, classes);
     register_TileMapLayer_bindings(ctx, global, classes);
     register_Timer_bindings(ctx, global, classes);
+    register_Tween_bindings(ctx, global, classes);
     register_VBoxContainer_bindings(ctx, global, classes);
     register_Viewport_bindings(ctx, global, classes);
     register_WorldEnvironment_bindings(ctx, global, classes);

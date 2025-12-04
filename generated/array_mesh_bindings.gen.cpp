@@ -566,7 +566,41 @@ static JSValue js_ArrayMesh_lightmap_unwrap(JSContext* ctx, JSValueConst this_va
     }
 
     // Convert arguments
-    Transform3D arg_transform = qjs_ctx->js_to_variant(argv[1]);
+    Transform3D arg_transform;
+    JSValue jbasis_transform = JS_GetPropertyStr(ctx, argv[1], "basis");
+    JSValue jorigin_transform = JS_GetPropertyStr(ctx, argv[1], "origin");
+    if (!JS_IsUndefined(jorigin_transform)) {
+        double ox, oy, oz;
+        JSValue jox_transform = JS_GetPropertyStr(ctx, jorigin_transform, "x");
+        JSValue joy_transform = JS_GetPropertyStr(ctx, jorigin_transform, "y");
+        JSValue joz_transform = JS_GetPropertyStr(ctx, jorigin_transform, "z");
+        JS_ToFloat64(ctx, &ox, jox_transform);
+        JS_ToFloat64(ctx, &oy, joy_transform);
+        JS_ToFloat64(ctx, &oz, joz_transform);
+        arg_transform.origin = Vector3(ox, oy, oz);
+        JS_FreeValue(ctx, jox_transform); JS_FreeValue(ctx, joy_transform); JS_FreeValue(ctx, joz_transform);
+    }
+    if (!JS_IsUndefined(jbasis_transform)) {
+        JSValue jbx_transform = JS_GetPropertyStr(ctx, jbasis_transform, "x");
+        JSValue jby_transform = JS_GetPropertyStr(ctx, jbasis_transform, "y");
+        JSValue jbz_transform = JS_GetPropertyStr(ctx, jbasis_transform, "z");
+        if (!JS_IsUndefined(jbx_transform) && !JS_IsUndefined(jby_transform) && !JS_IsUndefined(jbz_transform)) {
+            double xx, xy, xz, yx, yy, yz, zx, zy, zz;
+            JSValue jbxx = JS_GetPropertyStr(ctx, jbx_transform, "x"); JSValue jbxy = JS_GetPropertyStr(ctx, jbx_transform, "y"); JSValue jbxz = JS_GetPropertyStr(ctx, jbx_transform, "z");
+            JSValue jbyx = JS_GetPropertyStr(ctx, jby_transform, "x"); JSValue jbyy = JS_GetPropertyStr(ctx, jby_transform, "y"); JSValue jbyz = JS_GetPropertyStr(ctx, jby_transform, "z");
+            JSValue jbzx = JS_GetPropertyStr(ctx, jbz_transform, "x"); JSValue jbzy = JS_GetPropertyStr(ctx, jbz_transform, "y"); JSValue jbzz = JS_GetPropertyStr(ctx, jbz_transform, "z");
+            JS_ToFloat64(ctx, &xx, jbxx); JS_ToFloat64(ctx, &xy, jbxy); JS_ToFloat64(ctx, &xz, jbxz);
+            JS_ToFloat64(ctx, &yx, jbyx); JS_ToFloat64(ctx, &yy, jbyy); JS_ToFloat64(ctx, &yz, jbyz);
+            JS_ToFloat64(ctx, &zx, jbzx); JS_ToFloat64(ctx, &zy, jbzy); JS_ToFloat64(ctx, &zz, jbzz);
+            arg_transform.basis = Basis(Vector3(xx, xy, xz), Vector3(yx, yy, yz), Vector3(zx, zy, zz));
+            JS_FreeValue(ctx, jbxx); JS_FreeValue(ctx, jbxy); JS_FreeValue(ctx, jbxz);
+            JS_FreeValue(ctx, jbyx); JS_FreeValue(ctx, jbyy); JS_FreeValue(ctx, jbyz);
+            JS_FreeValue(ctx, jbzx); JS_FreeValue(ctx, jbzy); JS_FreeValue(ctx, jbzz);
+        }
+        JS_FreeValue(ctx, jbx_transform); JS_FreeValue(ctx, jby_transform); JS_FreeValue(ctx, jbz_transform);
+    }
+    JS_FreeValue(ctx, jbasis_transform);
+    JS_FreeValue(ctx, jorigin_transform);
     double arg_texel_size; JS_ToFloat64(ctx, &arg_texel_size, argv[2]);
 
     Error result = typed_obj->lightmap_unwrap(arg_transform, arg_texel_size);

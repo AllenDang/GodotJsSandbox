@@ -2466,6 +2466,61 @@ static JSValue js_Node_get_last_exclusive_window(JSContext* ctx, JSValueConst th
     return ret_obj;
 }
 
+// Method: Node::get_tree
+static JSValue js_Node_get_tree(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node.get_tree: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node.get_tree: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node.get_tree: invalid or freed object");
+    }
+
+    Node* typed_obj = Object::cast_to<Node>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node.get_tree: object is not a Node");
+    }
+
+    SceneTree* result = typed_obj->get_tree();
+    if (!result) return JS_NULL;
+    Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
 // Method: Node::create_tween
 static JSValue js_Node_create_tween(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -4252,6 +4307,8 @@ void register_Node_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Node_get_window, "get_window", 1));
     JS_SetPropertyStr(ctx, methods, "get_last_exclusive_window",
         JS_NewCFunction(ctx, js_Node_get_last_exclusive_window, "get_last_exclusive_window", 1));
+    JS_SetPropertyStr(ctx, methods, "get_tree",
+        JS_NewCFunction(ctx, js_Node_get_tree, "get_tree", 1));
     JS_SetPropertyStr(ctx, methods, "create_tween",
         JS_NewCFunction(ctx, js_Node_create_tween, "create_tween", 1));
     JS_SetPropertyStr(ctx, methods, "duplicate",

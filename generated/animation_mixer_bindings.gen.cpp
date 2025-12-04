@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/animation_mixer.hpp>
-#include <godot_cpp/classes/animation.hpp>
 #include <godot_cpp/classes/animation_library.hpp>
+#include <godot_cpp/classes/animation.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -428,7 +428,12 @@ static JSValue js_AnimationMixer_get_root_motion_rotation(JSContext* ctx, JSValu
     }
 
     Quaternion result = typed_obj->get_root_motion_rotation();
-    return qjs_ctx->variant_to_js(Variant(result));
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "x", JS_NewFloat64(ctx, result.x));
+    JS_SetPropertyStr(ctx, ret_obj, "y", JS_NewFloat64(ctx, result.y));
+    JS_SetPropertyStr(ctx, ret_obj, "z", JS_NewFloat64(ctx, result.z));
+    JS_SetPropertyStr(ctx, ret_obj, "w", JS_NewFloat64(ctx, result.w));
+    return ret_obj;
 }
 
 // Method: AnimationMixer::get_root_motion_scale
@@ -526,7 +531,12 @@ static JSValue js_AnimationMixer_get_root_motion_rotation_accumulator(JSContext*
     }
 
     Quaternion result = typed_obj->get_root_motion_rotation_accumulator();
-    return qjs_ctx->variant_to_js(Variant(result));
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "x", JS_NewFloat64(ctx, result.x));
+    JS_SetPropertyStr(ctx, ret_obj, "y", JS_NewFloat64(ctx, result.y));
+    JS_SetPropertyStr(ctx, ret_obj, "z", JS_NewFloat64(ctx, result.z));
+    JS_SetPropertyStr(ctx, ret_obj, "w", JS_NewFloat64(ctx, result.w));
+    return ret_obj;
 }
 
 // Method: AnimationMixer::get_root_motion_scale_accumulator

@@ -136,6 +136,27 @@ JS_CONVERSION_TEMPLATES = {
     JS_FreeValue(ctx, b_val);
     JS_FreeValue(ctx, a_val);""",
     },
+    "Quaternion": {
+        "to_js": """JSValue obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, value.x));
+    JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, value.y));
+    JS_SetPropertyStr(ctx, obj, "z", JS_NewFloat64(ctx, value.z));
+    JS_SetPropertyStr(ctx, obj, "w", JS_NewFloat64(ctx, value.w));
+    return obj;""",
+        "from_js": """Quaternion value;
+    JSValue x_val = JS_GetPropertyStr(ctx, argv[1], "x");
+    JSValue y_val = JS_GetPropertyStr(ctx, argv[1], "y");
+    JSValue z_val = JS_GetPropertyStr(ctx, argv[1], "z");
+    JSValue w_val = JS_GetPropertyStr(ctx, argv[1], "w");
+    JS_ToFloat64(ctx, &value.x, x_val);
+    JS_ToFloat64(ctx, &value.y, y_val);
+    JS_ToFloat64(ctx, &value.z, z_val);
+    JS_ToFloat64(ctx, &value.w, w_val);
+    JS_FreeValue(ctx, x_val);
+    JS_FreeValue(ctx, y_val);
+    JS_FreeValue(ctx, z_val);
+    JS_FreeValue(ctx, w_val);""",
+    },
 }
 
 
@@ -393,6 +414,84 @@ class BindingGenerator:
     JS_FreeValue(ctx, jb_{arg_name});
     JS_FreeValue(ctx, ja_{arg_name});
     Color arg_{arg_name}(tmp_r_{arg_name}, tmp_g_{arg_name}, tmp_b_{arg_name}, tmp_a_{arg_name});"""
+        if cpp_type == "Quaternion":
+            return f"""double tmp_x_{arg_name}, tmp_y_{arg_name}, tmp_z_{arg_name}, tmp_w_{arg_name};
+    JSValue jx_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "x");
+    JSValue jy_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "y");
+    JSValue jz_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "z");
+    JSValue jw_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "w");
+    JS_ToFloat64(ctx, &tmp_x_{arg_name}, jx_{arg_name});
+    JS_ToFloat64(ctx, &tmp_y_{arg_name}, jy_{arg_name});
+    JS_ToFloat64(ctx, &tmp_z_{arg_name}, jz_{arg_name});
+    JS_ToFloat64(ctx, &tmp_w_{arg_name}, jw_{arg_name});
+    JS_FreeValue(ctx, jx_{arg_name});
+    JS_FreeValue(ctx, jy_{arg_name});
+    JS_FreeValue(ctx, jz_{arg_name});
+    JS_FreeValue(ctx, jw_{arg_name});
+    Quaternion arg_{arg_name}(tmp_x_{arg_name}, tmp_y_{arg_name}, tmp_z_{arg_name}, tmp_w_{arg_name});"""
+        if cpp_type == "Basis":
+            return f"""Basis arg_{arg_name};
+    JSValue jx_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "x");
+    JSValue jy_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "y");
+    JSValue jz_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "z");
+    if (!JS_IsUndefined(jx_{arg_name}) && !JS_IsUndefined(jy_{arg_name}) && !JS_IsUndefined(jz_{arg_name})) {{
+        double xx, xy, xz, yx, yy, yz, zx, zy, zz;
+        JSValue jxx_{arg_name} = JS_GetPropertyStr(ctx, jx_{arg_name}, "x");
+        JSValue jxy_{arg_name} = JS_GetPropertyStr(ctx, jx_{arg_name}, "y");
+        JSValue jxz_{arg_name} = JS_GetPropertyStr(ctx, jx_{arg_name}, "z");
+        JSValue jyx_{arg_name} = JS_GetPropertyStr(ctx, jy_{arg_name}, "x");
+        JSValue jyy_{arg_name} = JS_GetPropertyStr(ctx, jy_{arg_name}, "y");
+        JSValue jyz_{arg_name} = JS_GetPropertyStr(ctx, jy_{arg_name}, "z");
+        JSValue jzx_{arg_name} = JS_GetPropertyStr(ctx, jz_{arg_name}, "x");
+        JSValue jzy_{arg_name} = JS_GetPropertyStr(ctx, jz_{arg_name}, "y");
+        JSValue jzz_{arg_name} = JS_GetPropertyStr(ctx, jz_{arg_name}, "z");
+        JS_ToFloat64(ctx, &xx, jxx_{arg_name}); JS_ToFloat64(ctx, &xy, jxy_{arg_name}); JS_ToFloat64(ctx, &xz, jxz_{arg_name});
+        JS_ToFloat64(ctx, &yx, jyx_{arg_name}); JS_ToFloat64(ctx, &yy, jyy_{arg_name}); JS_ToFloat64(ctx, &yz, jyz_{arg_name});
+        JS_ToFloat64(ctx, &zx, jzx_{arg_name}); JS_ToFloat64(ctx, &zy, jzy_{arg_name}); JS_ToFloat64(ctx, &zz, jzz_{arg_name});
+        arg_{arg_name} = Basis(Vector3(xx, xy, xz), Vector3(yx, yy, yz), Vector3(zx, zy, zz));
+        JS_FreeValue(ctx, jxx_{arg_name}); JS_FreeValue(ctx, jxy_{arg_name}); JS_FreeValue(ctx, jxz_{arg_name});
+        JS_FreeValue(ctx, jyx_{arg_name}); JS_FreeValue(ctx, jyy_{arg_name}); JS_FreeValue(ctx, jyz_{arg_name});
+        JS_FreeValue(ctx, jzx_{arg_name}); JS_FreeValue(ctx, jzy_{arg_name}); JS_FreeValue(ctx, jzz_{arg_name});
+    }}
+    JS_FreeValue(ctx, jx_{arg_name});
+    JS_FreeValue(ctx, jy_{arg_name});
+    JS_FreeValue(ctx, jz_{arg_name});"""
+        if cpp_type == "Transform3D":
+            return f"""Transform3D arg_{arg_name};
+    JSValue jbasis_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "basis");
+    JSValue jorigin_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "origin");
+    if (!JS_IsUndefined(jorigin_{arg_name})) {{
+        double ox, oy, oz;
+        JSValue jox_{arg_name} = JS_GetPropertyStr(ctx, jorigin_{arg_name}, "x");
+        JSValue joy_{arg_name} = JS_GetPropertyStr(ctx, jorigin_{arg_name}, "y");
+        JSValue joz_{arg_name} = JS_GetPropertyStr(ctx, jorigin_{arg_name}, "z");
+        JS_ToFloat64(ctx, &ox, jox_{arg_name});
+        JS_ToFloat64(ctx, &oy, joy_{arg_name});
+        JS_ToFloat64(ctx, &oz, joz_{arg_name});
+        arg_{arg_name}.origin = Vector3(ox, oy, oz);
+        JS_FreeValue(ctx, jox_{arg_name}); JS_FreeValue(ctx, joy_{arg_name}); JS_FreeValue(ctx, joz_{arg_name});
+    }}
+    if (!JS_IsUndefined(jbasis_{arg_name})) {{
+        JSValue jbx_{arg_name} = JS_GetPropertyStr(ctx, jbasis_{arg_name}, "x");
+        JSValue jby_{arg_name} = JS_GetPropertyStr(ctx, jbasis_{arg_name}, "y");
+        JSValue jbz_{arg_name} = JS_GetPropertyStr(ctx, jbasis_{arg_name}, "z");
+        if (!JS_IsUndefined(jbx_{arg_name}) && !JS_IsUndefined(jby_{arg_name}) && !JS_IsUndefined(jbz_{arg_name})) {{
+            double xx, xy, xz, yx, yy, yz, zx, zy, zz;
+            JSValue jbxx = JS_GetPropertyStr(ctx, jbx_{arg_name}, "x"); JSValue jbxy = JS_GetPropertyStr(ctx, jbx_{arg_name}, "y"); JSValue jbxz = JS_GetPropertyStr(ctx, jbx_{arg_name}, "z");
+            JSValue jbyx = JS_GetPropertyStr(ctx, jby_{arg_name}, "x"); JSValue jbyy = JS_GetPropertyStr(ctx, jby_{arg_name}, "y"); JSValue jbyz = JS_GetPropertyStr(ctx, jby_{arg_name}, "z");
+            JSValue jbzx = JS_GetPropertyStr(ctx, jbz_{arg_name}, "x"); JSValue jbzy = JS_GetPropertyStr(ctx, jbz_{arg_name}, "y"); JSValue jbzz = JS_GetPropertyStr(ctx, jbz_{arg_name}, "z");
+            JS_ToFloat64(ctx, &xx, jbxx); JS_ToFloat64(ctx, &xy, jbxy); JS_ToFloat64(ctx, &xz, jbxz);
+            JS_ToFloat64(ctx, &yx, jbyx); JS_ToFloat64(ctx, &yy, jbyy); JS_ToFloat64(ctx, &yz, jbyz);
+            JS_ToFloat64(ctx, &zx, jbzx); JS_ToFloat64(ctx, &zy, jbzy); JS_ToFloat64(ctx, &zz, jbzz);
+            arg_{arg_name}.basis = Basis(Vector3(xx, xy, xz), Vector3(yx, yy, yz), Vector3(zx, zy, zz));
+            JS_FreeValue(ctx, jbxx); JS_FreeValue(ctx, jbxy); JS_FreeValue(ctx, jbxz);
+            JS_FreeValue(ctx, jbyx); JS_FreeValue(ctx, jbyy); JS_FreeValue(ctx, jbyz);
+            JS_FreeValue(ctx, jbzx); JS_FreeValue(ctx, jbzy); JS_FreeValue(ctx, jbzz);
+        }}
+        JS_FreeValue(ctx, jbx_{arg_name}); JS_FreeValue(ctx, jby_{arg_name}); JS_FreeValue(ctx, jbz_{arg_name});
+    }}
+    JS_FreeValue(ctx, jbasis_{arg_name});
+    JS_FreeValue(ctx, jorigin_{arg_name});"""
 
         if cpp_type == "Rect2":
             return f"""double tmp_x_{arg_name}, tmp_y_{arg_name}, tmp_w_{arg_name}, tmp_h_{arg_name};
@@ -488,6 +587,57 @@ class BindingGenerator:
     JS_SetPropertyStr(ctx, ret_obj, "g", JS_NewFloat64(ctx, {var_name}.g));
     JS_SetPropertyStr(ctx, ret_obj, "b", JS_NewFloat64(ctx, {var_name}.b));
     JS_SetPropertyStr(ctx, ret_obj, "a", JS_NewFloat64(ctx, {var_name}.a));
+    return ret_obj;"""
+
+        if cpp_type == "Quaternion":
+            return f"""JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "x", JS_NewFloat64(ctx, {var_name}.x));
+    JS_SetPropertyStr(ctx, ret_obj, "y", JS_NewFloat64(ctx, {var_name}.y));
+    JS_SetPropertyStr(ctx, ret_obj, "z", JS_NewFloat64(ctx, {var_name}.z));
+    JS_SetPropertyStr(ctx, ret_obj, "w", JS_NewFloat64(ctx, {var_name}.w));
+    return ret_obj;"""
+        if cpp_type == "Basis":
+            return f"""JSValue ret_obj = JS_NewObject(ctx);
+    JSValue x_obj = JS_NewObject(ctx);
+    JSValue y_obj = JS_NewObject(ctx);
+    JSValue z_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, x_obj, "x", JS_NewFloat64(ctx, {var_name}.rows[0].x));
+    JS_SetPropertyStr(ctx, x_obj, "y", JS_NewFloat64(ctx, {var_name}.rows[0].y));
+    JS_SetPropertyStr(ctx, x_obj, "z", JS_NewFloat64(ctx, {var_name}.rows[0].z));
+    JS_SetPropertyStr(ctx, y_obj, "x", JS_NewFloat64(ctx, {var_name}.rows[1].x));
+    JS_SetPropertyStr(ctx, y_obj, "y", JS_NewFloat64(ctx, {var_name}.rows[1].y));
+    JS_SetPropertyStr(ctx, y_obj, "z", JS_NewFloat64(ctx, {var_name}.rows[1].z));
+    JS_SetPropertyStr(ctx, z_obj, "x", JS_NewFloat64(ctx, {var_name}.rows[2].x));
+    JS_SetPropertyStr(ctx, z_obj, "y", JS_NewFloat64(ctx, {var_name}.rows[2].y));
+    JS_SetPropertyStr(ctx, z_obj, "z", JS_NewFloat64(ctx, {var_name}.rows[2].z));
+    JS_SetPropertyStr(ctx, ret_obj, "x", x_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "y", y_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "z", z_obj);
+    return ret_obj;"""
+        if cpp_type == "Transform3D":
+            return f"""JSValue ret_obj = JS_NewObject(ctx);
+    JSValue basis_obj = JS_NewObject(ctx);
+    JSValue origin_obj = JS_NewObject(ctx);
+    JSValue bx_obj = JS_NewObject(ctx);
+    JSValue by_obj = JS_NewObject(ctx);
+    JSValue bz_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, bx_obj, "x", JS_NewFloat64(ctx, {var_name}.basis.rows[0].x));
+    JS_SetPropertyStr(ctx, bx_obj, "y", JS_NewFloat64(ctx, {var_name}.basis.rows[0].y));
+    JS_SetPropertyStr(ctx, bx_obj, "z", JS_NewFloat64(ctx, {var_name}.basis.rows[0].z));
+    JS_SetPropertyStr(ctx, by_obj, "x", JS_NewFloat64(ctx, {var_name}.basis.rows[1].x));
+    JS_SetPropertyStr(ctx, by_obj, "y", JS_NewFloat64(ctx, {var_name}.basis.rows[1].y));
+    JS_SetPropertyStr(ctx, by_obj, "z", JS_NewFloat64(ctx, {var_name}.basis.rows[1].z));
+    JS_SetPropertyStr(ctx, bz_obj, "x", JS_NewFloat64(ctx, {var_name}.basis.rows[2].x));
+    JS_SetPropertyStr(ctx, bz_obj, "y", JS_NewFloat64(ctx, {var_name}.basis.rows[2].y));
+    JS_SetPropertyStr(ctx, bz_obj, "z", JS_NewFloat64(ctx, {var_name}.basis.rows[2].z));
+    JS_SetPropertyStr(ctx, basis_obj, "x", bx_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "y", by_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "z", bz_obj);
+    JS_SetPropertyStr(ctx, origin_obj, "x", JS_NewFloat64(ctx, {var_name}.origin.x));
+    JS_SetPropertyStr(ctx, origin_obj, "y", JS_NewFloat64(ctx, {var_name}.origin.y));
+    JS_SetPropertyStr(ctx, origin_obj, "z", JS_NewFloat64(ctx, {var_name}.origin.z));
+    JS_SetPropertyStr(ctx, ret_obj, "basis", basis_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "origin", origin_obj);
     return ret_obj;"""
 
         if cpp_type == "Rect2":
@@ -608,9 +758,9 @@ class BindingGenerator:
         if godot_type in simple_types:
             return True
 
-        # Object pointer types - support Node and RefCounted subclasses
-        # Node types use T*, RefCounted types use Ref<T>
-        if self.is_node_type(godot_type) or self.is_refcounted_type(godot_type):
+        # Object pointer types - support Node, RefCounted, and other Object subclasses
+        # Node types use T*, RefCounted types use Ref<T>, other Objects use T*
+        if self.is_node_type(godot_type) or self.is_refcounted_type(godot_type) or self.is_object_type(godot_type):
             return True
 
         return False
@@ -628,6 +778,23 @@ class BindingGenerator:
                 return True
             if current in ("RefCounted", "Resource", "Object"):
                 return False  # Stop at these - not a Node
+            cls_data = classes_by_name.get(current)
+            if not cls_data:
+                break
+            current = cls_data.get("inherits", "")
+        return False
+
+    def is_object_type(self, godot_type: str) -> bool:
+        """Check if a type is any Object subclass (not Node or RefCounted)."""
+        classes_by_name = {c.get("name"): c for c in self.api_data.get("classes", [])}
+        if godot_type not in classes_by_name:
+            return False
+
+        # Walk up inheritance chain to verify it inherits from Object
+        current = godot_type
+        while current:
+            if current == "Object":
+                return True
             cls_data = classes_by_name.get(current)
             if not cls_data:
                 break
@@ -676,9 +843,9 @@ class BindingGenerator:
         if godot_type.startswith("bitfield::"):
             return False
 
-        # For object return types, allow Node and RefCounted subclasses
-        # Node types use T*, RefCounted types use Ref<T>
-        if self.is_node_type(godot_type) or self.is_refcounted_type(godot_type):
+        # For object return types, allow Node, RefCounted, and other Object subclasses
+        # Node types use T*, RefCounted types use Ref<T>, other Object types use T*
+        if self.is_node_type(godot_type) or self.is_refcounted_type(godot_type) or self.is_object_type(godot_type):
             return True
 
         return False

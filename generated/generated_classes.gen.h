@@ -36,6 +36,7 @@ void register_BoxShape3D_bindings(JSContext* ctx, JSValue global, JSValue classe
 void register_Button_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_CPUParticles2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_CPUParticles3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_CallbackTweener_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Camera2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Camera3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_CanvasItem_bindings(JSContext* ctx, JSValue global, JSValue classes);
@@ -68,6 +69,7 @@ void register_GPUParticles3D_bindings(JSContext* ctx, JSValue global, JSValue cl
 void register_GridContainer_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_HBoxContainer_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_ImageTexture_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_IntervalTweener_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Label_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Light2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Light3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
@@ -77,6 +79,7 @@ void register_Material_bindings(JSContext* ctx, JSValue global, JSValue classes)
 void register_Mesh_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_MeshInstance2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_MeshInstance3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_MethodTweener_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_MultiMeshInstance2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_MultiMeshInstance3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_NavigationAgent2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
@@ -102,6 +105,7 @@ void register_PlaneMesh_bindings(JSContext* ctx, JSValue global, JSValue classes
 void register_PointLight2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_PrimitiveMesh_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_ProgressBar_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_PropertyTweener_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RayCast2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RayCast3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RectangleShape2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
@@ -110,6 +114,7 @@ void register_Resource_bindings(JSContext* ctx, JSValue global, JSValue classes)
 void register_RichTextLabel_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RigidBody2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RigidBody3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_SceneTree_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_ScrollContainer_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_ShaderMaterial_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Shape2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
@@ -133,6 +138,7 @@ void register_TextureRect_bindings(JSContext* ctx, JSValue global, JSValue class
 void register_TileMap_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_TileMapLayer_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Timer_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_Tween_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_VBoxContainer_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Viewport_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_WorldEnvironment_bindings(JSContext* ctx, JSValue global, JSValue classes);

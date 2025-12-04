@@ -200,6 +200,10 @@ void GodotBindings::setup_global_functions() {
     JS_SetPropertyStr(ctx, global, "__godot_emit_signal",
         JS_NewCFunction(ctx, js_godot_emit_signal, "__godot_emit_signal", 2));
 
+    // __godot_await_signal(handle, signal_name) - returns a Promise that resolves when the signal fires
+    JS_SetPropertyStr(ctx, global, "__godot_await_signal",
+        JS_NewCFunction(ctx, js_godot_await_signal, "__godot_await_signal", 2));
+
     // Time singleton (safe subset of methods)
     JSValue time_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, time_obj, "get_ticks_msec",
@@ -257,6 +261,21 @@ void GodotBindings::setup_math_types() {
     JSValue color_ctor = JS_NewCFunction2(ctx, js_color_constructor, "Color", 4,
                                           JS_CFUNC_constructor, 0);
     JS_SetPropertyStr(ctx, global, "Color", color_ctor);
+
+    // Quaternion constructor
+    JSValue quat_ctor = JS_NewCFunction2(ctx, js_quaternion_constructor, "Quaternion", 4,
+                                         JS_CFUNC_constructor, 0);
+    JS_SetPropertyStr(ctx, global, "Quaternion", quat_ctor);
+
+    // Basis constructor
+    JSValue basis_ctor = JS_NewCFunction2(ctx, js_basis_constructor, "Basis", 0,
+                                          JS_CFUNC_constructor, 0);
+    JS_SetPropertyStr(ctx, global, "Basis", basis_ctor);
+
+    // Transform3D constructor
+    JSValue transform3d_ctor = JS_NewCFunction2(ctx, js_transform3d_constructor, "Transform3D", 0,
+                                                 JS_CFUNC_constructor, 0);
+    JS_SetPropertyStr(ctx, global, "Transform3D", transform3d_ctor);
 
     JS_FreeValue(ctx, global);
 }
@@ -340,6 +359,14 @@ void GodotBindings::setup_godot_class_constructor() {
                     };
                 }
 
+                // Special handling for await_signal() - returns a Promise that resolves when signal fires
+                if (prop === 'await_signal') {
+                    var handle = target.__handle;
+                    return function(signalName) {
+                        return __godot_await_signal(handle, signalName);
+                    };
+                }
+
                 var methodFn = __findBinding(target.__class, prop, 'method');
                 if (methodFn) {
                     var handle = target.__handle;
@@ -412,7 +439,7 @@ void GodotBindings::setup_godot_class_constructor() {
             },
             has: function(target, prop) {
                 if (prop === '__handle' || prop === '__class') return true;
-                if (prop === 'connect' || prop === 'emit_signal') return true;
+                if (prop === 'connect' || prop === 'emit_signal' || prop === 'await_signal') return true;
                 // Check for get_/set_ method patterns
                 if (prop.startsWith('get_') || prop.startsWith('set_')) {
                     var propName = prop.substring(4);
@@ -702,6 +729,114 @@ JSValue GodotBindings::js_godot_emit_signal(JSContext* ctx, JSValueConst this_va
     return JS_UNDEFINED;
 }
 
+// Global function: __godot_await_signal(handle, signal_name) - returns a Promise that resolves when the signal fires
+JSValue GodotBindings::js_godot_await_signal(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "__godot_await_signal requires 2 arguments: handle, signal_name");
+    }
+
+    // Get object handle
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_ThrowTypeError(ctx, "First argument must be an object handle");
+    }
+
+    // Get signal name
+    const char* signal_name_cstr = JS_ToCString(ctx, argv[1]);
+    if (!signal_name_cstr) {
+        return JS_ThrowTypeError(ctx, "Second argument must be a signal name string");
+    }
+    String signal_name = signal_name_cstr;
+    JS_FreeCString(ctx, signal_name_cstr);
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Get the target object from the registry
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_ThrowInternalError(ctx, "ObjectRegistry not initialized");
+    }
+
+    Object* target = registry->get_object(handle);
+    if (!target) {
+        return JS_ThrowTypeError(ctx, "Invalid object handle");
+    }
+
+    // Get the signal registry
+    SignalRegistry* signal_registry = qjs_ctx->get_signal_registry();
+    if (!signal_registry) {
+        return JS_ThrowInternalError(ctx, "SignalRegistry not initialized");
+    }
+
+    // Create a Promise using JS_NewPromiseCapability
+    JSValue resolve_funcs[2];
+    JSValue promise = JS_NewPromiseCapability(ctx, resolve_funcs);
+    if (JS_IsException(promise)) {
+        return promise;
+    }
+
+    // Store the resolve/reject functions and connection info in a closure
+    // We create a callback that will:
+    // 1. Resolve the promise with the signal arguments
+    // 2. Disconnect itself (one-shot behavior)
+
+    // Create a JS object to hold the promise state
+    JSValue state_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, state_obj, "resolve", resolve_funcs[0]);
+    JS_SetPropertyStr(ctx, state_obj, "reject", resolve_funcs[1]);
+    JS_SetPropertyStr(ctx, state_obj, "connection_id", JS_NewInt64(ctx, 0));  // Will be set after connect
+
+    // Create a callback function that resolves the promise and disconnects
+    // We use a trampoline approach: store state and call __resolve_signal_promise from JS
+    const char* callback_code = R"(
+        (function(state) {
+            return function() {
+                // Convert arguments to array
+                var args = Array.prototype.slice.call(arguments);
+                // Resolve with single arg or array of args
+                if (args.length === 0) {
+                    state.resolve(undefined);
+                } else if (args.length === 1) {
+                    state.resolve(args[0]);
+                } else {
+                    state.resolve(args);
+                }
+            };
+        })
+    )";
+
+    JSValue callback_factory = JS_Eval(ctx, callback_code, strlen(callback_code), "<await_signal>", JS_EVAL_TYPE_GLOBAL);
+    if (JS_IsException(callback_factory)) {
+        JS_FreeValue(ctx, promise);
+        JS_FreeValue(ctx, state_obj);
+        return callback_factory;
+    }
+
+    // Call the factory with state to get the actual callback
+    JSValue callback = JS_Call(ctx, callback_factory, JS_UNDEFINED, 1, &state_obj);
+    JS_FreeValue(ctx, callback_factory);
+    JS_FreeValue(ctx, state_obj);
+
+    if (JS_IsException(callback)) {
+        JS_FreeValue(ctx, promise);
+        return callback;
+    }
+
+    // Connect the callback
+    uint64_t connection_id = signal_registry->connect(target, StringName(signal_name), callback);
+    JS_FreeValue(ctx, callback);
+
+    if (connection_id == 0) {
+        JS_FreeValue(ctx, promise);
+        return JS_ThrowTypeError(ctx, "Failed to connect signal");
+    }
+
+    return promise;
+}
+
 // GodotObject finalizer - called when JS object is garbage collected
 void GodotBindings::godot_object_finalizer(JSRuntime* rt, JSValueConst val) {
     JSClassID class_id;
@@ -767,6 +902,88 @@ JSValue GodotBindings::js_color_constructor(JSContext* ctx, JSValueConst new_tar
     JS_SetPropertyStr(ctx, obj, "g", JS_NewFloat64(ctx, g));
     JS_SetPropertyStr(ctx, obj, "b", JS_NewFloat64(ctx, b));
     JS_SetPropertyStr(ctx, obj, "a", JS_NewFloat64(ctx, a));
+
+    return obj;
+}
+
+// Quaternion constructor
+JSValue GodotBindings::js_quaternion_constructor(JSContext* ctx, JSValueConst new_target,
+                                                  int argc, JSValueConst* argv) {
+    double x = 0, y = 0, z = 0, w = 1;
+
+    if (argc >= 1) JS_ToFloat64(ctx, &x, argv[0]);
+    if (argc >= 2) JS_ToFloat64(ctx, &y, argv[1]);
+    if (argc >= 3) JS_ToFloat64(ctx, &z, argv[2]);
+    if (argc >= 4) JS_ToFloat64(ctx, &w, argv[3]);
+
+    JSValue obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, x));
+    JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, y));
+    JS_SetPropertyStr(ctx, obj, "z", JS_NewFloat64(ctx, z));
+    JS_SetPropertyStr(ctx, obj, "w", JS_NewFloat64(ctx, w));
+
+    return obj;
+}
+
+// Basis constructor - creates identity basis or from 3 row vectors
+JSValue GodotBindings::js_basis_constructor(JSContext* ctx, JSValueConst new_target,
+                                             int argc, JSValueConst* argv) {
+    JSValue obj = JS_NewObject(ctx);
+    JSValue x_row = JS_NewObject(ctx);
+    JSValue y_row = JS_NewObject(ctx);
+    JSValue z_row = JS_NewObject(ctx);
+
+    // Default to identity matrix
+    JS_SetPropertyStr(ctx, x_row, "x", JS_NewFloat64(ctx, 1));
+    JS_SetPropertyStr(ctx, x_row, "y", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, x_row, "z", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, y_row, "x", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, y_row, "y", JS_NewFloat64(ctx, 1));
+    JS_SetPropertyStr(ctx, y_row, "z", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, z_row, "x", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, z_row, "y", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, z_row, "z", JS_NewFloat64(ctx, 1));
+
+    JS_SetPropertyStr(ctx, obj, "x", x_row);
+    JS_SetPropertyStr(ctx, obj, "y", y_row);
+    JS_SetPropertyStr(ctx, obj, "z", z_row);
+
+    return obj;
+}
+
+// Transform3D constructor - creates identity transform
+JSValue GodotBindings::js_transform3d_constructor(JSContext* ctx, JSValueConst new_target,
+                                                   int argc, JSValueConst* argv) {
+    JSValue obj = JS_NewObject(ctx);
+
+    // Create identity basis
+    JSValue basis = JS_NewObject(ctx);
+    JSValue bx_row = JS_NewObject(ctx);
+    JSValue by_row = JS_NewObject(ctx);
+    JSValue bz_row = JS_NewObject(ctx);
+
+    JS_SetPropertyStr(ctx, bx_row, "x", JS_NewFloat64(ctx, 1));
+    JS_SetPropertyStr(ctx, bx_row, "y", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, bx_row, "z", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, by_row, "x", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, by_row, "y", JS_NewFloat64(ctx, 1));
+    JS_SetPropertyStr(ctx, by_row, "z", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, bz_row, "x", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, bz_row, "y", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, bz_row, "z", JS_NewFloat64(ctx, 1));
+
+    JS_SetPropertyStr(ctx, basis, "x", bx_row);
+    JS_SetPropertyStr(ctx, basis, "y", by_row);
+    JS_SetPropertyStr(ctx, basis, "z", bz_row);
+
+    // Create origin at zero
+    JSValue origin = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, origin, "x", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, origin, "y", JS_NewFloat64(ctx, 0));
+    JS_SetPropertyStr(ctx, origin, "z", JS_NewFloat64(ctx, 0));
+
+    JS_SetPropertyStr(ctx, obj, "basis", basis);
+    JS_SetPropertyStr(ctx, obj, "origin", origin);
 
     return obj;
 }

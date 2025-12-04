@@ -377,6 +377,28 @@ void JSSandbox::reset() {
     }
 }
 
+int JSSandbox::execute_pending_jobs() {
+    if (!context_ || !context_->is_valid()) {
+        return 0;
+    }
+
+    JSRuntime* rt = context_->rt();
+    JSContext* ctx = nullptr;
+    int executed = 0;
+
+    // Execute all pending jobs (microtasks, promise callbacks)
+    while (true) {
+        int ret = JS_ExecutePendingJob(rt, &ctx);
+        if (ret <= 0) {
+            // ret == 0 means no more jobs, ret < 0 means error
+            break;
+        }
+        executed++;
+    }
+
+    return executed;
+}
+
 void JSSandbox::_bind_methods() {
     // Configuration
     ClassDB::bind_method(D_METHOD("set_timeout_ms", "ms"), &JSSandbox::set_timeout_ms);
@@ -410,6 +432,9 @@ void JSSandbox::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_last_error"), &JSSandbox::get_last_error);
     ClassDB::bind_method(D_METHOD("is_valid"), &JSSandbox::is_valid);
     ClassDB::bind_method(D_METHOD("reset"), &JSSandbox::reset);
+
+    // Async support
+    ClassDB::bind_method(D_METHOD("execute_pending_jobs"), &JSSandbox::execute_pending_jobs);
 
     // Signals
     ADD_SIGNAL(MethodInfo("error_occurred",

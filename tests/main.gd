@@ -8,6 +8,8 @@ const TestInputClass = preload("res://test_cases/test_input.gd")
 const TestPhysicsClass = preload("res://test_cases/test_physics.gd")
 const TestAnimationClass = preload("res://test_cases/test_animation.gd")
 const TestAudioClass = preload("res://test_cases/test_audio.gd")
+const TestTweenSceneTreeClass = preload("res://test_cases/test_tween_scenetree.gd")
+const TestAsyncAwaitClass = preload("res://test_cases/test_async_await.gd")
 
 var sandbox: JSSandbox
 
@@ -79,6 +81,12 @@ func run_tests() -> void:
 
 	# Audio
 	runner.add_suite(TestAudioClass.new())
+
+	# Tween and SceneTree bindings
+	runner.add_suite(TestTweenSceneTreeClass.new())
+
+	# Async/await support (Promise-Signal bridge)
+	runner.add_suite(TestAsyncAwaitClass.new())
 
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())

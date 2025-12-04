@@ -689,6 +689,67 @@ JSValue QuickJSContext::variant_to_js(const Variant &value) {
             return obj;
         }
 
+        case Variant::QUATERNION: {
+            Quaternion q = value;
+            JSValue obj = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, obj, "x", JS_NewFloat64(ctx_, q.x));
+            JS_SetPropertyStr(ctx_, obj, "y", JS_NewFloat64(ctx_, q.y));
+            JS_SetPropertyStr(ctx_, obj, "z", JS_NewFloat64(ctx_, q.z));
+            JS_SetPropertyStr(ctx_, obj, "w", JS_NewFloat64(ctx_, q.w));
+            return obj;
+        }
+
+        case Variant::BASIS: {
+            Basis b = value;
+            JSValue obj = JS_NewObject(ctx_);
+            JSValue x_row = JS_NewObject(ctx_);
+            JSValue y_row = JS_NewObject(ctx_);
+            JSValue z_row = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, x_row, "x", JS_NewFloat64(ctx_, b.rows[0].x));
+            JS_SetPropertyStr(ctx_, x_row, "y", JS_NewFloat64(ctx_, b.rows[0].y));
+            JS_SetPropertyStr(ctx_, x_row, "z", JS_NewFloat64(ctx_, b.rows[0].z));
+            JS_SetPropertyStr(ctx_, y_row, "x", JS_NewFloat64(ctx_, b.rows[1].x));
+            JS_SetPropertyStr(ctx_, y_row, "y", JS_NewFloat64(ctx_, b.rows[1].y));
+            JS_SetPropertyStr(ctx_, y_row, "z", JS_NewFloat64(ctx_, b.rows[1].z));
+            JS_SetPropertyStr(ctx_, z_row, "x", JS_NewFloat64(ctx_, b.rows[2].x));
+            JS_SetPropertyStr(ctx_, z_row, "y", JS_NewFloat64(ctx_, b.rows[2].y));
+            JS_SetPropertyStr(ctx_, z_row, "z", JS_NewFloat64(ctx_, b.rows[2].z));
+            JS_SetPropertyStr(ctx_, obj, "x", x_row);
+            JS_SetPropertyStr(ctx_, obj, "y", y_row);
+            JS_SetPropertyStr(ctx_, obj, "z", z_row);
+            return obj;
+        }
+
+        case Variant::TRANSFORM3D: {
+            Transform3D t = value;
+            JSValue obj = JS_NewObject(ctx_);
+            // Basis
+            JSValue basis_obj = JS_NewObject(ctx_);
+            JSValue bx_row = JS_NewObject(ctx_);
+            JSValue by_row = JS_NewObject(ctx_);
+            JSValue bz_row = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, bx_row, "x", JS_NewFloat64(ctx_, t.basis.rows[0].x));
+            JS_SetPropertyStr(ctx_, bx_row, "y", JS_NewFloat64(ctx_, t.basis.rows[0].y));
+            JS_SetPropertyStr(ctx_, bx_row, "z", JS_NewFloat64(ctx_, t.basis.rows[0].z));
+            JS_SetPropertyStr(ctx_, by_row, "x", JS_NewFloat64(ctx_, t.basis.rows[1].x));
+            JS_SetPropertyStr(ctx_, by_row, "y", JS_NewFloat64(ctx_, t.basis.rows[1].y));
+            JS_SetPropertyStr(ctx_, by_row, "z", JS_NewFloat64(ctx_, t.basis.rows[1].z));
+            JS_SetPropertyStr(ctx_, bz_row, "x", JS_NewFloat64(ctx_, t.basis.rows[2].x));
+            JS_SetPropertyStr(ctx_, bz_row, "y", JS_NewFloat64(ctx_, t.basis.rows[2].y));
+            JS_SetPropertyStr(ctx_, bz_row, "z", JS_NewFloat64(ctx_, t.basis.rows[2].z));
+            JS_SetPropertyStr(ctx_, basis_obj, "x", bx_row);
+            JS_SetPropertyStr(ctx_, basis_obj, "y", by_row);
+            JS_SetPropertyStr(ctx_, basis_obj, "z", bz_row);
+            // Origin
+            JSValue origin_obj = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, origin_obj, "x", JS_NewFloat64(ctx_, t.origin.x));
+            JS_SetPropertyStr(ctx_, origin_obj, "y", JS_NewFloat64(ctx_, t.origin.y));
+            JS_SetPropertyStr(ctx_, origin_obj, "z", JS_NewFloat64(ctx_, t.origin.z));
+            JS_SetPropertyStr(ctx_, obj, "basis", basis_obj);
+            JS_SetPropertyStr(ctx_, obj, "origin", origin_obj);
+            return obj;
+        }
+
         case Variant::ARRAY: {
             Array arr = value;
             JSValue js_arr = JS_NewArray(ctx_);
@@ -883,6 +944,84 @@ Variant QuickJSContext::js_to_variant(JSValue value) {
             JS_FreeValue(ctx_, r_val);
             JS_FreeValue(ctx_, g_val);
             JS_FreeValue(ctx_, b_val);
+        }
+
+        // Check for Quaternion (has x, y, z, w)
+        JSValue qx_val = JS_GetPropertyStr(ctx_, value, "x");
+        JSValue qy_val = JS_GetPropertyStr(ctx_, value, "y");
+        JSValue qz_val = JS_GetPropertyStr(ctx_, value, "z");
+        JSValue qw_val = JS_GetPropertyStr(ctx_, value, "w");
+
+        if (JS_IsNumber(qx_val) && JS_IsNumber(qy_val) && JS_IsNumber(qz_val) && JS_IsNumber(qw_val)) {
+            double qx, qy, qz, qw;
+            JS_ToFloat64(ctx_, &qx, qx_val);
+            JS_ToFloat64(ctx_, &qy, qy_val);
+            JS_ToFloat64(ctx_, &qz, qz_val);
+            JS_ToFloat64(ctx_, &qw, qw_val);
+            JS_FreeValue(ctx_, qx_val);
+            JS_FreeValue(ctx_, qy_val);
+            JS_FreeValue(ctx_, qz_val);
+            JS_FreeValue(ctx_, qw_val);
+            return Quaternion(qx, qy, qz, qw);
+        } else {
+            JS_FreeValue(ctx_, qx_val);
+            JS_FreeValue(ctx_, qy_val);
+            JS_FreeValue(ctx_, qz_val);
+            JS_FreeValue(ctx_, qw_val);
+        }
+
+        // Check for Transform3D (has basis and origin)
+        JSValue basis_val = JS_GetPropertyStr(ctx_, value, "basis");
+        JSValue origin_val = JS_GetPropertyStr(ctx_, value, "origin");
+
+        if (JS_IsObject(basis_val) && JS_IsObject(origin_val)) {
+            Transform3D t;
+            // Parse origin
+            JSValue ox_val = JS_GetPropertyStr(ctx_, origin_val, "x");
+            JSValue oy_val = JS_GetPropertyStr(ctx_, origin_val, "y");
+            JSValue oz_val = JS_GetPropertyStr(ctx_, origin_val, "z");
+            if (JS_IsNumber(ox_val) && JS_IsNumber(oy_val) && JS_IsNumber(oz_val)) {
+                double ox, oy, oz;
+                JS_ToFloat64(ctx_, &ox, ox_val);
+                JS_ToFloat64(ctx_, &oy, oy_val);
+                JS_ToFloat64(ctx_, &oz, oz_val);
+                t.origin = Vector3(ox, oy, oz);
+            }
+            JS_FreeValue(ctx_, ox_val);
+            JS_FreeValue(ctx_, oy_val);
+            JS_FreeValue(ctx_, oz_val);
+
+            // Parse basis (has x, y, z rows)
+            JSValue bx_val = JS_GetPropertyStr(ctx_, basis_val, "x");
+            JSValue by_val = JS_GetPropertyStr(ctx_, basis_val, "y");
+            JSValue bz_val = JS_GetPropertyStr(ctx_, basis_val, "z");
+            if (JS_IsObject(bx_val) && JS_IsObject(by_val) && JS_IsObject(bz_val)) {
+                for (int row = 0; row < 3; row++) {
+                    JSValue row_val = (row == 0) ? bx_val : (row == 1) ? by_val : bz_val;
+                    JSValue rx = JS_GetPropertyStr(ctx_, row_val, "x");
+                    JSValue ry = JS_GetPropertyStr(ctx_, row_val, "y");
+                    JSValue rz = JS_GetPropertyStr(ctx_, row_val, "z");
+                    if (JS_IsNumber(rx) && JS_IsNumber(ry) && JS_IsNumber(rz)) {
+                        double x, y, z;
+                        JS_ToFloat64(ctx_, &x, rx);
+                        JS_ToFloat64(ctx_, &y, ry);
+                        JS_ToFloat64(ctx_, &z, rz);
+                        t.basis.rows[row] = Vector3(x, y, z);
+                    }
+                    JS_FreeValue(ctx_, rx);
+                    JS_FreeValue(ctx_, ry);
+                    JS_FreeValue(ctx_, rz);
+                }
+            }
+            JS_FreeValue(ctx_, bx_val);
+            JS_FreeValue(ctx_, by_val);
+            JS_FreeValue(ctx_, bz_val);
+            JS_FreeValue(ctx_, basis_val);
+            JS_FreeValue(ctx_, origin_val);
+            return t;
+        } else {
+            JS_FreeValue(ctx_, basis_val);
+            JS_FreeValue(ctx_, origin_val);
         }
 
         Dictionary dict;

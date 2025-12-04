@@ -137,7 +137,41 @@ static JSValue js_GPUParticles3D_emit_particle(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    Transform3D arg_xform = qjs_ctx->js_to_variant(argv[1]);
+    Transform3D arg_xform;
+    JSValue jbasis_xform = JS_GetPropertyStr(ctx, argv[1], "basis");
+    JSValue jorigin_xform = JS_GetPropertyStr(ctx, argv[1], "origin");
+    if (!JS_IsUndefined(jorigin_xform)) {
+        double ox, oy, oz;
+        JSValue jox_xform = JS_GetPropertyStr(ctx, jorigin_xform, "x");
+        JSValue joy_xform = JS_GetPropertyStr(ctx, jorigin_xform, "y");
+        JSValue joz_xform = JS_GetPropertyStr(ctx, jorigin_xform, "z");
+        JS_ToFloat64(ctx, &ox, jox_xform);
+        JS_ToFloat64(ctx, &oy, joy_xform);
+        JS_ToFloat64(ctx, &oz, joz_xform);
+        arg_xform.origin = Vector3(ox, oy, oz);
+        JS_FreeValue(ctx, jox_xform); JS_FreeValue(ctx, joy_xform); JS_FreeValue(ctx, joz_xform);
+    }
+    if (!JS_IsUndefined(jbasis_xform)) {
+        JSValue jbx_xform = JS_GetPropertyStr(ctx, jbasis_xform, "x");
+        JSValue jby_xform = JS_GetPropertyStr(ctx, jbasis_xform, "y");
+        JSValue jbz_xform = JS_GetPropertyStr(ctx, jbasis_xform, "z");
+        if (!JS_IsUndefined(jbx_xform) && !JS_IsUndefined(jby_xform) && !JS_IsUndefined(jbz_xform)) {
+            double xx, xy, xz, yx, yy, yz, zx, zy, zz;
+            JSValue jbxx = JS_GetPropertyStr(ctx, jbx_xform, "x"); JSValue jbxy = JS_GetPropertyStr(ctx, jbx_xform, "y"); JSValue jbxz = JS_GetPropertyStr(ctx, jbx_xform, "z");
+            JSValue jbyx = JS_GetPropertyStr(ctx, jby_xform, "x"); JSValue jbyy = JS_GetPropertyStr(ctx, jby_xform, "y"); JSValue jbyz = JS_GetPropertyStr(ctx, jby_xform, "z");
+            JSValue jbzx = JS_GetPropertyStr(ctx, jbz_xform, "x"); JSValue jbzy = JS_GetPropertyStr(ctx, jbz_xform, "y"); JSValue jbzz = JS_GetPropertyStr(ctx, jbz_xform, "z");
+            JS_ToFloat64(ctx, &xx, jbxx); JS_ToFloat64(ctx, &xy, jbxy); JS_ToFloat64(ctx, &xz, jbxz);
+            JS_ToFloat64(ctx, &yx, jbyx); JS_ToFloat64(ctx, &yy, jbyy); JS_ToFloat64(ctx, &yz, jbyz);
+            JS_ToFloat64(ctx, &zx, jbzx); JS_ToFloat64(ctx, &zy, jbzy); JS_ToFloat64(ctx, &zz, jbzz);
+            arg_xform.basis = Basis(Vector3(xx, xy, xz), Vector3(yx, yy, yz), Vector3(zx, zy, zz));
+            JS_FreeValue(ctx, jbxx); JS_FreeValue(ctx, jbxy); JS_FreeValue(ctx, jbxz);
+            JS_FreeValue(ctx, jbyx); JS_FreeValue(ctx, jbyy); JS_FreeValue(ctx, jbyz);
+            JS_FreeValue(ctx, jbzx); JS_FreeValue(ctx, jbzy); JS_FreeValue(ctx, jbzz);
+        }
+        JS_FreeValue(ctx, jbx_xform); JS_FreeValue(ctx, jby_xform); JS_FreeValue(ctx, jbz_xform);
+    }
+    JS_FreeValue(ctx, jbasis_xform);
+    JS_FreeValue(ctx, jorigin_xform);
     double tmp_x_velocity, tmp_y_velocity, tmp_z_velocity;
     JSValue jx_velocity = JS_GetPropertyStr(ctx, argv[2], "x");
     JSValue jy_velocity = JS_GetPropertyStr(ctx, argv[2], "y");

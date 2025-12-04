@@ -28,7 +28,7 @@ func run_all(sandbox: JSSandbox, scene_tree: SceneTree) -> Dictionary:
 func _run_suite(suite: TestBase, sandbox: JSSandbox, scene_tree: SceneTree) -> Dictionary:
 	print("\n--- %s ---" % suite.get_suite_name())
 
-	suite.setup(sandbox, scene_tree)
+	await suite.setup(sandbox, scene_tree)
 
 	var passed := 0
 	var failed := 0

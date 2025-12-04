@@ -59,7 +59,23 @@ static JSValue js_RigidBody3D_get_inverse_inertia_tensor(JSContext* ctx, JSValue
     }
 
     Basis result = typed_obj->get_inverse_inertia_tensor();
-    return qjs_ctx->variant_to_js(Variant(result));
+    JSValue ret_obj = JS_NewObject(ctx);
+    JSValue x_obj = JS_NewObject(ctx);
+    JSValue y_obj = JS_NewObject(ctx);
+    JSValue z_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, x_obj, "x", JS_NewFloat64(ctx, result.rows[0].x));
+    JS_SetPropertyStr(ctx, x_obj, "y", JS_NewFloat64(ctx, result.rows[0].y));
+    JS_SetPropertyStr(ctx, x_obj, "z", JS_NewFloat64(ctx, result.rows[0].z));
+    JS_SetPropertyStr(ctx, y_obj, "x", JS_NewFloat64(ctx, result.rows[1].x));
+    JS_SetPropertyStr(ctx, y_obj, "y", JS_NewFloat64(ctx, result.rows[1].y));
+    JS_SetPropertyStr(ctx, y_obj, "z", JS_NewFloat64(ctx, result.rows[1].z));
+    JS_SetPropertyStr(ctx, z_obj, "x", JS_NewFloat64(ctx, result.rows[2].x));
+    JS_SetPropertyStr(ctx, z_obj, "y", JS_NewFloat64(ctx, result.rows[2].y));
+    JS_SetPropertyStr(ctx, z_obj, "z", JS_NewFloat64(ctx, result.rows[2].z));
+    JS_SetPropertyStr(ctx, ret_obj, "x", x_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "y", y_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "z", z_obj);
+    return ret_obj;
 }
 
 // Method: RigidBody3D::get_contact_count

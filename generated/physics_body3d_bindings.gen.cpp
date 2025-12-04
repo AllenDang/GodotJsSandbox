@@ -162,7 +162,41 @@ static JSValue js_PhysicsBody3D_test_move(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    Transform3D arg_from = qjs_ctx->js_to_variant(argv[1]);
+    Transform3D arg_from;
+    JSValue jbasis_from = JS_GetPropertyStr(ctx, argv[1], "basis");
+    JSValue jorigin_from = JS_GetPropertyStr(ctx, argv[1], "origin");
+    if (!JS_IsUndefined(jorigin_from)) {
+        double ox, oy, oz;
+        JSValue jox_from = JS_GetPropertyStr(ctx, jorigin_from, "x");
+        JSValue joy_from = JS_GetPropertyStr(ctx, jorigin_from, "y");
+        JSValue joz_from = JS_GetPropertyStr(ctx, jorigin_from, "z");
+        JS_ToFloat64(ctx, &ox, jox_from);
+        JS_ToFloat64(ctx, &oy, joy_from);
+        JS_ToFloat64(ctx, &oz, joz_from);
+        arg_from.origin = Vector3(ox, oy, oz);
+        JS_FreeValue(ctx, jox_from); JS_FreeValue(ctx, joy_from); JS_FreeValue(ctx, joz_from);
+    }
+    if (!JS_IsUndefined(jbasis_from)) {
+        JSValue jbx_from = JS_GetPropertyStr(ctx, jbasis_from, "x");
+        JSValue jby_from = JS_GetPropertyStr(ctx, jbasis_from, "y");
+        JSValue jbz_from = JS_GetPropertyStr(ctx, jbasis_from, "z");
+        if (!JS_IsUndefined(jbx_from) && !JS_IsUndefined(jby_from) && !JS_IsUndefined(jbz_from)) {
+            double xx, xy, xz, yx, yy, yz, zx, zy, zz;
+            JSValue jbxx = JS_GetPropertyStr(ctx, jbx_from, "x"); JSValue jbxy = JS_GetPropertyStr(ctx, jbx_from, "y"); JSValue jbxz = JS_GetPropertyStr(ctx, jbx_from, "z");
+            JSValue jbyx = JS_GetPropertyStr(ctx, jby_from, "x"); JSValue jbyy = JS_GetPropertyStr(ctx, jby_from, "y"); JSValue jbyz = JS_GetPropertyStr(ctx, jby_from, "z");
+            JSValue jbzx = JS_GetPropertyStr(ctx, jbz_from, "x"); JSValue jbzy = JS_GetPropertyStr(ctx, jbz_from, "y"); JSValue jbzz = JS_GetPropertyStr(ctx, jbz_from, "z");
+            JS_ToFloat64(ctx, &xx, jbxx); JS_ToFloat64(ctx, &xy, jbxy); JS_ToFloat64(ctx, &xz, jbxz);
+            JS_ToFloat64(ctx, &yx, jbyx); JS_ToFloat64(ctx, &yy, jbyy); JS_ToFloat64(ctx, &yz, jbyz);
+            JS_ToFloat64(ctx, &zx, jbzx); JS_ToFloat64(ctx, &zy, jbzy); JS_ToFloat64(ctx, &zz, jbzz);
+            arg_from.basis = Basis(Vector3(xx, xy, xz), Vector3(yx, yy, yz), Vector3(zx, zy, zz));
+            JS_FreeValue(ctx, jbxx); JS_FreeValue(ctx, jbxy); JS_FreeValue(ctx, jbxz);
+            JS_FreeValue(ctx, jbyx); JS_FreeValue(ctx, jbyy); JS_FreeValue(ctx, jbyz);
+            JS_FreeValue(ctx, jbzx); JS_FreeValue(ctx, jbzy); JS_FreeValue(ctx, jbzz);
+        }
+        JS_FreeValue(ctx, jbx_from); JS_FreeValue(ctx, jby_from); JS_FreeValue(ctx, jbz_from);
+    }
+    JS_FreeValue(ctx, jbasis_from);
+    JS_FreeValue(ctx, jorigin_from);
     double tmp_x_motion, tmp_y_motion, tmp_z_motion;
     JSValue jx_motion = JS_GetPropertyStr(ctx, argv[2], "x");
     JSValue jy_motion = JS_GetPropertyStr(ctx, argv[2], "y");

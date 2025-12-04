@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/node3d.hpp>
-#include <godot_cpp/classes/world3d.hpp>
 #include <godot_cpp/classes/node3d_gizmo.hpp>
+#include <godot_cpp/classes/world3d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -61,7 +61,30 @@ static JSValue js_Node3D_get_global_transform_interpolated(JSContext* ctx, JSVal
     }
 
     Transform3D result = typed_obj->get_global_transform_interpolated();
-    return qjs_ctx->variant_to_js(Variant(result));
+    JSValue ret_obj = JS_NewObject(ctx);
+    JSValue basis_obj = JS_NewObject(ctx);
+    JSValue origin_obj = JS_NewObject(ctx);
+    JSValue bx_obj = JS_NewObject(ctx);
+    JSValue by_obj = JS_NewObject(ctx);
+    JSValue bz_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, bx_obj, "x", JS_NewFloat64(ctx, result.basis.rows[0].x));
+    JS_SetPropertyStr(ctx, bx_obj, "y", JS_NewFloat64(ctx, result.basis.rows[0].y));
+    JS_SetPropertyStr(ctx, bx_obj, "z", JS_NewFloat64(ctx, result.basis.rows[0].z));
+    JS_SetPropertyStr(ctx, by_obj, "x", JS_NewFloat64(ctx, result.basis.rows[1].x));
+    JS_SetPropertyStr(ctx, by_obj, "y", JS_NewFloat64(ctx, result.basis.rows[1].y));
+    JS_SetPropertyStr(ctx, by_obj, "z", JS_NewFloat64(ctx, result.basis.rows[1].z));
+    JS_SetPropertyStr(ctx, bz_obj, "x", JS_NewFloat64(ctx, result.basis.rows[2].x));
+    JS_SetPropertyStr(ctx, bz_obj, "y", JS_NewFloat64(ctx, result.basis.rows[2].y));
+    JS_SetPropertyStr(ctx, bz_obj, "z", JS_NewFloat64(ctx, result.basis.rows[2].z));
+    JS_SetPropertyStr(ctx, basis_obj, "x", bx_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "y", by_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "z", bz_obj);
+    JS_SetPropertyStr(ctx, origin_obj, "x", JS_NewFloat64(ctx, result.origin.x));
+    JS_SetPropertyStr(ctx, origin_obj, "y", JS_NewFloat64(ctx, result.origin.y));
+    JS_SetPropertyStr(ctx, origin_obj, "z", JS_NewFloat64(ctx, result.origin.z));
+    JS_SetPropertyStr(ctx, ret_obj, "basis", basis_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "origin", origin_obj);
+    return ret_obj;
 }
 
 // Method: Node3D::get_parent_node_3d
@@ -472,7 +495,41 @@ static JSValue js_Node3D_set_subgizmo_selection(JSContext* ctx, JSValueConst thi
         JS_FreeValue(ctx, jh_gizmo);
     }
     int64_t arg_id; JS_ToInt64(ctx, &arg_id, argv[2]);
-    Transform3D arg_transform = qjs_ctx->js_to_variant(argv[3]);
+    Transform3D arg_transform;
+    JSValue jbasis_transform = JS_GetPropertyStr(ctx, argv[3], "basis");
+    JSValue jorigin_transform = JS_GetPropertyStr(ctx, argv[3], "origin");
+    if (!JS_IsUndefined(jorigin_transform)) {
+        double ox, oy, oz;
+        JSValue jox_transform = JS_GetPropertyStr(ctx, jorigin_transform, "x");
+        JSValue joy_transform = JS_GetPropertyStr(ctx, jorigin_transform, "y");
+        JSValue joz_transform = JS_GetPropertyStr(ctx, jorigin_transform, "z");
+        JS_ToFloat64(ctx, &ox, jox_transform);
+        JS_ToFloat64(ctx, &oy, joy_transform);
+        JS_ToFloat64(ctx, &oz, joz_transform);
+        arg_transform.origin = Vector3(ox, oy, oz);
+        JS_FreeValue(ctx, jox_transform); JS_FreeValue(ctx, joy_transform); JS_FreeValue(ctx, joz_transform);
+    }
+    if (!JS_IsUndefined(jbasis_transform)) {
+        JSValue jbx_transform = JS_GetPropertyStr(ctx, jbasis_transform, "x");
+        JSValue jby_transform = JS_GetPropertyStr(ctx, jbasis_transform, "y");
+        JSValue jbz_transform = JS_GetPropertyStr(ctx, jbasis_transform, "z");
+        if (!JS_IsUndefined(jbx_transform) && !JS_IsUndefined(jby_transform) && !JS_IsUndefined(jbz_transform)) {
+            double xx, xy, xz, yx, yy, yz, zx, zy, zz;
+            JSValue jbxx = JS_GetPropertyStr(ctx, jbx_transform, "x"); JSValue jbxy = JS_GetPropertyStr(ctx, jbx_transform, "y"); JSValue jbxz = JS_GetPropertyStr(ctx, jbx_transform, "z");
+            JSValue jbyx = JS_GetPropertyStr(ctx, jby_transform, "x"); JSValue jbyy = JS_GetPropertyStr(ctx, jby_transform, "y"); JSValue jbyz = JS_GetPropertyStr(ctx, jby_transform, "z");
+            JSValue jbzx = JS_GetPropertyStr(ctx, jbz_transform, "x"); JSValue jbzy = JS_GetPropertyStr(ctx, jbz_transform, "y"); JSValue jbzz = JS_GetPropertyStr(ctx, jbz_transform, "z");
+            JS_ToFloat64(ctx, &xx, jbxx); JS_ToFloat64(ctx, &xy, jbxy); JS_ToFloat64(ctx, &xz, jbxz);
+            JS_ToFloat64(ctx, &yx, jbyx); JS_ToFloat64(ctx, &yy, jbyy); JS_ToFloat64(ctx, &yz, jbyz);
+            JS_ToFloat64(ctx, &zx, jbzx); JS_ToFloat64(ctx, &zy, jbzy); JS_ToFloat64(ctx, &zz, jbzz);
+            arg_transform.basis = Basis(Vector3(xx, xy, xz), Vector3(yx, yy, yz), Vector3(zx, zy, zz));
+            JS_FreeValue(ctx, jbxx); JS_FreeValue(ctx, jbxy); JS_FreeValue(ctx, jbxz);
+            JS_FreeValue(ctx, jbyx); JS_FreeValue(ctx, jbyy); JS_FreeValue(ctx, jbyz);
+            JS_FreeValue(ctx, jbzx); JS_FreeValue(ctx, jbzy); JS_FreeValue(ctx, jbzz);
+        }
+        JS_FreeValue(ctx, jbx_transform); JS_FreeValue(ctx, jby_transform); JS_FreeValue(ctx, jbz_transform);
+    }
+    JS_FreeValue(ctx, jbasis_transform);
+    JS_FreeValue(ctx, jorigin_transform);
 
     typed_obj->set_subgizmo_selection(arg_gizmo, arg_id, arg_transform);
     return JS_UNDEFINED;
@@ -1579,7 +1636,30 @@ static JSValue js_Node3D_get_transform(JSContext* ctx, JSValueConst this_val, in
     }
 
     Transform3D value = typed_obj->get_transform();
-    return qjs_ctx->variant_to_js(Variant(value));
+    JSValue ret_obj = JS_NewObject(ctx);
+    JSValue basis_obj = JS_NewObject(ctx);
+    JSValue origin_obj = JS_NewObject(ctx);
+    JSValue bx_obj = JS_NewObject(ctx);
+    JSValue by_obj = JS_NewObject(ctx);
+    JSValue bz_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, bx_obj, "x", JS_NewFloat64(ctx, value.basis.rows[0].x));
+    JS_SetPropertyStr(ctx, bx_obj, "y", JS_NewFloat64(ctx, value.basis.rows[0].y));
+    JS_SetPropertyStr(ctx, bx_obj, "z", JS_NewFloat64(ctx, value.basis.rows[0].z));
+    JS_SetPropertyStr(ctx, by_obj, "x", JS_NewFloat64(ctx, value.basis.rows[1].x));
+    JS_SetPropertyStr(ctx, by_obj, "y", JS_NewFloat64(ctx, value.basis.rows[1].y));
+    JS_SetPropertyStr(ctx, by_obj, "z", JS_NewFloat64(ctx, value.basis.rows[1].z));
+    JS_SetPropertyStr(ctx, bz_obj, "x", JS_NewFloat64(ctx, value.basis.rows[2].x));
+    JS_SetPropertyStr(ctx, bz_obj, "y", JS_NewFloat64(ctx, value.basis.rows[2].y));
+    JS_SetPropertyStr(ctx, bz_obj, "z", JS_NewFloat64(ctx, value.basis.rows[2].z));
+    JS_SetPropertyStr(ctx, basis_obj, "x", bx_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "y", by_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "z", bz_obj);
+    JS_SetPropertyStr(ctx, origin_obj, "x", JS_NewFloat64(ctx, value.origin.x));
+    JS_SetPropertyStr(ctx, origin_obj, "y", JS_NewFloat64(ctx, value.origin.y));
+    JS_SetPropertyStr(ctx, origin_obj, "z", JS_NewFloat64(ctx, value.origin.z));
+    JS_SetPropertyStr(ctx, ret_obj, "basis", basis_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "origin", origin_obj);
+    return ret_obj;
 }
 
 // Property setter: Node3D::transform
@@ -1608,7 +1688,41 @@ static JSValue js_Node3D_set_transform(JSContext* ctx, JSValueConst this_val, in
         return JS_ThrowTypeError(ctx, "Node3D.transform setter: wrong type");
     }
 
-    Transform3D value = qjs_ctx->js_to_variant(argv[1]);
+    Transform3D value;
+    JSValue jbasis_value = JS_GetPropertyStr(ctx, argv[1], "basis");
+    JSValue jorigin_value = JS_GetPropertyStr(ctx, argv[1], "origin");
+    if (!JS_IsUndefined(jorigin_value)) {
+        double ox, oy, oz;
+        JSValue jox_value = JS_GetPropertyStr(ctx, jorigin_value, "x");
+        JSValue joy_value = JS_GetPropertyStr(ctx, jorigin_value, "y");
+        JSValue joz_value = JS_GetPropertyStr(ctx, jorigin_value, "z");
+        JS_ToFloat64(ctx, &ox, jox_value);
+        JS_ToFloat64(ctx, &oy, joy_value);
+        JS_ToFloat64(ctx, &oz, joz_value);
+        value.origin = Vector3(ox, oy, oz);
+        JS_FreeValue(ctx, jox_value); JS_FreeValue(ctx, joy_value); JS_FreeValue(ctx, joz_value);
+    }
+    if (!JS_IsUndefined(jbasis_value)) {
+        JSValue jbx_value = JS_GetPropertyStr(ctx, jbasis_value, "x");
+        JSValue jby_value = JS_GetPropertyStr(ctx, jbasis_value, "y");
+        JSValue jbz_value = JS_GetPropertyStr(ctx, jbasis_value, "z");
+        if (!JS_IsUndefined(jbx_value) && !JS_IsUndefined(jby_value) && !JS_IsUndefined(jbz_value)) {
+            double xx, xy, xz, yx, yy, yz, zx, zy, zz;
+            JSValue jbxx = JS_GetPropertyStr(ctx, jbx_value, "x"); JSValue jbxy = JS_GetPropertyStr(ctx, jbx_value, "y"); JSValue jbxz = JS_GetPropertyStr(ctx, jbx_value, "z");
+            JSValue jbyx = JS_GetPropertyStr(ctx, jby_value, "x"); JSValue jbyy = JS_GetPropertyStr(ctx, jby_value, "y"); JSValue jbyz = JS_GetPropertyStr(ctx, jby_value, "z");
+            JSValue jbzx = JS_GetPropertyStr(ctx, jbz_value, "x"); JSValue jbzy = JS_GetPropertyStr(ctx, jbz_value, "y"); JSValue jbzz = JS_GetPropertyStr(ctx, jbz_value, "z");
+            JS_ToFloat64(ctx, &xx, jbxx); JS_ToFloat64(ctx, &xy, jbxy); JS_ToFloat64(ctx, &xz, jbxz);
+            JS_ToFloat64(ctx, &yx, jbyx); JS_ToFloat64(ctx, &yy, jbyy); JS_ToFloat64(ctx, &yz, jbyz);
+            JS_ToFloat64(ctx, &zx, jbzx); JS_ToFloat64(ctx, &zy, jbzy); JS_ToFloat64(ctx, &zz, jbzz);
+            value.basis = Basis(Vector3(xx, xy, xz), Vector3(yx, yy, yz), Vector3(zx, zy, zz));
+            JS_FreeValue(ctx, jbxx); JS_FreeValue(ctx, jbxy); JS_FreeValue(ctx, jbxz);
+            JS_FreeValue(ctx, jbyx); JS_FreeValue(ctx, jbyy); JS_FreeValue(ctx, jbyz);
+            JS_FreeValue(ctx, jbzx); JS_FreeValue(ctx, jbzy); JS_FreeValue(ctx, jbzz);
+        }
+        JS_FreeValue(ctx, jbx_value); JS_FreeValue(ctx, jby_value); JS_FreeValue(ctx, jbz_value);
+    }
+    JS_FreeValue(ctx, jbasis_value);
+    JS_FreeValue(ctx, jorigin_value);
     typed_obj->set_transform(value);
     return JS_UNDEFINED;
 }
@@ -1640,7 +1754,30 @@ static JSValue js_Node3D_get_global_transform(JSContext* ctx, JSValueConst this_
     }
 
     Transform3D value = typed_obj->get_global_transform();
-    return qjs_ctx->variant_to_js(Variant(value));
+    JSValue ret_obj = JS_NewObject(ctx);
+    JSValue basis_obj = JS_NewObject(ctx);
+    JSValue origin_obj = JS_NewObject(ctx);
+    JSValue bx_obj = JS_NewObject(ctx);
+    JSValue by_obj = JS_NewObject(ctx);
+    JSValue bz_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, bx_obj, "x", JS_NewFloat64(ctx, value.basis.rows[0].x));
+    JS_SetPropertyStr(ctx, bx_obj, "y", JS_NewFloat64(ctx, value.basis.rows[0].y));
+    JS_SetPropertyStr(ctx, bx_obj, "z", JS_NewFloat64(ctx, value.basis.rows[0].z));
+    JS_SetPropertyStr(ctx, by_obj, "x", JS_NewFloat64(ctx, value.basis.rows[1].x));
+    JS_SetPropertyStr(ctx, by_obj, "y", JS_NewFloat64(ctx, value.basis.rows[1].y));
+    JS_SetPropertyStr(ctx, by_obj, "z", JS_NewFloat64(ctx, value.basis.rows[1].z));
+    JS_SetPropertyStr(ctx, bz_obj, "x", JS_NewFloat64(ctx, value.basis.rows[2].x));
+    JS_SetPropertyStr(ctx, bz_obj, "y", JS_NewFloat64(ctx, value.basis.rows[2].y));
+    JS_SetPropertyStr(ctx, bz_obj, "z", JS_NewFloat64(ctx, value.basis.rows[2].z));
+    JS_SetPropertyStr(ctx, basis_obj, "x", bx_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "y", by_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "z", bz_obj);
+    JS_SetPropertyStr(ctx, origin_obj, "x", JS_NewFloat64(ctx, value.origin.x));
+    JS_SetPropertyStr(ctx, origin_obj, "y", JS_NewFloat64(ctx, value.origin.y));
+    JS_SetPropertyStr(ctx, origin_obj, "z", JS_NewFloat64(ctx, value.origin.z));
+    JS_SetPropertyStr(ctx, ret_obj, "basis", basis_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "origin", origin_obj);
+    return ret_obj;
 }
 
 // Property setter: Node3D::global_transform
@@ -1669,7 +1806,41 @@ static JSValue js_Node3D_set_global_transform(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "Node3D.global_transform setter: wrong type");
     }
 
-    Transform3D value = qjs_ctx->js_to_variant(argv[1]);
+    Transform3D value;
+    JSValue jbasis_value = JS_GetPropertyStr(ctx, argv[1], "basis");
+    JSValue jorigin_value = JS_GetPropertyStr(ctx, argv[1], "origin");
+    if (!JS_IsUndefined(jorigin_value)) {
+        double ox, oy, oz;
+        JSValue jox_value = JS_GetPropertyStr(ctx, jorigin_value, "x");
+        JSValue joy_value = JS_GetPropertyStr(ctx, jorigin_value, "y");
+        JSValue joz_value = JS_GetPropertyStr(ctx, jorigin_value, "z");
+        JS_ToFloat64(ctx, &ox, jox_value);
+        JS_ToFloat64(ctx, &oy, joy_value);
+        JS_ToFloat64(ctx, &oz, joz_value);
+        value.origin = Vector3(ox, oy, oz);
+        JS_FreeValue(ctx, jox_value); JS_FreeValue(ctx, joy_value); JS_FreeValue(ctx, joz_value);
+    }
+    if (!JS_IsUndefined(jbasis_value)) {
+        JSValue jbx_value = JS_GetPropertyStr(ctx, jbasis_value, "x");
+        JSValue jby_value = JS_GetPropertyStr(ctx, jbasis_value, "y");
+        JSValue jbz_value = JS_GetPropertyStr(ctx, jbasis_value, "z");
+        if (!JS_IsUndefined(jbx_value) && !JS_IsUndefined(jby_value) && !JS_IsUndefined(jbz_value)) {
+            double xx, xy, xz, yx, yy, yz, zx, zy, zz;
+            JSValue jbxx = JS_GetPropertyStr(ctx, jbx_value, "x"); JSValue jbxy = JS_GetPropertyStr(ctx, jbx_value, "y"); JSValue jbxz = JS_GetPropertyStr(ctx, jbx_value, "z");
+            JSValue jbyx = JS_GetPropertyStr(ctx, jby_value, "x"); JSValue jbyy = JS_GetPropertyStr(ctx, jby_value, "y"); JSValue jbyz = JS_GetPropertyStr(ctx, jby_value, "z");
+            JSValue jbzx = JS_GetPropertyStr(ctx, jbz_value, "x"); JSValue jbzy = JS_GetPropertyStr(ctx, jbz_value, "y"); JSValue jbzz = JS_GetPropertyStr(ctx, jbz_value, "z");
+            JS_ToFloat64(ctx, &xx, jbxx); JS_ToFloat64(ctx, &xy, jbxy); JS_ToFloat64(ctx, &xz, jbxz);
+            JS_ToFloat64(ctx, &yx, jbyx); JS_ToFloat64(ctx, &yy, jbyy); JS_ToFloat64(ctx, &yz, jbyz);
+            JS_ToFloat64(ctx, &zx, jbzx); JS_ToFloat64(ctx, &zy, jbzy); JS_ToFloat64(ctx, &zz, jbzz);
+            value.basis = Basis(Vector3(xx, xy, xz), Vector3(yx, yy, yz), Vector3(zx, zy, zz));
+            JS_FreeValue(ctx, jbxx); JS_FreeValue(ctx, jbxy); JS_FreeValue(ctx, jbxz);
+            JS_FreeValue(ctx, jbyx); JS_FreeValue(ctx, jbyy); JS_FreeValue(ctx, jbyz);
+            JS_FreeValue(ctx, jbzx); JS_FreeValue(ctx, jbzy); JS_FreeValue(ctx, jbzz);
+        }
+        JS_FreeValue(ctx, jbx_value); JS_FreeValue(ctx, jby_value); JS_FreeValue(ctx, jbz_value);
+    }
+    JS_FreeValue(ctx, jbasis_value);
+    JS_FreeValue(ctx, jorigin_value);
     typed_obj->set_global_transform(value);
     return JS_UNDEFINED;
 }
@@ -1926,7 +2097,12 @@ static JSValue js_Node3D_get_quaternion(JSContext* ctx, JSValueConst this_val, i
     }
 
     Quaternion value = typed_obj->get_quaternion();
-    return qjs_ctx->variant_to_js(Variant(value));
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "x", JS_NewFloat64(ctx, value.x));
+    JS_SetPropertyStr(ctx, ret_obj, "y", JS_NewFloat64(ctx, value.y));
+    JS_SetPropertyStr(ctx, ret_obj, "z", JS_NewFloat64(ctx, value.z));
+    JS_SetPropertyStr(ctx, ret_obj, "w", JS_NewFloat64(ctx, value.w));
+    return ret_obj;
 }
 
 // Property setter: Node3D::quaternion
@@ -1955,7 +2131,20 @@ static JSValue js_Node3D_set_quaternion(JSContext* ctx, JSValueConst this_val, i
         return JS_ThrowTypeError(ctx, "Node3D.quaternion setter: wrong type");
     }
 
-    Quaternion value = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_value, tmp_y_value, tmp_z_value, tmp_w_value;
+    JSValue jx_value = JS_GetPropertyStr(ctx, argv[1], "x");
+    JSValue jy_value = JS_GetPropertyStr(ctx, argv[1], "y");
+    JSValue jz_value = JS_GetPropertyStr(ctx, argv[1], "z");
+    JSValue jw_value = JS_GetPropertyStr(ctx, argv[1], "w");
+    JS_ToFloat64(ctx, &tmp_x_value, jx_value);
+    JS_ToFloat64(ctx, &tmp_y_value, jy_value);
+    JS_ToFloat64(ctx, &tmp_z_value, jz_value);
+    JS_ToFloat64(ctx, &tmp_w_value, jw_value);
+    JS_FreeValue(ctx, jx_value);
+    JS_FreeValue(ctx, jy_value);
+    JS_FreeValue(ctx, jz_value);
+    JS_FreeValue(ctx, jw_value);
+    Quaternion value(tmp_x_value, tmp_y_value, tmp_z_value, tmp_w_value);
     typed_obj->set_quaternion(value);
     return JS_UNDEFINED;
 }
@@ -1987,7 +2176,23 @@ static JSValue js_Node3D_get_basis(JSContext* ctx, JSValueConst this_val, int ar
     }
 
     Basis value = typed_obj->get_basis();
-    return qjs_ctx->variant_to_js(Variant(value));
+    JSValue ret_obj = JS_NewObject(ctx);
+    JSValue x_obj = JS_NewObject(ctx);
+    JSValue y_obj = JS_NewObject(ctx);
+    JSValue z_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, x_obj, "x", JS_NewFloat64(ctx, value.rows[0].x));
+    JS_SetPropertyStr(ctx, x_obj, "y", JS_NewFloat64(ctx, value.rows[0].y));
+    JS_SetPropertyStr(ctx, x_obj, "z", JS_NewFloat64(ctx, value.rows[0].z));
+    JS_SetPropertyStr(ctx, y_obj, "x", JS_NewFloat64(ctx, value.rows[1].x));
+    JS_SetPropertyStr(ctx, y_obj, "y", JS_NewFloat64(ctx, value.rows[1].y));
+    JS_SetPropertyStr(ctx, y_obj, "z", JS_NewFloat64(ctx, value.rows[1].z));
+    JS_SetPropertyStr(ctx, z_obj, "x", JS_NewFloat64(ctx, value.rows[2].x));
+    JS_SetPropertyStr(ctx, z_obj, "y", JS_NewFloat64(ctx, value.rows[2].y));
+    JS_SetPropertyStr(ctx, z_obj, "z", JS_NewFloat64(ctx, value.rows[2].z));
+    JS_SetPropertyStr(ctx, ret_obj, "x", x_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "y", y_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "z", z_obj);
+    return ret_obj;
 }
 
 // Property setter: Node3D::basis
@@ -2016,7 +2221,32 @@ static JSValue js_Node3D_set_basis(JSContext* ctx, JSValueConst this_val, int ar
         return JS_ThrowTypeError(ctx, "Node3D.basis setter: wrong type");
     }
 
-    Basis value = qjs_ctx->js_to_variant(argv[1]);
+    Basis value;
+    JSValue jx_value = JS_GetPropertyStr(ctx, argv[1], "x");
+    JSValue jy_value = JS_GetPropertyStr(ctx, argv[1], "y");
+    JSValue jz_value = JS_GetPropertyStr(ctx, argv[1], "z");
+    if (!JS_IsUndefined(jx_value) && !JS_IsUndefined(jy_value) && !JS_IsUndefined(jz_value)) {
+        double xx, xy, xz, yx, yy, yz, zx, zy, zz;
+        JSValue jxx_value = JS_GetPropertyStr(ctx, jx_value, "x");
+        JSValue jxy_value = JS_GetPropertyStr(ctx, jx_value, "y");
+        JSValue jxz_value = JS_GetPropertyStr(ctx, jx_value, "z");
+        JSValue jyx_value = JS_GetPropertyStr(ctx, jy_value, "x");
+        JSValue jyy_value = JS_GetPropertyStr(ctx, jy_value, "y");
+        JSValue jyz_value = JS_GetPropertyStr(ctx, jy_value, "z");
+        JSValue jzx_value = JS_GetPropertyStr(ctx, jz_value, "x");
+        JSValue jzy_value = JS_GetPropertyStr(ctx, jz_value, "y");
+        JSValue jzz_value = JS_GetPropertyStr(ctx, jz_value, "z");
+        JS_ToFloat64(ctx, &xx, jxx_value); JS_ToFloat64(ctx, &xy, jxy_value); JS_ToFloat64(ctx, &xz, jxz_value);
+        JS_ToFloat64(ctx, &yx, jyx_value); JS_ToFloat64(ctx, &yy, jyy_value); JS_ToFloat64(ctx, &yz, jyz_value);
+        JS_ToFloat64(ctx, &zx, jzx_value); JS_ToFloat64(ctx, &zy, jzy_value); JS_ToFloat64(ctx, &zz, jzz_value);
+        value = Basis(Vector3(xx, xy, xz), Vector3(yx, yy, yz), Vector3(zx, zy, zz));
+        JS_FreeValue(ctx, jxx_value); JS_FreeValue(ctx, jxy_value); JS_FreeValue(ctx, jxz_value);
+        JS_FreeValue(ctx, jyx_value); JS_FreeValue(ctx, jyy_value); JS_FreeValue(ctx, jyz_value);
+        JS_FreeValue(ctx, jzx_value); JS_FreeValue(ctx, jzy_value); JS_FreeValue(ctx, jzz_value);
+    }
+    JS_FreeValue(ctx, jx_value);
+    JS_FreeValue(ctx, jy_value);
+    JS_FreeValue(ctx, jz_value);
     typed_obj->set_basis(value);
     return JS_UNDEFINED;
 }
@@ -2381,7 +2611,23 @@ static JSValue js_Node3D_get_global_basis(JSContext* ctx, JSValueConst this_val,
     }
 
     Basis value = typed_obj->get_global_basis();
-    return qjs_ctx->variant_to_js(Variant(value));
+    JSValue ret_obj = JS_NewObject(ctx);
+    JSValue x_obj = JS_NewObject(ctx);
+    JSValue y_obj = JS_NewObject(ctx);
+    JSValue z_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, x_obj, "x", JS_NewFloat64(ctx, value.rows[0].x));
+    JS_SetPropertyStr(ctx, x_obj, "y", JS_NewFloat64(ctx, value.rows[0].y));
+    JS_SetPropertyStr(ctx, x_obj, "z", JS_NewFloat64(ctx, value.rows[0].z));
+    JS_SetPropertyStr(ctx, y_obj, "x", JS_NewFloat64(ctx, value.rows[1].x));
+    JS_SetPropertyStr(ctx, y_obj, "y", JS_NewFloat64(ctx, value.rows[1].y));
+    JS_SetPropertyStr(ctx, y_obj, "z", JS_NewFloat64(ctx, value.rows[1].z));
+    JS_SetPropertyStr(ctx, z_obj, "x", JS_NewFloat64(ctx, value.rows[2].x));
+    JS_SetPropertyStr(ctx, z_obj, "y", JS_NewFloat64(ctx, value.rows[2].y));
+    JS_SetPropertyStr(ctx, z_obj, "z", JS_NewFloat64(ctx, value.rows[2].z));
+    JS_SetPropertyStr(ctx, ret_obj, "x", x_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "y", y_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "z", z_obj);
+    return ret_obj;
 }
 
 // Property setter: Node3D::global_basis
@@ -2410,7 +2656,32 @@ static JSValue js_Node3D_set_global_basis(JSContext* ctx, JSValueConst this_val,
         return JS_ThrowTypeError(ctx, "Node3D.global_basis setter: wrong type");
     }
 
-    Basis value = qjs_ctx->js_to_variant(argv[1]);
+    Basis value;
+    JSValue jx_value = JS_GetPropertyStr(ctx, argv[1], "x");
+    JSValue jy_value = JS_GetPropertyStr(ctx, argv[1], "y");
+    JSValue jz_value = JS_GetPropertyStr(ctx, argv[1], "z");
+    if (!JS_IsUndefined(jx_value) && !JS_IsUndefined(jy_value) && !JS_IsUndefined(jz_value)) {
+        double xx, xy, xz, yx, yy, yz, zx, zy, zz;
+        JSValue jxx_value = JS_GetPropertyStr(ctx, jx_value, "x");
+        JSValue jxy_value = JS_GetPropertyStr(ctx, jx_value, "y");
+        JSValue jxz_value = JS_GetPropertyStr(ctx, jx_value, "z");
+        JSValue jyx_value = JS_GetPropertyStr(ctx, jy_value, "x");
+        JSValue jyy_value = JS_GetPropertyStr(ctx, jy_value, "y");
+        JSValue jyz_value = JS_GetPropertyStr(ctx, jy_value, "z");
+        JSValue jzx_value = JS_GetPropertyStr(ctx, jz_value, "x");
+        JSValue jzy_value = JS_GetPropertyStr(ctx, jz_value, "y");
+        JSValue jzz_value = JS_GetPropertyStr(ctx, jz_value, "z");
+        JS_ToFloat64(ctx, &xx, jxx_value); JS_ToFloat64(ctx, &xy, jxy_value); JS_ToFloat64(ctx, &xz, jxz_value);
+        JS_ToFloat64(ctx, &yx, jyx_value); JS_ToFloat64(ctx, &yy, jyy_value); JS_ToFloat64(ctx, &yz, jyz_value);
+        JS_ToFloat64(ctx, &zx, jzx_value); JS_ToFloat64(ctx, &zy, jzy_value); JS_ToFloat64(ctx, &zz, jzz_value);
+        value = Basis(Vector3(xx, xy, xz), Vector3(yx, yy, yz), Vector3(zx, zy, zz));
+        JS_FreeValue(ctx, jxx_value); JS_FreeValue(ctx, jxy_value); JS_FreeValue(ctx, jxz_value);
+        JS_FreeValue(ctx, jyx_value); JS_FreeValue(ctx, jyy_value); JS_FreeValue(ctx, jyz_value);
+        JS_FreeValue(ctx, jzx_value); JS_FreeValue(ctx, jzy_value); JS_FreeValue(ctx, jzz_value);
+    }
+    JS_FreeValue(ctx, jx_value);
+    JS_FreeValue(ctx, jy_value);
+    JS_FreeValue(ctx, jz_value);
     typed_obj->set_global_basis(value);
     return JS_UNDEFINED;
 }

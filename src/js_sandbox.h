@@ -57,6 +57,9 @@ public:
     bool is_valid() const;
     void reset();
 
+    // Async support - execute pending microtasks/promise callbacks
+    int execute_pending_jobs();
+
     // Context access (for JSScriptInstance integration)
     QuickJSContext* get_context() const { return context_.get(); }
 

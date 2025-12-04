@@ -76,6 +76,12 @@
     "priority_classes": [
         "RefCounted",
         "Resource",
+        "SceneTree",
+        "Tween",
+        "PropertyTweener",
+        "CallbackTweener",
+        "MethodTweener",
+        "IntervalTweener",
         "PackedScene",
         "Texture",
         "Texture2D",

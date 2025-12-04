@@ -176,6 +176,69 @@ static JSValue js_ShapeCast3D_force_shapecast_update(JSContext* ctx, JSValueCons
     return JS_UNDEFINED;
 }
 
+// Method: ShapeCast3D::get_collider
+static JSValue js_ShapeCast3D_get_collider(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.get_collider: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.get_collider: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.get_collider: invalid or freed object");
+    }
+
+    ShapeCast3D* typed_obj = Object::cast_to<ShapeCast3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.get_collider: object is not a ShapeCast3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.get_collider: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
+
+    Object* result = typed_obj->get_collider(arg_index);
+    if (!result) return JS_NULL;
+    Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object (should not happen if bindings are set up correctly)
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
 // Method: ShapeCast3D::get_collider_shape
 static JSValue js_ShapeCast3D_get_collider_shape(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1196,6 +1259,8 @@ void register_ShapeCast3D_bindings(JSContext* ctx, JSValue global, JSValue class
         JS_NewCFunction(ctx, js_ShapeCast3D_get_collision_count, "get_collision_count", 1));
     JS_SetPropertyStr(ctx, methods, "force_shapecast_update",
         JS_NewCFunction(ctx, js_ShapeCast3D_force_shapecast_update, "force_shapecast_update", 1));
+    JS_SetPropertyStr(ctx, methods, "get_collider",
+        JS_NewCFunction(ctx, js_ShapeCast3D_get_collider, "get_collider", 2));
     JS_SetPropertyStr(ctx, methods, "get_collider_shape",
         JS_NewCFunction(ctx, js_ShapeCast3D_get_collider_shape, "get_collider_shape", 2));
     JS_SetPropertyStr(ctx, methods, "get_collision_point",

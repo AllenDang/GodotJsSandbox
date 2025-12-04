@@ -556,7 +556,30 @@ static JSValue js_Camera3D_get_camera_transform(JSContext* ctx, JSValueConst thi
     }
 
     Transform3D result = typed_obj->get_camera_transform();
-    return qjs_ctx->variant_to_js(Variant(result));
+    JSValue ret_obj = JS_NewObject(ctx);
+    JSValue basis_obj = JS_NewObject(ctx);
+    JSValue origin_obj = JS_NewObject(ctx);
+    JSValue bx_obj = JS_NewObject(ctx);
+    JSValue by_obj = JS_NewObject(ctx);
+    JSValue bz_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, bx_obj, "x", JS_NewFloat64(ctx, result.basis.rows[0].x));
+    JS_SetPropertyStr(ctx, bx_obj, "y", JS_NewFloat64(ctx, result.basis.rows[0].y));
+    JS_SetPropertyStr(ctx, bx_obj, "z", JS_NewFloat64(ctx, result.basis.rows[0].z));
+    JS_SetPropertyStr(ctx, by_obj, "x", JS_NewFloat64(ctx, result.basis.rows[1].x));
+    JS_SetPropertyStr(ctx, by_obj, "y", JS_NewFloat64(ctx, result.basis.rows[1].y));
+    JS_SetPropertyStr(ctx, by_obj, "z", JS_NewFloat64(ctx, result.basis.rows[1].z));
+    JS_SetPropertyStr(ctx, bz_obj, "x", JS_NewFloat64(ctx, result.basis.rows[2].x));
+    JS_SetPropertyStr(ctx, bz_obj, "y", JS_NewFloat64(ctx, result.basis.rows[2].y));
+    JS_SetPropertyStr(ctx, bz_obj, "z", JS_NewFloat64(ctx, result.basis.rows[2].z));
+    JS_SetPropertyStr(ctx, basis_obj, "x", bx_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "y", by_obj);
+    JS_SetPropertyStr(ctx, basis_obj, "z", bz_obj);
+    JS_SetPropertyStr(ctx, origin_obj, "x", JS_NewFloat64(ctx, result.origin.x));
+    JS_SetPropertyStr(ctx, origin_obj, "y", JS_NewFloat64(ctx, result.origin.y));
+    JS_SetPropertyStr(ctx, origin_obj, "z", JS_NewFloat64(ctx, result.origin.z));
+    JS_SetPropertyStr(ctx, ret_obj, "basis", basis_obj);
+    JS_SetPropertyStr(ctx, ret_obj, "origin", origin_obj);
+    return ret_obj;
 }
 
 // Method: Camera3D::is_position_in_frustum
