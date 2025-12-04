@@ -5,6 +5,8 @@
 #include "sandbox_config.h"
 #include "execution_limiter.h"
 #include "safe_wrapper.h"
+#include "signal_registry.h"
+#include "deletion_tracker.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -67,21 +69,35 @@ void JSScriptLanguage::initialize_runtime() {
     sandbox_config_ = std::make_unique<SandboxConfig>();
     execution_limiter_ = std::make_unique<ExecutionLimiter>();
     safe_wrapper_ = std::make_unique<SafeWrapper>();
+    signal_registry_ = std::make_unique<SignalRegistry>();
+    deletion_tracker_ = std::make_unique<DeletionTracker>();
 
+    // Configure SafeWrapper
     safe_wrapper_->set_object_registry(object_registry_.get());
     safe_wrapper_->set_sandbox_config(sandbox_config_.get());
     safe_wrapper_->set_execution_limiter(execution_limiter_.get());
+    safe_wrapper_->set_deletion_tracker(deletion_tracker_.get());
+
+    // Configure DeletionTracker
+    deletion_tracker_->set_object_registry(object_registry_.get());
+    deletion_tracker_->set_signal_registry(signal_registry_.get());
 
     context_ = std::make_unique<QuickJSContext>();
     context_->set_object_registry(object_registry_.get());
     context_->set_sandbox_config(sandbox_config_.get());
     context_->set_execution_limiter(execution_limiter_.get());
     context_->set_safe_wrapper(safe_wrapper_.get());
+    context_->set_signal_registry(signal_registry_.get());
 
     if (!context_->initialize()) {
         UtilityFunctions::printerr("Failed to initialize JavaScript runtime");
         return;
     }
+
+    // Configure SignalRegistry with context
+    signal_registry_->set_context(context_->ctx());
+    signal_registry_->set_quickjs_context(context_.get());
+    signal_registry_->set_object_registry(object_registry_.get());
 
     initialized_ = true;
     UtilityFunctions::print("JavaScript runtime initialized");
@@ -92,7 +108,19 @@ void JSScriptLanguage::shutdown_runtime() {
         return;
     }
 
+    // Clean up signal connections first (while context is still valid)
+    if (signal_registry_) {
+        signal_registry_->cleanup_all();
+    }
+
+    // Clean up deletion tracking
+    if (deletion_tracker_) {
+        deletion_tracker_->clear();
+    }
+
     context_.reset();
+    signal_registry_.reset();
+    deletion_tracker_.reset();
     safe_wrapper_.reset();
     execution_limiter_.reset();
     sandbox_config_.reset();

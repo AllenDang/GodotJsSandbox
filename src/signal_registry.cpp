@@ -278,14 +278,36 @@ void SignalRegistry::invoke_callback(uint64_t connection_id, const Variant** arg
     JSValue result = JS_Call(ctx_, conn.callback, global, argc, js_args);
     JS_FreeValue(ctx_, global);
 
-    // Handle exception
+    // Handle exception with detailed error message
     if (JS_IsException(result)) {
         JSValue exception = JS_GetException(ctx_);
+        String error_message = "[JS Signal Error] ";
+
+        // Get exception message
         const char* msg = JS_ToCString(ctx_, exception);
         if (msg) {
-            UtilityFunctions::printerr("[JS Signal Error] ", msg);
+            error_message += msg;
             JS_FreeCString(ctx_, msg);
         }
+
+        // Get stack trace
+        JSValue stack = JS_GetPropertyStr(ctx_, exception, "stack");
+        if (!JS_IsUndefined(stack)) {
+            const char* stack_str = JS_ToCString(ctx_, stack);
+            if (stack_str) {
+                error_message += "\nStack trace:\n";
+                error_message += stack_str;
+                JS_FreeCString(ctx_, stack_str);
+            }
+        }
+        JS_FreeValue(ctx_, stack);
+
+        // Include signal info if available
+        if (conn.signal_name.length() > 0) {
+            error_message += "\nSignal: " + String(conn.signal_name);
+        }
+
+        UtilityFunctions::printerr(error_message);
         JS_FreeValue(ctx_, exception);
     }
 

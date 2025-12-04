@@ -220,6 +220,13 @@ void JSScript::unregister_instance(Object* p_object) {
     instances_.erase(p_object);
 }
 
+JSScriptInstance* JSScript::get_instance(Object* p_object) const {
+    if (instances_.has(p_object)) {
+        return instances_[p_object];
+    }
+    return nullptr;
+}
+
 void JSScript::set_sandbox(const Ref<JSSandbox>& p_sandbox) {
     sandbox_ = p_sandbox;
 }

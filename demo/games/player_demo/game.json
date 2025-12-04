@@ -1,7 +1,7 @@
 {
-  "name": "Player Movement Demo",
+  "name": "Platform Jump",
   "version": "1.0.0",
-  "description": "Move a character with WASD. Shows physics and input handling.",
+  "description": "Jump across platforms to reach the goal! Don't fall!",
   "author": "Demo",
   "entry_scene": "main.tscn",
   "scene_type": "3D",

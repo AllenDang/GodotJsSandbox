@@ -88,6 +88,9 @@ func run_tests() -> void:
 	# Async/await support (Promise-Signal bridge)
 	runner.add_suite(TestAsyncAwaitClass.new())
 
+	# Cross-script method calls (calling JS methods on other nodes)
+	runner.add_suite(TestCrossScript.new())
+
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())
 

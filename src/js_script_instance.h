@@ -48,6 +48,10 @@ public:
 
     // Method access
     const GDExtensionMethodInfo* get_method_list(uint32_t *r_count) const;
+
+    // Public method to call a JS script method from other JS code
+    bool call_method(const godot::StringName &p_method, const godot::Variant** p_args,
+                     int p_argcount, godot::Variant &r_result, godot::String& r_error);
     void free_method_list(const GDExtensionMethodInfo *p_list, uint32_t p_count) const;
 
     bool has_method(const godot::StringName &p_method) const;

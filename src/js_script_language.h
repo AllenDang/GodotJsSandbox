@@ -13,6 +13,8 @@ class ObjectRegistry;
 class SandboxConfig;
 class ExecutionLimiter;
 class SafeWrapper;
+class SignalRegistry;
+class DeletionTracker;
 
 // JSScriptLanguage registers JavaScript as a scripting language in Godot
 // This is a simplified version focused on runtime execution (no editor features)
@@ -91,6 +93,8 @@ private:
     std::unique_ptr<SandboxConfig> sandbox_config_;
     std::unique_ptr<ExecutionLimiter> execution_limiter_;
     std::unique_ptr<SafeWrapper> safe_wrapper_;
+    std::unique_ptr<SignalRegistry> signal_registry_;
+    std::unique_ptr<DeletionTracker> deletion_tracker_;
 
     bool initialized_ = false;
 

@@ -84,6 +84,7 @@ public:
     // Instance management
     void register_instance(godot::Object* p_object, JSScriptInstance* p_instance);
     void unregister_instance(godot::Object* p_object);
+    JSScriptInstance* get_instance(godot::Object* p_object) const;
 
     // Sandbox association - allows JSScript to use a specific sandbox's context
     // Uses Ref to keep sandbox alive as long as any script references it

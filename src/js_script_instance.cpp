@@ -199,6 +199,12 @@ bool JSScriptInstance::call_js_method(const StringName &p_method, const Variant*
     return ctx->call_instance_method(js_instance_id_, p_method, p_args, p_argcount, r_result, r_error);
 }
 
+// Public method for calling JS script methods from other JS code
+bool JSScriptInstance::call_method(const StringName &p_method, const Variant** p_args,
+                                    int p_argcount, Variant &r_result, String& r_error) {
+    return call_js_method(p_method, p_args, p_argcount, r_result, r_error);
+}
+
 void JSScriptInstance::call(const StringName &p_method, const GDExtensionConstVariantPtr *p_args,
                             GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return,
                             GDExtensionCallError *r_error) {

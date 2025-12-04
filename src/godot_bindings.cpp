@@ -4,6 +4,8 @@
 #include "object_registry.h"
 #include "sandbox_config.h"
 #include "signal_registry.h"
+#include "js_script.h"
+#include "js_script_instance.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/node.hpp>
@@ -214,6 +216,14 @@ void GodotBindings::setup_global_functions() {
     // __godot_tween_method(tween_handle, callback, from, to, duration) - add a method tween
     JS_SetPropertyStr(ctx, global, "__godot_tween_method",
         JS_NewCFunction(ctx, js_godot_tween_method, "__godot_tween_method", 5));
+
+    // __godot_call_script_method(handle, method_name, ...args) - call JS script method on object
+    JS_SetPropertyStr(ctx, global, "__godot_call_script_method",
+        JS_NewCFunction(ctx, js_godot_call_script_method, "__godot_call_script_method", 2));
+
+    // __godot_has_script_method(handle, method_name) - check if object has JS script method
+    JS_SetPropertyStr(ctx, global, "__godot_has_script_method",
+        JS_NewCFunction(ctx, js_godot_has_script_method, "__godot_has_script_method", 2));
 
     // Time singleton (safe subset of methods)
     JSValue time_obj = JS_NewObject(ctx);
@@ -442,6 +452,23 @@ void GodotBindings::setup_godot_class_constructor() {
                 var propBinding = __findBinding(target.__class, prop, 'property');
                 if (propBinding && propBinding.get) {
                     return propBinding.get(target.__handle);
+                }
+
+                // Check if this is a JS script method
+                if (__godot_has_script_method(target.__handle, prop)) {
+                    var handle = target.__handle;
+                    return function() {
+                        var args = [handle, prop];
+                        for (var i = 0; i < arguments.length; i++) {
+                            var arg = arguments[i];
+                            if (arg && typeof arg === 'object' && arg.__handle !== undefined) {
+                                args.push(arg.__handle);
+                            } else {
+                                args.push(arg);
+                            }
+                        }
+                        return __godot_call_script_method.apply(null, args);
+                    };
                 }
 
                 return undefined;
@@ -1184,6 +1211,144 @@ JSValue GodotBindings::js_godot_tween_method(JSContext* ctx, JSValueConst this_v
     JS_FreeValue(ctx, args[1]);
 
     return wrapped;
+}
+
+// Global function: __godot_has_script_method(handle, method_name) - check if object has JS script method
+JSValue GodotBindings::js_godot_has_script_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "__godot_has_script_method requires 2 arguments: handle, method_name");
+    }
+
+    // Get object handle
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_ThrowTypeError(ctx, "First argument must be an object handle");
+    }
+
+    // Get method name
+    const char* method_name_cstr = JS_ToCString(ctx, argv[1]);
+    if (!method_name_cstr) {
+        return JS_ThrowTypeError(ctx, "Second argument must be a method name string");
+    }
+    String method_name = method_name_cstr;
+    JS_FreeCString(ctx, method_name_cstr);
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_FALSE;
+    }
+
+    // Get the target object from the registry
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_FALSE;
+    }
+
+    Object* target = registry->get_object(handle);
+    if (!target) {
+        return JS_FALSE;
+    }
+
+    // Check if object has a JS script
+    Ref<Script> script = target->get_script();
+    if (!script.is_valid()) {
+        return JS_FALSE;
+    }
+
+    JSScript* js_script = Object::cast_to<JSScript>(script.ptr());
+    if (!js_script) {
+        return JS_FALSE;
+    }
+
+    // Check if the script has this method
+    return JS_NewBool(ctx, js_script->_has_method(StringName(method_name)));
+}
+
+// Global function: __godot_call_script_method(handle, method_name, ...args) - call JS script method on object
+JSValue GodotBindings::js_godot_call_script_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "__godot_call_script_method requires at least 2 arguments: handle, method_name");
+    }
+
+    // Get object handle
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_ThrowTypeError(ctx, "First argument must be an object handle");
+    }
+
+    // Get method name
+    const char* method_name_cstr = JS_ToCString(ctx, argv[1]);
+    if (!method_name_cstr) {
+        return JS_ThrowTypeError(ctx, "Second argument must be a method name string");
+    }
+    String method_name = method_name_cstr;
+    JS_FreeCString(ctx, method_name_cstr);
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Get the target object from the registry
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_ThrowInternalError(ctx, "ObjectRegistry not initialized");
+    }
+
+    Object* target = registry->get_object(handle);
+    if (!target) {
+        return JS_ThrowTypeError(ctx, "Invalid object handle");
+    }
+
+    // Check if object has a JS script
+    Ref<Script> script = target->get_script();
+    if (!script.is_valid()) {
+        return JS_ThrowTypeError(ctx, "Object does not have a script");
+    }
+
+    JSScript* js_script = Object::cast_to<JSScript>(script.ptr());
+    if (!js_script) {
+        return JS_ThrowTypeError(ctx, "Object does not have a JavaScript script");
+    }
+
+    // Get the script instance from our registered instances
+    JSScriptInstance* instance = js_script->get_instance(target);
+    if (!instance) {
+        return JS_ThrowTypeError(ctx, "Script instance not found");
+    }
+
+    // Convert JS arguments to Variant array
+    Vector<Variant> variant_args;
+    Vector<const Variant*> variant_arg_ptrs;
+    for (int i = 2; i < argc; i++) {
+        variant_args.push_back(qjs_ctx->js_to_variant(argv[i]));
+    }
+    for (int i = 0; i < variant_args.size(); i++) {
+        variant_arg_ptrs.push_back(&variant_args[i]);
+    }
+
+    // Call the method
+    Variant result;
+    String error;
+    // Cast is safe - we're passing a non-const array as const
+    const Variant** args_ptr = variant_arg_ptrs.size() > 0 ?
+        const_cast<const Variant**>(variant_arg_ptrs.ptr()) : nullptr;
+    bool success = instance->call_method(
+        StringName(method_name),
+        args_ptr,
+        variant_args.size(),
+        result,
+        error
+    );
+
+    if (!success) {
+        if (!error.is_empty()) {
+            return JS_ThrowTypeError(ctx, "%s", error.utf8().get_data());
+        }
+        return JS_UNDEFINED;
+    }
+
+    return qjs_ctx->variant_to_js(result);
 }
 
 } // namespace jsb
