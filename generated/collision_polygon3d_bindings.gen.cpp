@@ -154,6 +154,89 @@ static JSValue js_CollisionPolygon3D_set_disabled(JSContext* ctx, JSValueConst t
     return JS_UNDEFINED;
 }
 
+// Property getter: CollisionPolygon3D::polygon
+static JSValue js_CollisionPolygon3D_get_polygon(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CollisionPolygon3D.polygon getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CollisionPolygon3D.polygon getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CollisionPolygon3D.polygon getter: invalid object");
+    }
+
+    CollisionPolygon3D* typed_obj = Object::cast_to<CollisionPolygon3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CollisionPolygon3D.polygon getter: wrong type");
+    }
+
+    PackedVector2Array value = typed_obj->get_polygon();
+    JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < value.size(); i++) {
+        JSValue vec = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, vec, "x", JS_NewFloat64(ctx, value[i].x));
+        JS_SetPropertyStr(ctx, vec, "y", JS_NewFloat64(ctx, value[i].y));
+        JS_SetPropertyUint32(ctx, arr, i, vec);
+    }
+    return arr;
+}
+
+// Property setter: CollisionPolygon3D::polygon
+static JSValue js_CollisionPolygon3D_set_polygon(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CollisionPolygon3D.polygon setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CollisionPolygon3D.polygon setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CollisionPolygon3D.polygon setter: invalid object");
+    }
+
+    CollisionPolygon3D* typed_obj = Object::cast_to<CollisionPolygon3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CollisionPolygon3D.polygon setter: wrong type");
+    }
+
+    PackedVector2Array value;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        value.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            value.set(i, Vector2(x, y));
+        }
+    }
+    typed_obj->set_polygon(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: CollisionPolygon3D::margin
 static JSValue js_CollisionPolygon3D_get_margin(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -380,6 +463,14 @@ void register_CollisionPolygon3D_bindings(JSContext* ctx, JSValue global, JSValu
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_CollisionPolygon3D_set_disabled, "set_disabled", 2));
         JS_SetPropertyStr(ctx, props, "disabled", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_CollisionPolygon3D_get_polygon, "get_polygon", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_CollisionPolygon3D_set_polygon, "set_polygon", 2));
+        JS_SetPropertyStr(ctx, props, "polygon", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

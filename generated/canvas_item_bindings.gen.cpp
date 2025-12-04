@@ -8,13 +8,13 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/canvas_item.hpp>
-#include <godot_cpp/classes/font.hpp>
-#include <godot_cpp/classes/world2d.hpp>
 #include <godot_cpp/classes/input_event.hpp>
-#include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/classes/multi_mesh.hpp>
+#include <godot_cpp/classes/world2d.hpp>
+#include <godot_cpp/classes/mesh.hpp>
+#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -359,6 +359,169 @@ static JSValue js_CanvasItem_draw_dashed_line(JSContext* ctx, JSValueConst this_
     return JS_UNDEFINED;
 }
 
+// Method: CanvasItem::draw_polyline
+static JSValue js_CanvasItem_draw_polyline(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polyline: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polyline: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polyline: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polyline: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polyline: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedVector2Array arg_points;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_points.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_points.set(i, Vector2(x, y));
+        }
+    }
+    double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[2], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[2], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[2], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[2], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    // Optional argument: width (default: -1.0)
+    double arg_width = -1.0;
+    if (argc > 3) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_width, argv[3]);
+    }
+    // Optional argument: antialiased (default: false)
+    bool arg_antialiased = false;
+    if (argc > 4) {
+        // Override default with provided value
+        arg_antialiased = JS_ToBool(ctx, argv[4]);
+    }
+
+    typed_obj->draw_polyline(arg_points, arg_color, arg_width, arg_antialiased);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_polyline_colors
+static JSValue js_CanvasItem_draw_polyline_colors(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polyline_colors: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polyline_colors: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polyline_colors: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polyline_colors: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polyline_colors: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedVector2Array arg_points;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_points.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_points.set(i, Vector2(x, y));
+        }
+    }
+    PackedColorArray arg_colors;
+    if (JS_IsArray(argv[2])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[2], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_colors.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[2], i);
+            double r = 0, g = 0, b = 0, a = 1;
+            JSValue jr = JS_GetPropertyStr(ctx, elem, "r");
+            JSValue jg = JS_GetPropertyStr(ctx, elem, "g");
+            JSValue jb = JS_GetPropertyStr(ctx, elem, "b");
+            JSValue ja = JS_GetPropertyStr(ctx, elem, "a");
+            JS_ToFloat64(ctx, &r, jr); JS_ToFloat64(ctx, &g, jg); JS_ToFloat64(ctx, &b, jb);
+            if (!JS_IsUndefined(ja)) JS_ToFloat64(ctx, &a, ja);
+            JS_FreeValue(ctx, jr); JS_FreeValue(ctx, jg); JS_FreeValue(ctx, jb); JS_FreeValue(ctx, ja);
+            JS_FreeValue(ctx, elem);
+            arg_colors.set(i, Color(r, g, b, a));
+        }
+    }
+    // Optional argument: width (default: -1.0)
+    double arg_width = -1.0;
+    if (argc > 3) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_width, argv[3]);
+    }
+    // Optional argument: antialiased (default: false)
+    bool arg_antialiased = false;
+    if (argc > 4) {
+        // Override default with provided value
+        arg_antialiased = JS_ToBool(ctx, argv[4]);
+    }
+
+    typed_obj->draw_polyline_colors(arg_points, arg_colors, arg_width, arg_antialiased);
+    return JS_UNDEFINED;
+}
+
 // Method: CanvasItem::draw_arc
 static JSValue js_CanvasItem_draw_arc(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -431,6 +594,169 @@ static JSValue js_CanvasItem_draw_arc(JSContext* ctx, JSValueConst this_val, int
     }
 
     typed_obj->draw_arc(arg_center, arg_radius, arg_start_angle, arg_end_angle, arg_point_count, arg_color, arg_width, arg_antialiased);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_multiline
+static JSValue js_CanvasItem_draw_multiline(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multiline: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multiline: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multiline: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multiline: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multiline: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedVector2Array arg_points;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_points.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_points.set(i, Vector2(x, y));
+        }
+    }
+    double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[2], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[2], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[2], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[2], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    // Optional argument: width (default: -1.0)
+    double arg_width = -1.0;
+    if (argc > 3) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_width, argv[3]);
+    }
+    // Optional argument: antialiased (default: false)
+    bool arg_antialiased = false;
+    if (argc > 4) {
+        // Override default with provided value
+        arg_antialiased = JS_ToBool(ctx, argv[4]);
+    }
+
+    typed_obj->draw_multiline(arg_points, arg_color, arg_width, arg_antialiased);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_multiline_colors
+static JSValue js_CanvasItem_draw_multiline_colors(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multiline_colors: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multiline_colors: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multiline_colors: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multiline_colors: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_multiline_colors: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedVector2Array arg_points;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_points.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_points.set(i, Vector2(x, y));
+        }
+    }
+    PackedColorArray arg_colors;
+    if (JS_IsArray(argv[2])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[2], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_colors.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[2], i);
+            double r = 0, g = 0, b = 0, a = 1;
+            JSValue jr = JS_GetPropertyStr(ctx, elem, "r");
+            JSValue jg = JS_GetPropertyStr(ctx, elem, "g");
+            JSValue jb = JS_GetPropertyStr(ctx, elem, "b");
+            JSValue ja = JS_GetPropertyStr(ctx, elem, "a");
+            JS_ToFloat64(ctx, &r, jr); JS_ToFloat64(ctx, &g, jg); JS_ToFloat64(ctx, &b, jb);
+            if (!JS_IsUndefined(ja)) JS_ToFloat64(ctx, &a, ja);
+            JS_FreeValue(ctx, jr); JS_FreeValue(ctx, jg); JS_FreeValue(ctx, jb); JS_FreeValue(ctx, ja);
+            JS_FreeValue(ctx, elem);
+            arg_colors.set(i, Color(r, g, b, a));
+        }
+    }
+    // Optional argument: width (default: -1.0)
+    double arg_width = -1.0;
+    if (argc > 3) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_width, argv[3]);
+    }
+    // Optional argument: antialiased (default: false)
+    bool arg_antialiased = false;
+    if (argc > 4) {
+        // Override default with provided value
+        arg_antialiased = JS_ToBool(ctx, argv[4]);
+    }
+
+    typed_obj->draw_multiline_colors(arg_points, arg_colors, arg_width, arg_antialiased);
     return JS_UNDEFINED;
 }
 
@@ -1176,6 +1502,343 @@ static JSValue js_CanvasItem_draw_style_box(JSContext* ctx, JSValueConst this_va
     Rect2 arg_rect(tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect);
 
     typed_obj->draw_style_box(arg_style_box, arg_rect);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_primitive
+static JSValue js_CanvasItem_draw_primitive(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_primitive: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_primitive: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_primitive: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_primitive: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_primitive: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedVector2Array arg_points;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_points.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_points.set(i, Vector2(x, y));
+        }
+    }
+    PackedColorArray arg_colors;
+    if (JS_IsArray(argv[2])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[2], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_colors.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[2], i);
+            double r = 0, g = 0, b = 0, a = 1;
+            JSValue jr = JS_GetPropertyStr(ctx, elem, "r");
+            JSValue jg = JS_GetPropertyStr(ctx, elem, "g");
+            JSValue jb = JS_GetPropertyStr(ctx, elem, "b");
+            JSValue ja = JS_GetPropertyStr(ctx, elem, "a");
+            JS_ToFloat64(ctx, &r, jr); JS_ToFloat64(ctx, &g, jg); JS_ToFloat64(ctx, &b, jb);
+            if (!JS_IsUndefined(ja)) JS_ToFloat64(ctx, &a, ja);
+            JS_FreeValue(ctx, jr); JS_FreeValue(ctx, jg); JS_FreeValue(ctx, jb); JS_FreeValue(ctx, ja);
+            JS_FreeValue(ctx, elem);
+            arg_colors.set(i, Color(r, g, b, a));
+        }
+    }
+    PackedVector2Array arg_uvs;
+    if (JS_IsArray(argv[3])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[3], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_uvs.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[3], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_uvs.set(i, Vector2(x, y));
+        }
+    }
+    // Optional argument: texture (default: nullptr)
+    Ref<Texture2D> arg_texture = nullptr;
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Ref<Texture2D> arg_texture;
+    if (JS_IsNumber(argv[4])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_texture; JS_ToInt64(ctx, &h_texture, argv[4]);
+        Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+        arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+    } else {
+        // Object with __handle property
+        JSValue jh_texture = JS_GetPropertyStr(ctx, argv[4], "__handle");
+        if (!JS_IsUndefined(jh_texture)) {
+            int64_t h_texture; JS_ToInt64(ctx, &h_texture, jh_texture);
+            Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+            arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+        }
+        JS_FreeValue(ctx, jh_texture);
+    }
+    }
+
+    typed_obj->draw_primitive(arg_points, arg_colors, arg_uvs, arg_texture);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_polygon
+static JSValue js_CanvasItem_draw_polygon(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polygon: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polygon: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polygon: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polygon: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_polygon: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedVector2Array arg_points;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_points.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_points.set(i, Vector2(x, y));
+        }
+    }
+    PackedColorArray arg_colors;
+    if (JS_IsArray(argv[2])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[2], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_colors.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[2], i);
+            double r = 0, g = 0, b = 0, a = 1;
+            JSValue jr = JS_GetPropertyStr(ctx, elem, "r");
+            JSValue jg = JS_GetPropertyStr(ctx, elem, "g");
+            JSValue jb = JS_GetPropertyStr(ctx, elem, "b");
+            JSValue ja = JS_GetPropertyStr(ctx, elem, "a");
+            JS_ToFloat64(ctx, &r, jr); JS_ToFloat64(ctx, &g, jg); JS_ToFloat64(ctx, &b, jb);
+            if (!JS_IsUndefined(ja)) JS_ToFloat64(ctx, &a, ja);
+            JS_FreeValue(ctx, jr); JS_FreeValue(ctx, jg); JS_FreeValue(ctx, jb); JS_FreeValue(ctx, ja);
+            JS_FreeValue(ctx, elem);
+            arg_colors.set(i, Color(r, g, b, a));
+        }
+    }
+    // Optional argument: uvs (default: PackedVector2Array())
+    PackedVector2Array arg_uvs = PackedVector2Array();
+    if (argc > 3) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        PackedVector2Array arg_uvs;
+    if (JS_IsArray(argv[3])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[3], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_uvs.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[3], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_uvs.set(i, Vector2(x, y));
+        }
+    }
+    }
+    // Optional argument: texture (default: nullptr)
+    Ref<Texture2D> arg_texture = nullptr;
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Ref<Texture2D> arg_texture;
+    if (JS_IsNumber(argv[4])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_texture; JS_ToInt64(ctx, &h_texture, argv[4]);
+        Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+        arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+    } else {
+        // Object with __handle property
+        JSValue jh_texture = JS_GetPropertyStr(ctx, argv[4], "__handle");
+        if (!JS_IsUndefined(jh_texture)) {
+            int64_t h_texture; JS_ToInt64(ctx, &h_texture, jh_texture);
+            Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+            arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+        }
+        JS_FreeValue(ctx, jh_texture);
+    }
+    }
+
+    typed_obj->draw_polygon(arg_points, arg_colors, arg_uvs, arg_texture);
+    return JS_UNDEFINED;
+}
+
+// Method: CanvasItem::draw_colored_polygon
+static JSValue js_CanvasItem_draw_colored_polygon(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_colored_polygon: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_colored_polygon: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_colored_polygon: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_colored_polygon: object is not a CanvasItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.draw_colored_polygon: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedVector2Array arg_points;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_points.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_points.set(i, Vector2(x, y));
+        }
+    }
+    double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[2], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[2], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[2], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[2], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    // Optional argument: uvs (default: PackedVector2Array())
+    PackedVector2Array arg_uvs = PackedVector2Array();
+    if (argc > 3) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        PackedVector2Array arg_uvs;
+    if (JS_IsArray(argv[3])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[3], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_uvs.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[3], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_uvs.set(i, Vector2(x, y));
+        }
+    }
+    }
+    // Optional argument: texture (default: nullptr)
+    Ref<Texture2D> arg_texture = nullptr;
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Ref<Texture2D> arg_texture;
+    if (JS_IsNumber(argv[4])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_texture; JS_ToInt64(ctx, &h_texture, argv[4]);
+        Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+        arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+    } else {
+        // Object with __handle property
+        JSValue jh_texture = JS_GetPropertyStr(ctx, argv[4], "__handle");
+        if (!JS_IsUndefined(jh_texture)) {
+            int64_t h_texture; JS_ToInt64(ctx, &h_texture, jh_texture);
+            Object* obj_texture = qjs_ctx->get_object_registry()->get_object(h_texture);
+            arg_texture = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_texture));
+        }
+        JS_FreeValue(ctx, jh_texture);
+    }
+    }
+
+    typed_obj->draw_colored_polygon(arg_points, arg_color, arg_uvs, arg_texture);
     return JS_UNDEFINED;
 }
 
@@ -3468,8 +4131,16 @@ void register_CanvasItem_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_CanvasItem_draw_line, "draw_line", 6));
     JS_SetPropertyStr(ctx, methods, "draw_dashed_line",
         JS_NewCFunction(ctx, js_CanvasItem_draw_dashed_line, "draw_dashed_line", 8));
+    JS_SetPropertyStr(ctx, methods, "draw_polyline",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_polyline, "draw_polyline", 5));
+    JS_SetPropertyStr(ctx, methods, "draw_polyline_colors",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_polyline_colors, "draw_polyline_colors", 5));
     JS_SetPropertyStr(ctx, methods, "draw_arc",
         JS_NewCFunction(ctx, js_CanvasItem_draw_arc, "draw_arc", 9));
+    JS_SetPropertyStr(ctx, methods, "draw_multiline",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_multiline, "draw_multiline", 5));
+    JS_SetPropertyStr(ctx, methods, "draw_multiline_colors",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_multiline_colors, "draw_multiline_colors", 5));
     JS_SetPropertyStr(ctx, methods, "draw_rect",
         JS_NewCFunction(ctx, js_CanvasItem_draw_rect, "draw_rect", 6));
     JS_SetPropertyStr(ctx, methods, "draw_circle",
@@ -3486,6 +4157,12 @@ void register_CanvasItem_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_CanvasItem_draw_lcd_texture_rect_region, "draw_lcd_texture_rect_region", 5));
     JS_SetPropertyStr(ctx, methods, "draw_style_box",
         JS_NewCFunction(ctx, js_CanvasItem_draw_style_box, "draw_style_box", 3));
+    JS_SetPropertyStr(ctx, methods, "draw_primitive",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_primitive, "draw_primitive", 5));
+    JS_SetPropertyStr(ctx, methods, "draw_polygon",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_polygon, "draw_polygon", 5));
+    JS_SetPropertyStr(ctx, methods, "draw_colored_polygon",
+        JS_NewCFunction(ctx, js_CanvasItem_draw_colored_polygon, "draw_colored_polygon", 5));
     JS_SetPropertyStr(ctx, methods, "draw_char",
         JS_NewCFunction(ctx, js_CanvasItem_draw_char, "draw_char", 7));
     JS_SetPropertyStr(ctx, methods, "draw_char_outline",

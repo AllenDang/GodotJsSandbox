@@ -159,6 +159,146 @@ static JSValue js_Shape2D_collide_with_motion(JSContext* ctx, JSValueConst this_
     return JS_NewBool(ctx, result);
 }
 
+// Method: Shape2D::collide_and_get_contacts
+static JSValue js_Shape2D_collide_and_get_contacts(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Shape2D.collide_and_get_contacts: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Shape2D.collide_and_get_contacts: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Shape2D.collide_and_get_contacts: invalid or freed object");
+    }
+
+    Shape2D* typed_obj = Object::cast_to<Shape2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Shape2D.collide_and_get_contacts: object is not a Shape2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "Shape2D.collide_and_get_contacts: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Transform2D arg_local_xform = qjs_ctx->js_to_variant(argv[1]);
+    Ref<Shape2D> arg_with_shape;
+    if (JS_IsNumber(argv[2])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_with_shape; JS_ToInt64(ctx, &h_with_shape, argv[2]);
+        Object* obj_with_shape = qjs_ctx->get_object_registry()->get_object(h_with_shape);
+        arg_with_shape = Ref<Shape2D>(Object::cast_to<Shape2D>(obj_with_shape));
+    } else {
+        // Object with __handle property
+        JSValue jh_with_shape = JS_GetPropertyStr(ctx, argv[2], "__handle");
+        if (!JS_IsUndefined(jh_with_shape)) {
+            int64_t h_with_shape; JS_ToInt64(ctx, &h_with_shape, jh_with_shape);
+            Object* obj_with_shape = qjs_ctx->get_object_registry()->get_object(h_with_shape);
+            arg_with_shape = Ref<Shape2D>(Object::cast_to<Shape2D>(obj_with_shape));
+        }
+        JS_FreeValue(ctx, jh_with_shape);
+    }
+    Transform2D arg_shape_xform = qjs_ctx->js_to_variant(argv[3]);
+
+    PackedVector2Array result = typed_obj->collide_and_get_contacts(arg_local_xform, arg_with_shape, arg_shape_xform);
+    JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < result.size(); i++) {
+        JSValue vec = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, vec, "x", JS_NewFloat64(ctx, result[i].x));
+        JS_SetPropertyStr(ctx, vec, "y", JS_NewFloat64(ctx, result[i].y));
+        JS_SetPropertyUint32(ctx, arr, i, vec);
+    }
+    return arr;
+}
+
+// Method: Shape2D::collide_with_motion_and_get_contacts
+static JSValue js_Shape2D_collide_with_motion_and_get_contacts(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Shape2D.collide_with_motion_and_get_contacts: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Shape2D.collide_with_motion_and_get_contacts: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Shape2D.collide_with_motion_and_get_contacts: invalid or freed object");
+    }
+
+    Shape2D* typed_obj = Object::cast_to<Shape2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Shape2D.collide_with_motion_and_get_contacts: object is not a Shape2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 6) {
+        return JS_ThrowTypeError(ctx, "Shape2D.collide_with_motion_and_get_contacts: expected at least 5 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Transform2D arg_local_xform = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_local_motion, tmp_y_local_motion;
+    JSValue jx_local_motion = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_local_motion = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_local_motion, jx_local_motion);
+    JS_ToFloat64(ctx, &tmp_y_local_motion, jy_local_motion);
+    JS_FreeValue(ctx, jx_local_motion);
+    JS_FreeValue(ctx, jy_local_motion);
+    Vector2 arg_local_motion(tmp_x_local_motion, tmp_y_local_motion);
+    Ref<Shape2D> arg_with_shape;
+    if (JS_IsNumber(argv[3])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_with_shape; JS_ToInt64(ctx, &h_with_shape, argv[3]);
+        Object* obj_with_shape = qjs_ctx->get_object_registry()->get_object(h_with_shape);
+        arg_with_shape = Ref<Shape2D>(Object::cast_to<Shape2D>(obj_with_shape));
+    } else {
+        // Object with __handle property
+        JSValue jh_with_shape = JS_GetPropertyStr(ctx, argv[3], "__handle");
+        if (!JS_IsUndefined(jh_with_shape)) {
+            int64_t h_with_shape; JS_ToInt64(ctx, &h_with_shape, jh_with_shape);
+            Object* obj_with_shape = qjs_ctx->get_object_registry()->get_object(h_with_shape);
+            arg_with_shape = Ref<Shape2D>(Object::cast_to<Shape2D>(obj_with_shape));
+        }
+        JS_FreeValue(ctx, jh_with_shape);
+    }
+    Transform2D arg_shape_xform = qjs_ctx->js_to_variant(argv[4]);
+    double tmp_x_shape_motion, tmp_y_shape_motion;
+    JSValue jx_shape_motion = JS_GetPropertyStr(ctx, argv[5], "x");
+    JSValue jy_shape_motion = JS_GetPropertyStr(ctx, argv[5], "y");
+    JS_ToFloat64(ctx, &tmp_x_shape_motion, jx_shape_motion);
+    JS_ToFloat64(ctx, &tmp_y_shape_motion, jy_shape_motion);
+    JS_FreeValue(ctx, jx_shape_motion);
+    JS_FreeValue(ctx, jy_shape_motion);
+    Vector2 arg_shape_motion(tmp_x_shape_motion, tmp_y_shape_motion);
+
+    PackedVector2Array result = typed_obj->collide_with_motion_and_get_contacts(arg_local_xform, arg_local_motion, arg_with_shape, arg_shape_xform, arg_shape_motion);
+    JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < result.size(); i++) {
+        JSValue vec = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, vec, "x", JS_NewFloat64(ctx, result[i].x));
+        JS_SetPropertyStr(ctx, vec, "y", JS_NewFloat64(ctx, result[i].y));
+        JS_SetPropertyUint32(ctx, arr, i, vec);
+    }
+    return arr;
+}
+
 // Method: Shape2D::get_rect
 static JSValue js_Shape2D_get_rect(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -269,6 +409,10 @@ void register_Shape2D_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_NewCFunction(ctx, js_Shape2D_collide, "collide", 4));
     JS_SetPropertyStr(ctx, methods, "collide_with_motion",
         JS_NewCFunction(ctx, js_Shape2D_collide_with_motion, "collide_with_motion", 6));
+    JS_SetPropertyStr(ctx, methods, "collide_and_get_contacts",
+        JS_NewCFunction(ctx, js_Shape2D_collide_and_get_contacts, "collide_and_get_contacts", 4));
+    JS_SetPropertyStr(ctx, methods, "collide_with_motion_and_get_contacts",
+        JS_NewCFunction(ctx, js_Shape2D_collide_with_motion_and_get_contacts, "collide_with_motion_and_get_contacts", 6));
     JS_SetPropertyStr(ctx, methods, "get_rect",
         JS_NewCFunction(ctx, js_Shape2D_get_rect, "get_rect", 1));
 

@@ -303,6 +303,43 @@ static JSValue js_NavigationAgent2D_get_current_navigation_result(JSContext* ctx
     return ret_obj;
 }
 
+// Method: NavigationAgent2D::get_current_navigation_path
+static JSValue js_NavigationAgent2D_get_current_navigation_path(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent2D.get_current_navigation_path: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent2D.get_current_navigation_path: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent2D.get_current_navigation_path: invalid or freed object");
+    }
+
+    NavigationAgent2D* typed_obj = Object::cast_to<NavigationAgent2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationAgent2D.get_current_navigation_path: object is not a NavigationAgent2D");
+    }
+
+    PackedVector2Array result = typed_obj->get_current_navigation_path();
+    JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < result.size(); i++) {
+        JSValue vec = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, vec, "x", JS_NewFloat64(ctx, result[i].x));
+        JS_SetPropertyStr(ctx, vec, "y", JS_NewFloat64(ctx, result[i].y));
+        JS_SetPropertyUint32(ctx, arr, i, vec);
+    }
+    return arr;
+}
+
 // Method: NavigationAgent2D::get_current_navigation_path_index
 static JSValue js_NavigationAgent2D_get_current_navigation_path_index(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2437,6 +2474,8 @@ void register_NavigationAgent2D_bindings(JSContext* ctx, JSValue global, JSValue
         JS_NewCFunction(ctx, js_NavigationAgent2D_distance_to_target, "distance_to_target", 1));
     JS_SetPropertyStr(ctx, methods, "get_current_navigation_result",
         JS_NewCFunction(ctx, js_NavigationAgent2D_get_current_navigation_result, "get_current_navigation_result", 1));
+    JS_SetPropertyStr(ctx, methods, "get_current_navigation_path",
+        JS_NewCFunction(ctx, js_NavigationAgent2D_get_current_navigation_path, "get_current_navigation_path", 1));
     JS_SetPropertyStr(ctx, methods, "get_current_navigation_path_index",
         JS_NewCFunction(ctx, js_NavigationAgent2D_get_current_navigation_path_index, "get_current_navigation_path_index", 1));
     JS_SetPropertyStr(ctx, methods, "is_target_reached",

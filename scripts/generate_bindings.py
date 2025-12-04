@@ -557,6 +557,25 @@ class BindingGenerator:
         JS_FreeValue(ctx, jh_{arg_name});
     }}"""
 
+        # PackedVector2Array - convert from JS array of Vector2 objects
+        if cpp_type == "PackedVector2Array":
+            return f"""PackedVector2Array arg_{arg_name};
+    if (JS_IsArray(argv[{arg_index}])) {{
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[{arg_index}], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_{arg_name}.resize(len);
+        for (int64_t i = 0; i < len; i++) {{
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[{arg_index}], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_{arg_name}.set(i, Vector2(x, y));
+        }}
+    }}"""
+
         # PackedVector3Array - convert from JS array of Vector3 objects
         if cpp_type == "PackedVector3Array":
             return f"""PackedVector3Array arg_{arg_name};
@@ -716,6 +735,17 @@ class BindingGenerator:
         if cpp_type == "void":
             return "return JS_UNDEFINED;"
 
+        # PackedVector2Array - return as JS array of Vector2 objects
+        if cpp_type == "PackedVector2Array":
+            return f"""JSValue arr = JS_NewArray(ctx);
+    for (int i = 0; i < {var_name}.size(); i++) {{
+        JSValue vec = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, vec, "x", JS_NewFloat64(ctx, {var_name}[i].x));
+        JS_SetPropertyStr(ctx, vec, "y", JS_NewFloat64(ctx, {var_name}[i].y));
+        JS_SetPropertyUint32(ctx, arr, i, vec);
+    }}
+    return arr;"""
+
         # PackedVector3Array - return as JS array of Vector3 objects
         if cpp_type == "PackedVector3Array":
             return f"""JSValue arr = JS_NewArray(ctx);
@@ -849,7 +879,7 @@ class BindingGenerator:
                         "Variant", "NodePath", "Rect2", "Rect2i",
                         "Transform2D", "Transform3D", "Basis", "Quaternion",
                         "AABB", "Plane", "Array", "Dictionary",
-                        "PackedVector3Array", "PackedColorArray", "PackedFloat32Array"}
+                        "PackedVector2Array", "PackedVector3Array", "PackedColorArray", "PackedFloat32Array"}
         if godot_type in simple_types:
             return True
 
@@ -925,7 +955,7 @@ class BindingGenerator:
                         "Variant", "NodePath", "Rect2", "Rect2i",
                         "Transform2D", "Transform3D", "Basis", "Quaternion",
                         "AABB", "Plane", "Array", "Dictionary",
-                        "PackedVector3Array", "PackedColorArray", "PackedFloat32Array"}
+                        "PackedVector2Array", "PackedVector3Array", "PackedColorArray", "PackedFloat32Array"}
         if godot_type in simple_types:
             return True
 
