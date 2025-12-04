@@ -8,9 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/multiplayer_api.hpp>
 #include <godot_cpp/classes/scene_tree_timer.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/tween.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -891,7 +891,7 @@ static JSValue js_SceneTree_set_multiplayer(JSContext* ctx, JSValueConst this_va
     if (argc > 2) {
         // Override default with provided value
         // Complex type - use full conversion
-        NodePath arg_root_path = qjs_ctx->js_to_variant(argv[2]);
+        const char* cstr_root_path = JS_ToCString(ctx, argv[2]); NodePath arg_root_path = cstr_root_path ? NodePath(cstr_root_path) : NodePath(); JS_FreeCString(ctx, cstr_root_path);
     }
 
     typed_obj->set_multiplayer(arg_multiplayer, arg_root_path);
@@ -935,7 +935,7 @@ static JSValue js_SceneTree_get_multiplayer(JSContext* ctx, JSValueConst this_va
     if (argc > 1) {
         // Override default with provided value
         // Complex type - use full conversion
-        NodePath arg_for_path = qjs_ctx->js_to_variant(argv[1]);
+        const char* cstr_for_path = JS_ToCString(ctx, argv[1]); NodePath arg_for_path = cstr_for_path ? NodePath(cstr_for_path) : NodePath(); JS_FreeCString(ctx, cstr_for_path);
     }
 
     Ref<MultiplayerAPI> result = typed_obj->get_multiplayer(arg_for_path);

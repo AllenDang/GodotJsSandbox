@@ -22,6 +22,10 @@ func get_tests() -> Array[String]:
 		# Tween chaining
 		"test_tween_parallel",
 		"test_tween_chain",
+		# tween_property()
+		"test_tween_property_returns_tweener",
+		"test_tween_property_position",
+		"test_tween_property_chaining",
 		# Math type constructors
 		"test_quaternion_constructor",
 		"test_basis_constructor",
@@ -191,6 +195,57 @@ func run_test(test_name: String) -> Dictionary:
 			""")
 
 			return assert_eq(result, true, "chain() should return valid chainable tween")
+
+		"test_tween_property_returns_tweener":
+			# Test tween_property() returns a PropertyTweener
+			var node = Node3D.new()
+			node.name = "TweenPropertyNode"
+			test_root.add_child(node)
+
+			sandbox.set_global("test_node", node)
+			var result = sandbox.eval("""
+				var node = test_node;
+				var tween = node.create_tween();
+				var tweener = tween.tween_property(node, "position:x", 10.0, 1.0);
+				tweener !== null && typeof tweener === 'object'
+			""")
+
+			return assert_eq(result, true, "tween_property should return PropertyTweener object")
+
+		"test_tween_property_position":
+			# Test tween_property() with Vector3 position
+			var node = Node3D.new()
+			node.name = "TweenPropertyPosNode"
+			node.position = Vector3.ZERO
+			test_root.add_child(node)
+
+			sandbox.set_global("test_node", node)
+			var result = sandbox.eval("""
+				var node = test_node;
+				var tween = node.create_tween();
+				var target = new Vector3(5, 10, 15);
+				var tweener = tween.tween_property(node, "position", target, 0.5);
+				tweener !== null
+			""")
+
+			return assert_eq(result, true, "tween_property should accept Vector3 as final value")
+
+		"test_tween_property_chaining":
+			# Test tween_property() chaining with multiple properties
+			var node = Node3D.new()
+			node.name = "TweenPropertyChainNode"
+			test_root.add_child(node)
+
+			sandbox.set_global("test_node", node)
+			var result = sandbox.eval("""
+				var node = test_node;
+				var tween = node.create_tween();
+				tween.tween_property(node, "position:x", 10.0, 1.0);
+				tween.parallel().tween_property(node, "position:y", 5.0, 1.0);
+				tween.is_valid()
+			""")
+
+			return assert_eq(result, true, "Multiple tween_property calls should work with parallel")
 
 		"test_quaternion_constructor":
 			# Test Quaternion constructor

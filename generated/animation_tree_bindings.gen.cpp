@@ -127,7 +127,7 @@ static JSValue js_AnimationTree_get_advance_expression_base_node(JSContext* ctx,
     }
 
     NodePath value = typed_obj->get_advance_expression_base_node();
-    return qjs_ctx->variant_to_js(Variant(value));
+    return JS_NewString(ctx, String(value).utf8().get_data());
 }
 
 // Property setter: AnimationTree::advance_expression_base_node
@@ -156,7 +156,7 @@ static JSValue js_AnimationTree_set_advance_expression_base_node(JSContext* ctx,
         return JS_ThrowTypeError(ctx, "AnimationTree.advance_expression_base_node setter: wrong type");
     }
 
-    NodePath value = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_advance_expression_base_node(value);
     return JS_UNDEFINED;
 }
@@ -188,7 +188,7 @@ static JSValue js_AnimationTree_get_anim_player(JSContext* ctx, JSValueConst thi
     }
 
     NodePath value = typed_obj->get_animation_player();
-    return qjs_ctx->variant_to_js(Variant(value));
+    return JS_NewString(ctx, String(value).utf8().get_data());
 }
 
 // Property setter: AnimationTree::anim_player
@@ -217,7 +217,7 @@ static JSValue js_AnimationTree_set_anim_player(JSContext* ctx, JSValueConst thi
         return JS_ThrowTypeError(ctx, "AnimationTree.anim_player setter: wrong type");
     }
 
-    NodePath value = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_animation_player(value);
     return JS_UNDEFINED;
 }

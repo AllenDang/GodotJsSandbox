@@ -1168,7 +1168,7 @@ static JSValue js_Area3D_get_wind_source_path(JSContext* ctx, JSValueConst this_
     }
 
     NodePath value = typed_obj->get_wind_source_path();
-    return qjs_ctx->variant_to_js(Variant(value));
+    return JS_NewString(ctx, String(value).utf8().get_data());
 }
 
 // Property setter: Area3D::wind_source_path
@@ -1197,7 +1197,7 @@ static JSValue js_Area3D_set_wind_source_path(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "Area3D.wind_source_path setter: wrong type");
     }
 
-    NodePath value = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_wind_source_path(value);
     return JS_UNDEFINED;
 }

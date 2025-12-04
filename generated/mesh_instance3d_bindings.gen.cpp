@@ -8,10 +8,10 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/mesh_instance3d.hpp>
-#include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/skin_reference.hpp>
 #include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/classes/mesh_convex_decomposition_settings.hpp>
+#include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -809,7 +809,7 @@ static JSValue js_MeshInstance3D_get_skeleton(JSContext* ctx, JSValueConst this_
     }
 
     NodePath value = typed_obj->get_skeleton_path();
-    return qjs_ctx->variant_to_js(Variant(value));
+    return JS_NewString(ctx, String(value).utf8().get_data());
 }
 
 // Property setter: MeshInstance3D::skeleton
@@ -838,7 +838,7 @@ static JSValue js_MeshInstance3D_set_skeleton(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "MeshInstance3D.skeleton setter: wrong type");
     }
 
-    NodePath value = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_skeleton_path(value);
     return JS_UNDEFINED;
 }

@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/animation_mixer.hpp>
-#include <godot_cpp/classes/animation_library.hpp>
 #include <godot_cpp/classes/animation.hpp>
+#include <godot_cpp/classes/animation_library.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -1008,7 +1008,7 @@ static JSValue js_AnimationMixer_get_root_node(JSContext* ctx, JSValueConst this
     }
 
     NodePath value = typed_obj->get_root_node();
-    return qjs_ctx->variant_to_js(Variant(value));
+    return JS_NewString(ctx, String(value).utf8().get_data());
 }
 
 // Property setter: AnimationMixer::root_node
@@ -1037,7 +1037,7 @@ static JSValue js_AnimationMixer_set_root_node(JSContext* ctx, JSValueConst this
         return JS_ThrowTypeError(ctx, "AnimationMixer.root_node setter: wrong type");
     }
 
-    NodePath value = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_root_node(value);
     return JS_UNDEFINED;
 }
@@ -1069,7 +1069,7 @@ static JSValue js_AnimationMixer_get_root_motion_track(JSContext* ctx, JSValueCo
     }
 
     NodePath value = typed_obj->get_root_motion_track();
-    return qjs_ctx->variant_to_js(Variant(value));
+    return JS_NewString(ctx, String(value).utf8().get_data());
 }
 
 // Property setter: AnimationMixer::root_motion_track
@@ -1098,7 +1098,7 @@ static JSValue js_AnimationMixer_set_root_motion_track(JSContext* ctx, JSValueCo
         return JS_ThrowTypeError(ctx, "AnimationMixer.root_motion_track setter: wrong type");
     }
 
-    NodePath value = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_root_motion_track(value);
     return JS_UNDEFINED;
 }

@@ -1282,7 +1282,7 @@ static JSValue js_AnimationPlayer_set_root(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    NodePath arg_path = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     typed_obj->set_root(arg_path);
     return JS_UNDEFINED;
@@ -1315,7 +1315,7 @@ static JSValue js_AnimationPlayer_get_root(JSContext* ctx, JSValueConst this_val
     }
 
     NodePath result = typed_obj->get_root();
-    return qjs_ctx->variant_to_js(Variant(result));
+    return JS_NewString(ctx, String(result).utf8().get_data());
 }
 
 // Property getter: AnimationPlayer::current_animation_length

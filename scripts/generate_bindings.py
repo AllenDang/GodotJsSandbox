@@ -378,6 +378,8 @@ class BindingGenerator:
             return f'const char* cstr_{arg_name} = JS_ToCString(ctx, argv[{arg_index}]); String arg_{arg_name} = cstr_{arg_name} ? cstr_{arg_name} : ""; JS_FreeCString(ctx, cstr_{arg_name});'
         if cpp_type == "StringName":
             return f'const char* cstr_{arg_name} = JS_ToCString(ctx, argv[{arg_index}]); StringName arg_{arg_name} = cstr_{arg_name} ? cstr_{arg_name} : ""; JS_FreeCString(ctx, cstr_{arg_name});'
+        if cpp_type == "NodePath":
+            return f'const char* cstr_{arg_name} = JS_ToCString(ctx, argv[{arg_index}]); NodePath arg_{arg_name} = cstr_{arg_name} ? NodePath(cstr_{arg_name}) : NodePath(); JS_FreeCString(ctx, cstr_{arg_name});'
         if cpp_type == "Vector2":
             return f"""double tmp_x_{arg_name}, tmp_y_{arg_name};
     JSValue jx_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "x");
@@ -569,6 +571,8 @@ class BindingGenerator:
         if cpp_type == "String":
             return f"return JS_NewString(ctx, {var_name}.utf8().get_data());"
         if cpp_type == "StringName":
+            return f"return JS_NewString(ctx, String({var_name}).utf8().get_data());"
+        if cpp_type == "NodePath":
             return f"return JS_NewString(ctx, String({var_name}).utf8().get_data());"
         if cpp_type == "Vector2":
             return f"""JSValue ret_obj = JS_NewObject(ctx);

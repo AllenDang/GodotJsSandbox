@@ -8,9 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/control.hpp>
-#include <godot_cpp/classes/font.hpp>
-#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/style_box.hpp>
+#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -3912,7 +3912,7 @@ static JSValue js_Control_get_focus_next(JSContext* ctx, JSValueConst this_val, 
     }
 
     NodePath value = typed_obj->get_focus_next();
-    return qjs_ctx->variant_to_js(Variant(value));
+    return JS_NewString(ctx, String(value).utf8().get_data());
 }
 
 // Property setter: Control::focus_next
@@ -3941,7 +3941,7 @@ static JSValue js_Control_set_focus_next(JSContext* ctx, JSValueConst this_val, 
         return JS_ThrowTypeError(ctx, "Control.focus_next setter: wrong type");
     }
 
-    NodePath value = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_focus_next(value);
     return JS_UNDEFINED;
 }
@@ -3973,7 +3973,7 @@ static JSValue js_Control_get_focus_previous(JSContext* ctx, JSValueConst this_v
     }
 
     NodePath value = typed_obj->get_focus_previous();
-    return qjs_ctx->variant_to_js(Variant(value));
+    return JS_NewString(ctx, String(value).utf8().get_data());
 }
 
 // Property setter: Control::focus_previous
@@ -4002,7 +4002,7 @@ static JSValue js_Control_set_focus_previous(JSContext* ctx, JSValueConst this_v
         return JS_ThrowTypeError(ctx, "Control.focus_previous setter: wrong type");
     }
 
-    NodePath value = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_focus_previous(value);
     return JS_UNDEFINED;
 }

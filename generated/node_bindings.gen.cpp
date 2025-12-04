@@ -443,7 +443,7 @@ static JSValue js_Node_has_node(JSContext* ctx, JSValueConst this_val, int argc,
     }
 
     // Convert arguments
-    NodePath arg_path = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     bool result = typed_obj->has_node(arg_path);
     return JS_NewBool(ctx, result);
@@ -481,7 +481,7 @@ static JSValue js_Node_get_node(JSContext* ctx, JSValueConst this_val, int argc,
     }
 
     // Convert arguments
-    NodePath arg_path = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     Node* result = typed_obj->get_node_internal(arg_path);
     if (!result) return JS_NULL;
@@ -544,7 +544,7 @@ static JSValue js_Node_get_node_or_null(JSContext* ctx, JSValueConst this_val, i
     }
 
     // Convert arguments
-    NodePath arg_path = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     Node* result = typed_obj->get_node_or_null(arg_path);
     if (!result) return JS_NULL;
@@ -800,7 +800,7 @@ static JSValue js_Node_has_node_and_resource(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    NodePath arg_path = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     bool result = typed_obj->has_node_and_resource(arg_path);
     return JS_NewBool(ctx, result);
@@ -838,7 +838,7 @@ static JSValue js_Node_get_node_and_resource(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    NodePath arg_path = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     Array result = typed_obj->get_node_and_resource(arg_path);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -1037,7 +1037,7 @@ static JSValue js_Node_get_path(JSContext* ctx, JSValueConst this_val, int argc,
     }
 
     NodePath result = typed_obj->get_path();
-    return qjs_ctx->variant_to_js(Variant(result));
+    return JS_NewString(ctx, String(result).utf8().get_data());
 }
 
 // Method: Node::get_path_to
@@ -1096,7 +1096,7 @@ static JSValue js_Node_get_path_to(JSContext* ctx, JSValueConst this_val, int ar
     }
 
     NodePath result = typed_obj->get_path_to(arg_node, arg_use_unique_path);
-    return qjs_ctx->variant_to_js(Variant(result));
+    return JS_NewString(ctx, String(result).utf8().get_data());
 }
 
 // Method: Node::add_to_group

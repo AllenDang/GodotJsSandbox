@@ -490,7 +490,7 @@ static JSValue js_GPUParticles2D_get_sub_emitter(JSContext* ctx, JSValueConst th
     }
 
     NodePath value = typed_obj->get_sub_emitter();
-    return qjs_ctx->variant_to_js(Variant(value));
+    return JS_NewString(ctx, String(value).utf8().get_data());
 }
 
 // Property setter: GPUParticles2D::sub_emitter
@@ -519,7 +519,7 @@ static JSValue js_GPUParticles2D_set_sub_emitter(JSContext* ctx, JSValueConst th
         return JS_ThrowTypeError(ctx, "GPUParticles2D.sub_emitter setter: wrong type");
     }
 
-    NodePath value = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_sub_emitter(value);
     return JS_UNDEFINED;
 }
