@@ -13,6 +13,9 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     // Note: global now owns a reference to classes
     // We keep our reference to pass to registration functions
 
+    register_AStar2D_bindings(ctx, global, classes);
+    register_AStar3D_bindings(ctx, global, classes);
+    register_AStarGrid2D_bindings(ctx, global, classes);
     register_AcceptDialog_bindings(ctx, global, classes);
     register_AnimatedSprite2D_bindings(ctx, global, classes);
     register_AnimatedSprite3D_bindings(ctx, global, classes);
@@ -24,6 +27,8 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_Area3D_bindings(ctx, global, classes);
     register_ArrayMesh_bindings(ctx, global, classes);
     register_AtlasTexture_bindings(ctx, global, classes);
+    register_AudioListener2D_bindings(ctx, global, classes);
+    register_AudioListener3D_bindings(ctx, global, classes);
     register_AudioStream_bindings(ctx, global, classes);
     register_AudioStreamMP3_bindings(ctx, global, classes);
     register_AudioStreamOggVorbis_bindings(ctx, global, classes);
@@ -99,6 +104,8 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_Generic6DOFJoint3D_bindings(ctx, global, classes);
     register_Gradient_bindings(ctx, global, classes);
     register_GradientTexture2D_bindings(ctx, global, classes);
+    register_GraphEdit_bindings(ctx, global, classes);
+    register_GraphNode_bindings(ctx, global, classes);
     register_GridContainer_bindings(ctx, global, classes);
     register_GridMap_bindings(ctx, global, classes);
     register_GrooveJoint2D_bindings(ctx, global, classes);
@@ -108,6 +115,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_HingeJoint3D_bindings(ctx, global, classes);
     register_Image_bindings(ctx, global, classes);
     register_ImageTexture_bindings(ctx, global, classes);
+    register_ImmediateMesh_bindings(ctx, global, classes);
     register_InputEvent_bindings(ctx, global, classes);
     register_InputEventAction_bindings(ctx, global, classes);
     register_InputEventFromWindow_bindings(ctx, global, classes);
@@ -122,9 +130,11 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_InputEventScreenTouch_bindings(ctx, global, classes);
     register_InputEventWithModifiers_bindings(ctx, global, classes);
     register_IntervalTweener_bindings(ctx, global, classes);
+    register_ItemList_bindings(ctx, global, classes);
     register_Joint2D_bindings(ctx, global, classes);
     register_Joint3D_bindings(ctx, global, classes);
     register_Label_bindings(ctx, global, classes);
+    register_LabelSettings_bindings(ctx, global, classes);
     register_Light2D_bindings(ctx, global, classes);
     register_Light3D_bindings(ctx, global, classes);
     register_Line2D_bindings(ctx, global, classes);
@@ -135,6 +145,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_Material_bindings(ctx, global, classes);
     register_MenuButton_bindings(ctx, global, classes);
     register_Mesh_bindings(ctx, global, classes);
+    register_MeshDataTool_bindings(ctx, global, classes);
     register_MeshInstance2D_bindings(ctx, global, classes);
     register_MeshInstance3D_bindings(ctx, global, classes);
     register_MethodTweener_bindings(ctx, global, classes);
@@ -143,6 +154,8 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_MultiMeshInstance3D_bindings(ctx, global, classes);
     register_NavigationAgent2D_bindings(ctx, global, classes);
     register_NavigationAgent3D_bindings(ctx, global, classes);
+    register_NavigationMesh_bindings(ctx, global, classes);
+    register_NavigationPolygon_bindings(ctx, global, classes);
     register_NavigationRegion2D_bindings(ctx, global, classes);
     register_NavigationRegion3D_bindings(ctx, global, classes);
     register_Node_bindings(ctx, global, classes);
@@ -156,12 +169,14 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_OptionButton_bindings(ctx, global, classes);
     register_PackedScene_bindings(ctx, global, classes);
     register_Panel_bindings(ctx, global, classes);
+    register_PanoramaSkyMaterial_bindings(ctx, global, classes);
     register_ParallaxBackground_bindings(ctx, global, classes);
     register_ParallaxLayer_bindings(ctx, global, classes);
     register_Path2D_bindings(ctx, global, classes);
     register_Path3D_bindings(ctx, global, classes);
     register_PathFollow2D_bindings(ctx, global, classes);
     register_PathFollow3D_bindings(ctx, global, classes);
+    register_PhysicalSkyMaterial_bindings(ctx, global, classes);
     register_PhysicsBody2D_bindings(ctx, global, classes);
     register_PhysicsBody3D_bindings(ctx, global, classes);
     register_PhysicsDirectSpaceState2D_bindings(ctx, global, classes);
@@ -181,6 +196,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_PopupMenu_bindings(ctx, global, classes);
     register_PopupPanel_bindings(ctx, global, classes);
     register_PrimitiveMesh_bindings(ctx, global, classes);
+    register_ProceduralSkyMaterial_bindings(ctx, global, classes);
     register_ProgressBar_bindings(ctx, global, classes);
     register_PropertyTweener_bindings(ctx, global, classes);
     register_RandomNumberGenerator_bindings(ctx, global, classes);
@@ -208,6 +224,7 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_ShapeCast3D_bindings(ctx, global, classes);
     register_Skeleton2D_bindings(ctx, global, classes);
     register_Skeleton3D_bindings(ctx, global, classes);
+    register_Sky_bindings(ctx, global, classes);
     register_Slider_bindings(ctx, global, classes);
     register_SliderJoint3D_bindings(ctx, global, classes);
     register_SoftBody3D_bindings(ctx, global, classes);
@@ -228,21 +245,31 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_StyleBoxTexture_bindings(ctx, global, classes);
     register_SubViewport_bindings(ctx, global, classes);
     register_SubViewportContainer_bindings(ctx, global, classes);
+    register_SurfaceTool_bindings(ctx, global, classes);
     register_TabBar_bindings(ctx, global, classes);
     register_TabContainer_bindings(ctx, global, classes);
     register_TextEdit_bindings(ctx, global, classes);
+    register_TextLine_bindings(ctx, global, classes);
+    register_TextParagraph_bindings(ctx, global, classes);
     register_Texture_bindings(ctx, global, classes);
     register_Texture2D_bindings(ctx, global, classes);
     register_TextureRect_bindings(ctx, global, classes);
     register_Theme_bindings(ctx, global, classes);
     register_TileMap_bindings(ctx, global, classes);
     register_TileMapLayer_bindings(ctx, global, classes);
+    register_TileSet_bindings(ctx, global, classes);
+    register_TileSetAtlasSource_bindings(ctx, global, classes);
+    register_TileSetSource_bindings(ctx, global, classes);
     register_Timer_bindings(ctx, global, classes);
+    register_Tree_bindings(ctx, global, classes);
+    register_TreeItem_bindings(ctx, global, classes);
     register_Tween_bindings(ctx, global, classes);
     register_VBoxContainer_bindings(ctx, global, classes);
     register_VSlider_bindings(ctx, global, classes);
     register_VehicleBody3D_bindings(ctx, global, classes);
     register_VehicleWheel3D_bindings(ctx, global, classes);
+    register_VideoStream_bindings(ctx, global, classes);
+    register_VideoStreamPlayer_bindings(ctx, global, classes);
     register_Viewport_bindings(ctx, global, classes);
     register_ViewportTexture_bindings(ctx, global, classes);
     register_VisibleOnScreenEnabler2D_bindings(ctx, global, classes);
