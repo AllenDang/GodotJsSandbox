@@ -8,6 +8,7 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/foldable_container.hpp>
+#include <godot_cpp/classes/foldable_group.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -503,6 +504,107 @@ static JSValue js_FoldableContainer_set_title_text_overrun_behavior(JSContext* c
     return JS_UNDEFINED;
 }
 
+// Property getter: FoldableContainer::foldable_group
+static JSValue js_FoldableContainer_get_foldable_group(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FoldableContainer.foldable_group getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FoldableContainer.foldable_group getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FoldableContainer.foldable_group getter: invalid object");
+    }
+
+    FoldableContainer* typed_obj = Object::cast_to<FoldableContainer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FoldableContainer.foldable_group getter: wrong type");
+    }
+
+    Ref<FoldableGroup> value = typed_obj->get_foldable_group();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: FoldableContainer::foldable_group
+static JSValue js_FoldableContainer_set_foldable_group(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "FoldableContainer.foldable_group setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FoldableContainer.foldable_group setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FoldableContainer.foldable_group setter: invalid object");
+    }
+
+    FoldableContainer* typed_obj = Object::cast_to<FoldableContainer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FoldableContainer.foldable_group setter: wrong type");
+    }
+
+    Ref<FoldableGroup> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<FoldableGroup>(Object::cast_to<FoldableGroup>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<FoldableGroup>(Object::cast_to<FoldableGroup>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_foldable_group(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: FoldableContainer::title_text_direction
 static JSValue js_FoldableContainer_get_title_text_direction(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -682,6 +784,14 @@ void register_FoldableContainer_bindings(JSContext* ctx, JSValue global, JSValue
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_FoldableContainer_set_title_text_overrun_behavior, "set_title_text_overrun_behavior", 2));
         JS_SetPropertyStr(ctx, props, "title_text_overrun_behavior", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_FoldableContainer_get_foldable_group, "get_foldable_group", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_FoldableContainer_set_foldable_group, "set_foldable_group", 2));
+        JS_SetPropertyStr(ctx, props, "foldable_group", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

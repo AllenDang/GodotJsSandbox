@@ -9,8 +9,8 @@
 
 #include <godot_cpp/classes/mesh_library.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
-#include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/navigation_mesh.hpp>
+#include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

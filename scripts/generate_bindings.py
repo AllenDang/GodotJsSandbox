@@ -1220,15 +1220,10 @@ class BindingGenerator:
 
         prop_type = prop_data.get("type", "Variant")
 
-        # Skip complex types that we don't support
-        # Only allow simple types - explicitly exclude RefCounted types for properties
-        # because getters return Ref<T> which requires different handling
+        # Check if type is supported (simple types OR RefCounted types)
         is_simple = self.is_simple_type(prop_type)
-        if not is_simple:
-            return None
-
-        # Properties with RefCounted types return Ref<T>, not T*, so skip them
-        if self.is_refcounted_type(prop_type):
+        is_refcounted = self.is_refcounted_type(prop_type)
+        if not is_simple and not is_refcounted:
             return None
 
         getter = prop_data.get("getter", "")
@@ -1257,7 +1252,7 @@ class BindingGenerator:
             if not (getter_return_type == "int" or prop_type == "int"):
                 return None
 
-        # Check if setter has non-simple parameter types or multiple parameters (indexed properties)
+        # Check if setter has unsupported parameter types or multiple parameters (indexed properties)
         if setter:
             for method in class_methods:
                 if method.get("name") == setter:
@@ -1267,8 +1262,9 @@ class BindingGenerator:
                         return None
                     for arg in args:
                         arg_type = arg.get("type", "")
-                        if not self.is_simple_type(arg_type):
-                            return None  # Setter uses non-simple type
+                        # Allow simple types and RefCounted types
+                        if not self.is_simple_type(arg_type) and not self.is_refcounted_type(arg_type):
+                            return None  # Setter uses unsupported type
                     break
 
         cpp_type = self.get_cpp_type(prop_type)
@@ -1390,9 +1386,6 @@ class BindingGenerator:
                     if self.is_refcounted_type(arg_type):
                         refcounted_includes.add(self.class_name_to_header(arg_type))
 
-        # Add extra includes for RefCounted types
-        class_info.extra_includes = list(refcounted_includes)
-
         # Get all methods including from parent classes for property getter/setter lookup
         all_methods = self.get_all_methods_for_class(class_name)
 
@@ -1401,6 +1394,13 @@ class BindingGenerator:
             prop = self.process_property(class_name, prop_data, all_methods)
             if prop:
                 class_info.properties.append(prop)
+                # Collect RefCounted types used in properties
+                prop_type = prop_data.get("type", "Variant")
+                if self.is_refcounted_type(prop_type):
+                    refcounted_includes.add(self.class_name_to_header(prop_type))
+
+        # Add extra includes for RefCounted types (from methods and properties)
+        class_info.extra_includes = list(refcounted_includes)
 
         # Extract signal names for GDScript 4.x syntax support
         for signal_data in class_data.get("signals", []):

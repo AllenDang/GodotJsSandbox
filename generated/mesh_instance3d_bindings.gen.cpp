@@ -8,10 +8,12 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/mesh_instance3d.hpp>
-#include <godot_cpp/classes/material.hpp>
-#include <godot_cpp/classes/mesh_convex_decomposition_settings.hpp>
 #include <godot_cpp/classes/skin_reference.hpp>
+#include <godot_cpp/classes/material.hpp>
+#include <godot_cpp/classes/skin.hpp>
+#include <godot_cpp/classes/mesh_convex_decomposition_settings.hpp>
 #include <godot_cpp/classes/array_mesh.hpp>
+#include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -782,6 +784,208 @@ static JSValue js_MeshInstance3D_bake_mesh_from_current_skeleton_pose(JSContext*
     return ret_obj;
 }
 
+// Property getter: MeshInstance3D::mesh
+static JSValue js_MeshInstance3D_get_mesh(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.mesh getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.mesh getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.mesh getter: invalid object");
+    }
+
+    MeshInstance3D* typed_obj = Object::cast_to<MeshInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.mesh getter: wrong type");
+    }
+
+    Ref<Mesh> value = typed_obj->get_mesh();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: MeshInstance3D::mesh
+static JSValue js_MeshInstance3D_set_mesh(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.mesh setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.mesh setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.mesh setter: invalid object");
+    }
+
+    MeshInstance3D* typed_obj = Object::cast_to<MeshInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.mesh setter: wrong type");
+    }
+
+    Ref<Mesh> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<Mesh>(Object::cast_to<Mesh>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<Mesh>(Object::cast_to<Mesh>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_mesh(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: MeshInstance3D::skin
+static JSValue js_MeshInstance3D_get_skin(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.skin getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.skin getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.skin getter: invalid object");
+    }
+
+    MeshInstance3D* typed_obj = Object::cast_to<MeshInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.skin getter: wrong type");
+    }
+
+    Ref<Skin> value = typed_obj->get_skin();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: MeshInstance3D::skin
+static JSValue js_MeshInstance3D_set_skin(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.skin setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.skin setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.skin setter: invalid object");
+    }
+
+    MeshInstance3D* typed_obj = Object::cast_to<MeshInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshInstance3D.skin setter: wrong type");
+    }
+
+    Ref<Skin> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<Skin>(Object::cast_to<Skin>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<Skin>(Object::cast_to<Skin>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_skin(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: MeshInstance3D::skeleton
 static JSValue js_MeshInstance3D_get_skeleton(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -883,6 +1087,22 @@ void register_MeshInstance3D_bindings(JSContext* ctx, JSValue global, JSValue cl
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
 
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_MeshInstance3D_get_mesh, "get_mesh", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_MeshInstance3D_set_mesh, "set_mesh", 2));
+        JS_SetPropertyStr(ctx, props, "mesh", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_MeshInstance3D_get_skin, "get_skin", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_MeshInstance3D_set_skin, "set_skin", 2));
+        JS_SetPropertyStr(ctx, props, "skin", prop_obj);
+    }
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",

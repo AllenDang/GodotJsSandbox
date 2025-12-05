@@ -8,6 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/texture_button.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/bit_map.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -31,6 +33,612 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
     } catch (...) { \
         return JS_ThrowInternalError(ctx, "TextureButton: unknown error"); \
     }
+
+// Property getter: TextureButton::texture_normal
+static JSValue js_TextureButton_get_texture_normal(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_normal getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_normal getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_normal getter: invalid object");
+    }
+
+    TextureButton* typed_obj = Object::cast_to<TextureButton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_normal getter: wrong type");
+    }
+
+    Ref<Texture2D> value = typed_obj->get_texture_normal();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: TextureButton::texture_normal
+static JSValue js_TextureButton_set_texture_normal(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_normal setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_normal setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_normal setter: invalid object");
+    }
+
+    TextureButton* typed_obj = Object::cast_to<TextureButton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_normal setter: wrong type");
+    }
+
+    Ref<Texture2D> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_texture_normal(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: TextureButton::texture_pressed
+static JSValue js_TextureButton_get_texture_pressed(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_pressed getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_pressed getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_pressed getter: invalid object");
+    }
+
+    TextureButton* typed_obj = Object::cast_to<TextureButton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_pressed getter: wrong type");
+    }
+
+    Ref<Texture2D> value = typed_obj->get_texture_pressed();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: TextureButton::texture_pressed
+static JSValue js_TextureButton_set_texture_pressed(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_pressed setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_pressed setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_pressed setter: invalid object");
+    }
+
+    TextureButton* typed_obj = Object::cast_to<TextureButton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_pressed setter: wrong type");
+    }
+
+    Ref<Texture2D> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_texture_pressed(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: TextureButton::texture_hover
+static JSValue js_TextureButton_get_texture_hover(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_hover getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_hover getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_hover getter: invalid object");
+    }
+
+    TextureButton* typed_obj = Object::cast_to<TextureButton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_hover getter: wrong type");
+    }
+
+    Ref<Texture2D> value = typed_obj->get_texture_hover();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: TextureButton::texture_hover
+static JSValue js_TextureButton_set_texture_hover(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_hover setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_hover setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_hover setter: invalid object");
+    }
+
+    TextureButton* typed_obj = Object::cast_to<TextureButton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_hover setter: wrong type");
+    }
+
+    Ref<Texture2D> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_texture_hover(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: TextureButton::texture_disabled
+static JSValue js_TextureButton_get_texture_disabled(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_disabled getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_disabled getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_disabled getter: invalid object");
+    }
+
+    TextureButton* typed_obj = Object::cast_to<TextureButton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_disabled getter: wrong type");
+    }
+
+    Ref<Texture2D> value = typed_obj->get_texture_disabled();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: TextureButton::texture_disabled
+static JSValue js_TextureButton_set_texture_disabled(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_disabled setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_disabled setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_disabled setter: invalid object");
+    }
+
+    TextureButton* typed_obj = Object::cast_to<TextureButton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_disabled setter: wrong type");
+    }
+
+    Ref<Texture2D> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_texture_disabled(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: TextureButton::texture_focused
+static JSValue js_TextureButton_get_texture_focused(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_focused getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_focused getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_focused getter: invalid object");
+    }
+
+    TextureButton* typed_obj = Object::cast_to<TextureButton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_focused getter: wrong type");
+    }
+
+    Ref<Texture2D> value = typed_obj->get_texture_focused();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: TextureButton::texture_focused
+static JSValue js_TextureButton_set_texture_focused(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_focused setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_focused setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_focused setter: invalid object");
+    }
+
+    TextureButton* typed_obj = Object::cast_to<TextureButton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_focused setter: wrong type");
+    }
+
+    Ref<Texture2D> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_texture_focused(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: TextureButton::texture_click_mask
+static JSValue js_TextureButton_get_texture_click_mask(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_click_mask getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_click_mask getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_click_mask getter: invalid object");
+    }
+
+    TextureButton* typed_obj = Object::cast_to<TextureButton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_click_mask getter: wrong type");
+    }
+
+    Ref<BitMap> value = typed_obj->get_click_mask();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: TextureButton::texture_click_mask
+static JSValue js_TextureButton_set_texture_click_mask(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_click_mask setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_click_mask setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_click_mask setter: invalid object");
+    }
+
+    TextureButton* typed_obj = Object::cast_to<TextureButton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureButton.texture_click_mask setter: wrong type");
+    }
+
+    Ref<BitMap> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<BitMap>(Object::cast_to<BitMap>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<BitMap>(Object::cast_to<BitMap>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_click_mask(value);
+    return JS_UNDEFINED;
+}
 
 // Property getter: TextureButton::ignore_texture_size
 static JSValue js_TextureButton_get_ignore_texture_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
@@ -286,6 +894,54 @@ void register_TextureButton_bindings(JSContext* ctx, JSValue global, JSValue cla
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
 
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_TextureButton_get_texture_normal, "get_texture_normal", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_TextureButton_set_texture_normal, "set_texture_normal", 2));
+        JS_SetPropertyStr(ctx, props, "texture_normal", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_TextureButton_get_texture_pressed, "get_texture_pressed", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_TextureButton_set_texture_pressed, "set_texture_pressed", 2));
+        JS_SetPropertyStr(ctx, props, "texture_pressed", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_TextureButton_get_texture_hover, "get_texture_hover", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_TextureButton_set_texture_hover, "set_texture_hover", 2));
+        JS_SetPropertyStr(ctx, props, "texture_hover", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_TextureButton_get_texture_disabled, "get_texture_disabled", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_TextureButton_set_texture_disabled, "set_texture_disabled", 2));
+        JS_SetPropertyStr(ctx, props, "texture_disabled", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_TextureButton_get_texture_focused, "get_texture_focused", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_TextureButton_set_texture_focused, "set_texture_focused", 2));
+        JS_SetPropertyStr(ctx, props, "texture_focused", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_TextureButton_get_texture_click_mask, "get_texture_click_mask", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_TextureButton_set_texture_click_mask, "set_texture_click_mask", 2));
+        JS_SetPropertyStr(ctx, props, "texture_click_mask", prop_obj);
+    }
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",

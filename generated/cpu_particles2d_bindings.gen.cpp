@@ -8,6 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/cpu_particles2d.hpp>
+#include <godot_cpp/classes/gradient.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/curve.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -285,6 +288,107 @@ static JSValue js_CPUParticles2D_set_amount(JSContext* ctx, JSValueConst this_va
 
     int64_t value; JS_ToInt64(ctx, &value, argv[1]);
     typed_obj->set_amount(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: CPUParticles2D::texture
+static JSValue js_CPUParticles2D_get_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.texture getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.texture getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.texture getter: invalid object");
+    }
+
+    CPUParticles2D* typed_obj = Object::cast_to<CPUParticles2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.texture getter: wrong type");
+    }
+
+    Ref<Texture2D> value = typed_obj->get_texture();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: CPUParticles2D::texture
+static JSValue js_CPUParticles2D_set_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.texture setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.texture setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.texture setter: invalid object");
+    }
+
+    CPUParticles2D* typed_obj = Object::cast_to<CPUParticles2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.texture setter: wrong type");
+    }
+
+    Ref<Texture2D> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_texture(value);
     return JS_UNDEFINED;
 }
 
@@ -1792,6 +1896,208 @@ static JSValue js_CPUParticles2D_set_split_scale(JSContext* ctx, JSValueConst th
     return JS_UNDEFINED;
 }
 
+// Property getter: CPUParticles2D::scale_curve_x
+static JSValue js_CPUParticles2D_get_scale_curve_x(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_x getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_x getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_x getter: invalid object");
+    }
+
+    CPUParticles2D* typed_obj = Object::cast_to<CPUParticles2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_x getter: wrong type");
+    }
+
+    Ref<Curve> value = typed_obj->get_scale_curve_x();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: CPUParticles2D::scale_curve_x
+static JSValue js_CPUParticles2D_set_scale_curve_x(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_x setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_x setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_x setter: invalid object");
+    }
+
+    CPUParticles2D* typed_obj = Object::cast_to<CPUParticles2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_x setter: wrong type");
+    }
+
+    Ref<Curve> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<Curve>(Object::cast_to<Curve>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<Curve>(Object::cast_to<Curve>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_scale_curve_x(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: CPUParticles2D::scale_curve_y
+static JSValue js_CPUParticles2D_get_scale_curve_y(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_y getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_y getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_y getter: invalid object");
+    }
+
+    CPUParticles2D* typed_obj = Object::cast_to<CPUParticles2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_y getter: wrong type");
+    }
+
+    Ref<Curve> value = typed_obj->get_scale_curve_y();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: CPUParticles2D::scale_curve_y
+static JSValue js_CPUParticles2D_set_scale_curve_y(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_y setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_y setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_y setter: invalid object");
+    }
+
+    CPUParticles2D* typed_obj = Object::cast_to<CPUParticles2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.scale_curve_y setter: wrong type");
+    }
+
+    Ref<Curve> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<Curve>(Object::cast_to<Curve>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<Curve>(Object::cast_to<Curve>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_scale_curve_y(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: CPUParticles2D::color
 static JSValue js_CPUParticles2D_get_color(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1871,6 +2177,208 @@ static JSValue js_CPUParticles2D_set_color(JSContext* ctx, JSValueConst this_val
     return JS_UNDEFINED;
 }
 
+// Property getter: CPUParticles2D::color_ramp
+static JSValue js_CPUParticles2D_get_color_ramp(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_ramp getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_ramp getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_ramp getter: invalid object");
+    }
+
+    CPUParticles2D* typed_obj = Object::cast_to<CPUParticles2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_ramp getter: wrong type");
+    }
+
+    Ref<Gradient> value = typed_obj->get_color_ramp();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: CPUParticles2D::color_ramp
+static JSValue js_CPUParticles2D_set_color_ramp(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_ramp setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_ramp setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_ramp setter: invalid object");
+    }
+
+    CPUParticles2D* typed_obj = Object::cast_to<CPUParticles2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_ramp setter: wrong type");
+    }
+
+    Ref<Gradient> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<Gradient>(Object::cast_to<Gradient>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<Gradient>(Object::cast_to<Gradient>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_color_ramp(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: CPUParticles2D::color_initial_ramp
+static JSValue js_CPUParticles2D_get_color_initial_ramp(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_initial_ramp getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_initial_ramp getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_initial_ramp getter: invalid object");
+    }
+
+    CPUParticles2D* typed_obj = Object::cast_to<CPUParticles2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_initial_ramp getter: wrong type");
+    }
+
+    Ref<Gradient> value = typed_obj->get_color_initial_ramp();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: CPUParticles2D::color_initial_ramp
+static JSValue js_CPUParticles2D_set_color_initial_ramp(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_initial_ramp setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_initial_ramp setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_initial_ramp setter: invalid object");
+    }
+
+    CPUParticles2D* typed_obj = Object::cast_to<CPUParticles2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CPUParticles2D.color_initial_ramp setter: wrong type");
+    }
+
+    Ref<Gradient> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<Gradient>(Object::cast_to<Gradient>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<Gradient>(Object::cast_to<Gradient>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_color_initial_ramp(value);
+    return JS_UNDEFINED;
+}
+
 
 // Registration function for CPUParticles2D
 void register_CPUParticles2D_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -1902,6 +2410,14 @@ void register_CPUParticles2D_bindings(JSContext* ctx, JSValue global, JSValue cl
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_CPUParticles2D_set_amount, "set_amount", 2));
         JS_SetPropertyStr(ctx, props, "amount", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_CPUParticles2D_get_texture, "get_texture", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_CPUParticles2D_set_texture, "set_texture", 2));
+        JS_SetPropertyStr(ctx, props, "texture", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);
@@ -2090,10 +2606,42 @@ void register_CPUParticles2D_bindings(JSContext* ctx, JSValue global, JSValue cl
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_CPUParticles2D_get_scale_curve_x, "get_scale_curve_x", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_CPUParticles2D_set_scale_curve_x, "set_scale_curve_x", 2));
+        JS_SetPropertyStr(ctx, props, "scale_curve_x", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_CPUParticles2D_get_scale_curve_y, "get_scale_curve_y", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_CPUParticles2D_set_scale_curve_y, "set_scale_curve_y", 2));
+        JS_SetPropertyStr(ctx, props, "scale_curve_y", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
             JS_NewCFunction(ctx, js_CPUParticles2D_get_color, "get_color", 1));
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_CPUParticles2D_set_color, "set_color", 2));
         JS_SetPropertyStr(ctx, props, "color", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_CPUParticles2D_get_color_ramp, "get_color_ramp", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_CPUParticles2D_set_color_ramp, "set_color_ramp", 2));
+        JS_SetPropertyStr(ctx, props, "color_ramp", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_CPUParticles2D_get_color_initial_ramp, "get_color_initial_ramp", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_CPUParticles2D_set_color_initial_ramp, "set_color_initial_ramp", 2));
+        JS_SetPropertyStr(ctx, props, "color_initial_ramp", prop_obj);
     }
 
     // Register signals array

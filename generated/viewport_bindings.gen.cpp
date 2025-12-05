@@ -9,9 +9,10 @@
 
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/classes/viewport_texture.hpp>
-#include <godot_cpp/classes/world3d.hpp>
-#include <godot_cpp/classes/world2d.hpp>
 #include <godot_cpp/classes/input_event.hpp>
+#include <godot_cpp/classes/world2d.hpp>
+#include <godot_cpp/classes/world3d.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -1561,6 +1562,208 @@ static JSValue js_Viewport_set_own_world_3d(JSContext* ctx, JSValueConst this_va
     return JS_UNDEFINED;
 }
 
+// Property getter: Viewport::world_3d
+static JSValue js_Viewport_get_world_3d(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_3d getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_3d getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_3d getter: invalid object");
+    }
+
+    Viewport* typed_obj = Object::cast_to<Viewport>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_3d getter: wrong type");
+    }
+
+    Ref<World3D> value = typed_obj->get_world_3d();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: Viewport::world_3d
+static JSValue js_Viewport_set_world_3d(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_3d setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_3d setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_3d setter: invalid object");
+    }
+
+    Viewport* typed_obj = Object::cast_to<Viewport>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_3d setter: wrong type");
+    }
+
+    Ref<World3D> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<World3D>(Object::cast_to<World3D>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<World3D>(Object::cast_to<World3D>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_world_3d(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: Viewport::world_2d
+static JSValue js_Viewport_get_world_2d(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_2d getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_2d getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_2d getter: invalid object");
+    }
+
+    Viewport* typed_obj = Object::cast_to<Viewport>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_2d getter: wrong type");
+    }
+
+    Ref<World2D> value = typed_obj->get_world_2d();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: Viewport::world_2d
+static JSValue js_Viewport_set_world_2d(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_2d setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_2d setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_2d setter: invalid object");
+    }
+
+    Viewport* typed_obj = Object::cast_to<Viewport>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.world_2d setter: wrong type");
+    }
+
+    Ref<World2D> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<World2D>(Object::cast_to<World2D>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<World2D>(Object::cast_to<World2D>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_world_2d(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: Viewport::transparent_bg
 static JSValue js_Viewport_get_transparent_bg(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2717,6 +2920,107 @@ static JSValue js_Viewport_set_vrs_update_mode(JSContext* ctx, JSValueConst this
 
     int64_t value; JS_ToInt64(ctx, &value, argv[1]);
     typed_obj->set_vrs_update_mode((Viewport::VRSUpdateMode)value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: Viewport::vrs_texture
+static JSValue js_Viewport_get_vrs_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Viewport.vrs_texture getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Viewport.vrs_texture getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.vrs_texture getter: invalid object");
+    }
+
+    Viewport* typed_obj = Object::cast_to<Viewport>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.vrs_texture getter: wrong type");
+    }
+
+    Ref<Texture2D> value = typed_obj->get_vrs_texture();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Property setter: Viewport::vrs_texture
+static JSValue js_Viewport_set_vrs_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Viewport.vrs_texture setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Viewport.vrs_texture setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.vrs_texture setter: invalid object");
+    }
+
+    Viewport* typed_obj = Object::cast_to<Viewport>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.vrs_texture setter: wrong type");
+    }
+
+    Ref<Texture2D> value;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_value; JS_ToInt64(ctx, &h_value, argv[1]);
+        Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+        value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+    } else {
+        // Object with __handle property
+        JSValue jh_value = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_value)) {
+            int64_t h_value; JS_ToInt64(ctx, &h_value, jh_value);
+            Object* obj_value = qjs_ctx->get_object_registry()->get_object(h_value);
+            value = Ref<Texture2D>(Object::cast_to<Texture2D>(obj_value));
+        }
+        JS_FreeValue(ctx, jh_value);
+    }
+    typed_obj->set_vrs_texture(value);
     return JS_UNDEFINED;
 }
 
@@ -3982,6 +4286,22 @@ void register_Viewport_bindings(JSContext* ctx, JSValue global, JSValue classes)
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_Viewport_get_world_3d, "get_world_3d", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_Viewport_set_world_3d, "set_world_3d", 2));
+        JS_SetPropertyStr(ctx, props, "world_3d", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_Viewport_get_world_2d, "get_world_2d", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_Viewport_set_world_2d, "set_world_2d", 2));
+        JS_SetPropertyStr(ctx, props, "world_2d", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
             JS_NewCFunction(ctx, js_Viewport_get_transparent_bg, "get_transparent_bg", 1));
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_Viewport_set_transparent_bg, "set_transparent_bg", 2));
@@ -4130,6 +4450,14 @@ void register_Viewport_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_Viewport_set_vrs_update_mode, "set_vrs_update_mode", 2));
         JS_SetPropertyStr(ctx, props, "vrs_update_mode", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_Viewport_get_vrs_texture, "get_vrs_texture", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_Viewport_set_vrs_texture, "set_vrs_texture", 2));
+        JS_SetPropertyStr(ctx, props, "vrs_texture", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

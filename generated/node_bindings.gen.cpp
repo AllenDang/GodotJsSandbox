@@ -9,6 +9,7 @@
 
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/tween.hpp>
+#include <godot_cpp/classes/multiplayer_api.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -3754,6 +3755,61 @@ static JSValue js_Node_set_owner(JSContext* ctx, JSValueConst this_val, int argc
     return JS_UNDEFINED;
 }
 
+// Property getter: Node::multiplayer
+static JSValue js_Node_get_multiplayer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node.multiplayer getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node.multiplayer getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node.multiplayer getter: invalid object");
+    }
+
+    Node* typed_obj = Object::cast_to<Node>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node.multiplayer getter: wrong type");
+    }
+
+    Ref<MultiplayerAPI> value = typed_obj->get_multiplayer();
+    if (value.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = value.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
 // Property getter: Node::process_mode
 static JSValue js_Node_get_process_mode(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -4451,6 +4507,12 @@ void register_Node_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_Node_set_owner, "set_owner", 2));
         JS_SetPropertyStr(ctx, props, "owner", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_Node_get_multiplayer, "get_multiplayer", 1));
+        JS_SetPropertyStr(ctx, props, "multiplayer", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);
