@@ -114,17 +114,105 @@ var ai_code = """
 sandbox.eval(ai_code)
 
 # Save the level when player is satisfied
-sandbox.save_level("user://levels/my_level/")
+sandbox.save_level($LevelRoot, "user://levels/my_level/")
+```
+
+### Loading Scenes with Sandbox
+
+The sandbox provides both synchronous and asynchronous scene loading that automatically attaches JS scripts to nodes.
+
+#### Synchronous Loading
+
+```gdscript
+var sandbox = JSSandbox.new()
+
+# Load a scene synchronously
+var scene = sandbox.load_scene("user://games/my_game/main.tscn")
+add_child(scene)
+# JS scripts automatically execute on _ready
+```
+
+#### Asynchronous Loading (Recommended)
+
+For larger scenes, use async loading to avoid blocking the main thread:
+
+```gdscript
+var sandbox = JSSandbox.new()
+var loader: AsyncSceneLoader = null
+
+func load_game(scene_path: String) -> void:
+    loader = sandbox.load_scene_async(scene_path)
+    loader.progress_changed.connect(_on_loading_progress)
+    loader.completed.connect(_on_loading_completed)
+    loader.failed.connect(_on_loading_failed)
+
+func _process(delta: float) -> void:
+    # Poll the loader each frame
+    if loader and loader.is_loading():
+        loader.poll()
+
+func _on_loading_progress(progress: float, stage: String) -> void:
+    print("Loading: %.0f%% - %s" % [progress * 100, stage])
+
+func _on_loading_completed(scene: Node) -> void:
+    add_child(scene)
+    loader = null
+    print("Scene loaded!")
+
+func _on_loading_failed(error: String) -> void:
+    print("Failed to load: ", error)
+    loader = null
+```
+
+### Capturing Error Logs
+
+The sandbox provides multiple ways to capture JavaScript errors and console output:
+
+#### Using Signals (Recommended)
+
+```gdscript
+var sandbox = JSSandbox.new()
+
+func _ready() -> void:
+    # Connect to error and console signals
+    sandbox.error_occurred.connect(_on_js_error)
+    sandbox.console_output.connect(_on_js_console)
+
+func _on_js_error(message: String, line: int, column: int) -> void:
+    print("JS Error at line %d, col %d: %s" % [line, column, message])
+
+func _on_js_console(message: String) -> void:
+    print("JS Console: ", message)
+```
+
+#### Polling Errors
+
+```gdscript
+# Get the most recent error
+var last_error = sandbox.get_last_error()
+
+# Get all errors as an array of dictionaries
+var all_errors = sandbox.get_all_errors()
+for error in all_errors:
+    print("Error: %s at line %d" % [error["message"], error["line"]])
+
+# Clear error history
+sandbox.clear_errors()
 ```
 
 ### Loading Saved Levels
 
 ```gdscript
-# Load a previously saved level
-var level = load("user://levels/my_level/level.tscn")
-var instance = level.instantiate()
-add_child(instance)
+# Option 1: Use sandbox.load_level (recommended)
+var sandbox = JSSandbox.new()
+var level = sandbox.load_level("user://levels/my_level/")
+add_child(level)
 # JS scripts automatically execute
+
+# Option 2: Use standard Godot load (if scene has JSScript resources)
+var scene = load("user://levels/my_level/level.tscn")
+var instance = scene.instantiate()
+add_child(instance)
 ```
 
 ## Security Model
@@ -197,17 +285,35 @@ sandbox.load_blocklist("res://config/blocklist.json")
 | Method | Description |
 |--------|-------------|
 | `eval(code: String) -> Variant` | Execute JavaScript code and return result |
+| `eval_module(code: String, filename: String) -> Variant` | Execute JS as ES module with exports |
 | `eval_file(path: String) -> Variant` | Execute JavaScript from a file |
 | `set_global(name: String, value: Variant)` | Set a global variable in JS |
 | `get_global(name: String) -> Variant` | Get a global variable from JS |
 | `set_timeout_ms(ms: int)` | Set execution timeout in milliseconds |
 | `set_memory_limit_mb(mb: int)` | Set memory limit in megabytes |
+| `load_scene(path: String) -> Node` | Load a scene synchronously with JS scripts |
+| `load_scene_async(path: String) -> AsyncSceneLoader` | Load a scene asynchronously |
+| `save_level(root: Node, directory: String) -> Error` | Save node tree with JS scripts to directory |
+| `load_level(directory: String) -> Node` | Load a saved level from directory |
+| `get_created_nodes() -> Array` | Get all nodes created by the sandbox |
 | `load_blocklist(path: String) -> Error` | Load custom blocklist configuration |
 | `get_last_error() -> String` | Get the last error message |
+| `get_all_errors() -> Array` | Get all errors as array of dictionaries |
+| `clear_errors()` | Clear the error history |
 | `is_valid() -> bool` | Check if sandbox is initialized |
 | `reset()` | Reset the sandbox to initial state |
 
-### Signals
+### AsyncSceneLoader
+
+| Method/Signal | Description |
+|---------------|-------------|
+| `is_loading() -> bool` | Check if loading is in progress |
+| `poll()` | Advance the loading process (call each frame) |
+| `progress_changed(progress: float, stage: String)` | Signal: Loading progress updated |
+| `completed(scene: Node)` | Signal: Scene loaded successfully |
+| `failed(error: String)` | Signal: Loading failed |
+
+### JSSandbox Signals
 
 | Signal | Description |
 |--------|-------------|
