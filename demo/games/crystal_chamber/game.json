@@ -1,0 +1,16 @@
+{
+  "name": "Magic Crystal Chamber",
+  "version": "1.0.0",
+  "description": "A shader and particle showcase. Press 1-5 to switch effects, Space to trigger particles.",
+  "author": "Demo",
+  "entry_scene": "main.tscn",
+  "scene_type": "3D",
+  "input_actions": {
+    "effect_1": {"keys": ["1"]},
+    "effect_2": {"keys": ["2"]},
+    "effect_3": {"keys": ["3"]},
+    "effect_4": {"keys": ["4"]},
+    "effect_5": {"keys": ["5"]},
+    "trigger_particles": {"keys": ["Space"]}
+  }
+}
