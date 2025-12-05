@@ -1,0 +1,290 @@
+[gd_scene load_steps=18 format=3]
+
+[ext_resource type="Script" path="scripts/game_manager.js" id="1_game_manager"]
+[ext_resource type="Script" path="scripts/player_controller.js" id="2_player"]
+[ext_resource type="Script" path="scripts/enemy.js" id="3_enemy"]
+[ext_resource type="PackedScene" path="assets/gun.glb" id="4_gun"]
+[ext_resource type="Script" path="scripts/bullet.js" id="5_bullet"]
+[ext_resource type="AudioStream" path="assets/SHOOT007.mp3" id="6_shoot_sfx"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
+sky_top_color = Color(0.2, 0.3, 0.5, 1)
+sky_horizon_color = Color(0.6, 0.5, 0.4, 1)
+ground_bottom_color = Color(0.1, 0.1, 0.1, 1)
+ground_horizon_color = Color(0.3, 0.25, 0.2, 1)
+
+[sub_resource type="Sky" id="Sky_1"]
+sky_material = SubResource("ProceduralSkyMaterial_1")
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 2
+sky = SubResource("Sky_1")
+ambient_light_source = 2
+ambient_light_color = Color(0.4, 0.4, 0.5, 1)
+tonemap_mode = 2
+
+[sub_resource type="BoxMesh" id="BoxMesh_Floor"]
+size = Vector3(40, 0.2, 40)
+
+[sub_resource type="StandardMaterial3D" id="FloorMaterial"]
+albedo_color = Color(0.3, 0.3, 0.35, 1)
+metallic = 0.2
+roughness = 0.8
+
+[sub_resource type="BoxShape3D" id="FloorCollision"]
+size = Vector3(40, 0.2, 40)
+
+[sub_resource type="CapsuleShape3D" id="PlayerCollision"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="CapsuleMesh" id="EnemyMesh"]
+radius = 0.4
+height = 1.6
+
+[sub_resource type="StandardMaterial3D" id="EnemyMaterial"]
+albedo_color = Color(0.8, 0.2, 0.2, 1)
+emission_enabled = true
+emission = Color(0.5, 0.1, 0.1, 1)
+emission_energy_multiplier = 0.5
+
+[sub_resource type="CapsuleShape3D" id="EnemyCollision"]
+radius = 0.4
+height = 1.6
+
+[sub_resource type="SphereMesh" id="BulletMesh"]
+radius = 0.05
+height = 0.1
+
+[sub_resource type="StandardMaterial3D" id="BulletMaterial"]
+albedo_color = Color(1, 0.9, 0.3, 1)
+emission_enabled = true
+emission = Color(1, 0.8, 0.2, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="SphereShape3D" id="BulletCollision"]
+radius = 0.05
+
+[sub_resource type="ParticleProcessMaterial" id="BloodSplashMaterial"]
+emission_shape = 1
+emission_sphere_radius = 0.1
+direction = Vector3(0, 1, 0)
+spread = 45.0
+initial_velocity_min = 3.0
+initial_velocity_max = 6.0
+gravity = Vector3(0, -10, 0)
+scale_min = 0.15
+scale_max = 0.4
+color = Color(1, 0, 0, 1)
+
+[sub_resource type="StandardMaterial3D" id="BloodMaterial"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="SphereMesh" id="BloodParticleMesh"]
+radius = 0.15
+height = 0.3
+material = SubResource("BloodMaterial")
+
+[node name="Main" type="Node3D"]
+process_mode = 3
+script = ExtResource("1_game_manager")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 10, 15, 10)
+light_color = Color(1, 0.95, 0.9, 1)
+light_energy = 1.2
+shadow_enabled = true
+
+[node name="Floor" type="StaticBody3D" parent="."]
+collision_layer = 4
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+mesh = SubResource("BoxMesh_Floor")
+surface_material_override/0 = SubResource("FloorMaterial")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+shape = SubResource("FloorCollision")
+
+[node name="Walls" type="Node3D" parent="."]
+
+[node name="Wall1" type="CSGBox3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 2, 0)
+use_collision = true
+collision_layer = 4
+size = Vector3(1, 4, 40)
+
+[node name="Wall2" type="CSGBox3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 2, 0)
+use_collision = true
+collision_layer = 4
+size = Vector3(1, 4, 40)
+
+[node name="Wall3" type="CSGBox3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 20)
+use_collision = true
+collision_layer = 4
+size = Vector3(40, 4, 1)
+
+[node name="Wall4" type="CSGBox3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -20)
+use_collision = true
+collision_layer = 4
+size = Vector3(40, 4, 1)
+
+[node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+collision_layer = 1
+collision_mask = 4
+script = ExtResource("2_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+shape = SubResource("PlayerCollision")
+
+[node name="Camera3D" type="Camera3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+
+[node name="GunModel" type="Node3D" parent="Player/Camera3D"]
+transform = Transform3D(0, 0, -0.12, 0, 0.12, 0, 0.12, 0, 0, 0.3, -0.2, -0.25)
+
+[node name="Gun" parent="Player/Camera3D/GunModel" instance=ExtResource("4_gun")]
+
+[node name="MuzzleFlash" type="OmniLight3D" parent="Player/Camera3D/GunModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -3)
+visible = false
+light_color = Color(1, 0.8, 0.3, 1)
+light_energy = 5.0
+omni_range = 3.0
+
+[node name="MuzzlePoint" type="Marker3D" parent="Player/Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -0.15, -0.8)
+
+[node name="ShootSound" type="AudioStreamPlayer3D" parent="Player/Camera3D"]
+stream = ExtResource("6_shoot_sfx")
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="Bullets" type="Node3D" parent="."]
+
+[node name="EnemyTemplate" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 100, 100)
+visible = false
+collision_layer = 2
+collision_mask = 4
+script = ExtResource("3_enemy")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="EnemyTemplate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("EnemyMesh")
+surface_material_override/0 = SubResource("EnemyMaterial")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="EnemyTemplate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+disabled = true
+shape = SubResource("EnemyCollision")
+
+[node name="BulletTemplate" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 100, 100)
+visible = false
+collision_layer = 8
+collision_mask = 6
+monitorable = false
+script = ExtResource("5_bullet")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="BulletTemplate"]
+mesh = SubResource("BulletMesh")
+surface_material_override/0 = SubResource("BulletMaterial")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BulletTemplate"]
+shape = SubResource("BulletCollision")
+
+[node name="BloodSplashTemplate" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 100, 100)
+visible = false
+emitting = false
+amount = 12
+one_shot = true
+explosiveness = 1.0
+lifetime = 0.4
+process_material = SubResource("BloodSplashMaterial")
+draw_pass_1 = SubResource("BloodParticleMesh")
+
+[node name="Effects" type="Node3D" parent="."]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Crosshair" type="CenterContainer" parent="UI"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+
+[node name="CrosshairDot" type="ColorRect" parent="UI/Crosshair"]
+custom_minimum_size = Vector2(4, 4)
+layout_mode = 2
+color = Color(1, 1, 1, 0.8)
+
+[node name="ScoreLabel" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 200.0
+offset_bottom = 50.0
+text = "Score: 0"
+
+[node name="WaveLabel" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 50.0
+offset_right = 200.0
+offset_bottom = 80.0
+text = "Wave: 0"
+
+[node name="HealthBar" type="ProgressBar" parent="UI"]
+offset_left = 20.0
+offset_top = 90.0
+offset_right = 220.0
+offset_bottom = 110.0
+value = 100.0
+show_percentage = false
+
+[node name="HealthLabel" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 110.0
+offset_right = 100.0
+offset_bottom = 130.0
+text = "Health"
+
+[node name="AmmoLabel" type="Label" parent="UI"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -50.0
+offset_right = -20.0
+offset_bottom = -20.0
+text = "Ammo: 30/30"
+horizontal_alignment = 2
+
+[node name="MessageLabel" type="Label" parent="UI"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_top = 0.0
+anchor_right = 0.5
+anchor_bottom = 0.0
+offset_left = -200.0
+offset_top = 100.0
+offset_right = 200.0
+offset_bottom = 140.0
+text = "Wave 1 Starting..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="body_entered" from="BulletTemplate" to="BulletTemplate" method="on_body_entered"]

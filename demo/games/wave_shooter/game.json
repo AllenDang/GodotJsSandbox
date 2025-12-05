@@ -1,0 +1,6 @@
+{
+    "name": "Wave Shooter",
+    "description": "Survive waves of enemies in this FPS mini-game",
+    "version": "1.0.0",
+    "entry_scene": "main.tscn"
+}

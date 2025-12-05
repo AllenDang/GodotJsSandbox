@@ -24,6 +24,9 @@ var particles_magic = null;
 var particles_burst = null;
 var floating_orbs = [];
 
+// Cached shader resources (loaded once in _ready)
+var cached_shaders = [];
+
 exports._ready = function() {
     console.log("=== Magic Crystal Chamber ===");
     console.log("Press 1-5 to switch shader effects");
@@ -43,6 +46,18 @@ exports._ready = function() {
         if (orb) {
             floating_orbs.push(orb);
         }
+    }
+
+    // Pre-load all shaders once to avoid rate limit issues when switching
+    var shader_paths = [
+        "res://games/crystal_chamber/shaders/dissolve.gdshader",
+        "res://games/crystal_chamber/shaders/hologram.gdshader",
+        "res://games/crystal_chamber/shaders/fresnel_glow.gdshader",
+        "res://games/crystal_chamber/shaders/vertex_wobble.gdshader",
+        "res://games/crystal_chamber/shaders/energy_shield.gdshader"
+    ];
+    for (var j = 0; j < shader_paths.length; j++) {
+        cached_shaders.push(load(shader_paths[j]));
     }
 
     // Start with dissolve effect
@@ -114,17 +129,8 @@ function set_effect(index) {
 
     if (!crystal_mesh) return;
 
-    // Load and apply the appropriate shader material
-    var shader_paths = [
-        "res://games/crystal_chamber/shaders/dissolve.gdshader",
-        "res://games/crystal_chamber/shaders/hologram.gdshader",
-        "res://games/crystal_chamber/shaders/fresnel_glow.gdshader",
-        "res://games/crystal_chamber/shaders/vertex_wobble.gdshader",
-        "res://games/crystal_chamber/shaders/energy_shield.gdshader"
-    ];
-
-    // Create a new ShaderMaterial and load the shader
-    var shader = load(shader_paths[index]);
+    // Use cached shader (loaded once in _ready)
+    var shader = cached_shaders[index];
     if (shader) {
         var material = new ShaderMaterial();
         material.shader = shader;
