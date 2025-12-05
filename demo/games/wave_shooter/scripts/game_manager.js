@@ -77,8 +77,10 @@ exports._input = function(event) {
     // Handle restart when game is over
     if (game_over) {
         var event_class = event.get_class();
-        if (event_class === "InputEventKey") {
-            if (event.keycode === Key.KEY_ENTER && event.pressed) {
+        if (event_class === "InputEventKey" && event.pressed) {
+            if (event.keycode === Key.KEY_R) {
+                // Mark event as handled to prevent launcher from processing it
+                self.get_viewport().set_input_as_handled();
                 restart_game();
             }
         }
@@ -226,27 +228,67 @@ exports.player_hit = function(damage) {
 
 function game_over_screen() {
     game_over = true;
-    show_message("GAME OVER - Score: " + score + " - Press ENTER to restart");
+    show_message("GAME OVER - Score: " + score + " - Press R to restart");
     Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE);
 
-    // Pause the game tree
-    if (self) {
-        self.get_tree().paused = true;
+    // Disable player
+    if (player) {
+        player.set_physics_process(false);
+    }
+
+    // Pause all enemies using get_children() array proxy
+    if (enemy_container) {
+        var enemies = enemy_container.get_children();
+        enemies.forEach(function(enemy) {
+            enemy.set_physics_process(false);
+        });
     }
 
     console.log("Game Over! Final score: " + score);
 }
 
 function restart_game() {
-    // Unpause first
-    if (self) {
-        self.get_tree().paused = false;
+    console.log("Restarting game...");
+
+    // Clear all enemies
+    if (enemy_container) {
+        var enemies = enemy_container.get_children();
+        enemies.forEach(function(enemy) {
+            enemy.queue_free();
+        });
     }
 
-    // Reload the current scene
-    if (self) {
-        self.get_tree().reload_current_scene();
+    // Reset game state
+    score = 0;
+    wave = 0;
+    enemies_alive = 0;
+    enemies_to_spawn = 0;
+    player_health = max_player_health;
+    game_over = false;
+    wave_in_progress = false;
+    time_since_spawn = 0;
+    wave_start_timer = wave_start_delay;
+
+    // Reset player position and state
+    if (player) {
+        player.global_position = { x: 0, y: 1, z: 0 };
+        player.rotation = { x: 0, y: 0, z: 0 };
+        player.set_physics_process(true);
+
+        // Reset player controller state if it has a reset method
+        if (player.reset_state) {
+            player.reset_state();
+        }
     }
+
+    // Recapture mouse
+    Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED);
+
+    // Update UI
+    update_ui();
+    show_message("Wave 1 starting...");
+
+    console.log("Game restarted!");
 }
 
 // Called by player controller to update ammo display

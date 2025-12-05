@@ -335,3 +335,37 @@ exports.take_damage = function(amount) {
         game_manager.player_hit(amount);
     }
 };
+
+// Reset player state for game restart
+exports.reset_state = function() {
+    // Reset camera rotation
+    camera_rotation_x = 0;
+    camera_rotation_y = 0;
+
+    if (camera) {
+        camera.rotation = { x: 0, y: 0, z: 0 };
+    }
+
+    // Reset ammo
+    ammo = max_ammo;
+    is_reloading = false;
+    reload_timer = 0;
+
+    // Reset velocity
+    velocity = { x: 0, y: 0, z: 0 };
+
+    // Reset gun animation
+    gun_bob_time = 0;
+    gun_recoil = 0;
+    time_since_shot = fire_rate;
+
+    // Ensure mouse is captured
+    mouse_captured = true;
+
+    // Update ammo display
+    if (game_manager && game_manager.update_ammo) {
+        game_manager.update_ammo(ammo, max_ammo);
+    }
+
+    console.log("Player state reset");
+};

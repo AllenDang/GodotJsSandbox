@@ -35,8 +35,10 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	# ESC to go back to launcher while in game or during loading
+	# But only if the game tree is NOT paused (let game handle restart)
 	if event.is_action_pressed("ui_cancel") and (current_game_scene or current_loader):
-		_on_back_pressed()
+		if not get_tree().paused:
+			_on_back_pressed()
 
 
 func scan_games() -> void:
