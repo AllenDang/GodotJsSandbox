@@ -250,10 +250,14 @@ void register_MissingNode_bindings(JSContext* ctx, JSValue global, JSValue class
         JS_SetPropertyStr(ctx, props, "recording_properties", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Node"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

@@ -3652,10 +3652,19 @@ void register_CodeEdit_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_SetPropertyStr(ctx, props, "auto_brace_completion_pairs", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "breakpoint_toggled"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "code_completion_requested"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "symbol_lookup"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "symbol_validate"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "symbol_hovered"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "TextEdit"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

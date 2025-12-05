@@ -8,13 +8,13 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/canvas_item.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
-#include <godot_cpp/classes/world2d.hpp>
-#include <godot_cpp/classes/font.hpp>
-#include <godot_cpp/classes/mesh.hpp>
-#include <godot_cpp/classes/style_box.hpp>
-#include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/classes/input_event.hpp>
+#include <godot_cpp/classes/multi_mesh.hpp>
+#include <godot_cpp/classes/world2d.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/mesh.hpp>
+#include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -4884,10 +4884,18 @@ void register_CanvasItem_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_SetPropertyStr(ctx, props, "use_parent_material", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "draw"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "visibility_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "hidden"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "item_rect_changed"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Node"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, false));
 

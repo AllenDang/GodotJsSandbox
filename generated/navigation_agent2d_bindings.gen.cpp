@@ -2800,10 +2800,20 @@ void register_NavigationAgent2D_bindings(JSContext* ctx, JSValue global, JSValue
         JS_SetPropertyStr(ctx, props, "debug_path_custom_line_width", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "path_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "target_reached"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "waypoint_reached"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "link_reached"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "navigation_finished"));
+    JS_SetPropertyUint32(ctx, signals_arr, 5, JS_NewString(ctx, "velocity_computed"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Node"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

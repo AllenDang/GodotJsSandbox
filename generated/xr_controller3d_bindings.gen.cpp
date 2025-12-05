@@ -238,10 +238,19 @@ void register_XRController3D_bindings(JSContext* ctx, JSValue global, JSValue cl
     JSValue props = JS_NewObject(ctx);
 
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "button_pressed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "button_released"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "input_float_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "input_vector2_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "profile_changed"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "XRNode3D"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

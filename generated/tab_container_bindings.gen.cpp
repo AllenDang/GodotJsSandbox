@@ -2052,10 +2052,21 @@ void register_TabContainer_bindings(JSContext* ctx, JSValue global, JSValue clas
         JS_SetPropertyStr(ctx, props, "deselect_enabled", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "active_tab_rearranged"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "tab_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "tab_clicked"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "tab_hovered"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "tab_selected"));
+    JS_SetPropertyUint32(ctx, signals_arr, 5, JS_NewString(ctx, "tab_button_pressed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 6, JS_NewString(ctx, "pre_popup_pressed"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Container"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

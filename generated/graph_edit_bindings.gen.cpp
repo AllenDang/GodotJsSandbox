@@ -2622,10 +2622,33 @@ void register_GraphEdit_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_SetPropertyStr(ctx, props, "show_arrange_button", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "connection_request"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "disconnection_request"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "connection_to_empty"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "connection_from_empty"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "connection_drag_started"));
+    JS_SetPropertyUint32(ctx, signals_arr, 5, JS_NewString(ctx, "connection_drag_ended"));
+    JS_SetPropertyUint32(ctx, signals_arr, 6, JS_NewString(ctx, "copy_nodes_request"));
+    JS_SetPropertyUint32(ctx, signals_arr, 7, JS_NewString(ctx, "cut_nodes_request"));
+    JS_SetPropertyUint32(ctx, signals_arr, 8, JS_NewString(ctx, "paste_nodes_request"));
+    JS_SetPropertyUint32(ctx, signals_arr, 9, JS_NewString(ctx, "duplicate_nodes_request"));
+    JS_SetPropertyUint32(ctx, signals_arr, 10, JS_NewString(ctx, "delete_nodes_request"));
+    JS_SetPropertyUint32(ctx, signals_arr, 11, JS_NewString(ctx, "node_selected"));
+    JS_SetPropertyUint32(ctx, signals_arr, 12, JS_NewString(ctx, "node_deselected"));
+    JS_SetPropertyUint32(ctx, signals_arr, 13, JS_NewString(ctx, "frame_rect_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 14, JS_NewString(ctx, "popup_request"));
+    JS_SetPropertyUint32(ctx, signals_arr, 15, JS_NewString(ctx, "begin_node_move"));
+    JS_SetPropertyUint32(ctx, signals_arr, 16, JS_NewString(ctx, "end_node_move"));
+    JS_SetPropertyUint32(ctx, signals_arr, 17, JS_NewString(ctx, "graph_elements_linked_to_frame_request"));
+    JS_SetPropertyUint32(ctx, signals_arr, 18, JS_NewString(ctx, "scroll_offset_changed"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Control"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

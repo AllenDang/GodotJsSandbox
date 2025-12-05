@@ -211,10 +211,15 @@ void register_OpenXRFutureResult_bindings(JSContext* ctx, JSValue global, JSValu
     JSValue props = JS_NewObject(ctx);
 
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "completed"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "RefCounted"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, false));
 

@@ -382,10 +382,17 @@ void register_ColorPickerButton_bindings(JSContext* ctx, JSValue global, JSValue
         JS_SetPropertyStr(ctx, props, "edit_intensity", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "color_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "popup_closed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "picker_created"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Button"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

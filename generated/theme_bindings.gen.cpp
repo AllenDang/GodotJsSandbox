@@ -9,9 +9,9 @@
 
 #include <godot_cpp/classes/theme.hpp>
 #include <godot_cpp/classes/theme.hpp>
-#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -2243,10 +2243,14 @@ void register_Theme_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_SetPropertyStr(ctx, props, "default_font_size", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Resource"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

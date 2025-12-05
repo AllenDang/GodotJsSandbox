@@ -2650,10 +2650,29 @@ void register_Tree_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_SetPropertyStr(ctx, props, "auto_tooltip", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "item_selected"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "cell_selected"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "multi_selected"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "item_mouse_selected"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "empty_clicked"));
+    JS_SetPropertyUint32(ctx, signals_arr, 5, JS_NewString(ctx, "item_edited"));
+    JS_SetPropertyUint32(ctx, signals_arr, 6, JS_NewString(ctx, "custom_item_clicked"));
+    JS_SetPropertyUint32(ctx, signals_arr, 7, JS_NewString(ctx, "item_icon_double_clicked"));
+    JS_SetPropertyUint32(ctx, signals_arr, 8, JS_NewString(ctx, "item_collapsed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 9, JS_NewString(ctx, "check_propagated_to_item"));
+    JS_SetPropertyUint32(ctx, signals_arr, 10, JS_NewString(ctx, "button_clicked"));
+    JS_SetPropertyUint32(ctx, signals_arr, 11, JS_NewString(ctx, "custom_popup_edited"));
+    JS_SetPropertyUint32(ctx, signals_arr, 12, JS_NewString(ctx, "item_activated"));
+    JS_SetPropertyUint32(ctx, signals_arr, 13, JS_NewString(ctx, "column_title_clicked"));
+    JS_SetPropertyUint32(ctx, signals_arr, 14, JS_NewString(ctx, "nothing_selected"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Control"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

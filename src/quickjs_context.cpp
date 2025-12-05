@@ -1190,6 +1190,7 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
     var __owner_proxy = null;
     var __legacy = {};  // Captures legacy function declarations
     var exports = {};   // User assigns methods here (recommended)
+    var signals = null; // User can define custom signals: var signals = ['health_changed', 'game_over'];
 
     // Store owner reference for 'this' context
     __instance.__set_owner = function(ownerHandle, ownerClass) {
@@ -1202,6 +1203,11 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
 
     __instance.__get_owner = function() {
         return __owner_proxy;
+    };
+
+    // Get custom signals defined by the script
+    __instance.__get_signals = function() {
+        return signals;
     };
 
     // Execute user script
@@ -1305,6 +1311,33 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
             JS_FreeValue(ctx_, args[1]);
         }
         JS_FreeValue(ctx_, set_owner_fn);
+    }
+
+    // Register custom signals declared in the script (var signals = ['signal_name', ...])
+    if (owner) {
+        JSValue get_signals_fn = JS_GetPropertyStr(ctx_, result, "__get_signals");
+        if (JS_IsFunction(ctx_, get_signals_fn)) {
+            JSValue signals_val = JS_Call(ctx_, get_signals_fn, result, 0, nullptr);
+            if (JS_IsArray(signals_val)) {
+                JSValue length_val = JS_GetPropertyStr(ctx_, signals_val, "length");
+                int64_t length = 0;
+                JS_ToInt64(ctx_, &length, length_val);
+                JS_FreeValue(ctx_, length_val);
+
+                for (int64_t i = 0; i < length; i++) {
+                    JSValue sig = JS_GetPropertyUint32(ctx_, signals_val, i);
+                    const char* sig_name = JS_ToCString(ctx_, sig);
+                    if (sig_name) {
+                        // Register the signal with Godot
+                        owner->add_user_signal(String(sig_name));
+                        JS_FreeCString(ctx_, sig_name);
+                    }
+                    JS_FreeValue(ctx_, sig);
+                }
+            }
+            JS_FreeValue(ctx_, signals_val);
+        }
+        JS_FreeValue(ctx_, get_signals_fn);
     }
 
     return instance_id;

@@ -699,10 +699,18 @@ void register_BaseButton_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_SetPropertyStr(ctx, props, "shortcut_in_tooltip", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "pressed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "button_up"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "button_down"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "toggled"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Control"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

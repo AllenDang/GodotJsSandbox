@@ -521,6 +521,74 @@ void JSScript::parse_annotations() {
         }
     }
 
+    // Parse "var signals = ['signal1', 'signal2']" pattern
+    // This is the GDScript 4.x style signal declaration
+    pos = 0;
+    while ((pos = source_code_.find("var signals", pos)) >= 0) {
+        pos += 11; // Skip "var signals"
+
+        // Skip whitespace
+        while (pos < source_code_.length() && (source_code_[pos] == ' ' || source_code_[pos] == '\t')) {
+            pos++;
+        }
+
+        // Expect '='
+        if (pos >= source_code_.length() || source_code_[pos] != '=') {
+            continue;
+        }
+        pos++; // Skip '='
+
+        // Skip whitespace
+        while (pos < source_code_.length() && (source_code_[pos] == ' ' || source_code_[pos] == '\t')) {
+            pos++;
+        }
+
+        // Expect '[' for array
+        if (pos >= source_code_.length() || source_code_[pos] != '[') {
+            continue;
+        }
+        pos++; // Skip '['
+
+        // Parse array contents until ']'
+        while (pos < source_code_.length() && source_code_[pos] != ']') {
+            // Skip whitespace and commas
+            while (pos < source_code_.length() &&
+                   (source_code_[pos] == ' ' || source_code_[pos] == '\t' ||
+                    source_code_[pos] == ',' || source_code_[pos] == '\n' || source_code_[pos] == '\r')) {
+                pos++;
+            }
+
+            if (pos >= source_code_.length() || source_code_[pos] == ']') {
+                break;
+            }
+
+            // Expect quote (single or double)
+            char32_t quote_char = source_code_[pos];
+            if (quote_char != '\'' && quote_char != '"') {
+                pos++;
+                continue;
+            }
+            pos++; // Skip opening quote
+
+            // Read signal name
+            int name_start = pos;
+            while (pos < source_code_.length() && source_code_[pos] != quote_char) {
+                pos++;
+            }
+
+            if (pos > name_start) {
+                String signal_name = source_code_.substr(name_start, pos - name_start);
+                if (!signal_name.is_empty() && signals_.find(StringName(signal_name)) < 0) {
+                    signals_.push_back(StringName(signal_name));
+                }
+            }
+
+            if (pos < source_code_.length()) {
+                pos++; // Skip closing quote
+            }
+        }
+    }
+
     // Parse @export annotations
     // Pattern: // @export var_name
     pos = 0;

@@ -66,6 +66,7 @@ private:
     static JSValue js_godot_tween_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
     static JSValue js_godot_call_script_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
     static JSValue js_godot_has_script_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_godot_has_signal(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
     // GodotObject class callbacks
     static void godot_object_finalizer(JSRuntime* rt, JSValueConst val);

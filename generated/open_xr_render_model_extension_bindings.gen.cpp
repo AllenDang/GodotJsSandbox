@@ -75,10 +75,17 @@ void register_OpenXRRenderModelExtension_bindings(JSContext* ctx, JSValue global
     JSValue props = JS_NewObject(ctx);
 
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "render_model_added"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "render_model_removed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "render_model_top_level_path_changed"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "OpenXRExtensionWrapper"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

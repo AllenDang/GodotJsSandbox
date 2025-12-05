@@ -156,10 +156,24 @@ void register_ScriptEditorBase_bindings(JSContext* ctx, JSValue global, JSValue 
     JSValue props = JS_NewObject(ctx);
 
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "name_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "edited_script_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "request_help"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "request_open_script_at_line"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "request_save_history"));
+    JS_SetPropertyUint32(ctx, signals_arr, 5, JS_NewString(ctx, "request_save_previous_state"));
+    JS_SetPropertyUint32(ctx, signals_arr, 6, JS_NewString(ctx, "go_to_help"));
+    JS_SetPropertyUint32(ctx, signals_arr, 7, JS_NewString(ctx, "search_in_files_requested"));
+    JS_SetPropertyUint32(ctx, signals_arr, 8, JS_NewString(ctx, "replace_in_files_requested"));
+    JS_SetPropertyUint32(ctx, signals_arr, 9, JS_NewString(ctx, "go_to_method"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "VBoxContainer"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, false));
 

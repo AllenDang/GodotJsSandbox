@@ -4517,10 +4517,25 @@ void register_Node_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_SetPropertyStr(ctx, props, "editor_description", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "ready"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "renamed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "tree_entered"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "tree_exiting"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "tree_exited"));
+    JS_SetPropertyUint32(ctx, signals_arr, 5, JS_NewString(ctx, "child_entered_tree"));
+    JS_SetPropertyUint32(ctx, signals_arr, 6, JS_NewString(ctx, "child_exiting_tree"));
+    JS_SetPropertyUint32(ctx, signals_arr, 7, JS_NewString(ctx, "child_order_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 8, JS_NewString(ctx, "replacing_by"));
+    JS_SetPropertyUint32(ctx, signals_arr, 9, JS_NewString(ctx, "editor_description_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 10, JS_NewString(ctx, "editor_state_changed"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Object"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

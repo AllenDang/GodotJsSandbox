@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/animation_mixer.hpp>
-#include <godot_cpp/classes/animation_library.hpp>
 #include <godot_cpp/classes/animation.hpp>
+#include <godot_cpp/classes/animation_library.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -1535,10 +1535,21 @@ void register_AnimationMixer_bindings(JSContext* ctx, JSValue global, JSValue cl
         JS_SetPropertyStr(ctx, props, "callback_mode_discrete", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "animation_list_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "animation_libraries_updated"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "animation_finished"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "animation_started"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "caches_cleared"));
+    JS_SetPropertyUint32(ctx, signals_arr, 5, JS_NewString(ctx, "mixer_applied"));
+    JS_SetPropertyUint32(ctx, signals_arr, 6, JS_NewString(ctx, "mixer_updated"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Node"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, false));
 

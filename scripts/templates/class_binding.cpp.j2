@@ -200,10 +200,17 @@ void register_{{ class_name }}_bindings(JSContext* ctx, JSValue global, JSValue 
     }
 {% endfor %}
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+{% for signal in signals %}
+    JS_SetPropertyUint32(ctx, signals_arr, {{ loop.index0 }}, JS_NewString(ctx, "{{ signal }}"));
+{% endfor %}
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "{{ parent_class }}"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, {{ "true" if is_instantiable else "false" }}));
 

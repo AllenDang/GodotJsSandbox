@@ -8,9 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/control.hpp>
-#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -5047,10 +5047,23 @@ void register_Control_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_SetPropertyStr(ctx, props, "accessibility_live", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "resized"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "gui_input"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "mouse_entered"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "mouse_exited"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "focus_entered"));
+    JS_SetPropertyUint32(ctx, signals_arr, 5, JS_NewString(ctx, "focus_exited"));
+    JS_SetPropertyUint32(ctx, signals_arr, 6, JS_NewString(ctx, "size_flags_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 7, JS_NewString(ctx, "minimum_size_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 8, JS_NewString(ctx, "theme_changed"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "CanvasItem"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

@@ -763,10 +763,17 @@ void register_AnimationNode_bindings(JSContext* ctx, JSValue global, JSValue cla
         JS_SetPropertyStr(ctx, props, "filter_enabled", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "tree_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "animation_node_renamed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "animation_node_removed"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Resource"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

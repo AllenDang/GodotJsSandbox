@@ -1186,10 +1186,14 @@ void register_Light2D_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_SetPropertyStr(ctx, props, "shadow_item_cull_mask", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Node2D"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, false));
 

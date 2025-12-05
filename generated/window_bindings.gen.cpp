@@ -8,9 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/window.hpp>
-#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -4803,10 +4803,28 @@ void register_Window_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_SetPropertyStr(ctx, props, "accessibility_description", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "window_input"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "files_dropped"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "mouse_entered"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "mouse_exited"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "focus_entered"));
+    JS_SetPropertyUint32(ctx, signals_arr, 5, JS_NewString(ctx, "focus_exited"));
+    JS_SetPropertyUint32(ctx, signals_arr, 6, JS_NewString(ctx, "close_requested"));
+    JS_SetPropertyUint32(ctx, signals_arr, 7, JS_NewString(ctx, "go_back_requested"));
+    JS_SetPropertyUint32(ctx, signals_arr, 8, JS_NewString(ctx, "visibility_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 9, JS_NewString(ctx, "about_to_popup"));
+    JS_SetPropertyUint32(ctx, signals_arr, 10, JS_NewString(ctx, "theme_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 11, JS_NewString(ctx, "dpi_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 12, JS_NewString(ctx, "titlebar_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 13, JS_NewString(ctx, "title_changed"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Viewport"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

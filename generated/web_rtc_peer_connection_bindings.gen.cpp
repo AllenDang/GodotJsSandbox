@@ -518,10 +518,17 @@ void register_WebRTCPeerConnection_bindings(JSContext* ctx, JSValue global, JSVa
     JSValue props = JS_NewObject(ctx);
 
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "session_description_created"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "ice_candidate_created"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "data_channel_received"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "RefCounted"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

@@ -9,8 +9,8 @@
 
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/scene_tree_timer.hpp>
-#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/multiplayer_api.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/tween.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -1790,10 +1790,23 @@ void register_SceneTree_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_SetPropertyStr(ctx, props, "physics_interpolation", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "tree_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "scene_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "tree_process_mode_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "node_added"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "node_removed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 5, JS_NewString(ctx, "node_renamed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 6, JS_NewString(ctx, "node_configuration_warning_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 7, JS_NewString(ctx, "process_frame"));
+    JS_SetPropertyUint32(ctx, signals_arr, 8, JS_NewString(ctx, "physics_frame"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "MainLoop"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

@@ -1272,10 +1272,22 @@ void register_Area2D_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_SetPropertyStr(ctx, props, "audio_bus_name", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "body_shape_entered"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "body_shape_exited"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "body_entered"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "body_exited"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "area_shape_entered"));
+    JS_SetPropertyUint32(ctx, signals_arr, 5, JS_NewString(ctx, "area_shape_exited"));
+    JS_SetPropertyUint32(ctx, signals_arr, 6, JS_NewString(ctx, "area_entered"));
+    JS_SetPropertyUint32(ctx, signals_arr, 7, JS_NewString(ctx, "area_exited"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "CollisionObject2D"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

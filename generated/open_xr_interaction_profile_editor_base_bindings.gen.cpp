@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/open_xr_interaction_profile_editor_base.hpp>
-#include <godot_cpp/classes/open_xr_action_map.hpp>
 #include <godot_cpp/classes/open_xr_interaction_profile.hpp>
+#include <godot_cpp/classes/open_xr_action_map.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -116,10 +116,14 @@ void register_OpenXRInteractionProfileEditorBase_bindings(JSContext* ctx, JSValu
     JSValue props = JS_NewObject(ctx);
 
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "HBoxContainer"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, false));
 

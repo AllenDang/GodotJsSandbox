@@ -717,10 +717,27 @@ void register_WebXRInterface_bindings(JSContext* ctx, JSValue global, JSValue cl
         JS_SetPropertyStr(ctx, props, "visibility_state", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "session_supported"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "session_started"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "session_ended"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "session_failed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "selectstart"));
+    JS_SetPropertyUint32(ctx, signals_arr, 5, JS_NewString(ctx, "select"));
+    JS_SetPropertyUint32(ctx, signals_arr, 6, JS_NewString(ctx, "selectend"));
+    JS_SetPropertyUint32(ctx, signals_arr, 7, JS_NewString(ctx, "squeezestart"));
+    JS_SetPropertyUint32(ctx, signals_arr, 8, JS_NewString(ctx, "squeeze"));
+    JS_SetPropertyUint32(ctx, signals_arr, 9, JS_NewString(ctx, "squeezeend"));
+    JS_SetPropertyUint32(ctx, signals_arr, 10, JS_NewString(ctx, "visibility_state_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 11, JS_NewString(ctx, "reference_space_reset"));
+    JS_SetPropertyUint32(ctx, signals_arr, 12, JS_NewString(ctx, "display_refresh_rate_changed"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "XRInterface"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, false));
 

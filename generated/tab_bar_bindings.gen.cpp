@@ -2307,10 +2307,22 @@ void register_TabBar_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_SetPropertyStr(ctx, props, "tab_count", prop_obj);
     }
 
+    // Register signals array
+    JSValue signals_arr = JS_NewArray(ctx);
+    JS_SetPropertyUint32(ctx, signals_arr, 0, JS_NewString(ctx, "tab_selected"));
+    JS_SetPropertyUint32(ctx, signals_arr, 1, JS_NewString(ctx, "tab_changed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 2, JS_NewString(ctx, "tab_clicked"));
+    JS_SetPropertyUint32(ctx, signals_arr, 3, JS_NewString(ctx, "tab_rmb_clicked"));
+    JS_SetPropertyUint32(ctx, signals_arr, 4, JS_NewString(ctx, "tab_close_pressed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 5, JS_NewString(ctx, "tab_button_pressed"));
+    JS_SetPropertyUint32(ctx, signals_arr, 6, JS_NewString(ctx, "tab_hovered"));
+    JS_SetPropertyUint32(ctx, signals_arr, 7, JS_NewString(ctx, "active_tab_rearranged"));
+
     // Register class info
     JSValue class_info = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, class_info, "methods", methods);
     JS_SetPropertyStr(ctx, class_info, "properties", props);
+    JS_SetPropertyStr(ctx, class_info, "signals", signals_arr);
     JS_SetPropertyStr(ctx, class_info, "parent", JS_NewString(ctx, "Control"));
     JS_SetPropertyStr(ctx, class_info, "instantiable", JS_NewBool(ctx, true));
 

@@ -206,6 +206,7 @@ class ClassInfo:
     header_name: str
     methods: list[MethodInfo] = field(default_factory=list)
     properties: list[PropertyInfo] = field(default_factory=list)
+    signals: list[str] = field(default_factory=list)  # Signal names for GDScript 4.x syntax
     extra_includes: list[str] = field(default_factory=list)
     is_instantiable: bool = True  # Whether JS can create instances with new
 
@@ -1401,6 +1402,12 @@ class BindingGenerator:
             if prop:
                 class_info.properties.append(prop)
 
+        # Extract signal names for GDScript 4.x syntax support
+        for signal_data in class_data.get("signals", []):
+            signal_name = signal_data.get("name", "")
+            if signal_name:
+                class_info.signals.append(signal_name)
+
         return class_info
 
     def generate(self):
@@ -1435,6 +1442,7 @@ class BindingGenerator:
                 header_name=class_info.header_name,
                 methods=class_info.methods,
                 properties=class_info.properties,
+                signals=class_info.signals,
                 extra_includes=class_info.extra_includes,
                 is_instantiable=class_info.is_instantiable,
             )

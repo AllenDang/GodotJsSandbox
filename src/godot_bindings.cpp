@@ -237,6 +237,10 @@ void GodotBindings::setup_global_functions() {
     JS_SetPropertyStr(ctx, global, "__godot_has_script_method",
         JS_NewCFunction(ctx, js_godot_has_script_method, "__godot_has_script_method", 2));
 
+    // __godot_has_signal(handle, signal_name) - check if object has a signal (built-in or custom)
+    JS_SetPropertyStr(ctx, global, "__godot_has_signal",
+        JS_NewCFunction(ctx, js_godot_has_signal, "__godot_has_signal", 2));
+
     // Time singleton (safe subset of methods)
     JSValue time_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, time_obj, "get_ticks_msec",
@@ -350,6 +354,21 @@ void GodotBindings::setup_godot_class_constructor() {
             }
             return null;
         };
+
+        // Helper to find signal in class hierarchy (for built-in signals)
+        globalThis.__findSignal = function(className, signalName) {
+            var current = className;
+            while (current && __godot_classes[current]) {
+                var classInfo = __godot_classes[current];
+                if (classInfo.signals) {
+                    for (var i = 0; i < classInfo.signals.length; i++) {
+                        if (classInfo.signals[i] === signalName) return true;
+                    }
+                }
+                current = classInfo.parent;
+            }
+            return false;
+        };
         'helper done';
     )";
 
@@ -425,6 +444,33 @@ void GodotBindings::setup_godot_class_constructor() {
                     var handle = target.__handle;
                     return function(callback, from, to, duration) {
                         return __godot_tween_method(handle, callback, from, to, duration);
+                    };
+                }
+
+                // GDScript 4.x signal syntax: node.signal_name.connect(callback)
+                // Check built-in signals first (fast), then custom signals (runtime check)
+                var isBuiltinSignal = __findSignal(target.__class, prop);
+                var isSignal = isBuiltinSignal || __godot_has_signal(target.__handle, prop);
+
+                if (isSignal) {
+                    var handle = target.__handle;
+                    var signalName = prop;
+                    return {
+                        connect: function(callback) {
+                            return __godot_connect(handle, signalName, callback);
+                        },
+                        emit: function() {
+                            var args = [handle, signalName];
+                            for (var i = 0; i < arguments.length; i++) {
+                                var arg = arguments[i];
+                                if (arg && typeof arg === 'object' && arg.__handle !== undefined) {
+                                    args.push(arg.__handle);
+                                } else {
+                                    args.push(arg);
+                                }
+                            }
+                            return __godot_emit_signal.apply(null, args);
+                        }
                     };
                 }
 
@@ -524,6 +570,8 @@ void GodotBindings::setup_godot_class_constructor() {
                     var propName = prop.substring(4);
                     if (__findBinding(target.__class, propName, 'property') !== null) return true;
                 }
+                // Check for signals (built-in and custom)
+                if (__findSignal(target.__class, prop) || __godot_has_signal(target.__handle, prop)) return true;
                 return __findBinding(target.__class, prop, 'method') !== null ||
                        __findBinding(target.__class, prop, 'property') !== null;
             }
@@ -1373,6 +1421,46 @@ JSValue GodotBindings::js_godot_call_script_method(JSContext* ctx, JSValueConst 
     }
 
     return qjs_ctx->variant_to_js(result);
+}
+
+// Global function: __godot_has_signal(handle, signal_name) - check if object has a signal (built-in or custom)
+JSValue GodotBindings::js_godot_has_signal(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_FALSE;
+    }
+
+    // Get object handle
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_FALSE;
+    }
+
+    // Get signal name
+    const char* signal_name_cstr = JS_ToCString(ctx, argv[1]);
+    if (!signal_name_cstr) {
+        return JS_FALSE;
+    }
+    String signal_name = signal_name_cstr;
+    JS_FreeCString(ctx, signal_name_cstr);
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_FALSE;
+    }
+
+    // Get the target object from the registry
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_FALSE;
+    }
+
+    Object* target = registry->get_object(handle);
+    if (!target) {
+        return JS_FALSE;
+    }
+
+    // Check if the object has this signal (works for both built-in and custom signals)
+    return JS_NewBool(ctx, target->has_signal(StringName(signal_name)));
 }
 
 } // namespace jsb
