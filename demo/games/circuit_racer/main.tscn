@@ -1,0 +1,374 @@
+[gd_scene load_steps=12 format=3 uid="uid://circuit_racer_main"]
+
+[ext_resource type="Script" path="user://games/circuit_racer/scripts/race_manager.js" id="1_race_manager"]
+[ext_resource type="Script" path="user://games/circuit_racer/scripts/vehicle_controller.js" id="2_vehicle"]
+[ext_resource type="Script" path="user://games/circuit_racer/scripts/camera_follow.js" id="3_camera"]
+[ext_resource type="Script" path="user://games/circuit_racer/scripts/checkpoint.js" id="4_checkpoint"]
+[ext_resource type="Script" path="user://games/circuit_racer/scripts/boost_pad.js" id="5_boost"]
+[ext_resource type="Script" path="user://games/circuit_racer/scripts/tire_particles.js" id="7_tire_particles"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
+size = Vector3(100, 1, 100)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.2, 0.5, 0.2, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_track"]
+albedo_color = Color(0.3, 0.3, 0.35, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_car"]
+albedo_color = Color(0.8, 0.2, 0.2, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_car"]
+size = Vector3(2, 0.8, 4)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_wheel"]
+radius = 0.4
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_barrier"]
+size = Vector3(2, 1, 80)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_barrier"]
+albedo_color = Color(0.9, 0.1, 0.1, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_checkpoint"]
+size = Vector3(12, 4, 2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_checkpoint"]
+albedo_color = Color(1, 0.8, 0, 0.5)
+transparency = 1
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_finish"]
+size = Vector3(12, 4, 2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_finish"]
+albedo_color = Color(1, 1, 1, 0.7)
+transparency = 1
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_boost"]
+size = Vector3(6, 3, 8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_boost"]
+albedo_color = Color(0, 0.8, 1, 0.7)
+transparency = 1
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_dust"]
+emission_shape = 1
+emission_sphere_radius = 0.2
+direction = Vector3(0, 1, 0)
+spread = 30.0
+initial_velocity_min = 2.0
+initial_velocity_max = 4.0
+gravity = Vector3(0, -2, 0)
+scale_min = 0.3
+scale_max = 0.8
+color = Color(0.6, 0.55, 0.45, 0.6)
+
+[node name="RaceManager" type="Node3D"]
+script = ExtResource("1_race_manager")
+
+[node name="Environment" type="Node3D" parent="."]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Environment"]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 20, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Environment"]
+environment = null
+
+[node name="Ground" type="StaticBody3D" parent="Environment"]
+collision_layer = 4
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BoxShape3D_ground")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Environment/Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+mesh = null
+material_override = SubResource("StandardMaterial3D_ground")
+
+[node name="GroundMesh" type="CSGBox3D" parent="Environment/Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+size = Vector3(100, 1, 100)
+material = SubResource("StandardMaterial3D_ground")
+
+[node name="Track" type="Node3D" parent="Environment"]
+
+[node name="TrackStraight1" type="CSGBox3D" parent="Environment/Track"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+size = Vector3(12, 0.1, 60)
+material = SubResource("StandardMaterial3D_track")
+
+[node name="TrackStraight2" type="CSGBox3D" parent="Environment/Track"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0.05, 0)
+size = Vector3(12, 0.1, 60)
+material = SubResource("StandardMaterial3D_track")
+
+[node name="TrackCurve1" type="CSGBox3D" parent="Environment/Track"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.05, 30)
+size = Vector3(42, 0.1, 12)
+material = SubResource("StandardMaterial3D_track")
+
+[node name="TrackCurve2" type="CSGBox3D" parent="Environment/Track"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.05, -30)
+size = Vector3(42, 0.1, 12)
+material = SubResource("StandardMaterial3D_track")
+
+[node name="Barriers" type="Node3D" parent="Environment"]
+
+[node name="BarrierInner1" type="CSGBox3D" parent="Environment/Barriers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.5, 0)
+use_collision = true
+collision_layer = 4
+size = Vector3(1, 1, 48)
+material = SubResource("StandardMaterial3D_barrier")
+
+[node name="BarrierInner2" type="CSGBox3D" parent="Environment/Barriers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0.5, 0)
+use_collision = true
+collision_layer = 4
+size = Vector3(1, 1, 48)
+material = SubResource("StandardMaterial3D_barrier")
+
+[node name="BarrierOuter1" type="CSGBox3D" parent="Environment/Barriers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.5, 0)
+use_collision = true
+collision_layer = 4
+size = Vector3(1, 1, 72)
+material = SubResource("StandardMaterial3D_barrier")
+
+[node name="BarrierOuter2" type="CSGBox3D" parent="Environment/Barriers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0.5, 0)
+use_collision = true
+collision_layer = 4
+size = Vector3(1, 1, 72)
+material = SubResource("StandardMaterial3D_barrier")
+
+[node name="BarrierTop" type="CSGBox3D" parent="Environment/Barriers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.5, 36)
+use_collision = true
+collision_layer = 4
+size = Vector3(22, 1, 1)
+material = SubResource("StandardMaterial3D_barrier")
+
+[node name="BarrierBottom" type="CSGBox3D" parent="Environment/Barriers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.5, -36)
+use_collision = true
+collision_layer = 4
+size = Vector3(22, 1, 1)
+material = SubResource("StandardMaterial3D_barrier")
+
+[node name="Vehicle" type="VehicleBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -20)
+mass = 1000.0
+collision_layer = 2
+collision_mask = 4
+script = ExtResource("2_vehicle")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Vehicle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+shape = SubResource("BoxShape3D_car")
+
+[node name="CarBody" type="CSGBox3D" parent="Vehicle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+size = Vector3(2, 0.8, 4)
+material = SubResource("StandardMaterial3D_car")
+
+[node name="CarRoof" type="CSGBox3D" parent="Vehicle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -0.3)
+size = Vector3(1.6, 0.6, 2)
+material = SubResource("StandardMaterial3D_car")
+
+[node name="WheelFL" type="VehicleWheel3D" parent="Vehicle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 1.2)
+wheel_radius = 0.4
+wheel_friction_slip = 3.0
+suspension_travel = 0.2
+suspension_stiffness = 50.0
+damping_compression = 1.0
+damping_relaxation = 2.0
+use_as_traction = true
+use_as_steering = true
+
+[node name="WheelFR" type="VehicleWheel3D" parent="Vehicle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1.2)
+wheel_radius = 0.4
+wheel_friction_slip = 3.0
+suspension_travel = 0.2
+suspension_stiffness = 50.0
+damping_compression = 1.0
+damping_relaxation = 2.0
+use_as_traction = true
+use_as_steering = true
+
+[node name="WheelRL" type="VehicleWheel3D" parent="Vehicle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, -1.2)
+wheel_radius = 0.4
+wheel_friction_slip = 3.0
+suspension_travel = 0.2
+suspension_stiffness = 50.0
+damping_compression = 1.0
+damping_relaxation = 2.0
+use_as_traction = true
+
+[node name="DustParticles" type="GPUParticles3D" parent="Vehicle/WheelRL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+emitting = false
+amount = 20
+lifetime = 0.8
+process_material = SubResource("ParticleProcessMaterial_dust")
+script = ExtResource("7_tire_particles")
+
+[node name="WheelRR" type="VehicleWheel3D" parent="Vehicle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, -1.2)
+wheel_radius = 0.4
+wheel_friction_slip = 3.0
+suspension_travel = 0.2
+suspension_stiffness = 50.0
+damping_compression = 1.0
+damping_relaxation = 2.0
+use_as_traction = true
+
+[node name="DustParticles" type="GPUParticles3D" parent="Vehicle/WheelRR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+emitting = false
+amount = 20
+lifetime = 0.8
+process_material = SubResource("ParticleProcessMaterial_dust")
+script = ExtResource("7_tire_particles")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.96, 0.28, 0, -0.28, 0.96, 0, 5, 10)
+script = ExtResource("3_camera")
+
+[node name="Checkpoints" type="Node3D" parent="."]
+
+[node name="FinishLine" type="Area3D" parent="Checkpoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -15)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("4_checkpoint")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Checkpoints/FinishLine"]
+shape = SubResource("BoxShape3D_finish")
+
+[node name="Visual" type="CSGBox3D" parent="Checkpoints/FinishLine"]
+size = Vector3(12, 4, 0.5)
+material = SubResource("StandardMaterial3D_finish")
+
+[node name="Checkpoint1" type="Area3D" parent="Checkpoints"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 15, 2, 30)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("4_checkpoint")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Checkpoints/Checkpoint1"]
+shape = SubResource("BoxShape3D_checkpoint")
+
+[node name="Visual" type="CSGBox3D" parent="Checkpoints/Checkpoint1"]
+size = Vector3(12, 4, 0.5)
+material = SubResource("StandardMaterial3D_checkpoint")
+
+[node name="Checkpoint2" type="Area3D" parent="Checkpoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 2, 15)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("4_checkpoint")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Checkpoints/Checkpoint2"]
+shape = SubResource("BoxShape3D_checkpoint")
+
+[node name="Visual" type="CSGBox3D" parent="Checkpoints/Checkpoint2"]
+size = Vector3(12, 4, 0.5)
+material = SubResource("StandardMaterial3D_checkpoint")
+
+[node name="Checkpoint3" type="Area3D" parent="Checkpoints"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 15, 2, -30)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("4_checkpoint")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Checkpoints/Checkpoint3"]
+shape = SubResource("BoxShape3D_checkpoint")
+
+[node name="Visual" type="CSGBox3D" parent="Checkpoints/Checkpoint3"]
+size = Vector3(12, 4, 0.5)
+material = SubResource("StandardMaterial3D_checkpoint")
+
+[node name="BoostPads" type="Node3D" parent="."]
+
+[node name="BoostPad1" type="Area3D" parent="BoostPads"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 10)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("5_boost")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BoostPads/BoostPad1"]
+shape = SubResource("BoxShape3D_boost")
+
+[node name="Visual" type="CSGBox3D" parent="BoostPads/BoostPad1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.4, 0)
+size = Vector3(6, 0.15, 8)
+material = SubResource("StandardMaterial3D_boost")
+
+[node name="BoostPad2" type="Area3D" parent="BoostPads"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 1.5, -10)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("5_boost")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BoostPads/BoostPad2"]
+shape = SubResource("BoxShape3D_boost")
+
+[node name="Visual" type="CSGBox3D" parent="BoostPads/BoostPad2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.4, 0)
+size = Vector3(6, 0.15, 8)
+material = SubResource("StandardMaterial3D_boost")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="SpeedLabel" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 200.0
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 32
+text = "0 km/h"
+
+[node name="LapLabel" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 60.0
+offset_right = 200.0
+offset_bottom = 100.0
+theme_override_font_sizes/font_size = 24
+text = "Lap: 0/3"
+
+[node name="TimeLabel" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 100.0
+offset_right = 250.0
+offset_bottom = 140.0
+theme_override_font_sizes/font_size = 24
+text = "Time: 0:00.00"
+
+[node name="BestLabel" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 140.0
+offset_right = 250.0
+offset_bottom = 180.0
+theme_override_font_sizes/font_size = 20
+text = "Best: --:--"
+
+[node name="MessageLabel" type="Label" parent="UI"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 200.0
+offset_right = 200.0
+offset_bottom = 260.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 36
+text = "Press W to start!"
+horizontal_alignment = 1

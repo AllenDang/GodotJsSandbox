@@ -1,0 +1,14 @@
+{
+    "name": "Circuit Racer",
+    "description": "Arcade racing game - complete laps as fast as you can!",
+    "version": "1.0.0",
+    "entry_scene": "main.tscn",
+    "input_actions": {
+        "accelerate": {"keys": ["W", "Up"]},
+        "brake": {"keys": ["S", "Down"]},
+        "steer_left": {"keys": ["A", "Left"]},
+        "steer_right": {"keys": ["D", "Right"]},
+        "handbrake": {"keys": ["Space"]},
+        "reset_car": {"keys": ["R"]}
+    }
+}
