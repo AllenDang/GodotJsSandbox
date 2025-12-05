@@ -7,7 +7,9 @@ const GAMES_DIR = "user://games/"
 
 var current_game_scene: Node = null
 var current_sandbox: JSSandbox = null  # Per-game sandbox for isolation
+var current_loader: AsyncSceneLoader = null  # Async loader for current game
 var games: Array[Dictionary] = []
+var pending_game: Dictionary = {}  # Game being loaded
 
 @onready var launcher_ui: VBoxContainer = $LauncherUI
 @onready var game_container: Node = $GameContainer
@@ -15,6 +17,10 @@ var games: Array[Dictionary] = []
 @onready var game_list_container: VBoxContainer = $LauncherUI/GameList/GameListContainer
 @onready var status_label: Label = $LauncherUI/StatusLabel
 @onready var refresh_button: Button = $LauncherUI/Header/RefreshButton
+@onready var loading_panel: PanelContainer = $LoadingPanel
+@onready var loading_label: Label = $LoadingPanel/VBoxContainer/LoadingLabel
+@onready var progress_bar: ProgressBar = $LoadingPanel/VBoxContainer/ProgressBar
+@onready var stage_label: Label = $LoadingPanel/VBoxContainer/StageLabel
 
 
 func _ready() -> void:
@@ -28,8 +34,8 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	# ESC to go back to launcher while in game
-	if event.is_action_pressed("ui_cancel") and current_game_scene:
+	# ESC to go back to launcher while in game or during loading
+	if event.is_action_pressed("ui_cancel") and (current_game_scene or current_loader):
 		_on_back_pressed()
 
 
@@ -128,34 +134,74 @@ func _on_game_selected(game: Dictionary) -> void:
 	if game.has("input_actions"):
 		register_input_actions(game["input_actions"])
 
+	# Store pending game info
+	pending_game = game
+
 	# Create a new sandbox for this game (per-game isolation)
 	current_sandbox = JSSandbox.new()
 	print("Created isolated sandbox for game: ", game["name"])
 
-	# Load the scene using the sandbox - this handles all JS script reattachment
-	current_game_scene = current_sandbox.load_scene(entry_scene_path)
-	if not current_game_scene:
-		status_label.text = "Error: " + current_sandbox.get_last_error()
-		print("Failed to load scene: ", current_sandbox.get_last_error())
-		cleanup_sandbox()
-		return
+	# Show loading UI
+	launcher_ui.hide()
+	loading_panel.show()
+	loading_label.text = "Loading: " + game["name"]
+	progress_bar.value = 0
+	stage_label.text = "Starting..."
+
+	# Start async loading
+	current_loader = current_sandbox.load_scene_async(entry_scene_path)
+	current_loader.progress_changed.connect(_on_loading_progress)
+	current_loader.completed.connect(_on_loading_completed)
+	current_loader.failed.connect(_on_loading_failed)
+
+
+func _process(_delta: float) -> void:
+	# Poll the async loader if active
+	if current_loader and current_loader.is_loading():
+		current_loader.poll()
+
+
+func _on_loading_progress(progress: float, stage: String) -> void:
+	progress_bar.value = progress * 100.0
+	stage_label.text = "Stage: " + stage
+
+
+func _on_loading_completed(scene: Node) -> void:
+	current_game_scene = scene
+	current_loader = null
 
 	# Clear existing game content
 	for child in game_container.get_children():
 		child.queue_free()
 
-	# Add game scene directly to game_container (no SubViewport overhead)
+	# Add game scene directly to game_container
 	game_container.add_child(current_game_scene)
 
 	# Switch to game view
-	launcher_ui.hide()
+	loading_panel.hide()
 	back_button.show()
 
-	status_label.text = "Playing: " + game["name"]
-	print("Game loaded with isolated sandbox: ", game["name"])
+	status_label.text = "Playing: " + pending_game["name"]
+	print("Game loaded with isolated sandbox: ", pending_game["name"])
+	pending_game = {}
+
+
+func _on_loading_failed(error: String) -> void:
+	current_loader = null
+	loading_panel.hide()
+	launcher_ui.show()
+
+	status_label.text = "Error: " + error
+	print("Failed to load scene: ", error)
+	cleanup_sandbox()
+	pending_game = {}
 
 
 func cleanup_sandbox() -> void:
+	# Clean up loader if active
+	if current_loader:
+		current_loader = null
+
 	if current_sandbox:
 		# Reset the sandbox to release all JS resources
 		current_sandbox.reset()
@@ -237,6 +283,12 @@ func get_keycode_from_name(key_name: String) -> Key:
 
 
 func _on_back_pressed() -> void:
+	# Cancel loading if in progress
+	if current_loader:
+		loading_panel.hide()
+		cleanup_sandbox()
+		pending_game = {}
+
 	if current_game_scene:
 		# Remove from parent first to trigger _exit_tree on JS scripts
 		if current_game_scene.get_parent():

@@ -412,6 +412,13 @@ Node* JSSandbox::load_scene(const String &scene_path) {
     return root;
 }
 
+Ref<AsyncSceneLoader> JSSandbox::load_scene_async(const String &scene_path) {
+    Ref<AsyncSceneLoader> loader;
+    loader.instantiate();
+    loader->start(this, scene_path);
+    return loader;
+}
+
 void JSSandbox::reattach_scripts_recursive(Node* node) {
     if (!node) return;
 
@@ -572,6 +579,7 @@ void JSSandbox::_bind_methods() {
 
     // Scene loading with sandbox isolation
     ClassDB::bind_method(D_METHOD("load_scene", "scene_path"), &JSSandbox::load_scene);
+    ClassDB::bind_method(D_METHOD("load_scene_async", "scene_path"), &JSSandbox::load_scene_async);
 
     // Level persistence
     ClassDB::bind_method(D_METHOD("save_level", "root", "directory"), &JSSandbox::save_level);

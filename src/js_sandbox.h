@@ -14,6 +14,7 @@
 #include "safe_wrapper.h"
 #include "signal_registry.h"
 #include "deletion_tracker.h"
+#include "async_scene_loader.h"
 
 #include <memory>
 
@@ -49,6 +50,15 @@ public:
     // Scene loading with sandbox isolation
     // Loads a .tscn scene and reattaches all JS scripts to use this sandbox's context
     godot::Node* load_scene(const godot::String &scene_path);
+
+    // Async scene loading - returns a loader object that can be polled for progress
+    // Usage:
+    //   var loader = sandbox.load_scene_async("res://scene.tscn")
+    //   loader.progress_changed.connect(func(progress, stage): ...)
+    //   loader.completed.connect(func(scene): ...)
+    //   loader.failed.connect(func(error): ...)
+    //   # Call loader.poll() each frame until is_completed() or is_failed()
+    godot::Ref<AsyncSceneLoader> load_scene_async(const godot::String &scene_path);
 
     // Level persistence
     godot::Error save_level(godot::Node *root, const godot::String &directory);
