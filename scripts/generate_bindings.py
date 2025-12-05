@@ -1470,7 +1470,85 @@ class BindingGenerator:
 
         print(f"Generated: register_all.gen.cpp")
 
+        # Generate global enums file
+        self.generate_global_enums()
+
+        # Generate singleton class enums file
+        self.generate_singleton_enums()
+
         print(f"\nGenerated bindings for {len(self.classes)} classes")
+
+    def generate_global_enums(self):
+        """Generate global enums (Key, MouseButton, etc.) as JS constants."""
+        global_enums = self.api_data.get("global_enums", [])
+
+        if not global_enums:
+            return
+
+        # Generate the C++ file for global enums
+        enums_template = self.jinja_env.get_template("global_enums.cpp.j2")
+        enums_content = enums_template.render(enums=global_enums)
+
+        with open(self.output_dir / "global_enums.gen.cpp", "w") as f:
+            f.write(enums_content)
+
+        print(f"Generated: global_enums.gen.cpp ({len(global_enums)} enums)")
+
+    def generate_singleton_enums(self):
+        """Generate singleton class enums (Input.MouseMode, etc.) as properties on singleton objects."""
+        # Get list of singletons
+        singletons_list = self.api_data.get("singletons", [])
+        singleton_names = {s.get("type", s.get("name", "")) for s in singletons_list}
+
+        # Find classes that are singletons and have enums
+        classes_by_name = {c.get("name"): c for c in self.api_data.get("classes", [])}
+
+        singletons_with_enums = []
+        total_enum_values = 0
+
+        for singleton_info in singletons_list:
+            singleton_name = singleton_info.get("name", "")
+            singleton_type = singleton_info.get("type", singleton_name)
+
+            class_data = classes_by_name.get(singleton_type)
+            if not class_data:
+                continue
+
+            class_enums = class_data.get("enums", [])
+            if not class_enums:
+                continue
+
+            # Convert enum data to simple dict format for template
+            enums_data = []
+            for enum in class_enums:
+                enum_values = []
+                for value in enum.get("values", []):
+                    enum_values.append({
+                        "name": value.get("name", ""),
+                        "value": value.get("value", 0)
+                    })
+                    total_enum_values += 1
+                enums_data.append({
+                    "name": enum.get("name", ""),
+                    "values": enum_values
+                })
+
+            singletons_with_enums.append({
+                "name": singleton_name,
+                "enums": enums_data
+            })
+
+        if not singletons_with_enums:
+            return
+
+        # Generate the C++ file for singleton enums
+        enums_template = self.jinja_env.get_template("singleton_enums.cpp.j2")
+        enums_content = enums_template.render(singletons=singletons_with_enums)
+
+        with open(self.output_dir / "singleton_enums.gen.cpp", "w") as f:
+            f.write(enums_content)
+
+        print(f"Generated: singleton_enums.gen.cpp ({len(singletons_with_enums)} singletons, {total_enum_values} enum values)")
 
 
 def main():

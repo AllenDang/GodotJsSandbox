@@ -13,6 +13,13 @@ namespace generated {
 // Initialize all generated bindings
 void register_all_classes(JSContext* ctx, JSValue global);
 
+// Global enums registration (Key, MouseButton, Error, etc.)
+void register_global_enums(JSContext* ctx, JSValue global);
+
+// Singleton class enums registration (Input.MouseMode, etc.)
+// Must be called AFTER singletons are created on global
+void register_singleton_enums(JSContext* ctx, JSValue global);
+
 // Class registration functions
 void register_AESContext_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_AStar2D_bindings(JSContext* ctx, JSValue global, JSValue classes);

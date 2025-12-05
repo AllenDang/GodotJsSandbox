@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/rendering_device.hpp>
-#include <godot_cpp/classes/rd_shader_spirv.hpp>
 #include <godot_cpp/classes/rd_shader_source.hpp>
+#include <godot_cpp/classes/rd_shader_spirv.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

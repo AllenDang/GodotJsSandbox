@@ -9,8 +9,8 @@
 
 #include <godot_cpp/classes/gltf_document.hpp>
 #include <godot_cpp/classes/gltf_state.hpp>
-#include <godot_cpp/classes/gltf_document_extension.hpp>
 #include <godot_cpp/classes/gltf_object_model_property.hpp>
+#include <godot_cpp/classes/gltf_document_extension.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

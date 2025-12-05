@@ -14,6 +14,7 @@ func get_tests() -> Array[String]:
 		"test_get_all_errors_returns_array",
 		"test_error_has_type_field",
 		"test_missing_file_error",
+		"test_script_error_has_source_context",
 	]
 
 func run_test(test_name: String) -> Dictionary:
@@ -37,6 +38,8 @@ func run_test(test_name: String) -> Dictionary:
 			return test_error_has_type_field()
 		"test_missing_file_error":
 			return test_missing_file_error()
+		"test_script_error_has_source_context":
+			return await test_script_error_has_source_context()
 	return { "passed": false, "message": "Unknown test" }
 
 
@@ -158,3 +161,49 @@ func test_missing_file_error() -> Dictionary:
 		return { "passed": false, "message": "Error message doesn't mention the file issue: %s" % error }
 
 	return { "passed": true, "message": "" }
+
+
+func test_script_error_has_source_context() -> Dictionary:
+	# This test verifies that script instance errors are captured by the sandbox.
+	# This allows AI to access errors via sandbox.get_last_error() for debugging.
+
+	# Clear any existing errors
+	sandbox.clear_errors()
+
+	# Create a script that throws an error when called
+	var node = Node2D.new()
+	node.name = "SourceContextTestNode"
+
+	# Multi-line script with an error on a specific line
+	var script = sandbox.create_script("""
+var counter = 0;
+
+exports._ready = function() {
+    // This line will cause an error - calling undefined as function
+    var result = undefined();
+};
+""")
+
+	node.set_script(script)
+	test_root.add_child(node)
+
+	# Wait for _ready to be called and error to occur
+	await scene_tree.process_frame
+
+	# Clean up
+	node.queue_free()
+
+	# Verify the error was captured by the sandbox
+	var error = sandbox.get_last_error()
+	if error.is_empty():
+		return { "passed": false, "message": "Script instance error was not captured by sandbox" }
+
+	# Verify error contains source context
+	if error.find("Source context") < 0:
+		return { "passed": false, "message": "Error missing source context: " + error }
+
+	# Verify error has line numbers (the >> marker)
+	if error.find(">>") < 0:
+		return { "passed": false, "message": "Error missing line marker: " + error }
+
+	return { "passed": true, "message": "Script error captured with source context" }

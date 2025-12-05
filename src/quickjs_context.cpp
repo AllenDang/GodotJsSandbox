@@ -532,9 +532,10 @@ QuickJSContext::ExceptionInfo QuickJSContext::get_exception_info() {
                 info.stack = stack_str;
                 JS_FreeCString(ctx_, stack_str);
 
-                // If line/file not set, try to parse from first stack line
+                // Always try to parse from first stack line if no line info yet
                 // Format: "    at function (file:line:col)" or "    at file:line:col"
-                if (info.line == 0 && !info.stack.is_empty()) {
+                // QuickJS often doesn't set lineNumber property, so we parse from stack
+                if (!info.stack.is_empty()) {
                     int at_pos = info.stack.find(" at ");
                     if (at_pos >= 0) {
                         int paren_pos = info.stack.find("(", at_pos);
@@ -547,21 +548,33 @@ QuickJSContext::ExceptionInfo QuickJSContext::get_exception_info() {
                         if (colon_pos >= 0) {
                             // Parse "file:line:col" pattern
                             int start = (paren_pos >= 0) ? paren_pos + 1 : at_pos + 4;
-                            String location = info.stack.substr(start, info.stack.find("\n", start) - start);
+                            int newline_pos = info.stack.find("\n", start);
+                            if (newline_pos < 0) newline_pos = info.stack.length();
+                            String location = info.stack.substr(start, newline_pos - start);
                             location = location.strip_edges();
                             if (location.ends_with(")")) {
                                 location = location.substr(0, location.length() - 1);
                             }
-                            PackedStringArray parts = location.split(":");
-                            if (parts.size() >= 2) {
-                                if (info.file.is_empty()) {
-                                    info.file = parts[0];
+                            // Handle various path formats:
+                            // - "user://path/to/file.js:line:col" (has multiple colons from ://)
+                            // - ":line:col" (anonymous/inline code, no filename)
+                            // - "file.js:line:col" (simple filename)
+                            // We need to find the last two colons for line:col
+                            int last_colon = location.rfind(":");
+                            int second_last_colon = -1;
+                            if (last_colon > 0) {
+                                second_last_colon = location.rfind(":", last_colon - 1);
+                            }
+                            if (second_last_colon >= 0 && last_colon > second_last_colon) {
+                                // second_last_colon can be 0 for ":line:col" format
+                                if (info.file.is_empty() && second_last_colon > 0) {
+                                    info.file = location.substr(0, second_last_colon);
                                 }
-                                if (parts.size() >= 2) {
-                                    info.line = parts[1].to_int();
+                                if (info.line == 0) {
+                                    info.line = location.substr(second_last_colon + 1, last_colon - second_last_colon - 1).to_int();
                                 }
-                                if (parts.size() >= 3) {
-                                    info.column = parts[2].to_int();
+                                if (info.column == 0) {
+                                    info.column = location.substr(last_colon + 1).to_int();
                                 }
                             }
                         }
@@ -576,6 +589,57 @@ QuickJSContext::ExceptionInfo QuickJSContext::get_exception_info() {
     return info;
 }
 
+String QuickJSContext::get_source_context(int64_t instance_id, int error_line, int context_lines) {
+    if (!script_instances_.has(instance_id)) {
+        return "";
+    }
+
+    const ScriptInstanceData& data = script_instances_[instance_id];
+    if (data.wrapped_source.is_empty()) {
+        return "";
+    }
+
+    // Split source into lines
+    PackedStringArray lines = data.wrapped_source.split("\n");
+    int total_lines = lines.size();
+
+    if (error_line < 1 || error_line > total_lines) {
+        return "";
+    }
+
+    // Calculate range (1-indexed to 0-indexed)
+    int start = MAX(0, error_line - 1 - context_lines);
+    int end = MIN(total_lines - 1, error_line - 1 + context_lines);
+
+    String result = "Source context:\n";
+    for (int i = start; i <= end; i++) {
+        String line_num = String::num_int64(i + 1);
+        // Pad line numbers for alignment
+        while (line_num.length() < 4) {
+            line_num = " " + line_num;
+        }
+
+        // Mark the error line with an arrow
+        String marker = (i == error_line - 1) ? " >> " : "    ";
+        result += marker + line_num + " | " + lines[i] + "\n";
+    }
+
+    return result;
+}
+
+String QuickJSContext::get_wrapped_source(int64_t instance_id) const {
+    if (!script_instances_.has(instance_id)) {
+        return "";
+    }
+    return script_instances_[instance_id].wrapped_source;
+}
+
+// Helper function for input event get_class method
+static JSValue js_input_event_get_class(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    JSValue type_val = JS_GetPropertyStr(ctx, this_val, "type");
+    return type_val;
+}
+
 // Helper to convert InputEvent to a JS object with relevant properties
 JSValue QuickJSContext::input_event_to_js(InputEvent* event) {
     if (!event) return JS_NULL;
@@ -583,8 +647,12 @@ JSValue QuickJSContext::input_event_to_js(InputEvent* event) {
     JSValue obj = JS_NewObject(ctx_);
 
     // Common InputEvent properties
-    JS_SetPropertyStr(ctx_, obj, "type", JS_NewString(ctx_, event->get_class().utf8().get_data()));
+    String class_name = event->get_class();
+    JS_SetPropertyStr(ctx_, obj, "type", JS_NewString(ctx_, class_name.utf8().get_data()));
     JS_SetPropertyStr(ctx_, obj, "device", JS_NewInt32(ctx_, event->get_device()));
+
+    // Add get_class() method for compatibility with standard Godot API
+    JS_SetPropertyStr(ctx_, obj, "get_class", JS_NewCFunction(ctx_, js_input_event_get_class, "get_class", 0));
 
     // InputEventKey
     if (InputEventKey* key_event = Object::cast_to<InputEventKey>(event)) {
@@ -1292,6 +1360,8 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
     data.js_object = result;  // Takes ownership of the JSValue
     data.owner = owner;
     data.valid = true;
+    data.wrapped_source = wrapped_source;  // Store for error context
+    data.file_path = filename;
 
     script_instances_[instance_id] = data;
 
@@ -1401,7 +1471,18 @@ bool QuickJSContext::call_instance_method(int64_t instance_id, const StringName 
     JS_FreeValue(ctx_, method_fn);
 
     if (JS_IsException(call_result)) {
-        error = get_exception_message();
+        ExceptionInfo info = get_exception_info();
+        error = info.message;
+        if (!info.stack.is_empty()) {
+            error += "\nStack trace:\n" + info.stack;
+        }
+        // Add source context around error line
+        if (info.line > 0) {
+            String context = get_source_context(instance_id, info.line, 3);
+            if (!context.is_empty()) {
+                error += "\n" + context;
+            }
+        }
         JS_FreeValue(ctx_, call_result);
         return false;
     }
@@ -1460,7 +1541,18 @@ bool QuickJSContext::call_instance_input_method(int64_t instance_id, const Strin
     JS_FreeValue(ctx_, method_fn);
 
     if (JS_IsException(call_result)) {
-        error = get_exception_message();
+        ExceptionInfo info = get_exception_info();
+        error = info.message;
+        if (!info.stack.is_empty()) {
+            error += "\nStack trace:\n" + info.stack;
+        }
+        // Add source context around error line
+        if (info.line > 0) {
+            String context = get_source_context(instance_id, info.line, 3);
+            if (!context.is_empty()) {
+                error += "\n" + context;
+            }
+        }
         JS_FreeValue(ctx_, call_result);
         return false;
     }

@@ -67,6 +67,10 @@ bool GodotBindings::initialize() {
     // Register all generated class bindings (creates __godot_classes registry)
     JSValue global = JS_GetGlobalObject(ctx);
     generated::register_all_classes(ctx, global);
+
+    // Register singleton class enums (Input.MOUSE_MODE_*, etc.)
+    // Must be after setup_global_functions() which creates the singleton objects
+    generated::register_singleton_enums(ctx, global);
     JS_FreeValue(ctx, global);
 
     setup_proxy_handler();  // No-op, but kept for structure
@@ -280,12 +284,8 @@ void GodotBindings::setup_global_functions() {
     JS_SetPropertyStr(ctx, input_obj, "get_mouse_mode",
         JS_NewCFunction(ctx, js_input_get_mouse_mode, "get_mouse_mode", 0));
 
-    // Mouse mode constants
-    JS_SetPropertyStr(ctx, input_obj, "MOUSE_MODE_VISIBLE", JS_NewInt32(ctx, (int)Input::MOUSE_MODE_VISIBLE));
-    JS_SetPropertyStr(ctx, input_obj, "MOUSE_MODE_HIDDEN", JS_NewInt32(ctx, (int)Input::MOUSE_MODE_HIDDEN));
-    JS_SetPropertyStr(ctx, input_obj, "MOUSE_MODE_CAPTURED", JS_NewInt32(ctx, (int)Input::MOUSE_MODE_CAPTURED));
-    JS_SetPropertyStr(ctx, input_obj, "MOUSE_MODE_CONFINED", JS_NewInt32(ctx, (int)Input::MOUSE_MODE_CONFINED));
-    JS_SetPropertyStr(ctx, input_obj, "MOUSE_MODE_CONFINED_HIDDEN", JS_NewInt32(ctx, (int)Input::MOUSE_MODE_CONFINED_HIDDEN));
+    // Note: Mouse mode constants (MOUSE_MODE_VISIBLE, etc.) are now generated
+    // by register_singleton_enums() from extension_api.json
 
     JS_SetPropertyStr(ctx, global, "Input", input_obj);
 

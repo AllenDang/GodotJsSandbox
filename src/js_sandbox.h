@@ -82,6 +82,10 @@ public:
     // Create a script that uses this sandbox's context
     godot::Ref<godot::Script> create_script(const godot::String &source_code);
 
+    // Error reporting (public for JSScriptInstance to report errors)
+    void add_error(const godot::String& type, const godot::String& message,
+                   const godot::String& file = "", int line = 0, int column = 0);
+
 protected:
     static void _bind_methods();
 
@@ -100,8 +104,6 @@ private:
     godot::Array errors_;  // Accumulated errors for AI feedback
 
     bool initialize();
-    void add_error(const godot::String& type, const godot::String& message,
-                   const godot::String& file = "", int line = 0, int column = 0);
 
     // Helper to recursively reattach JS scripts to this sandbox
     void reattach_scripts_recursive(godot::Node* node);

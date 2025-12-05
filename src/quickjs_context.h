@@ -106,6 +106,13 @@ public:
     };
     ExceptionInfo get_exception_info();
 
+    // Get source code context around a line for error reporting
+    // Returns lines around error_line (±context_lines) with line numbers
+    godot::String get_source_context(int64_t instance_id, int error_line, int context_lines = 3);
+
+    // Get wrapped source for an instance (for debugging)
+    godot::String get_wrapped_source(int64_t instance_id) const;
+
 private:
     JSRuntime* rt_ = nullptr;
     JSContext* ctx_ = nullptr;
@@ -127,6 +134,8 @@ private:
         JSValue js_object;      // The JS object instance
         godot::Object* owner;   // The Godot object this script is attached to
         bool valid;
+        godot::String wrapped_source;  // Full wrapped source for error context
+        godot::String file_path;       // Original file path
     };
     godot::HashMap<int64_t, ScriptInstanceData> script_instances_;
     int64_t next_instance_id_ = 1;

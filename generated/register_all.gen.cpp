@@ -7,6 +7,9 @@ namespace jsb {
 namespace generated {
 
 void register_all_classes(JSContext* ctx, JSValue global) {
+    // Register global enums (Key, MouseButton, Error, etc.)
+    register_global_enums(ctx, global);
+
     // Create the __godot_classes registry once
     JSValue classes = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, global, "__godot_classes", classes);

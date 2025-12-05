@@ -54,6 +54,12 @@ bool JSScriptInstance::initialize() {
 
     if (js_instance_id_ == 0) {
         UtilityFunctions::printerr("Failed to create JS instance: ", error);
+        // Route error to sandbox for AI feedback
+        JSSandbox* sandbox = script_->get_sandbox();
+        if (sandbox) {
+            String file_path = script_->get_path();
+            sandbox->add_error("SyntaxError", error, file_path);
+        }
         return false;
     }
 
@@ -255,6 +261,14 @@ void JSScriptInstance::call(const StringName &p_method, const GDExtensionConstVa
         r_error->error = GDEXTENSION_CALL_OK;
     } else {
         UtilityFunctions::printerr("JSScript call error: ", error);
+        // Route error to sandbox for AI feedback
+        if (script_) {
+            JSSandbox* sandbox = script_->get_sandbox();
+            if (sandbox) {
+                String file_path = script_->get_path();
+                sandbox->add_error("RuntimeError", error, file_path);
+            }
+        }
         r_error->error = GDEXTENSION_CALL_ERROR_INVALID_METHOD;
     }
 }
@@ -277,6 +291,14 @@ bool JSScriptInstance::call_input_method(const StringName &p_method, InputEvent*
     bool success = ctx->call_instance_input_method(js_instance_id_, p_method, event, error);
     if (!success && !error.is_empty()) {
         UtilityFunctions::printerr("JSScript input error: ", error);
+        // Route error to sandbox for AI feedback
+        if (script_) {
+            JSSandbox* sandbox = script_->get_sandbox();
+            if (sandbox) {
+                String file_path = script_->get_path();
+                sandbox->add_error("RuntimeError", error, file_path);
+            }
+        }
     }
     return success;
 }
