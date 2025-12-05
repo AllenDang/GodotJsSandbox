@@ -1633,6 +1633,36 @@ static JSValue js_ItemList_is_selected(JSContext* ctx, JSValueConst this_val, in
     return JS_NewBool(ctx, result);
 }
 
+// Method: ItemList::get_selected_items
+static JSValue js_ItemList_get_selected_items(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ItemList.get_selected_items: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ItemList.get_selected_items: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ItemList.get_selected_items: invalid or freed object");
+    }
+
+    ItemList* typed_obj = Object::cast_to<ItemList>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ItemList.get_selected_items: object is not a ItemList");
+    }
+
+    PackedInt32Array result = typed_obj->get_selected_items();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: ItemList::move_item
 static JSValue js_ItemList_move_item(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -3077,6 +3107,8 @@ void register_ItemList_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_ItemList_deselect_all, "deselect_all", 1));
     JS_SetPropertyStr(ctx, methods, "is_selected",
         JS_NewCFunction(ctx, js_ItemList_is_selected, "is_selected", 2));
+    JS_SetPropertyStr(ctx, methods, "get_selected_items",
+        JS_NewCFunction(ctx, js_ItemList_get_selected_items, "get_selected_items", 1));
     JS_SetPropertyStr(ctx, methods, "move_item",
         JS_NewCFunction(ctx, js_ItemList_move_item, "move_item", 3));
     JS_SetPropertyStr(ctx, methods, "remove_item",

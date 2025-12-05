@@ -3025,6 +3025,36 @@ static JSValue js_Animation_get_marker_time(JSContext* ctx, JSValueConst this_va
     return JS_NewFloat64(ctx, result);
 }
 
+// Method: Animation::get_marker_names
+static JSValue js_Animation_get_marker_names(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Animation.get_marker_names: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Animation.get_marker_names: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Animation.get_marker_names: invalid or freed object");
+    }
+
+    Animation* typed_obj = Object::cast_to<Animation>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Animation.get_marker_names: object is not a Animation");
+    }
+
+    PackedStringArray result = typed_obj->get_marker_names();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Animation::get_marker_color
 static JSValue js_Animation_get_marker_color(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -3675,6 +3705,8 @@ void register_Animation_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_NewCFunction(ctx, js_Animation_get_prev_marker, "get_prev_marker", 2));
     JS_SetPropertyStr(ctx, methods, "get_marker_time",
         JS_NewCFunction(ctx, js_Animation_get_marker_time, "get_marker_time", 2));
+    JS_SetPropertyStr(ctx, methods, "get_marker_names",
+        JS_NewCFunction(ctx, js_Animation_get_marker_names, "get_marker_names", 1));
     JS_SetPropertyStr(ctx, methods, "get_marker_color",
         JS_NewCFunction(ctx, js_Animation_get_marker_color, "get_marker_color", 2));
     JS_SetPropertyStr(ctx, methods, "set_marker_color",

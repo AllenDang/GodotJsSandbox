@@ -33,6 +33,44 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "NavigationPolygon: unknown error"); \
     }
 
+// Method: NavigationPolygon::add_polygon
+static JSValue js_NavigationPolygon_add_polygon(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationPolygon.add_polygon: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPolygon.add_polygon: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPolygon.add_polygon: invalid or freed object");
+    }
+
+    NavigationPolygon* typed_obj = Object::cast_to<NavigationPolygon>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPolygon.add_polygon: object is not a NavigationPolygon");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationPolygon.add_polygon: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedInt32Array arg_polygon = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->add_polygon(arg_polygon);
+    return JS_UNDEFINED;
+}
+
 // Method: NavigationPolygon::get_polygon_count
 static JSValue js_NavigationPolygon_get_polygon_count(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -61,6 +99,44 @@ static JSValue js_NavigationPolygon_get_polygon_count(JSContext* ctx, JSValueCon
 
     int64_t result = typed_obj->get_polygon_count();
     return JS_NewInt64(ctx, result);
+}
+
+// Method: NavigationPolygon::get_polygon
+static JSValue js_NavigationPolygon_get_polygon(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationPolygon.get_polygon: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPolygon.get_polygon: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPolygon.get_polygon: invalid or freed object");
+    }
+
+    NavigationPolygon* typed_obj = Object::cast_to<NavigationPolygon>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPolygon.get_polygon: object is not a NavigationPolygon");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationPolygon.get_polygon: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
+
+    PackedInt32Array result = typed_obj->get_polygon(arg_idx);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: NavigationPolygon::clear_polygons
@@ -1260,8 +1336,12 @@ void register_NavigationPolygon_bindings(JSContext* ctx, JSValue global, JSValue
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "add_polygon",
+        JS_NewCFunction(ctx, js_NavigationPolygon_add_polygon, "add_polygon", 2));
     JS_SetPropertyStr(ctx, methods, "get_polygon_count",
         JS_NewCFunction(ctx, js_NavigationPolygon_get_polygon_count, "get_polygon_count", 1));
+    JS_SetPropertyStr(ctx, methods, "get_polygon",
+        JS_NewCFunction(ctx, js_NavigationPolygon_get_polygon, "get_polygon", 2));
     JS_SetPropertyStr(ctx, methods, "clear_polygons",
         JS_NewCFunction(ctx, js_NavigationPolygon_clear_polygons, "clear_polygons", 1));
     JS_SetPropertyStr(ctx, methods, "get_navigation_mesh",

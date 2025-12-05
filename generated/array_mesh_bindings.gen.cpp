@@ -208,6 +208,65 @@ static JSValue js_ArrayMesh_clear_blend_shapes(JSContext* ctx, JSValueConst this
     return JS_UNDEFINED;
 }
 
+// Method: ArrayMesh::add_surface_from_arrays
+static JSValue js_ArrayMesh_add_surface_from_arrays(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.add_surface_from_arrays: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.add_surface_from_arrays: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.add_surface_from_arrays: invalid or freed object");
+    }
+
+    ArrayMesh* typed_obj = Object::cast_to<ArrayMesh>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.add_surface_from_arrays: object is not a ArrayMesh");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.add_surface_from_arrays: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t tmp_primitive; JS_ToInt64(ctx, &tmp_primitive, argv[1]); Mesh::PrimitiveType arg_primitive = (Mesh::PrimitiveType)tmp_primitive;
+    Array arg_arrays = qjs_ctx->js_to_variant(argv[2]);
+    // Optional argument: blend_shapes (default: Array())
+    Array arg_blend_shapes = Array();
+    if (argc > 3) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Array arg_blend_shapes = qjs_ctx->js_to_variant(argv[3]);
+    }
+    // Optional argument: lods (default: Dictionary())
+    Dictionary arg_lods = Dictionary();
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Dictionary arg_lods = qjs_ctx->js_to_variant(argv[4]);
+    }
+    // Optional argument: flags (default: 0)
+    BitField<Mesh::ArrayFormat> arg_flags = 0;
+    if (argc > 5) {
+        // Override default with provided value
+        int64_t tmp_flags; JS_ToInt64(ctx, &tmp_flags, argv[5]); arg_flags = (BitField<Mesh::ArrayFormat>)tmp_flags;
+    }
+
+    typed_obj->add_surface_from_arrays(arg_primitive, arg_arrays, arg_blend_shapes, arg_lods, arg_flags);
+    return JS_UNDEFINED;
+}
+
 // Method: ArrayMesh::clear_surfaces
 static JSValue js_ArrayMesh_clear_surfaces(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -273,6 +332,126 @@ static JSValue js_ArrayMesh_surface_remove(JSContext* ctx, JSValueConst this_val
     int64_t arg_surf_idx; JS_ToInt64(ctx, &arg_surf_idx, argv[1]);
 
     typed_obj->surface_remove(arg_surf_idx);
+    return JS_UNDEFINED;
+}
+
+// Method: ArrayMesh::surface_update_vertex_region
+static JSValue js_ArrayMesh_surface_update_vertex_region(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_vertex_region: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_vertex_region: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_vertex_region: invalid or freed object");
+    }
+
+    ArrayMesh* typed_obj = Object::cast_to<ArrayMesh>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_vertex_region: object is not a ArrayMesh");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_vertex_region: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_surf_idx; JS_ToInt64(ctx, &arg_surf_idx, argv[1]);
+    int64_t arg_offset; JS_ToInt64(ctx, &arg_offset, argv[2]);
+    PackedByteArray arg_data = qjs_ctx->js_to_variant(argv[3]);
+
+    typed_obj->surface_update_vertex_region(arg_surf_idx, arg_offset, arg_data);
+    return JS_UNDEFINED;
+}
+
+// Method: ArrayMesh::surface_update_attribute_region
+static JSValue js_ArrayMesh_surface_update_attribute_region(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_attribute_region: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_attribute_region: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_attribute_region: invalid or freed object");
+    }
+
+    ArrayMesh* typed_obj = Object::cast_to<ArrayMesh>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_attribute_region: object is not a ArrayMesh");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_attribute_region: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_surf_idx; JS_ToInt64(ctx, &arg_surf_idx, argv[1]);
+    int64_t arg_offset; JS_ToInt64(ctx, &arg_offset, argv[2]);
+    PackedByteArray arg_data = qjs_ctx->js_to_variant(argv[3]);
+
+    typed_obj->surface_update_attribute_region(arg_surf_idx, arg_offset, arg_data);
+    return JS_UNDEFINED;
+}
+
+// Method: ArrayMesh::surface_update_skin_region
+static JSValue js_ArrayMesh_surface_update_skin_region(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_skin_region: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_skin_region: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_skin_region: invalid or freed object");
+    }
+
+    ArrayMesh* typed_obj = Object::cast_to<ArrayMesh>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_skin_region: object is not a ArrayMesh");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "ArrayMesh.surface_update_skin_region: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_surf_idx; JS_ToInt64(ctx, &arg_surf_idx, argv[1]);
+    int64_t arg_offset; JS_ToInt64(ctx, &arg_offset, argv[2]);
+    PackedByteArray arg_data = qjs_ctx->js_to_variant(argv[3]);
+
+    typed_obj->surface_update_skin_region(arg_surf_idx, arg_offset, arg_data);
     return JS_UNDEFINED;
 }
 
@@ -885,10 +1064,18 @@ void register_ArrayMesh_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_NewCFunction(ctx, js_ArrayMesh_set_blend_shape_name, "set_blend_shape_name", 3));
     JS_SetPropertyStr(ctx, methods, "clear_blend_shapes",
         JS_NewCFunction(ctx, js_ArrayMesh_clear_blend_shapes, "clear_blend_shapes", 1));
+    JS_SetPropertyStr(ctx, methods, "add_surface_from_arrays",
+        JS_NewCFunction(ctx, js_ArrayMesh_add_surface_from_arrays, "add_surface_from_arrays", 6));
     JS_SetPropertyStr(ctx, methods, "clear_surfaces",
         JS_NewCFunction(ctx, js_ArrayMesh_clear_surfaces, "clear_surfaces", 1));
     JS_SetPropertyStr(ctx, methods, "surface_remove",
         JS_NewCFunction(ctx, js_ArrayMesh_surface_remove, "surface_remove", 2));
+    JS_SetPropertyStr(ctx, methods, "surface_update_vertex_region",
+        JS_NewCFunction(ctx, js_ArrayMesh_surface_update_vertex_region, "surface_update_vertex_region", 4));
+    JS_SetPropertyStr(ctx, methods, "surface_update_attribute_region",
+        JS_NewCFunction(ctx, js_ArrayMesh_surface_update_attribute_region, "surface_update_attribute_region", 4));
+    JS_SetPropertyStr(ctx, methods, "surface_update_skin_region",
+        JS_NewCFunction(ctx, js_ArrayMesh_surface_update_skin_region, "surface_update_skin_region", 4));
     JS_SetPropertyStr(ctx, methods, "surface_get_array_len",
         JS_NewCFunction(ctx, js_ArrayMesh_surface_get_array_len, "surface_get_array_len", 2));
     JS_SetPropertyStr(ctx, methods, "surface_get_array_index_len",

@@ -433,6 +433,67 @@ static JSValue js_OpenXRIPBinding_set_binding_path(JSContext* ctx, JSValueConst 
     return JS_UNDEFINED;
 }
 
+// Property getter: OpenXRIPBinding::paths
+static JSValue js_OpenXRIPBinding_get_paths(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "OpenXRIPBinding.paths getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "OpenXRIPBinding.paths getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRIPBinding.paths getter: invalid object");
+    }
+
+    OpenXRIPBinding* typed_obj = Object::cast_to<OpenXRIPBinding>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRIPBinding.paths getter: wrong type");
+    }
+
+    PackedStringArray value = typed_obj->get_paths();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: OpenXRIPBinding::paths
+static JSValue js_OpenXRIPBinding_set_paths(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "OpenXRIPBinding.paths setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "OpenXRIPBinding.paths setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRIPBinding.paths setter: invalid object");
+    }
+
+    OpenXRIPBinding* typed_obj = Object::cast_to<OpenXRIPBinding>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRIPBinding.paths setter: wrong type");
+    }
+
+    PackedStringArray value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_paths(value);
+    return JS_UNDEFINED;
+}
+
 
 // Registration function for OpenXRIPBinding
 void register_OpenXRIPBinding_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -470,6 +531,14 @@ void register_OpenXRIPBinding_bindings(JSContext* ctx, JSValue global, JSValue c
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_OpenXRIPBinding_set_binding_path, "set_binding_path", 2));
         JS_SetPropertyStr(ctx, props, "binding_path", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_OpenXRIPBinding_get_paths, "get_paths", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_OpenXRIPBinding_set_paths, "set_paths", 2));
+        JS_SetPropertyStr(ctx, props, "paths", prop_obj);
     }
 
     // Register signals array

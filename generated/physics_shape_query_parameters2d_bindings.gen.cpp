@@ -93,6 +93,67 @@ static JSValue js_PhysicsShapeQueryParameters2D_set_collision_mask(JSContext* ct
     return JS_UNDEFINED;
 }
 
+// Property getter: PhysicsShapeQueryParameters2D::exclude
+static JSValue js_PhysicsShapeQueryParameters2D_get_exclude(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.exclude getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.exclude getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.exclude getter: invalid object");
+    }
+
+    PhysicsShapeQueryParameters2D* typed_obj = Object::cast_to<PhysicsShapeQueryParameters2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.exclude getter: wrong type");
+    }
+
+    Array value = typed_obj->get_exclude();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: PhysicsShapeQueryParameters2D::exclude
+static JSValue js_PhysicsShapeQueryParameters2D_set_exclude(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.exclude setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.exclude setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.exclude setter: invalid object");
+    }
+
+    PhysicsShapeQueryParameters2D* typed_obj = Object::cast_to<PhysicsShapeQueryParameters2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.exclude setter: wrong type");
+    }
+
+    Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_exclude(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: PhysicsShapeQueryParameters2D::margin
 static JSValue js_PhysicsShapeQueryParameters2D_get_margin(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -222,6 +283,67 @@ static JSValue js_PhysicsShapeQueryParameters2D_set_motion(JSContext* ctx, JSVal
     JS_FreeValue(ctx, jy_value);
     Vector2 value(tmp_x_value, tmp_y_value);
     typed_obj->set_motion(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: PhysicsShapeQueryParameters2D::shape_rid
+static JSValue js_PhysicsShapeQueryParameters2D_get_shape_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.shape_rid getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.shape_rid getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.shape_rid getter: invalid object");
+    }
+
+    PhysicsShapeQueryParameters2D* typed_obj = Object::cast_to<PhysicsShapeQueryParameters2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.shape_rid getter: wrong type");
+    }
+
+    RID value = typed_obj->get_shape_rid();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: PhysicsShapeQueryParameters2D::shape_rid
+static JSValue js_PhysicsShapeQueryParameters2D_set_shape_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.shape_rid setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.shape_rid setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.shape_rid setter: invalid object");
+    }
+
+    PhysicsShapeQueryParameters2D* typed_obj = Object::cast_to<PhysicsShapeQueryParameters2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsShapeQueryParameters2D.shape_rid setter: wrong type");
+    }
+
+    RID value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_shape_rid(value);
     return JS_UNDEFINED;
 }
 
@@ -429,6 +551,14 @@ void register_PhysicsShapeQueryParameters2D_bindings(JSContext* ctx, JSValue glo
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_PhysicsShapeQueryParameters2D_get_exclude, "get_exclude", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_PhysicsShapeQueryParameters2D_set_exclude, "set_exclude", 2));
+        JS_SetPropertyStr(ctx, props, "exclude", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
             JS_NewCFunction(ctx, js_PhysicsShapeQueryParameters2D_get_margin, "get_margin", 1));
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_PhysicsShapeQueryParameters2D_set_margin, "set_margin", 2));
@@ -441,6 +571,14 @@ void register_PhysicsShapeQueryParameters2D_bindings(JSContext* ctx, JSValue glo
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_PhysicsShapeQueryParameters2D_set_motion, "set_motion", 2));
         JS_SetPropertyStr(ctx, props, "motion", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_PhysicsShapeQueryParameters2D_get_shape_rid, "get_shape_rid", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_PhysicsShapeQueryParameters2D_set_shape_rid, "set_shape_rid", 2));
+        JS_SetPropertyStr(ctx, props, "shape_rid", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

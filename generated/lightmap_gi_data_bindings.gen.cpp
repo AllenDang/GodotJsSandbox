@@ -186,6 +186,128 @@ static JSValue js_LightmapGIData_clear_users(JSContext* ctx, JSValueConst this_v
     return JS_UNDEFINED;
 }
 
+// Property getter: LightmapGIData::lightmap_textures
+static JSValue js_LightmapGIData_get_lightmap_textures(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.lightmap_textures getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.lightmap_textures getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.lightmap_textures getter: invalid object");
+    }
+
+    LightmapGIData* typed_obj = Object::cast_to<LightmapGIData>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.lightmap_textures getter: wrong type");
+    }
+
+    Array value = typed_obj->get_lightmap_textures();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: LightmapGIData::lightmap_textures
+static JSValue js_LightmapGIData_set_lightmap_textures(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.lightmap_textures setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.lightmap_textures setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.lightmap_textures setter: invalid object");
+    }
+
+    LightmapGIData* typed_obj = Object::cast_to<LightmapGIData>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.lightmap_textures setter: wrong type");
+    }
+
+    Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_lightmap_textures(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: LightmapGIData::shadowmask_textures
+static JSValue js_LightmapGIData_get_shadowmask_textures(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.shadowmask_textures getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.shadowmask_textures getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.shadowmask_textures getter: invalid object");
+    }
+
+    LightmapGIData* typed_obj = Object::cast_to<LightmapGIData>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.shadowmask_textures getter: wrong type");
+    }
+
+    Array value = typed_obj->get_shadowmask_textures();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: LightmapGIData::shadowmask_textures
+static JSValue js_LightmapGIData_set_shadowmask_textures(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.shadowmask_textures setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.shadowmask_textures setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.shadowmask_textures setter: invalid object");
+    }
+
+    LightmapGIData* typed_obj = Object::cast_to<LightmapGIData>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "LightmapGIData.shadowmask_textures setter: wrong type");
+    }
+
+    Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_shadowmask_textures(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: LightmapGIData::uses_spherical_harmonics
 static JSValue js_LightmapGIData_get_uses_spherical_harmonics(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -366,6 +488,22 @@ void register_LightmapGIData_bindings(JSContext* ctx, JSValue global, JSValue cl
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
 
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_LightmapGIData_get_lightmap_textures, "get_lightmap_textures", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_LightmapGIData_set_lightmap_textures, "set_lightmap_textures", 2));
+        JS_SetPropertyStr(ctx, props, "lightmap_textures", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_LightmapGIData_get_shadowmask_textures, "get_shadowmask_textures", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_LightmapGIData_set_shadowmask_textures, "set_shadowmask_textures", 2));
+        JS_SetPropertyStr(ctx, props, "shadowmask_textures", prop_obj);
+    }
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",

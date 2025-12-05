@@ -110,6 +110,44 @@ static JSValue js_NavigationMesh_get_collision_mask_value(JSContext* ctx, JSValu
     return JS_NewBool(ctx, result);
 }
 
+// Method: NavigationMesh::add_polygon
+static JSValue js_NavigationMesh_add_polygon(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationMesh.add_polygon: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationMesh.add_polygon: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationMesh.add_polygon: invalid or freed object");
+    }
+
+    NavigationMesh* typed_obj = Object::cast_to<NavigationMesh>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationMesh.add_polygon: object is not a NavigationMesh");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationMesh.add_polygon: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedInt32Array arg_polygon = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->add_polygon(arg_polygon);
+    return JS_UNDEFINED;
+}
+
 // Method: NavigationMesh::get_polygon_count
 static JSValue js_NavigationMesh_get_polygon_count(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -138,6 +176,44 @@ static JSValue js_NavigationMesh_get_polygon_count(JSContext* ctx, JSValueConst 
 
     int64_t result = typed_obj->get_polygon_count();
     return JS_NewInt64(ctx, result);
+}
+
+// Method: NavigationMesh::get_polygon
+static JSValue js_NavigationMesh_get_polygon(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationMesh.get_polygon: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationMesh.get_polygon: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationMesh.get_polygon: invalid or freed object");
+    }
+
+    NavigationMesh* typed_obj = Object::cast_to<NavigationMesh>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationMesh.get_polygon: object is not a NavigationMesh");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationMesh.get_polygon: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
+
+    PackedInt32Array result = typed_obj->get_polygon(arg_idx);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: NavigationMesh::clear_polygons
@@ -1765,8 +1841,12 @@ void register_NavigationMesh_bindings(JSContext* ctx, JSValue global, JSValue cl
         JS_NewCFunction(ctx, js_NavigationMesh_set_collision_mask_value, "set_collision_mask_value", 3));
     JS_SetPropertyStr(ctx, methods, "get_collision_mask_value",
         JS_NewCFunction(ctx, js_NavigationMesh_get_collision_mask_value, "get_collision_mask_value", 2));
+    JS_SetPropertyStr(ctx, methods, "add_polygon",
+        JS_NewCFunction(ctx, js_NavigationMesh_add_polygon, "add_polygon", 2));
     JS_SetPropertyStr(ctx, methods, "get_polygon_count",
         JS_NewCFunction(ctx, js_NavigationMesh_get_polygon_count, "get_polygon_count", 1));
+    JS_SetPropertyStr(ctx, methods, "get_polygon",
+        JS_NewCFunction(ctx, js_NavigationMesh_get_polygon, "get_polygon", 2));
     JS_SetPropertyStr(ctx, methods, "clear_polygons",
         JS_NewCFunction(ctx, js_NavigationMesh_clear_polygons, "clear_polygons", 1));
     JS_SetPropertyStr(ctx, methods, "create_from_mesh",

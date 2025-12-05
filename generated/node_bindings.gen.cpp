@@ -64,6 +64,36 @@ static JSValue js_Node_print_orphan_nodes(JSContext* ctx, JSValueConst this_val,
     return JS_UNDEFINED;
 }
 
+// Method: Node::get_orphan_node_ids
+static JSValue js_Node_get_orphan_node_ids(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node.get_orphan_node_ids: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node.get_orphan_node_ids: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node.get_orphan_node_ids: invalid or freed object");
+    }
+
+    Node* typed_obj = Object::cast_to<Node>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node.get_orphan_node_ids: object is not a Node");
+    }
+
+    Array result = typed_obj->get_orphan_node_ids();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Node::add_sibling
 static JSValue js_Node_add_sibling(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -341,6 +371,49 @@ static JSValue js_Node_get_child_count(JSContext* ctx, JSValueConst this_val, in
 
     int64_t result = typed_obj->get_child_count(arg_include_internal);
     return JS_NewInt64(ctx, result);
+}
+
+// Method: Node::get_children
+static JSValue js_Node_get_children(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node.get_children: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node.get_children: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node.get_children: invalid or freed object");
+    }
+
+    Node* typed_obj = Object::cast_to<Node>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node.get_children: object is not a Node");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node.get_children: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: include_internal (default: false)
+    bool arg_include_internal = false;
+    if (argc > 1) {
+        // Override default with provided value
+        arg_include_internal = JS_ToBool(ctx, argv[1]);
+    }
+
+    Array result = typed_obj->get_children(arg_include_internal);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: Node::get_child
@@ -704,6 +777,62 @@ static JSValue js_Node_find_child(JSContext* ctx, JSValueConst this_val, int arg
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
     JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
+}
+
+// Method: Node::find_children
+static JSValue js_Node_find_children(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node.find_children: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node.find_children: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node.find_children: invalid or freed object");
+    }
+
+    Node* typed_obj = Object::cast_to<Node>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node.find_children: object is not a Node");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Node.find_children: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_pattern = JS_ToCString(ctx, argv[1]); String arg_pattern = cstr_pattern ? cstr_pattern : ""; JS_FreeCString(ctx, cstr_pattern);
+    // Optional argument: type (default: String())
+    String arg_type = String();
+    if (argc > 2) {
+        // Override default with provided value
+        const char* cstr_type = JS_ToCString(ctx, argv[2]); arg_type = cstr_type ? cstr_type : ""; JS_FreeCString(ctx, cstr_type);
+    }
+    // Optional argument: recursive (default: true)
+    bool arg_recursive = true;
+    if (argc > 3) {
+        // Override default with provided value
+        arg_recursive = JS_ToBool(ctx, argv[3]);
+    }
+    // Optional argument: owned (default: true)
+    bool arg_owned = true;
+    if (argc > 4) {
+        // Override default with provided value
+        arg_owned = JS_ToBool(ctx, argv[4]);
+    }
+
+    Array result = typed_obj->find_children(arg_pattern, arg_type, arg_recursive, arg_owned);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: Node::find_parent
@@ -1272,6 +1401,36 @@ static JSValue js_Node_move_child(JSContext* ctx, JSValueConst this_val, int arg
 
     typed_obj->move_child(arg_child_node, arg_to_index);
     return JS_UNDEFINED;
+}
+
+// Method: Node::get_groups
+static JSValue js_Node_get_groups(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node.get_groups: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node.get_groups: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node.get_groups: invalid or freed object");
+    }
+
+    Node* typed_obj = Object::cast_to<Node>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node.get_groups: object is not a Node");
+    }
+
+    Array result = typed_obj->get_groups();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: Node::get_index
@@ -2001,6 +2160,36 @@ static JSValue js_Node_queue_accessibility_update(JSContext* ctx, JSValueConst t
 
     typed_obj->queue_accessibility_update();
     return JS_UNDEFINED;
+}
+
+// Method: Node::get_accessibility_element
+static JSValue js_Node_get_accessibility_element(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node.get_accessibility_element: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node.get_accessibility_element: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node.get_accessibility_element: invalid or freed object");
+    }
+
+    Node* typed_obj = Object::cast_to<Node>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node.get_accessibility_element: object is not a Node");
+    }
+
+    RID result = typed_obj->get_accessibility_element();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: Node::set_display_folded
@@ -4306,6 +4495,8 @@ void register_Node_bindings(JSContext* ctx, JSValue global, JSValue classes) {
 
     JS_SetPropertyStr(ctx, methods, "print_orphan_nodes",
         JS_NewCFunction(ctx, js_Node_print_orphan_nodes, "print_orphan_nodes", 1));
+    JS_SetPropertyStr(ctx, methods, "get_orphan_node_ids",
+        JS_NewCFunction(ctx, js_Node_get_orphan_node_ids, "get_orphan_node_ids", 1));
     JS_SetPropertyStr(ctx, methods, "add_sibling",
         JS_NewCFunction(ctx, js_Node_add_sibling, "add_sibling", 3));
     JS_SetPropertyStr(ctx, methods, "add_child",
@@ -4316,6 +4507,8 @@ void register_Node_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Node_reparent, "reparent", 3));
     JS_SetPropertyStr(ctx, methods, "get_child_count",
         JS_NewCFunction(ctx, js_Node_get_child_count, "get_child_count", 2));
+    JS_SetPropertyStr(ctx, methods, "get_children",
+        JS_NewCFunction(ctx, js_Node_get_children, "get_children", 2));
     JS_SetPropertyStr(ctx, methods, "get_child",
         JS_NewCFunction(ctx, js_Node_get_child, "get_child", 3));
     JS_SetPropertyStr(ctx, methods, "has_node",
@@ -4328,6 +4521,8 @@ void register_Node_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Node_get_parent, "get_parent", 1));
     JS_SetPropertyStr(ctx, methods, "find_child",
         JS_NewCFunction(ctx, js_Node_find_child, "find_child", 4));
+    JS_SetPropertyStr(ctx, methods, "find_children",
+        JS_NewCFunction(ctx, js_Node_find_children, "find_children", 5));
     JS_SetPropertyStr(ctx, methods, "find_parent",
         JS_NewCFunction(ctx, js_Node_find_parent, "find_parent", 2));
     JS_SetPropertyStr(ctx, methods, "has_node_and_resource",
@@ -4354,6 +4549,8 @@ void register_Node_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Node_is_in_group, "is_in_group", 2));
     JS_SetPropertyStr(ctx, methods, "move_child",
         JS_NewCFunction(ctx, js_Node_move_child, "move_child", 3));
+    JS_SetPropertyStr(ctx, methods, "get_groups",
+        JS_NewCFunction(ctx, js_Node_get_groups, "get_groups", 1));
     JS_SetPropertyStr(ctx, methods, "get_index",
         JS_NewCFunction(ctx, js_Node_get_index, "get_index", 2));
     JS_SetPropertyStr(ctx, methods, "print_tree",
@@ -4398,6 +4595,8 @@ void register_Node_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Node_can_process, "can_process", 1));
     JS_SetPropertyStr(ctx, methods, "queue_accessibility_update",
         JS_NewCFunction(ctx, js_Node_queue_accessibility_update, "queue_accessibility_update", 1));
+    JS_SetPropertyStr(ctx, methods, "get_accessibility_element",
+        JS_NewCFunction(ctx, js_Node_get_accessibility_element, "get_accessibility_element", 1));
     JS_SetPropertyStr(ctx, methods, "set_display_folded",
         JS_NewCFunction(ctx, js_Node_set_display_folded, "set_display_folded", 2));
     JS_SetPropertyStr(ctx, methods, "is_displayed_folded",

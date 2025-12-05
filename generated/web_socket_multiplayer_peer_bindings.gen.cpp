@@ -299,6 +299,128 @@ static JSValue js_WebSocketMultiplayerPeer_get_peer_port(JSContext* ctx, JSValue
     return JS_NewInt64(ctx, result);
 }
 
+// Property getter: WebSocketMultiplayerPeer::supported_protocols
+static JSValue js_WebSocketMultiplayerPeer_get_supported_protocols(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.supported_protocols getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.supported_protocols getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.supported_protocols getter: invalid object");
+    }
+
+    WebSocketMultiplayerPeer* typed_obj = Object::cast_to<WebSocketMultiplayerPeer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.supported_protocols getter: wrong type");
+    }
+
+    PackedStringArray value = typed_obj->get_supported_protocols();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: WebSocketMultiplayerPeer::supported_protocols
+static JSValue js_WebSocketMultiplayerPeer_set_supported_protocols(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.supported_protocols setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.supported_protocols setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.supported_protocols setter: invalid object");
+    }
+
+    WebSocketMultiplayerPeer* typed_obj = Object::cast_to<WebSocketMultiplayerPeer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.supported_protocols setter: wrong type");
+    }
+
+    PackedStringArray value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_supported_protocols(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: WebSocketMultiplayerPeer::handshake_headers
+static JSValue js_WebSocketMultiplayerPeer_get_handshake_headers(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.handshake_headers getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.handshake_headers getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.handshake_headers getter: invalid object");
+    }
+
+    WebSocketMultiplayerPeer* typed_obj = Object::cast_to<WebSocketMultiplayerPeer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.handshake_headers getter: wrong type");
+    }
+
+    PackedStringArray value = typed_obj->get_handshake_headers();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: WebSocketMultiplayerPeer::handshake_headers
+static JSValue js_WebSocketMultiplayerPeer_set_handshake_headers(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.handshake_headers setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.handshake_headers setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.handshake_headers setter: invalid object");
+    }
+
+    WebSocketMultiplayerPeer* typed_obj = Object::cast_to<WebSocketMultiplayerPeer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "WebSocketMultiplayerPeer.handshake_headers setter: wrong type");
+    }
+
+    PackedStringArray value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_handshake_headers(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: WebSocketMultiplayerPeer::inbound_buffer_size
 static JSValue js_WebSocketMultiplayerPeer_get_inbound_buffer_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -563,6 +685,22 @@ void register_WebSocketMultiplayerPeer_bindings(JSContext* ctx, JSValue global, 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
 
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_WebSocketMultiplayerPeer_get_supported_protocols, "get_supported_protocols", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_WebSocketMultiplayerPeer_set_supported_protocols, "set_supported_protocols", 2));
+        JS_SetPropertyStr(ctx, props, "supported_protocols", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_WebSocketMultiplayerPeer_get_handshake_headers, "get_handshake_headers", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_WebSocketMultiplayerPeer_set_handshake_headers, "set_handshake_headers", 2));
+        JS_SetPropertyStr(ctx, props, "handshake_headers", prop_obj);
+    }
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",

@@ -259,6 +259,46 @@ static JSValue js_ENetPacketPeer_reset(JSContext* ctx, JSValueConst this_val, in
     return JS_UNDEFINED;
 }
 
+// Method: ENetPacketPeer::send
+static JSValue js_ENetPacketPeer_send(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ENetPacketPeer.send: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ENetPacketPeer.send: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ENetPacketPeer.send: invalid or freed object");
+    }
+
+    ENetPacketPeer* typed_obj = Object::cast_to<ENetPacketPeer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ENetPacketPeer.send: object is not a ENetPacketPeer");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "ENetPacketPeer.send: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_channel; JS_ToInt64(ctx, &arg_channel, argv[1]);
+    PackedByteArray arg_packet = qjs_ctx->js_to_variant(argv[2]);
+    int64_t arg_flags; JS_ToInt64(ctx, &arg_flags, argv[3]);
+
+    Error result = typed_obj->send(arg_channel, arg_packet, arg_flags);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: ENetPacketPeer::throttle_configure
 static JSValue js_ENetPacketPeer_throttle_configure(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -575,6 +615,8 @@ void register_ENetPacketPeer_bindings(JSContext* ctx, JSValue global, JSValue cl
         JS_NewCFunction(ctx, js_ENetPacketPeer_ping_interval, "ping_interval", 2));
     JS_SetPropertyStr(ctx, methods, "reset",
         JS_NewCFunction(ctx, js_ENetPacketPeer_reset, "reset", 1));
+    JS_SetPropertyStr(ctx, methods, "send",
+        JS_NewCFunction(ctx, js_ENetPacketPeer_send, "send", 4));
     JS_SetPropertyStr(ctx, methods, "throttle_configure",
         JS_NewCFunction(ctx, js_ENetPacketPeer_throttle_configure, "throttle_configure", 4));
     JS_SetPropertyStr(ctx, methods, "set_timeout",

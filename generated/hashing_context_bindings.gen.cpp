@@ -70,6 +70,74 @@ static JSValue js_HashingContext_start(JSContext* ctx, JSValueConst this_val, in
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
+// Method: HashingContext::update
+static JSValue js_HashingContext_update(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "HashingContext.update: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "HashingContext.update: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "HashingContext.update: invalid or freed object");
+    }
+
+    HashingContext* typed_obj = Object::cast_to<HashingContext>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "HashingContext.update: object is not a HashingContext");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "HashingContext.update: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_chunk = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->update(arg_chunk);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: HashingContext::finish
+static JSValue js_HashingContext_finish(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "HashingContext.finish: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "HashingContext.finish: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "HashingContext.finish: invalid or freed object");
+    }
+
+    HashingContext* typed_obj = Object::cast_to<HashingContext>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "HashingContext.finish: object is not a HashingContext");
+    }
+
+    PackedByteArray result = typed_obj->finish();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 
 // Registration function for HashingContext
 void register_HashingContext_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -78,6 +146,10 @@ void register_HashingContext_bindings(JSContext* ctx, JSValue global, JSValue cl
 
     JS_SetPropertyStr(ctx, methods, "start",
         JS_NewCFunction(ctx, js_HashingContext_start, "start", 2));
+    JS_SetPropertyStr(ctx, methods, "update",
+        JS_NewCFunction(ctx, js_HashingContext_update, "update", 2));
+    JS_SetPropertyStr(ctx, methods, "finish",
+        JS_NewCFunction(ctx, js_HashingContext_finish, "finish", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

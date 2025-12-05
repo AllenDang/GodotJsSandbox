@@ -207,6 +207,44 @@ static JSValue js_FontFile_remove_cache(JSContext* ctx, JSValueConst this_val, i
     return JS_UNDEFINED;
 }
 
+// Method: FontFile::get_size_cache_list
+static JSValue js_FontFile_get_size_cache_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_size_cache_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_size_cache_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_size_cache_list: invalid or freed object");
+    }
+
+    FontFile* typed_obj = Object::cast_to<FontFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_size_cache_list: object is not a FontFile");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_size_cache_list: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_cache_index; JS_ToInt64(ctx, &arg_cache_index, argv[1]);
+
+    Array result = typed_obj->get_size_cache_list(arg_cache_index);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: FontFile::clear_size_cache
 static JSValue js_FontFile_clear_size_cache(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1382,6 +1420,126 @@ static JSValue js_FontFile_get_texture_image(JSContext* ctx, JSValueConst this_v
     return ret_obj;
 }
 
+// Method: FontFile::set_texture_offsets
+static JSValue js_FontFile_set_texture_offsets(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FontFile.set_texture_offsets: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FontFile.set_texture_offsets: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.set_texture_offsets: invalid or freed object");
+    }
+
+    FontFile* typed_obj = Object::cast_to<FontFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.set_texture_offsets: object is not a FontFile");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 5) {
+        return JS_ThrowTypeError(ctx, "FontFile.set_texture_offsets: expected at least 4 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_cache_index; JS_ToInt64(ctx, &arg_cache_index, argv[1]);
+    Vector2i arg_size = qjs_ctx->js_to_variant(argv[2]);
+    int64_t arg_texture_index; JS_ToInt64(ctx, &arg_texture_index, argv[3]);
+    PackedInt32Array arg_offset = qjs_ctx->js_to_variant(argv[4]);
+
+    typed_obj->set_texture_offsets(arg_cache_index, arg_size, arg_texture_index, arg_offset);
+    return JS_UNDEFINED;
+}
+
+// Method: FontFile::get_texture_offsets
+static JSValue js_FontFile_get_texture_offsets(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_texture_offsets: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_texture_offsets: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_texture_offsets: invalid or freed object");
+    }
+
+    FontFile* typed_obj = Object::cast_to<FontFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_texture_offsets: object is not a FontFile");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_texture_offsets: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_cache_index; JS_ToInt64(ctx, &arg_cache_index, argv[1]);
+    Vector2i arg_size = qjs_ctx->js_to_variant(argv[2]);
+    int64_t arg_texture_index; JS_ToInt64(ctx, &arg_texture_index, argv[3]);
+
+    PackedInt32Array result = typed_obj->get_texture_offsets(arg_cache_index, arg_size, arg_texture_index);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: FontFile::get_glyph_list
+static JSValue js_FontFile_get_glyph_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_glyph_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_glyph_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_glyph_list: invalid or freed object");
+    }
+
+    FontFile* typed_obj = Object::cast_to<FontFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_glyph_list: object is not a FontFile");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_glyph_list: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_cache_index; JS_ToInt64(ctx, &arg_cache_index, argv[1]);
+    Vector2i arg_size = qjs_ctx->js_to_variant(argv[2]);
+
+    PackedInt32Array result = typed_obj->get_glyph_list(arg_cache_index, arg_size);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: FontFile::clear_glyphs
 static JSValue js_FontFile_clear_glyphs(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1919,6 +2077,45 @@ static JSValue js_FontFile_get_glyph_texture_idx(JSContext* ctx, JSValueConst th
     return JS_NewInt64(ctx, result);
 }
 
+// Method: FontFile::get_kerning_list
+static JSValue js_FontFile_get_kerning_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_kerning_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_kerning_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_kerning_list: invalid or freed object");
+    }
+
+    FontFile* typed_obj = Object::cast_to<FontFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_kerning_list: object is not a FontFile");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_kerning_list: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_cache_index; JS_ToInt64(ctx, &arg_cache_index, argv[1]);
+    int64_t arg_size; JS_ToInt64(ctx, &arg_size, argv[2]);
+
+    Array result = typed_obj->get_kerning_list(arg_cache_index, arg_size);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: FontFile::clear_kerning_map
 static JSValue js_FontFile_clear_kerning_map(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2285,6 +2482,36 @@ static JSValue js_FontFile_remove_language_support_override(JSContext* ctx, JSVa
     return JS_UNDEFINED;
 }
 
+// Method: FontFile::get_language_support_overrides
+static JSValue js_FontFile_get_language_support_overrides(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_language_support_overrides: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_language_support_overrides: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_language_support_overrides: invalid or freed object");
+    }
+
+    FontFile* typed_obj = Object::cast_to<FontFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_language_support_overrides: object is not a FontFile");
+    }
+
+    PackedStringArray result = typed_obj->get_language_support_overrides();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: FontFile::set_script_support_override
 static JSValue js_FontFile_set_script_support_override(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2400,6 +2627,36 @@ static JSValue js_FontFile_remove_script_support_override(JSContext* ctx, JSValu
     return JS_UNDEFINED;
 }
 
+// Method: FontFile::get_script_support_overrides
+static JSValue js_FontFile_get_script_support_overrides(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_script_support_overrides: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_script_support_overrides: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_script_support_overrides: invalid or freed object");
+    }
+
+    FontFile* typed_obj = Object::cast_to<FontFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.get_script_support_overrides: object is not a FontFile");
+    }
+
+    PackedStringArray result = typed_obj->get_script_support_overrides();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: FontFile::get_glyph_index
 static JSValue js_FontFile_get_glyph_index(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2477,6 +2734,67 @@ static JSValue js_FontFile_get_char_from_glyph_index(JSContext* ctx, JSValueCons
 
     int64_t result = typed_obj->get_char_from_glyph_index(arg_size, arg_glyph_index);
     return JS_NewInt64(ctx, result);
+}
+
+// Property getter: FontFile::data
+static JSValue js_FontFile_get_data(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FontFile.data getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FontFile.data getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.data getter: invalid object");
+    }
+
+    FontFile* typed_obj = Object::cast_to<FontFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.data getter: wrong type");
+    }
+
+    PackedByteArray value = typed_obj->get_data();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: FontFile::data
+static JSValue js_FontFile_set_data(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "FontFile.data setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FontFile.data setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.data setter: invalid object");
+    }
+
+    FontFile* typed_obj = Object::cast_to<FontFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FontFile.data setter: wrong type");
+    }
+
+    PackedByteArray value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_data(value);
+    return JS_UNDEFINED;
 }
 
 // Property getter: FontFile::generate_mipmaps
@@ -3776,6 +4094,8 @@ void register_FontFile_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_FontFile_clear_cache, "clear_cache", 1));
     JS_SetPropertyStr(ctx, methods, "remove_cache",
         JS_NewCFunction(ctx, js_FontFile_remove_cache, "remove_cache", 2));
+    JS_SetPropertyStr(ctx, methods, "get_size_cache_list",
+        JS_NewCFunction(ctx, js_FontFile_get_size_cache_list, "get_size_cache_list", 2));
     JS_SetPropertyStr(ctx, methods, "clear_size_cache",
         JS_NewCFunction(ctx, js_FontFile_clear_size_cache, "clear_size_cache", 2));
     JS_SetPropertyStr(ctx, methods, "remove_size_cache",
@@ -3834,6 +4154,12 @@ void register_FontFile_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_FontFile_set_texture_image, "set_texture_image", 5));
     JS_SetPropertyStr(ctx, methods, "get_texture_image",
         JS_NewCFunction(ctx, js_FontFile_get_texture_image, "get_texture_image", 4));
+    JS_SetPropertyStr(ctx, methods, "set_texture_offsets",
+        JS_NewCFunction(ctx, js_FontFile_set_texture_offsets, "set_texture_offsets", 5));
+    JS_SetPropertyStr(ctx, methods, "get_texture_offsets",
+        JS_NewCFunction(ctx, js_FontFile_get_texture_offsets, "get_texture_offsets", 4));
+    JS_SetPropertyStr(ctx, methods, "get_glyph_list",
+        JS_NewCFunction(ctx, js_FontFile_get_glyph_list, "get_glyph_list", 3));
     JS_SetPropertyStr(ctx, methods, "clear_glyphs",
         JS_NewCFunction(ctx, js_FontFile_clear_glyphs, "clear_glyphs", 3));
     JS_SetPropertyStr(ctx, methods, "remove_glyph",
@@ -3858,6 +4184,8 @@ void register_FontFile_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_FontFile_set_glyph_texture_idx, "set_glyph_texture_idx", 5));
     JS_SetPropertyStr(ctx, methods, "get_glyph_texture_idx",
         JS_NewCFunction(ctx, js_FontFile_get_glyph_texture_idx, "get_glyph_texture_idx", 4));
+    JS_SetPropertyStr(ctx, methods, "get_kerning_list",
+        JS_NewCFunction(ctx, js_FontFile_get_kerning_list, "get_kerning_list", 3));
     JS_SetPropertyStr(ctx, methods, "clear_kerning_map",
         JS_NewCFunction(ctx, js_FontFile_clear_kerning_map, "clear_kerning_map", 3));
     JS_SetPropertyStr(ctx, methods, "remove_kerning",
@@ -3876,12 +4204,16 @@ void register_FontFile_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_FontFile_get_language_support_override, "get_language_support_override", 2));
     JS_SetPropertyStr(ctx, methods, "remove_language_support_override",
         JS_NewCFunction(ctx, js_FontFile_remove_language_support_override, "remove_language_support_override", 2));
+    JS_SetPropertyStr(ctx, methods, "get_language_support_overrides",
+        JS_NewCFunction(ctx, js_FontFile_get_language_support_overrides, "get_language_support_overrides", 1));
     JS_SetPropertyStr(ctx, methods, "set_script_support_override",
         JS_NewCFunction(ctx, js_FontFile_set_script_support_override, "set_script_support_override", 3));
     JS_SetPropertyStr(ctx, methods, "get_script_support_override",
         JS_NewCFunction(ctx, js_FontFile_get_script_support_override, "get_script_support_override", 2));
     JS_SetPropertyStr(ctx, methods, "remove_script_support_override",
         JS_NewCFunction(ctx, js_FontFile_remove_script_support_override, "remove_script_support_override", 2));
+    JS_SetPropertyStr(ctx, methods, "get_script_support_overrides",
+        JS_NewCFunction(ctx, js_FontFile_get_script_support_overrides, "get_script_support_overrides", 1));
     JS_SetPropertyStr(ctx, methods, "get_glyph_index",
         JS_NewCFunction(ctx, js_FontFile_get_glyph_index, "get_glyph_index", 4));
     JS_SetPropertyStr(ctx, methods, "get_char_from_glyph_index",
@@ -3890,6 +4222,14 @@ void register_FontFile_bindings(JSContext* ctx, JSValue global, JSValue classes)
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
 
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_FontFile_get_data, "get_data", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_FontFile_set_data, "set_data", 2));
+        JS_SetPropertyStr(ctx, props, "data", prop_obj);
+    }
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",

@@ -33,6 +33,44 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "ImageTextureLayered: unknown error"); \
     }
 
+// Method: ImageTextureLayered::create_from_images
+static JSValue js_ImageTextureLayered_create_from_images(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ImageTextureLayered.create_from_images: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ImageTextureLayered.create_from_images: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ImageTextureLayered.create_from_images: invalid or freed object");
+    }
+
+    ImageTextureLayered* typed_obj = Object::cast_to<ImageTextureLayered>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ImageTextureLayered.create_from_images: object is not a ImageTextureLayered");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "ImageTextureLayered.create_from_images: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Array arg_images = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->create_from_images(arg_images);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: ImageTextureLayered::update_layer
 static JSValue js_ImageTextureLayered_update_layer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -93,6 +131,8 @@ void register_ImageTextureLayered_bindings(JSContext* ctx, JSValue global, JSVal
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "create_from_images",
+        JS_NewCFunction(ctx, js_ImageTextureLayered_create_from_images, "create_from_images", 2));
     JS_SetPropertyStr(ctx, methods, "update_layer",
         JS_NewCFunction(ctx, js_ImageTextureLayered_update_layer, "update_layer", 3));
 

@@ -8,10 +8,10 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/theme.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
-#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/theme.hpp>
+#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -273,6 +273,74 @@ static JSValue js_Theme_clear_icon(JSContext* ctx, JSValueConst this_val, int ar
     return JS_UNDEFINED;
 }
 
+// Method: Theme::get_icon_list
+static JSValue js_Theme_get_icon_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_icon_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_icon_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_icon_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_icon_list: object is not a Theme");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Theme.get_icon_list: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+
+    PackedStringArray result = typed_obj->get_icon_list(arg_theme_type);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Theme::get_icon_type_list
+static JSValue js_Theme_get_icon_type_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_icon_type_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_icon_type_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_icon_type_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_icon_type_list: object is not a Theme");
+    }
+
+    PackedStringArray result = typed_obj->get_icon_type_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Theme::set_stylebox
 static JSValue js_Theme_set_stylebox(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -508,6 +576,74 @@ static JSValue js_Theme_clear_stylebox(JSContext* ctx, JSValueConst this_val, in
 
     typed_obj->clear_stylebox(arg_name, arg_theme_type);
     return JS_UNDEFINED;
+}
+
+// Method: Theme::get_stylebox_list
+static JSValue js_Theme_get_stylebox_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_stylebox_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_stylebox_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_stylebox_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_stylebox_list: object is not a Theme");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Theme.get_stylebox_list: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+
+    PackedStringArray result = typed_obj->get_stylebox_list(arg_theme_type);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Theme::get_stylebox_type_list
+static JSValue js_Theme_get_stylebox_type_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_stylebox_type_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_stylebox_type_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_stylebox_type_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_stylebox_type_list: object is not a Theme");
+    }
+
+    PackedStringArray result = typed_obj->get_stylebox_type_list();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: Theme::set_font
@@ -747,6 +883,74 @@ static JSValue js_Theme_clear_font(JSContext* ctx, JSValueConst this_val, int ar
     return JS_UNDEFINED;
 }
 
+// Method: Theme::get_font_list
+static JSValue js_Theme_get_font_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_list: object is not a Theme");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_list: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+
+    PackedStringArray result = typed_obj->get_font_list(arg_theme_type);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Theme::get_font_type_list
+static JSValue js_Theme_get_font_type_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_type_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_type_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_type_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_type_list: object is not a Theme");
+    }
+
+    PackedStringArray result = typed_obj->get_font_type_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Theme::set_font_size
 static JSValue js_Theme_set_font_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -942,6 +1146,74 @@ static JSValue js_Theme_clear_font_size(JSContext* ctx, JSValueConst this_val, i
 
     typed_obj->clear_font_size(arg_name, arg_theme_type);
     return JS_UNDEFINED;
+}
+
+// Method: Theme::get_font_size_list
+static JSValue js_Theme_get_font_size_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_size_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_size_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_size_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_size_list: object is not a Theme");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_size_list: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+
+    PackedStringArray result = typed_obj->get_font_size_list(arg_theme_type);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Theme::get_font_size_type_list
+static JSValue js_Theme_get_font_size_type_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_size_type_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_size_type_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_size_type_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_font_size_type_list: object is not a Theme");
+    }
+
+    PackedStringArray result = typed_obj->get_font_size_type_list();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: Theme::set_color
@@ -1159,6 +1431,74 @@ static JSValue js_Theme_clear_color(JSContext* ctx, JSValueConst this_val, int a
     return JS_UNDEFINED;
 }
 
+// Method: Theme::get_color_list
+static JSValue js_Theme_get_color_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_color_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_color_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_color_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_color_list: object is not a Theme");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Theme.get_color_list: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+
+    PackedStringArray result = typed_obj->get_color_list(arg_theme_type);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Theme::get_color_type_list
+static JSValue js_Theme_get_color_type_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_color_type_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_color_type_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_color_type_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_color_type_list: object is not a Theme");
+    }
+
+    PackedStringArray result = typed_obj->get_color_type_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Theme::set_constant
 static JSValue js_Theme_set_constant(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1354,6 +1694,74 @@ static JSValue js_Theme_clear_constant(JSContext* ctx, JSValueConst this_val, in
 
     typed_obj->clear_constant(arg_name, arg_theme_type);
     return JS_UNDEFINED;
+}
+
+// Method: Theme::get_constant_list
+static JSValue js_Theme_get_constant_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_constant_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_constant_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_constant_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_constant_list: object is not a Theme");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Theme.get_constant_list: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+
+    PackedStringArray result = typed_obj->get_constant_list(arg_theme_type);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Theme::get_constant_type_list
+static JSValue js_Theme_get_constant_type_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_constant_type_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_constant_type_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_constant_type_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_constant_type_list: object is not a Theme");
+    }
+
+    PackedStringArray result = typed_obj->get_constant_type_list();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: Theme::has_default_base_scale
@@ -1648,6 +2056,83 @@ static JSValue js_Theme_clear_theme_item(JSContext* ctx, JSValueConst this_val, 
     return JS_UNDEFINED;
 }
 
+// Method: Theme::get_theme_item_list
+static JSValue js_Theme_get_theme_item_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_theme_item_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_theme_item_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_theme_item_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_theme_item_list: object is not a Theme");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "Theme.get_theme_item_list: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t tmp_data_type; JS_ToInt64(ctx, &tmp_data_type, argv[1]); Theme::DataType arg_data_type = (Theme::DataType)tmp_data_type;
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+
+    PackedStringArray result = typed_obj->get_theme_item_list(arg_data_type, arg_theme_type);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Theme::get_theme_item_type_list
+static JSValue js_Theme_get_theme_item_type_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_theme_item_type_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_theme_item_type_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_theme_item_type_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_theme_item_type_list: object is not a Theme");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Theme.get_theme_item_type_list: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t tmp_data_type; JS_ToInt64(ctx, &tmp_data_type, argv[1]); Theme::DataType arg_data_type = (Theme::DataType)tmp_data_type;
+
+    PackedStringArray result = typed_obj->get_theme_item_type_list(arg_data_type);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Theme::set_type_variation
 static JSValue js_Theme_set_type_variation(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1802,6 +2287,44 @@ static JSValue js_Theme_get_type_variation_base(JSContext* ctx, JSValueConst thi
     return JS_NewString(ctx, String(result).utf8().get_data());
 }
 
+// Method: Theme::get_type_variation_list
+static JSValue js_Theme_get_type_variation_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_type_variation_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_type_variation_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_type_variation_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_type_variation_list: object is not a Theme");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Theme.get_type_variation_list: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_base_type = JS_ToCString(ctx, argv[1]); StringName arg_base_type = cstr_base_type ? cstr_base_type : ""; JS_FreeCString(ctx, cstr_base_type);
+
+    PackedStringArray result = typed_obj->get_type_variation_list(arg_base_type);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Theme::add_type
 static JSValue js_Theme_add_type(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1915,6 +2438,36 @@ static JSValue js_Theme_rename_type(JSContext* ctx, JSValueConst this_val, int a
 
     typed_obj->rename_type(arg_old_theme_type, arg_theme_type);
     return JS_UNDEFINED;
+}
+
+// Method: Theme::get_type_list
+static JSValue js_Theme_get_type_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Theme.get_type_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Theme.get_type_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_type_list: invalid or freed object");
+    }
+
+    Theme* typed_obj = Object::cast_to<Theme>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Theme.get_type_list: object is not a Theme");
+    }
+
+    PackedStringArray result = typed_obj->get_type_list();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: Theme::merge_with
@@ -2239,6 +2792,10 @@ void register_Theme_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Theme_rename_icon, "rename_icon", 4));
     JS_SetPropertyStr(ctx, methods, "clear_icon",
         JS_NewCFunction(ctx, js_Theme_clear_icon, "clear_icon", 3));
+    JS_SetPropertyStr(ctx, methods, "get_icon_list",
+        JS_NewCFunction(ctx, js_Theme_get_icon_list, "get_icon_list", 2));
+    JS_SetPropertyStr(ctx, methods, "get_icon_type_list",
+        JS_NewCFunction(ctx, js_Theme_get_icon_type_list, "get_icon_type_list", 1));
     JS_SetPropertyStr(ctx, methods, "set_stylebox",
         JS_NewCFunction(ctx, js_Theme_set_stylebox, "set_stylebox", 4));
     JS_SetPropertyStr(ctx, methods, "get_stylebox",
@@ -2249,6 +2806,10 @@ void register_Theme_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Theme_rename_stylebox, "rename_stylebox", 4));
     JS_SetPropertyStr(ctx, methods, "clear_stylebox",
         JS_NewCFunction(ctx, js_Theme_clear_stylebox, "clear_stylebox", 3));
+    JS_SetPropertyStr(ctx, methods, "get_stylebox_list",
+        JS_NewCFunction(ctx, js_Theme_get_stylebox_list, "get_stylebox_list", 2));
+    JS_SetPropertyStr(ctx, methods, "get_stylebox_type_list",
+        JS_NewCFunction(ctx, js_Theme_get_stylebox_type_list, "get_stylebox_type_list", 1));
     JS_SetPropertyStr(ctx, methods, "set_font",
         JS_NewCFunction(ctx, js_Theme_set_font, "set_font", 4));
     JS_SetPropertyStr(ctx, methods, "get_font",
@@ -2259,6 +2820,10 @@ void register_Theme_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Theme_rename_font, "rename_font", 4));
     JS_SetPropertyStr(ctx, methods, "clear_font",
         JS_NewCFunction(ctx, js_Theme_clear_font, "clear_font", 3));
+    JS_SetPropertyStr(ctx, methods, "get_font_list",
+        JS_NewCFunction(ctx, js_Theme_get_font_list, "get_font_list", 2));
+    JS_SetPropertyStr(ctx, methods, "get_font_type_list",
+        JS_NewCFunction(ctx, js_Theme_get_font_type_list, "get_font_type_list", 1));
     JS_SetPropertyStr(ctx, methods, "set_font_size",
         JS_NewCFunction(ctx, js_Theme_set_font_size, "set_font_size", 4));
     JS_SetPropertyStr(ctx, methods, "get_font_size",
@@ -2269,6 +2834,10 @@ void register_Theme_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Theme_rename_font_size, "rename_font_size", 4));
     JS_SetPropertyStr(ctx, methods, "clear_font_size",
         JS_NewCFunction(ctx, js_Theme_clear_font_size, "clear_font_size", 3));
+    JS_SetPropertyStr(ctx, methods, "get_font_size_list",
+        JS_NewCFunction(ctx, js_Theme_get_font_size_list, "get_font_size_list", 2));
+    JS_SetPropertyStr(ctx, methods, "get_font_size_type_list",
+        JS_NewCFunction(ctx, js_Theme_get_font_size_type_list, "get_font_size_type_list", 1));
     JS_SetPropertyStr(ctx, methods, "set_color",
         JS_NewCFunction(ctx, js_Theme_set_color, "set_color", 4));
     JS_SetPropertyStr(ctx, methods, "get_color",
@@ -2279,6 +2848,10 @@ void register_Theme_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Theme_rename_color, "rename_color", 4));
     JS_SetPropertyStr(ctx, methods, "clear_color",
         JS_NewCFunction(ctx, js_Theme_clear_color, "clear_color", 3));
+    JS_SetPropertyStr(ctx, methods, "get_color_list",
+        JS_NewCFunction(ctx, js_Theme_get_color_list, "get_color_list", 2));
+    JS_SetPropertyStr(ctx, methods, "get_color_type_list",
+        JS_NewCFunction(ctx, js_Theme_get_color_type_list, "get_color_type_list", 1));
     JS_SetPropertyStr(ctx, methods, "set_constant",
         JS_NewCFunction(ctx, js_Theme_set_constant, "set_constant", 4));
     JS_SetPropertyStr(ctx, methods, "get_constant",
@@ -2289,6 +2862,10 @@ void register_Theme_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Theme_rename_constant, "rename_constant", 4));
     JS_SetPropertyStr(ctx, methods, "clear_constant",
         JS_NewCFunction(ctx, js_Theme_clear_constant, "clear_constant", 3));
+    JS_SetPropertyStr(ctx, methods, "get_constant_list",
+        JS_NewCFunction(ctx, js_Theme_get_constant_list, "get_constant_list", 2));
+    JS_SetPropertyStr(ctx, methods, "get_constant_type_list",
+        JS_NewCFunction(ctx, js_Theme_get_constant_type_list, "get_constant_type_list", 1));
     JS_SetPropertyStr(ctx, methods, "has_default_base_scale",
         JS_NewCFunction(ctx, js_Theme_has_default_base_scale, "has_default_base_scale", 1));
     JS_SetPropertyStr(ctx, methods, "has_default_font",
@@ -2305,6 +2882,10 @@ void register_Theme_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Theme_rename_theme_item, "rename_theme_item", 5));
     JS_SetPropertyStr(ctx, methods, "clear_theme_item",
         JS_NewCFunction(ctx, js_Theme_clear_theme_item, "clear_theme_item", 4));
+    JS_SetPropertyStr(ctx, methods, "get_theme_item_list",
+        JS_NewCFunction(ctx, js_Theme_get_theme_item_list, "get_theme_item_list", 3));
+    JS_SetPropertyStr(ctx, methods, "get_theme_item_type_list",
+        JS_NewCFunction(ctx, js_Theme_get_theme_item_type_list, "get_theme_item_type_list", 2));
     JS_SetPropertyStr(ctx, methods, "set_type_variation",
         JS_NewCFunction(ctx, js_Theme_set_type_variation, "set_type_variation", 3));
     JS_SetPropertyStr(ctx, methods, "is_type_variation",
@@ -2313,12 +2894,16 @@ void register_Theme_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Theme_clear_type_variation, "clear_type_variation", 2));
     JS_SetPropertyStr(ctx, methods, "get_type_variation_base",
         JS_NewCFunction(ctx, js_Theme_get_type_variation_base, "get_type_variation_base", 2));
+    JS_SetPropertyStr(ctx, methods, "get_type_variation_list",
+        JS_NewCFunction(ctx, js_Theme_get_type_variation_list, "get_type_variation_list", 2));
     JS_SetPropertyStr(ctx, methods, "add_type",
         JS_NewCFunction(ctx, js_Theme_add_type, "add_type", 2));
     JS_SetPropertyStr(ctx, methods, "remove_type",
         JS_NewCFunction(ctx, js_Theme_remove_type, "remove_type", 2));
     JS_SetPropertyStr(ctx, methods, "rename_type",
         JS_NewCFunction(ctx, js_Theme_rename_type, "rename_type", 3));
+    JS_SetPropertyStr(ctx, methods, "get_type_list",
+        JS_NewCFunction(ctx, js_Theme_get_type_list, "get_type_list", 1));
     JS_SetPropertyStr(ctx, methods, "merge_with",
         JS_NewCFunction(ctx, js_Theme_merge_with, "merge_with", 2));
     JS_SetPropertyStr(ctx, methods, "clear",

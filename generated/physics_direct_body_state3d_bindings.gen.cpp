@@ -985,6 +985,44 @@ static JSValue js_PhysicsDirectBodyState3D_get_contact_local_velocity_at_positio
     return ret_obj;
 }
 
+// Method: PhysicsDirectBodyState3D::get_contact_collider
+static JSValue js_PhysicsDirectBodyState3D_get_contact_collider(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectBodyState3D.get_contact_collider: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectBodyState3D.get_contact_collider: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectBodyState3D.get_contact_collider: invalid or freed object");
+    }
+
+    PhysicsDirectBodyState3D* typed_obj = Object::cast_to<PhysicsDirectBodyState3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectBodyState3D.get_contact_collider: object is not a PhysicsDirectBodyState3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectBodyState3D.get_contact_collider: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_contact_idx; JS_ToInt64(ctx, &arg_contact_idx, argv[1]);
+
+    RID result = typed_obj->get_contact_collider(arg_contact_idx);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: PhysicsDirectBodyState3D::get_contact_collider_position
 static JSValue js_PhysicsDirectBodyState3D_get_contact_collider_position(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2138,6 +2176,8 @@ void register_PhysicsDirectBodyState3D_bindings(JSContext* ctx, JSValue global, 
         JS_NewCFunction(ctx, js_PhysicsDirectBodyState3D_get_contact_local_shape, "get_contact_local_shape", 2));
     JS_SetPropertyStr(ctx, methods, "get_contact_local_velocity_at_position",
         JS_NewCFunction(ctx, js_PhysicsDirectBodyState3D_get_contact_local_velocity_at_position, "get_contact_local_velocity_at_position", 2));
+    JS_SetPropertyStr(ctx, methods, "get_contact_collider",
+        JS_NewCFunction(ctx, js_PhysicsDirectBodyState3D_get_contact_collider, "get_contact_collider", 2));
     JS_SetPropertyStr(ctx, methods, "get_contact_collider_position",
         JS_NewCFunction(ctx, js_PhysicsDirectBodyState3D_get_contact_collider_position, "get_contact_collider_position", 2));
     JS_SetPropertyStr(ctx, methods, "get_contact_collider_id",

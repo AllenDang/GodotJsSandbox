@@ -100,6 +100,80 @@ static JSValue js_ZIPReader_close(JSContext* ctx, JSValueConst this_val, int arg
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
+// Method: ZIPReader::get_files
+static JSValue js_ZIPReader_get_files(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ZIPReader.get_files: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ZIPReader.get_files: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ZIPReader.get_files: invalid or freed object");
+    }
+
+    ZIPReader* typed_obj = Object::cast_to<ZIPReader>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ZIPReader.get_files: object is not a ZIPReader");
+    }
+
+    PackedStringArray result = typed_obj->get_files();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: ZIPReader::read_file
+static JSValue js_ZIPReader_read_file(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ZIPReader.read_file: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ZIPReader.read_file: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ZIPReader.read_file: invalid or freed object");
+    }
+
+    ZIPReader* typed_obj = Object::cast_to<ZIPReader>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ZIPReader.read_file: object is not a ZIPReader");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "ZIPReader.read_file: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    // Optional argument: case_sensitive (default: true)
+    bool arg_case_sensitive = true;
+    if (argc > 2) {
+        // Override default with provided value
+        arg_case_sensitive = JS_ToBool(ctx, argv[2]);
+    }
+
+    PackedByteArray result = typed_obj->read_file(arg_path, arg_case_sensitive);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: ZIPReader::file_exists
 static JSValue js_ZIPReader_file_exists(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -198,6 +272,10 @@ void register_ZIPReader_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_NewCFunction(ctx, js_ZIPReader_open, "open", 2));
     JS_SetPropertyStr(ctx, methods, "close",
         JS_NewCFunction(ctx, js_ZIPReader_close, "close", 1));
+    JS_SetPropertyStr(ctx, methods, "get_files",
+        JS_NewCFunction(ctx, js_ZIPReader_get_files, "get_files", 1));
+    JS_SetPropertyStr(ctx, methods, "read_file",
+        JS_NewCFunction(ctx, js_ZIPReader_read_file, "read_file", 3));
     JS_SetPropertyStr(ctx, methods, "file_exists",
         JS_NewCFunction(ctx, js_ZIPReader_file_exists, "file_exists", 3));
     JS_SetPropertyStr(ctx, methods, "get_compression_level",

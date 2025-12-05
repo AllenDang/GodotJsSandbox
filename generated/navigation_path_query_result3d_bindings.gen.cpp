@@ -147,6 +147,189 @@ static JSValue js_NavigationPathQueryResult3D_set_path(JSContext* ctx, JSValueCo
     return JS_UNDEFINED;
 }
 
+// Property getter: NavigationPathQueryResult3D::path_types
+static JSValue js_NavigationPathQueryResult3D_get_path_types(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_types getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_types getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_types getter: invalid object");
+    }
+
+    NavigationPathQueryResult3D* typed_obj = Object::cast_to<NavigationPathQueryResult3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_types getter: wrong type");
+    }
+
+    PackedInt32Array value = typed_obj->get_path_types();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: NavigationPathQueryResult3D::path_types
+static JSValue js_NavigationPathQueryResult3D_set_path_types(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_types setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_types setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_types setter: invalid object");
+    }
+
+    NavigationPathQueryResult3D* typed_obj = Object::cast_to<NavigationPathQueryResult3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_types setter: wrong type");
+    }
+
+    PackedInt32Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_path_types(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: NavigationPathQueryResult3D::path_rids
+static JSValue js_NavigationPathQueryResult3D_get_path_rids(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_rids getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_rids getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_rids getter: invalid object");
+    }
+
+    NavigationPathQueryResult3D* typed_obj = Object::cast_to<NavigationPathQueryResult3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_rids getter: wrong type");
+    }
+
+    Array value = typed_obj->get_path_rids();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: NavigationPathQueryResult3D::path_rids
+static JSValue js_NavigationPathQueryResult3D_set_path_rids(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_rids setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_rids setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_rids setter: invalid object");
+    }
+
+    NavigationPathQueryResult3D* typed_obj = Object::cast_to<NavigationPathQueryResult3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_rids setter: wrong type");
+    }
+
+    Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_path_rids(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: NavigationPathQueryResult3D::path_owner_ids
+static JSValue js_NavigationPathQueryResult3D_get_path_owner_ids(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_owner_ids getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_owner_ids getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_owner_ids getter: invalid object");
+    }
+
+    NavigationPathQueryResult3D* typed_obj = Object::cast_to<NavigationPathQueryResult3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_owner_ids getter: wrong type");
+    }
+
+    PackedInt64Array value = typed_obj->get_path_owner_ids();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: NavigationPathQueryResult3D::path_owner_ids
+static JSValue js_NavigationPathQueryResult3D_set_path_owner_ids(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_owner_ids setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_owner_ids setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_owner_ids setter: invalid object");
+    }
+
+    NavigationPathQueryResult3D* typed_obj = Object::cast_to<NavigationPathQueryResult3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryResult3D.path_owner_ids setter: wrong type");
+    }
+
+    PackedInt64Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_path_owner_ids(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: NavigationPathQueryResult3D::path_length
 static JSValue js_NavigationPathQueryResult3D_get_path_length(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -227,6 +410,30 @@ void register_NavigationPathQueryResult3D_bindings(JSContext* ctx, JSValue globa
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_NavigationPathQueryResult3D_set_path, "set_path", 2));
         JS_SetPropertyStr(ctx, props, "path", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_NavigationPathQueryResult3D_get_path_types, "get_path_types", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_NavigationPathQueryResult3D_set_path_types, "set_path_types", 2));
+        JS_SetPropertyStr(ctx, props, "path_types", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_NavigationPathQueryResult3D_get_path_rids, "get_path_rids", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_NavigationPathQueryResult3D_set_path_rids, "set_path_rids", 2));
+        JS_SetPropertyStr(ctx, props, "path_rids", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_NavigationPathQueryResult3D_get_path_owner_ids, "get_path_owner_ids", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_NavigationPathQueryResult3D_set_path_owner_ids, "set_path_owner_ids", 2));
+        JS_SetPropertyStr(ctx, props, "path_owner_ids", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

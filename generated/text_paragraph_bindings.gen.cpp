@@ -550,6 +550,104 @@ static JSValue js_TextParagraph_get_size(JSContext* ctx, JSValueConst this_val, 
     return ret_obj;
 }
 
+// Method: TextParagraph::get_rid
+static JSValue js_TextParagraph_get_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.get_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.get_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.get_rid: invalid or freed object");
+    }
+
+    TextParagraph* typed_obj = Object::cast_to<TextParagraph>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.get_rid: object is not a TextParagraph");
+    }
+
+    RID result = typed_obj->get_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: TextParagraph::get_line_rid
+static JSValue js_TextParagraph_get_line_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.get_line_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.get_line_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.get_line_rid: invalid or freed object");
+    }
+
+    TextParagraph* typed_obj = Object::cast_to<TextParagraph>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.get_line_rid: object is not a TextParagraph");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.get_line_rid: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_line; JS_ToInt64(ctx, &arg_line, argv[1]);
+
+    RID result = typed_obj->get_line_rid(arg_line);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: TextParagraph::get_dropcap_rid
+static JSValue js_TextParagraph_get_dropcap_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.get_dropcap_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.get_dropcap_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.get_dropcap_rid: invalid or freed object");
+    }
+
+    TextParagraph* typed_obj = Object::cast_to<TextParagraph>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.get_dropcap_rid: object is not a TextParagraph");
+    }
+
+    RID result = typed_obj->get_dropcap_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: TextParagraph::get_range
 static JSValue js_TextParagraph_get_range(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1026,6 +1124,498 @@ static JSValue js_TextParagraph_get_dropcap_lines(JSContext* ctx, JSValueConst t
 
     int64_t result = typed_obj->get_dropcap_lines();
     return JS_NewInt64(ctx, result);
+}
+
+// Method: TextParagraph::draw
+static JSValue js_TextParagraph_draw(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw: invalid or freed object");
+    }
+
+    TextParagraph* typed_obj = Object::cast_to<TextParagraph>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw: object is not a TextParagraph");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    // Optional argument: color (default: Color(1, 1, 1, 1))
+    Color arg_color = Color(1, 1, 1, 1);
+    if (argc > 3) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[3], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[3], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[3], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[3], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    }
+    // Optional argument: dc_color (default: Color(1, 1, 1, 1))
+    Color arg_dc_color = Color(1, 1, 1, 1);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_dc_color, tmp_g_dc_color, tmp_b_dc_color, tmp_a_dc_color = 1.0;
+    JSValue jr_dc_color = JS_GetPropertyStr(ctx, argv[4], "r");
+    JSValue jg_dc_color = JS_GetPropertyStr(ctx, argv[4], "g");
+    JSValue jb_dc_color = JS_GetPropertyStr(ctx, argv[4], "b");
+    JSValue ja_dc_color = JS_GetPropertyStr(ctx, argv[4], "a");
+    JS_ToFloat64(ctx, &tmp_r_dc_color, jr_dc_color);
+    JS_ToFloat64(ctx, &tmp_g_dc_color, jg_dc_color);
+    JS_ToFloat64(ctx, &tmp_b_dc_color, jb_dc_color);
+    if (!JS_IsUndefined(ja_dc_color)) JS_ToFloat64(ctx, &tmp_a_dc_color, ja_dc_color);
+    JS_FreeValue(ctx, jr_dc_color);
+    JS_FreeValue(ctx, jg_dc_color);
+    JS_FreeValue(ctx, jb_dc_color);
+    JS_FreeValue(ctx, ja_dc_color);
+    Color arg_dc_color(tmp_r_dc_color, tmp_g_dc_color, tmp_b_dc_color, tmp_a_dc_color);
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[5]);
+    }
+
+    typed_obj->draw(arg_canvas, arg_pos, arg_color, arg_dc_color, arg_oversampling);
+    return JS_UNDEFINED;
+}
+
+// Method: TextParagraph::draw_outline
+static JSValue js_TextParagraph_draw_outline(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_outline: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_outline: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_outline: invalid or freed object");
+    }
+
+    TextParagraph* typed_obj = Object::cast_to<TextParagraph>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_outline: object is not a TextParagraph");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_outline: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    // Optional argument: outline_size (default: 1)
+    int64_t arg_outline_size = 1;
+    if (argc > 3) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_outline_size, argv[3]);
+    }
+    // Optional argument: color (default: Color(1, 1, 1, 1))
+    Color arg_color = Color(1, 1, 1, 1);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[4], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[4], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[4], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[4], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    }
+    // Optional argument: dc_color (default: Color(1, 1, 1, 1))
+    Color arg_dc_color = Color(1, 1, 1, 1);
+    if (argc > 5) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_dc_color, tmp_g_dc_color, tmp_b_dc_color, tmp_a_dc_color = 1.0;
+    JSValue jr_dc_color = JS_GetPropertyStr(ctx, argv[5], "r");
+    JSValue jg_dc_color = JS_GetPropertyStr(ctx, argv[5], "g");
+    JSValue jb_dc_color = JS_GetPropertyStr(ctx, argv[5], "b");
+    JSValue ja_dc_color = JS_GetPropertyStr(ctx, argv[5], "a");
+    JS_ToFloat64(ctx, &tmp_r_dc_color, jr_dc_color);
+    JS_ToFloat64(ctx, &tmp_g_dc_color, jg_dc_color);
+    JS_ToFloat64(ctx, &tmp_b_dc_color, jb_dc_color);
+    if (!JS_IsUndefined(ja_dc_color)) JS_ToFloat64(ctx, &tmp_a_dc_color, ja_dc_color);
+    JS_FreeValue(ctx, jr_dc_color);
+    JS_FreeValue(ctx, jg_dc_color);
+    JS_FreeValue(ctx, jb_dc_color);
+    JS_FreeValue(ctx, ja_dc_color);
+    Color arg_dc_color(tmp_r_dc_color, tmp_g_dc_color, tmp_b_dc_color, tmp_a_dc_color);
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 6) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[6]);
+    }
+
+    typed_obj->draw_outline(arg_canvas, arg_pos, arg_outline_size, arg_color, arg_dc_color, arg_oversampling);
+    return JS_UNDEFINED;
+}
+
+// Method: TextParagraph::draw_line
+static JSValue js_TextParagraph_draw_line(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_line: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_line: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_line: invalid or freed object");
+    }
+
+    TextParagraph* typed_obj = Object::cast_to<TextParagraph>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_line: object is not a TextParagraph");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_line: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    int64_t arg_line; JS_ToInt64(ctx, &arg_line, argv[3]);
+    // Optional argument: color (default: Color(1, 1, 1, 1))
+    Color arg_color = Color(1, 1, 1, 1);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[4], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[4], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[4], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[4], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[5]);
+    }
+
+    typed_obj->draw_line(arg_canvas, arg_pos, arg_line, arg_color, arg_oversampling);
+    return JS_UNDEFINED;
+}
+
+// Method: TextParagraph::draw_line_outline
+static JSValue js_TextParagraph_draw_line_outline(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_line_outline: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_line_outline: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_line_outline: invalid or freed object");
+    }
+
+    TextParagraph* typed_obj = Object::cast_to<TextParagraph>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_line_outline: object is not a TextParagraph");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_line_outline: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    int64_t arg_line; JS_ToInt64(ctx, &arg_line, argv[3]);
+    // Optional argument: outline_size (default: 1)
+    int64_t arg_outline_size = 1;
+    if (argc > 4) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_outline_size, argv[4]);
+    }
+    // Optional argument: color (default: Color(1, 1, 1, 1))
+    Color arg_color = Color(1, 1, 1, 1);
+    if (argc > 5) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[5], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[5], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[5], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[5], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 6) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[6]);
+    }
+
+    typed_obj->draw_line_outline(arg_canvas, arg_pos, arg_line, arg_outline_size, arg_color, arg_oversampling);
+    return JS_UNDEFINED;
+}
+
+// Method: TextParagraph::draw_dropcap
+static JSValue js_TextParagraph_draw_dropcap(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_dropcap: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_dropcap: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_dropcap: invalid or freed object");
+    }
+
+    TextParagraph* typed_obj = Object::cast_to<TextParagraph>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_dropcap: object is not a TextParagraph");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_dropcap: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    // Optional argument: color (default: Color(1, 1, 1, 1))
+    Color arg_color = Color(1, 1, 1, 1);
+    if (argc > 3) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[3], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[3], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[3], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[3], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 4) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[4]);
+    }
+
+    typed_obj->draw_dropcap(arg_canvas, arg_pos, arg_color, arg_oversampling);
+    return JS_UNDEFINED;
+}
+
+// Method: TextParagraph::draw_dropcap_outline
+static JSValue js_TextParagraph_draw_dropcap_outline(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_dropcap_outline: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_dropcap_outline: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_dropcap_outline: invalid or freed object");
+    }
+
+    TextParagraph* typed_obj = Object::cast_to<TextParagraph>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_dropcap_outline: object is not a TextParagraph");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "TextParagraph.draw_dropcap_outline: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    // Optional argument: outline_size (default: 1)
+    int64_t arg_outline_size = 1;
+    if (argc > 3) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_outline_size, argv[3]);
+    }
+    // Optional argument: color (default: Color(1, 1, 1, 1))
+    Color arg_color = Color(1, 1, 1, 1);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[4], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[4], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[4], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[4], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[5]);
+    }
+
+    typed_obj->draw_dropcap_outline(arg_canvas, arg_pos, arg_outline_size, arg_color, arg_oversampling);
+    return JS_UNDEFINED;
 }
 
 // Method: TextParagraph::hit_test
@@ -1894,6 +2484,12 @@ void register_TextParagraph_bindings(JSContext* ctx, JSValue global, JSValue cla
         JS_NewCFunction(ctx, js_TextParagraph_get_non_wrapped_size, "get_non_wrapped_size", 1));
     JS_SetPropertyStr(ctx, methods, "get_size",
         JS_NewCFunction(ctx, js_TextParagraph_get_size, "get_size", 1));
+    JS_SetPropertyStr(ctx, methods, "get_rid",
+        JS_NewCFunction(ctx, js_TextParagraph_get_rid, "get_rid", 1));
+    JS_SetPropertyStr(ctx, methods, "get_line_rid",
+        JS_NewCFunction(ctx, js_TextParagraph_get_line_rid, "get_line_rid", 2));
+    JS_SetPropertyStr(ctx, methods, "get_dropcap_rid",
+        JS_NewCFunction(ctx, js_TextParagraph_get_dropcap_rid, "get_dropcap_rid", 1));
     JS_SetPropertyStr(ctx, methods, "get_range",
         JS_NewCFunction(ctx, js_TextParagraph_get_range, "get_range", 1));
     JS_SetPropertyStr(ctx, methods, "get_line_count",
@@ -1920,6 +2516,18 @@ void register_TextParagraph_bindings(JSContext* ctx, JSValue global, JSValue cla
         JS_NewCFunction(ctx, js_TextParagraph_get_dropcap_size, "get_dropcap_size", 1));
     JS_SetPropertyStr(ctx, methods, "get_dropcap_lines",
         JS_NewCFunction(ctx, js_TextParagraph_get_dropcap_lines, "get_dropcap_lines", 1));
+    JS_SetPropertyStr(ctx, methods, "draw",
+        JS_NewCFunction(ctx, js_TextParagraph_draw, "draw", 6));
+    JS_SetPropertyStr(ctx, methods, "draw_outline",
+        JS_NewCFunction(ctx, js_TextParagraph_draw_outline, "draw_outline", 7));
+    JS_SetPropertyStr(ctx, methods, "draw_line",
+        JS_NewCFunction(ctx, js_TextParagraph_draw_line, "draw_line", 6));
+    JS_SetPropertyStr(ctx, methods, "draw_line_outline",
+        JS_NewCFunction(ctx, js_TextParagraph_draw_line_outline, "draw_line_outline", 7));
+    JS_SetPropertyStr(ctx, methods, "draw_dropcap",
+        JS_NewCFunction(ctx, js_TextParagraph_draw_dropcap, "draw_dropcap", 5));
+    JS_SetPropertyStr(ctx, methods, "draw_dropcap_outline",
+        JS_NewCFunction(ctx, js_TextParagraph_draw_dropcap_outline, "draw_dropcap_outline", 6));
     JS_SetPropertyStr(ctx, methods, "hit_test",
         JS_NewCFunction(ctx, js_TextParagraph_hit_test, "hit_test", 2));
 

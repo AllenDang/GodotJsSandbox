@@ -359,6 +359,67 @@ static JSValue js_MultiplayerSpawner_set_spawn_limit(JSContext* ctx, JSValueCons
     return JS_UNDEFINED;
 }
 
+// Property getter: MultiplayerSpawner::spawn_function
+static JSValue js_MultiplayerSpawner_get_spawn_function(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSpawner.spawn_function getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSpawner.spawn_function getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSpawner.spawn_function getter: invalid object");
+    }
+
+    MultiplayerSpawner* typed_obj = Object::cast_to<MultiplayerSpawner>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSpawner.spawn_function getter: wrong type");
+    }
+
+    Callable value = typed_obj->get_spawn_function();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: MultiplayerSpawner::spawn_function
+static JSValue js_MultiplayerSpawner_set_spawn_function(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSpawner.spawn_function setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSpawner.spawn_function setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSpawner.spawn_function setter: invalid object");
+    }
+
+    MultiplayerSpawner* typed_obj = Object::cast_to<MultiplayerSpawner>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSpawner.spawn_function setter: wrong type");
+    }
+
+    Callable value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_spawn_function(value);
+    return JS_UNDEFINED;
+}
+
 
 // Registration function for MultiplayerSpawner
 void register_MultiplayerSpawner_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -394,6 +455,14 @@ void register_MultiplayerSpawner_bindings(JSContext* ctx, JSValue global, JSValu
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_MultiplayerSpawner_set_spawn_limit, "set_spawn_limit", 2));
         JS_SetPropertyStr(ctx, props, "spawn_limit", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_MultiplayerSpawner_get_spawn_function, "get_spawn_function", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_MultiplayerSpawner_set_spawn_function, "set_spawn_function", 2));
+        JS_SetPropertyStr(ctx, props, "spawn_function", prop_obj);
     }
 
     // Register signals array

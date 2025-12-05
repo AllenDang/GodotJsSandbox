@@ -32,6 +32,67 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "RenderSceneBuffersConfiguration: unknown error"); \
     }
 
+// Property getter: RenderSceneBuffersConfiguration::render_target
+static JSValue js_RenderSceneBuffersConfiguration_get_render_target(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersConfiguration.render_target getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersConfiguration.render_target getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersConfiguration.render_target getter: invalid object");
+    }
+
+    RenderSceneBuffersConfiguration* typed_obj = Object::cast_to<RenderSceneBuffersConfiguration>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersConfiguration.render_target getter: wrong type");
+    }
+
+    RID value = typed_obj->get_render_target();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: RenderSceneBuffersConfiguration::render_target
+static JSValue js_RenderSceneBuffersConfiguration_set_render_target(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersConfiguration.render_target setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersConfiguration.render_target setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersConfiguration.render_target setter: invalid object");
+    }
+
+    RenderSceneBuffersConfiguration* typed_obj = Object::cast_to<RenderSceneBuffersConfiguration>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersConfiguration.render_target setter: wrong type");
+    }
+
+    RID value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_render_target(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: RenderSceneBuffersConfiguration::internal_size
 static JSValue js_RenderSceneBuffersConfiguration_get_internal_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -469,6 +530,14 @@ void register_RenderSceneBuffersConfiguration_bindings(JSContext* ctx, JSValue g
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
 
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_RenderSceneBuffersConfiguration_get_render_target, "get_render_target", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_RenderSceneBuffersConfiguration_set_render_target, "set_render_target", 2));
+        JS_SetPropertyStr(ctx, props, "render_target", prop_obj);
+    }
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",

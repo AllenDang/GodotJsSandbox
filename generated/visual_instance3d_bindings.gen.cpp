@@ -32,6 +32,104 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "VisualInstance3D: unknown error"); \
     }
 
+// Method: VisualInstance3D::set_base
+static JSValue js_VisualInstance3D_set_base(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "VisualInstance3D.set_base: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "VisualInstance3D.set_base: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "VisualInstance3D.set_base: invalid or freed object");
+    }
+
+    VisualInstance3D* typed_obj = Object::cast_to<VisualInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "VisualInstance3D.set_base: object is not a VisualInstance3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "VisualInstance3D.set_base: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_base = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->set_base(arg_base);
+    return JS_UNDEFINED;
+}
+
+// Method: VisualInstance3D::get_base
+static JSValue js_VisualInstance3D_get_base(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "VisualInstance3D.get_base: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "VisualInstance3D.get_base: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "VisualInstance3D.get_base: invalid or freed object");
+    }
+
+    VisualInstance3D* typed_obj = Object::cast_to<VisualInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "VisualInstance3D.get_base: object is not a VisualInstance3D");
+    }
+
+    RID result = typed_obj->get_base();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: VisualInstance3D::get_instance
+static JSValue js_VisualInstance3D_get_instance(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "VisualInstance3D.get_instance: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "VisualInstance3D.get_instance: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "VisualInstance3D.get_instance: invalid or freed object");
+    }
+
+    VisualInstance3D* typed_obj = Object::cast_to<VisualInstance3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "VisualInstance3D.get_instance: object is not a VisualInstance3D");
+    }
+
+    RID result = typed_obj->get_instance();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: VisualInstance3D::set_layer_mask_value
 static JSValue js_VisualInstance3D_set_layer_mask_value(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -328,6 +426,12 @@ void register_VisualInstance3D_bindings(JSContext* ctx, JSValue global, JSValue 
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "set_base",
+        JS_NewCFunction(ctx, js_VisualInstance3D_set_base, "set_base", 2));
+    JS_SetPropertyStr(ctx, methods, "get_base",
+        JS_NewCFunction(ctx, js_VisualInstance3D_get_base, "get_base", 1));
+    JS_SetPropertyStr(ctx, methods, "get_instance",
+        JS_NewCFunction(ctx, js_VisualInstance3D_get_instance, "get_instance", 1));
     JS_SetPropertyStr(ctx, methods, "set_layer_mask_value",
         JS_NewCFunction(ctx, js_VisualInstance3D_set_layer_mask_value, "set_layer_mask_value", 3));
     JS_SetPropertyStr(ctx, methods, "get_layer_mask_value",

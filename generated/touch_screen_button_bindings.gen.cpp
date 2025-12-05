@@ -8,9 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/touch_screen_button.hpp>
+#include <godot_cpp/classes/shape2d.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/bit_map.hpp>
-#include <godot_cpp/classes/shape2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

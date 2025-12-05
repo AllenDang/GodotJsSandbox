@@ -13,6 +13,7 @@ const TestAsyncAwaitClass = preload("res://test_cases/test_async_await.gd")
 const TestErrorCaptureClass = preload("res://test_cases/test_error_capture.gd")
 const TestAsyncSceneLoadingClass = preload("res://test_cases/test_async_scene_loading.gd")
 const TestEnumsClass = preload("res://test_cases/test_enums.gd")
+const TestArrayProxyClass = preload("res://test_cases/test_array_proxy.gd")
 
 var sandbox: JSSandbox
 
@@ -102,6 +103,9 @@ func run_tests() -> void:
 
 	# Enums (global enums and singleton class enums)
 	runner.add_suite(TestEnumsClass.new())
+
+	# Array proxy (zero-copy array access)
+	runner.add_suite(TestArrayProxyClass.new())
 
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())

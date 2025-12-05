@@ -62,6 +62,67 @@ static JSValue js_OggPacketSequence_get_length(JSContext* ctx, JSValueConst this
     return JS_NewFloat64(ctx, result);
 }
 
+// Property getter: OggPacketSequence::granule_positions
+static JSValue js_OggPacketSequence_get_granule_positions(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "OggPacketSequence.granule_positions getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "OggPacketSequence.granule_positions getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "OggPacketSequence.granule_positions getter: invalid object");
+    }
+
+    OggPacketSequence* typed_obj = Object::cast_to<OggPacketSequence>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "OggPacketSequence.granule_positions getter: wrong type");
+    }
+
+    PackedInt64Array value = typed_obj->get_packet_granule_positions();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: OggPacketSequence::granule_positions
+static JSValue js_OggPacketSequence_set_granule_positions(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "OggPacketSequence.granule_positions setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "OggPacketSequence.granule_positions setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "OggPacketSequence.granule_positions setter: invalid object");
+    }
+
+    OggPacketSequence* typed_obj = Object::cast_to<OggPacketSequence>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "OggPacketSequence.granule_positions setter: wrong type");
+    }
+
+    PackedInt64Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_packet_granule_positions(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: OggPacketSequence::sampling_rate
 static JSValue js_OggPacketSequence_get_sampling_rate(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -135,6 +196,14 @@ void register_OggPacketSequence_bindings(JSContext* ctx, JSValue global, JSValue
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
 
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_OggPacketSequence_get_granule_positions, "get_granule_positions", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_OggPacketSequence_set_granule_positions, "set_granule_positions", 2));
+        JS_SetPropertyStr(ctx, props, "granule_positions", prop_obj);
+    }
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",

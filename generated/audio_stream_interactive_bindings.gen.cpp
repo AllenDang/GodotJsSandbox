@@ -520,6 +520,36 @@ static JSValue js_AudioStreamInteractive_erase_transition(JSContext* ctx, JSValu
     return JS_UNDEFINED;
 }
 
+// Method: AudioStreamInteractive::get_transition_list
+static JSValue js_AudioStreamInteractive_get_transition_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AudioStreamInteractive.get_transition_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AudioStreamInteractive.get_transition_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AudioStreamInteractive.get_transition_list: invalid or freed object");
+    }
+
+    AudioStreamInteractive* typed_obj = Object::cast_to<AudioStreamInteractive>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AudioStreamInteractive.get_transition_list: object is not a AudioStreamInteractive");
+    }
+
+    PackedInt32Array result = typed_obj->get_transition_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: AudioStreamInteractive::get_transition_from_time
 static JSValue js_AudioStreamInteractive_get_transition_from_time(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -943,6 +973,8 @@ void register_AudioStreamInteractive_bindings(JSContext* ctx, JSValue global, JS
         JS_NewCFunction(ctx, js_AudioStreamInteractive_has_transition, "has_transition", 3));
     JS_SetPropertyStr(ctx, methods, "erase_transition",
         JS_NewCFunction(ctx, js_AudioStreamInteractive_erase_transition, "erase_transition", 3));
+    JS_SetPropertyStr(ctx, methods, "get_transition_list",
+        JS_NewCFunction(ctx, js_AudioStreamInteractive_get_transition_list, "get_transition_list", 1));
     JS_SetPropertyStr(ctx, methods, "get_transition_from_time",
         JS_NewCFunction(ctx, js_AudioStreamInteractive_get_transition_from_time, "get_transition_from_time", 3));
     JS_SetPropertyStr(ctx, methods, "get_transition_to_time",

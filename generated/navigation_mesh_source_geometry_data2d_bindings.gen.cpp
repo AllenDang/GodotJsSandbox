@@ -93,6 +93,82 @@ static JSValue js_NavigationMeshSourceGeometryData2D_has_data(JSContext* ctx, JS
     return JS_NewBool(ctx, result);
 }
 
+// Method: NavigationMeshSourceGeometryData2D::append_traversable_outlines
+static JSValue js_NavigationMeshSourceGeometryData2D_append_traversable_outlines(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationMeshSourceGeometryData2D.append_traversable_outlines: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationMeshSourceGeometryData2D.append_traversable_outlines: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationMeshSourceGeometryData2D.append_traversable_outlines: invalid or freed object");
+    }
+
+    NavigationMeshSourceGeometryData2D* typed_obj = Object::cast_to<NavigationMeshSourceGeometryData2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationMeshSourceGeometryData2D.append_traversable_outlines: object is not a NavigationMeshSourceGeometryData2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationMeshSourceGeometryData2D.append_traversable_outlines: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Array arg_traversable_outlines = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->append_traversable_outlines(arg_traversable_outlines);
+    return JS_UNDEFINED;
+}
+
+// Method: NavigationMeshSourceGeometryData2D::append_obstruction_outlines
+static JSValue js_NavigationMeshSourceGeometryData2D_append_obstruction_outlines(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationMeshSourceGeometryData2D.append_obstruction_outlines: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationMeshSourceGeometryData2D.append_obstruction_outlines: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationMeshSourceGeometryData2D.append_obstruction_outlines: invalid or freed object");
+    }
+
+    NavigationMeshSourceGeometryData2D* typed_obj = Object::cast_to<NavigationMeshSourceGeometryData2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationMeshSourceGeometryData2D.append_obstruction_outlines: object is not a NavigationMeshSourceGeometryData2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationMeshSourceGeometryData2D.append_obstruction_outlines: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Array arg_obstruction_outlines = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->append_obstruction_outlines(arg_obstruction_outlines);
+    return JS_UNDEFINED;
+}
+
 // Method: NavigationMeshSourceGeometryData2D::add_traversable_outline
 static JSValue js_NavigationMeshSourceGeometryData2D_add_traversable_outline(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -446,6 +522,10 @@ void register_NavigationMeshSourceGeometryData2D_bindings(JSContext* ctx, JSValu
         JS_NewCFunction(ctx, js_NavigationMeshSourceGeometryData2D_clear, "clear", 1));
     JS_SetPropertyStr(ctx, methods, "has_data",
         JS_NewCFunction(ctx, js_NavigationMeshSourceGeometryData2D_has_data, "has_data", 1));
+    JS_SetPropertyStr(ctx, methods, "append_traversable_outlines",
+        JS_NewCFunction(ctx, js_NavigationMeshSourceGeometryData2D_append_traversable_outlines, "append_traversable_outlines", 2));
+    JS_SetPropertyStr(ctx, methods, "append_obstruction_outlines",
+        JS_NewCFunction(ctx, js_NavigationMeshSourceGeometryData2D_append_obstruction_outlines, "append_obstruction_outlines", 2));
     JS_SetPropertyStr(ctx, methods, "add_traversable_outline",
         JS_NewCFunction(ctx, js_NavigationMeshSourceGeometryData2D_add_traversable_outline, "add_traversable_outline", 2));
     JS_SetPropertyStr(ctx, methods, "add_obstruction_outline",

@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/reg_ex.hpp>
-#include <godot_cpp/classes/reg_ex_match.hpp>
 #include <godot_cpp/classes/reg_ex.hpp>
+#include <godot_cpp/classes/reg_ex_match.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -252,6 +252,56 @@ static JSValue js_RegEx_search(JSContext* ctx, JSValueConst this_val, int argc, 
     return ret_obj;
 }
 
+// Method: RegEx::search_all
+static JSValue js_RegEx_search_all(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RegEx.search_all: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RegEx.search_all: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RegEx.search_all: invalid or freed object");
+    }
+
+    RegEx* typed_obj = Object::cast_to<RegEx>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RegEx.search_all: object is not a RegEx");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "RegEx.search_all: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_subject = JS_ToCString(ctx, argv[1]); String arg_subject = cstr_subject ? cstr_subject : ""; JS_FreeCString(ctx, cstr_subject);
+    // Optional argument: offset (default: 0)
+    int64_t arg_offset = 0;
+    if (argc > 2) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_offset, argv[2]);
+    }
+    // Optional argument: end (default: -1)
+    int64_t arg_end = -1;
+    if (argc > 3) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_end, argv[3]);
+    }
+
+    Array result = typed_obj->search_all(arg_subject, arg_offset, arg_end);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: RegEx::sub
 static JSValue js_RegEx_sub(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -399,6 +449,36 @@ static JSValue js_RegEx_get_group_count(JSContext* ctx, JSValueConst this_val, i
     return JS_NewInt64(ctx, result);
 }
 
+// Method: RegEx::get_names
+static JSValue js_RegEx_get_names(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RegEx.get_names: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RegEx.get_names: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RegEx.get_names: invalid or freed object");
+    }
+
+    RegEx* typed_obj = Object::cast_to<RegEx>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RegEx.get_names: object is not a RegEx");
+    }
+
+    PackedStringArray result = typed_obj->get_names();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 
 // Registration function for RegEx
 void register_RegEx_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -413,6 +493,8 @@ void register_RegEx_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_RegEx_compile, "compile", 3));
     JS_SetPropertyStr(ctx, methods, "search",
         JS_NewCFunction(ctx, js_RegEx_search, "search", 4));
+    JS_SetPropertyStr(ctx, methods, "search_all",
+        JS_NewCFunction(ctx, js_RegEx_search_all, "search_all", 4));
     JS_SetPropertyStr(ctx, methods, "sub",
         JS_NewCFunction(ctx, js_RegEx_sub, "sub", 6));
     JS_SetPropertyStr(ctx, methods, "is_valid",
@@ -421,6 +503,8 @@ void register_RegEx_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_RegEx_get_pattern, "get_pattern", 1));
     JS_SetPropertyStr(ctx, methods, "get_group_count",
         JS_NewCFunction(ctx, js_RegEx_get_group_count, "get_group_count", 1));
+    JS_SetPropertyStr(ctx, methods, "get_names",
+        JS_NewCFunction(ctx, js_RegEx_get_names, "get_names", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

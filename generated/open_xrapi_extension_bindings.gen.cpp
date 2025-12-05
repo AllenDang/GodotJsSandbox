@@ -640,6 +640,83 @@ static JSValue js_OpenXRAPIExtension_can_render(JSContext* ctx, JSValueConst thi
     return JS_NewBool(ctx, result);
 }
 
+// Method: OpenXRAPIExtension::find_action
+static JSValue js_OpenXRAPIExtension_find_action(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.find_action: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.find_action: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.find_action: invalid or freed object");
+    }
+
+    OpenXRAPIExtension* typed_obj = Object::cast_to<OpenXRAPIExtension>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.find_action: object is not a OpenXRAPIExtension");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.find_action: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    RID arg_action_set = qjs_ctx->js_to_variant(argv[2]);
+
+    RID result = typed_obj->find_action(arg_name, arg_action_set);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: OpenXRAPIExtension::action_get_handle
+static JSValue js_OpenXRAPIExtension_action_get_handle(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.action_get_handle: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.action_get_handle: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.action_get_handle: invalid or freed object");
+    }
+
+    OpenXRAPIExtension* typed_obj = Object::cast_to<OpenXRAPIExtension>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.action_get_handle: object is not a OpenXRAPIExtension");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.action_get_handle: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_action = qjs_ctx->js_to_variant(argv[1]);
+
+    int64_t result = typed_obj->action_get_handle(arg_action);
+    return JS_NewInt64(ctx, result);
+}
+
 // Method: OpenXRAPIExtension::get_hand_tracker
 static JSValue js_OpenXRAPIExtension_get_hand_tracker(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1056,6 +1133,82 @@ static JSValue js_OpenXRAPIExtension_get_render_state_z_far(JSContext* ctx, JSVa
     return JS_NewFloat64(ctx, result);
 }
 
+// Method: OpenXRAPIExtension::set_velocity_texture
+static JSValue js_OpenXRAPIExtension_set_velocity_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.set_velocity_texture: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.set_velocity_texture: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.set_velocity_texture: invalid or freed object");
+    }
+
+    OpenXRAPIExtension* typed_obj = Object::cast_to<OpenXRAPIExtension>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.set_velocity_texture: object is not a OpenXRAPIExtension");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.set_velocity_texture: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_render_target = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->set_velocity_texture(arg_render_target);
+    return JS_UNDEFINED;
+}
+
+// Method: OpenXRAPIExtension::set_velocity_depth_texture
+static JSValue js_OpenXRAPIExtension_set_velocity_depth_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.set_velocity_depth_texture: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.set_velocity_depth_texture: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.set_velocity_depth_texture: invalid or freed object");
+    }
+
+    OpenXRAPIExtension* typed_obj = Object::cast_to<OpenXRAPIExtension>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.set_velocity_depth_texture: object is not a OpenXRAPIExtension");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.set_velocity_depth_texture: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_render_target = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->set_velocity_depth_texture(arg_render_target);
+    return JS_UNDEFINED;
+}
+
 // Method: OpenXRAPIExtension::set_velocity_target_size
 static JSValue js_OpenXRAPIExtension_set_velocity_target_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1092,6 +1245,36 @@ static JSValue js_OpenXRAPIExtension_set_velocity_target_size(JSContext* ctx, JS
 
     typed_obj->set_velocity_target_size(arg_target_size);
     return JS_UNDEFINED;
+}
+
+// Method: OpenXRAPIExtension::get_supported_swapchain_formats
+static JSValue js_OpenXRAPIExtension_get_supported_swapchain_formats(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.get_supported_swapchain_formats: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.get_supported_swapchain_formats: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.get_supported_swapchain_formats: invalid or freed object");
+    }
+
+    OpenXRAPIExtension* typed_obj = Object::cast_to<OpenXRAPIExtension>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.get_supported_swapchain_formats: object is not a OpenXRAPIExtension");
+    }
+
+    PackedInt64Array result = typed_obj->get_supported_swapchain_formats();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: OpenXRAPIExtension::openxr_swapchain_create
@@ -1250,6 +1433,44 @@ static JSValue js_OpenXRAPIExtension_openxr_swapchain_acquire(JSContext* ctx, JS
 
     typed_obj->openxr_swapchain_acquire(arg_swapchain);
     return JS_UNDEFINED;
+}
+
+// Method: OpenXRAPIExtension::openxr_swapchain_get_image
+static JSValue js_OpenXRAPIExtension_openxr_swapchain_get_image(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.openxr_swapchain_get_image: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.openxr_swapchain_get_image: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.openxr_swapchain_get_image: invalid or freed object");
+    }
+
+    OpenXRAPIExtension* typed_obj = Object::cast_to<OpenXRAPIExtension>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.openxr_swapchain_get_image: object is not a OpenXRAPIExtension");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "OpenXRAPIExtension.openxr_swapchain_get_image: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_swapchain; JS_ToInt64(ctx, &arg_swapchain, argv[1]);
+
+    RID result = typed_obj->openxr_swapchain_get_image(arg_swapchain);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: OpenXRAPIExtension::openxr_swapchain_release
@@ -1468,6 +1689,10 @@ void register_OpenXRAPIExtension_bindings(JSContext* ctx, JSValue global, JSValu
         JS_NewCFunction(ctx, js_OpenXRAPIExtension_get_next_frame_time, "get_next_frame_time", 1));
     JS_SetPropertyStr(ctx, methods, "can_render",
         JS_NewCFunction(ctx, js_OpenXRAPIExtension_can_render, "can_render", 1));
+    JS_SetPropertyStr(ctx, methods, "find_action",
+        JS_NewCFunction(ctx, js_OpenXRAPIExtension_find_action, "find_action", 3));
+    JS_SetPropertyStr(ctx, methods, "action_get_handle",
+        JS_NewCFunction(ctx, js_OpenXRAPIExtension_action_get_handle, "action_get_handle", 2));
     JS_SetPropertyStr(ctx, methods, "get_hand_tracker",
         JS_NewCFunction(ctx, js_OpenXRAPIExtension_get_hand_tracker, "get_hand_tracker", 2));
     JS_SetPropertyStr(ctx, methods, "register_composition_layer_provider",
@@ -1486,8 +1711,14 @@ void register_OpenXRAPIExtension_bindings(JSContext* ctx, JSValue global, JSValu
         JS_NewCFunction(ctx, js_OpenXRAPIExtension_get_render_state_z_near, "get_render_state_z_near", 1));
     JS_SetPropertyStr(ctx, methods, "get_render_state_z_far",
         JS_NewCFunction(ctx, js_OpenXRAPIExtension_get_render_state_z_far, "get_render_state_z_far", 1));
+    JS_SetPropertyStr(ctx, methods, "set_velocity_texture",
+        JS_NewCFunction(ctx, js_OpenXRAPIExtension_set_velocity_texture, "set_velocity_texture", 2));
+    JS_SetPropertyStr(ctx, methods, "set_velocity_depth_texture",
+        JS_NewCFunction(ctx, js_OpenXRAPIExtension_set_velocity_depth_texture, "set_velocity_depth_texture", 2));
     JS_SetPropertyStr(ctx, methods, "set_velocity_target_size",
         JS_NewCFunction(ctx, js_OpenXRAPIExtension_set_velocity_target_size, "set_velocity_target_size", 2));
+    JS_SetPropertyStr(ctx, methods, "get_supported_swapchain_formats",
+        JS_NewCFunction(ctx, js_OpenXRAPIExtension_get_supported_swapchain_formats, "get_supported_swapchain_formats", 1));
     JS_SetPropertyStr(ctx, methods, "openxr_swapchain_create",
         JS_NewCFunction(ctx, js_OpenXRAPIExtension_openxr_swapchain_create, "openxr_swapchain_create", 8));
     JS_SetPropertyStr(ctx, methods, "openxr_swapchain_free",
@@ -1496,6 +1727,8 @@ void register_OpenXRAPIExtension_bindings(JSContext* ctx, JSValue global, JSValu
         JS_NewCFunction(ctx, js_OpenXRAPIExtension_openxr_swapchain_get_swapchain, "openxr_swapchain_get_swapchain", 2));
     JS_SetPropertyStr(ctx, methods, "openxr_swapchain_acquire",
         JS_NewCFunction(ctx, js_OpenXRAPIExtension_openxr_swapchain_acquire, "openxr_swapchain_acquire", 2));
+    JS_SetPropertyStr(ctx, methods, "openxr_swapchain_get_image",
+        JS_NewCFunction(ctx, js_OpenXRAPIExtension_openxr_swapchain_get_image, "openxr_swapchain_get_image", 2));
     JS_SetPropertyStr(ctx, methods, "openxr_swapchain_release",
         JS_NewCFunction(ctx, js_OpenXRAPIExtension_openxr_swapchain_release, "openxr_swapchain_release", 2));
     JS_SetPropertyStr(ctx, methods, "get_projection_layer",

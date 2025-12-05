@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/tile_map.hpp>
-#include <godot_cpp/classes/tile_set.hpp>
 #include <godot_cpp/classes/tile_map_pattern.hpp>
+#include <godot_cpp/classes/tile_set.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -33,6 +33,83 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
     } catch (...) { \
         return JS_ThrowInternalError(ctx, "TileMap: unknown error"); \
     }
+
+// Method: TileMap::set_navigation_map
+static JSValue js_TileMap_set_navigation_map(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_navigation_map: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_navigation_map: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_navigation_map: invalid or freed object");
+    }
+
+    TileMap* typed_obj = Object::cast_to<TileMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_navigation_map: object is not a TileMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_navigation_map: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[1]);
+    RID arg_map = qjs_ctx->js_to_variant(argv[2]);
+
+    typed_obj->set_navigation_map(arg_layer, arg_map);
+    return JS_UNDEFINED;
+}
+
+// Method: TileMap::get_navigation_map
+static JSValue js_TileMap_get_navigation_map(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_navigation_map: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_navigation_map: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_navigation_map: invalid or freed object");
+    }
+
+    TileMap* typed_obj = Object::cast_to<TileMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_navigation_map: object is not a TileMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_navigation_map: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[1]);
+
+    RID result = typed_obj->get_navigation_map(arg_layer);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
 
 // Method: TileMap::force_update
 static JSValue js_TileMap_force_update(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
@@ -779,6 +856,83 @@ static JSValue js_TileMap_is_layer_navigation_enabled(JSContext* ctx, JSValueCon
     return JS_NewBool(ctx, result);
 }
 
+// Method: TileMap::set_layer_navigation_map
+static JSValue js_TileMap_set_layer_navigation_map(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_layer_navigation_map: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_layer_navigation_map: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_layer_navigation_map: invalid or freed object");
+    }
+
+    TileMap* typed_obj = Object::cast_to<TileMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_layer_navigation_map: object is not a TileMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_layer_navigation_map: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[1]);
+    RID arg_map = qjs_ctx->js_to_variant(argv[2]);
+
+    typed_obj->set_layer_navigation_map(arg_layer, arg_map);
+    return JS_UNDEFINED;
+}
+
+// Method: TileMap::get_layer_navigation_map
+static JSValue js_TileMap_get_layer_navigation_map(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_layer_navigation_map: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_layer_navigation_map: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_layer_navigation_map: invalid or freed object");
+    }
+
+    TileMap* typed_obj = Object::cast_to<TileMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_layer_navigation_map: object is not a TileMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_layer_navigation_map: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[1]);
+
+    RID result = typed_obj->get_layer_navigation_map(arg_layer);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: TileMap::set_cell
 static JSValue js_TileMap_set_cell(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1216,6 +1370,146 @@ static JSValue js_TileMap_is_cell_transposed(JSContext* ctx, JSValueConst this_v
     return JS_NewBool(ctx, result);
 }
 
+// Method: TileMap::get_coords_for_body_rid
+static JSValue js_TileMap_get_coords_for_body_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_coords_for_body_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_coords_for_body_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_coords_for_body_rid: invalid or freed object");
+    }
+
+    TileMap* typed_obj = Object::cast_to<TileMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_coords_for_body_rid: object is not a TileMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_coords_for_body_rid: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_body = qjs_ctx->js_to_variant(argv[1]);
+
+    Vector2i result = typed_obj->get_coords_for_body_rid(arg_body);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: TileMap::get_layer_for_body_rid
+static JSValue js_TileMap_get_layer_for_body_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_layer_for_body_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_layer_for_body_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_layer_for_body_rid: invalid or freed object");
+    }
+
+    TileMap* typed_obj = Object::cast_to<TileMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_layer_for_body_rid: object is not a TileMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_layer_for_body_rid: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_body = qjs_ctx->js_to_variant(argv[1]);
+
+    int64_t result = typed_obj->get_layer_for_body_rid(arg_body);
+    return JS_NewInt64(ctx, result);
+}
+
+// Method: TileMap::get_pattern
+static JSValue js_TileMap_get_pattern(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_pattern: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_pattern: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_pattern: invalid or freed object");
+    }
+
+    TileMap* typed_obj = Object::cast_to<TileMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_pattern: object is not a TileMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_pattern: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[1]);
+    Array arg_coords_array = qjs_ctx->js_to_variant(argv[2]);
+
+    Ref<TileMapPattern> result = typed_obj->get_pattern(arg_layer, arg_coords_array);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
 // Method: TileMap::map_pattern
 static JSValue js_TileMap_map_pattern(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1323,6 +1617,100 @@ static JSValue js_TileMap_set_pattern(JSContext* ctx, JSValueConst this_val, int
     }
 
     typed_obj->set_pattern(arg_layer, arg_position, arg_pattern);
+    return JS_UNDEFINED;
+}
+
+// Method: TileMap::set_cells_terrain_connect
+static JSValue js_TileMap_set_cells_terrain_connect(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_cells_terrain_connect: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_cells_terrain_connect: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_cells_terrain_connect: invalid or freed object");
+    }
+
+    TileMap* typed_obj = Object::cast_to<TileMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_cells_terrain_connect: object is not a TileMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 5) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_cells_terrain_connect: expected at least 4 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[1]);
+    Array arg_cells = qjs_ctx->js_to_variant(argv[2]);
+    int64_t arg_terrain_set; JS_ToInt64(ctx, &arg_terrain_set, argv[3]);
+    int64_t arg_terrain; JS_ToInt64(ctx, &arg_terrain, argv[4]);
+    // Optional argument: ignore_empty_terrains (default: true)
+    bool arg_ignore_empty_terrains = true;
+    if (argc > 5) {
+        // Override default with provided value
+        arg_ignore_empty_terrains = JS_ToBool(ctx, argv[5]);
+    }
+
+    typed_obj->set_cells_terrain_connect(arg_layer, arg_cells, arg_terrain_set, arg_terrain, arg_ignore_empty_terrains);
+    return JS_UNDEFINED;
+}
+
+// Method: TileMap::set_cells_terrain_path
+static JSValue js_TileMap_set_cells_terrain_path(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_cells_terrain_path: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_cells_terrain_path: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_cells_terrain_path: invalid or freed object");
+    }
+
+    TileMap* typed_obj = Object::cast_to<TileMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_cells_terrain_path: object is not a TileMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 5) {
+        return JS_ThrowTypeError(ctx, "TileMap.set_cells_terrain_path: expected at least 4 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[1]);
+    Array arg_path = qjs_ctx->js_to_variant(argv[2]);
+    int64_t arg_terrain_set; JS_ToInt64(ctx, &arg_terrain_set, argv[3]);
+    int64_t arg_terrain; JS_ToInt64(ctx, &arg_terrain, argv[4]);
+    // Optional argument: ignore_empty_terrains (default: true)
+    bool arg_ignore_empty_terrains = true;
+    if (argc > 5) {
+        // Override default with provided value
+        arg_ignore_empty_terrains = JS_ToBool(ctx, argv[5]);
+    }
+
+    typed_obj->set_cells_terrain_path(arg_layer, arg_path, arg_terrain_set, arg_terrain, arg_ignore_empty_terrains);
     return JS_UNDEFINED;
 }
 
@@ -1495,6 +1883,139 @@ static JSValue js_TileMap_notify_runtime_tile_data_update(JSContext* ctx, JSValu
 
     typed_obj->notify_runtime_tile_data_update(arg_layer);
     return JS_UNDEFINED;
+}
+
+// Method: TileMap::get_surrounding_cells
+static JSValue js_TileMap_get_surrounding_cells(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_surrounding_cells: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_surrounding_cells: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_surrounding_cells: invalid or freed object");
+    }
+
+    TileMap* typed_obj = Object::cast_to<TileMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_surrounding_cells: object is not a TileMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_surrounding_cells: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Vector2i arg_coords = qjs_ctx->js_to_variant(argv[1]);
+
+    Array result = typed_obj->get_surrounding_cells(arg_coords);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: TileMap::get_used_cells
+static JSValue js_TileMap_get_used_cells(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_used_cells: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_used_cells: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_used_cells: invalid or freed object");
+    }
+
+    TileMap* typed_obj = Object::cast_to<TileMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_used_cells: object is not a TileMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_used_cells: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[1]);
+
+    Array result = typed_obj->get_used_cells(arg_layer);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: TileMap::get_used_cells_by_id
+static JSValue js_TileMap_get_used_cells_by_id(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_used_cells_by_id: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_used_cells_by_id: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_used_cells_by_id: invalid or freed object");
+    }
+
+    TileMap* typed_obj = Object::cast_to<TileMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_used_cells_by_id: object is not a TileMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TileMap.get_used_cells_by_id: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[1]);
+    // Optional argument: source_id (default: -1)
+    int64_t arg_source_id = -1;
+    if (argc > 2) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_source_id, argv[2]);
+    }
+    // Optional argument: atlas_coords (default: Vector2i(-1, -1))
+    Vector2i arg_atlas_coords = Vector2i(-1, -1);
+    if (argc > 3) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Vector2i arg_atlas_coords = qjs_ctx->js_to_variant(argv[3]);
+    }
+    // Optional argument: alternative_tile (default: -1)
+    int64_t arg_alternative_tile = -1;
+    if (argc > 4) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_alternative_tile, argv[4]);
+    }
+
+    Array result = typed_obj->get_used_cells_by_id(arg_layer, arg_source_id, arg_atlas_coords, arg_alternative_tile);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: TileMap::get_used_rect
@@ -2003,6 +2524,10 @@ void register_TileMap_bindings(JSContext* ctx, JSValue global, JSValue classes) 
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "set_navigation_map",
+        JS_NewCFunction(ctx, js_TileMap_set_navigation_map, "set_navigation_map", 3));
+    JS_SetPropertyStr(ctx, methods, "get_navigation_map",
+        JS_NewCFunction(ctx, js_TileMap_get_navigation_map, "get_navigation_map", 2));
     JS_SetPropertyStr(ctx, methods, "force_update",
         JS_NewCFunction(ctx, js_TileMap_force_update, "force_update", 2));
     JS_SetPropertyStr(ctx, methods, "get_layers_count",
@@ -2041,6 +2566,10 @@ void register_TileMap_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_NewCFunction(ctx, js_TileMap_set_layer_navigation_enabled, "set_layer_navigation_enabled", 3));
     JS_SetPropertyStr(ctx, methods, "is_layer_navigation_enabled",
         JS_NewCFunction(ctx, js_TileMap_is_layer_navigation_enabled, "is_layer_navigation_enabled", 2));
+    JS_SetPropertyStr(ctx, methods, "set_layer_navigation_map",
+        JS_NewCFunction(ctx, js_TileMap_set_layer_navigation_map, "set_layer_navigation_map", 3));
+    JS_SetPropertyStr(ctx, methods, "get_layer_navigation_map",
+        JS_NewCFunction(ctx, js_TileMap_get_layer_navigation_map, "get_layer_navigation_map", 2));
     JS_SetPropertyStr(ctx, methods, "set_cell",
         JS_NewCFunction(ctx, js_TileMap_set_cell, "set_cell", 6));
     JS_SetPropertyStr(ctx, methods, "erase_cell",
@@ -2059,10 +2588,20 @@ void register_TileMap_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_NewCFunction(ctx, js_TileMap_is_cell_flipped_v, "is_cell_flipped_v", 4));
     JS_SetPropertyStr(ctx, methods, "is_cell_transposed",
         JS_NewCFunction(ctx, js_TileMap_is_cell_transposed, "is_cell_transposed", 4));
+    JS_SetPropertyStr(ctx, methods, "get_coords_for_body_rid",
+        JS_NewCFunction(ctx, js_TileMap_get_coords_for_body_rid, "get_coords_for_body_rid", 2));
+    JS_SetPropertyStr(ctx, methods, "get_layer_for_body_rid",
+        JS_NewCFunction(ctx, js_TileMap_get_layer_for_body_rid, "get_layer_for_body_rid", 2));
+    JS_SetPropertyStr(ctx, methods, "get_pattern",
+        JS_NewCFunction(ctx, js_TileMap_get_pattern, "get_pattern", 3));
     JS_SetPropertyStr(ctx, methods, "map_pattern",
         JS_NewCFunction(ctx, js_TileMap_map_pattern, "map_pattern", 4));
     JS_SetPropertyStr(ctx, methods, "set_pattern",
         JS_NewCFunction(ctx, js_TileMap_set_pattern, "set_pattern", 4));
+    JS_SetPropertyStr(ctx, methods, "set_cells_terrain_connect",
+        JS_NewCFunction(ctx, js_TileMap_set_cells_terrain_connect, "set_cells_terrain_connect", 6));
+    JS_SetPropertyStr(ctx, methods, "set_cells_terrain_path",
+        JS_NewCFunction(ctx, js_TileMap_set_cells_terrain_path, "set_cells_terrain_path", 6));
     JS_SetPropertyStr(ctx, methods, "fix_invalid_tiles",
         JS_NewCFunction(ctx, js_TileMap_fix_invalid_tiles, "fix_invalid_tiles", 1));
     JS_SetPropertyStr(ctx, methods, "clear_layer",
@@ -2073,6 +2612,12 @@ void register_TileMap_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_NewCFunction(ctx, js_TileMap_update_internals, "update_internals", 1));
     JS_SetPropertyStr(ctx, methods, "notify_runtime_tile_data_update",
         JS_NewCFunction(ctx, js_TileMap_notify_runtime_tile_data_update, "notify_runtime_tile_data_update", 2));
+    JS_SetPropertyStr(ctx, methods, "get_surrounding_cells",
+        JS_NewCFunction(ctx, js_TileMap_get_surrounding_cells, "get_surrounding_cells", 2));
+    JS_SetPropertyStr(ctx, methods, "get_used_cells",
+        JS_NewCFunction(ctx, js_TileMap_get_used_cells, "get_used_cells", 2));
+    JS_SetPropertyStr(ctx, methods, "get_used_cells_by_id",
+        JS_NewCFunction(ctx, js_TileMap_get_used_cells_by_id, "get_used_cells_by_id", 5));
     JS_SetPropertyStr(ctx, methods, "get_used_rect",
         JS_NewCFunction(ctx, js_TileMap_get_used_rect, "get_used_rect", 1));
     JS_SetPropertyStr(ctx, methods, "map_to_local",

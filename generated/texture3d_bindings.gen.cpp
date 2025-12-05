@@ -183,6 +183,36 @@ static JSValue js_Texture3D_has_mipmaps(JSContext* ctx, JSValueConst this_val, i
     return JS_NewBool(ctx, result);
 }
 
+// Method: Texture3D::get_data
+static JSValue js_Texture3D_get_data(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Texture3D.get_data: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Texture3D.get_data: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Texture3D.get_data: invalid or freed object");
+    }
+
+    Texture3D* typed_obj = Object::cast_to<Texture3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Texture3D.get_data: object is not a Texture3D");
+    }
+
+    Array result = typed_obj->get_data();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Texture3D::create_placeholder
 static JSValue js_Texture3D_create_placeholder(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -254,6 +284,8 @@ void register_Texture3D_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_NewCFunction(ctx, js_Texture3D_get_depth, "get_depth", 1));
     JS_SetPropertyStr(ctx, methods, "has_mipmaps",
         JS_NewCFunction(ctx, js_Texture3D_has_mipmaps, "has_mipmaps", 1));
+    JS_SetPropertyStr(ctx, methods, "get_data",
+        JS_NewCFunction(ctx, js_Texture3D_get_data, "get_data", 1));
     JS_SetPropertyStr(ctx, methods, "create_placeholder",
         JS_NewCFunction(ctx, js_Texture3D_create_placeholder, "create_placeholder", 1));
 

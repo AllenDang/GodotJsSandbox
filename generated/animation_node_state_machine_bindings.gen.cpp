@@ -387,6 +387,36 @@ static JSValue js_AnimationNodeStateMachine_get_node_name(JSContext* ctx, JSValu
     return JS_NewString(ctx, String(result).utf8().get_data());
 }
 
+// Method: AnimationNodeStateMachine::get_node_list
+static JSValue js_AnimationNodeStateMachine_get_node_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AnimationNodeStateMachine.get_node_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AnimationNodeStateMachine.get_node_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AnimationNodeStateMachine.get_node_list: invalid or freed object");
+    }
+
+    AnimationNodeStateMachine* typed_obj = Object::cast_to<AnimationNodeStateMachine>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AnimationNodeStateMachine.get_node_list: object is not a AnimationNodeStateMachine");
+    }
+
+    Array result = typed_obj->get_node_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: AnimationNodeStateMachine::set_node_position
 static JSValue js_AnimationNodeStateMachine_set_node_position(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1095,6 +1125,8 @@ void register_AnimationNodeStateMachine_bindings(JSContext* ctx, JSValue global,
         JS_NewCFunction(ctx, js_AnimationNodeStateMachine_has_node, "has_node", 2));
     JS_SetPropertyStr(ctx, methods, "get_node_name",
         JS_NewCFunction(ctx, js_AnimationNodeStateMachine_get_node_name, "get_node_name", 2));
+    JS_SetPropertyStr(ctx, methods, "get_node_list",
+        JS_NewCFunction(ctx, js_AnimationNodeStateMachine_get_node_list, "get_node_list", 1));
     JS_SetPropertyStr(ctx, methods, "set_node_position",
         JS_NewCFunction(ctx, js_AnimationNodeStateMachine_set_node_position, "set_node_position", 3));
     JS_SetPropertyStr(ctx, methods, "get_node_position",

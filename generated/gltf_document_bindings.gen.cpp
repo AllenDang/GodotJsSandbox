@@ -9,8 +9,8 @@
 
 #include <godot_cpp/classes/gltf_document.hpp>
 #include <godot_cpp/classes/gltf_state.hpp>
-#include <godot_cpp/classes/gltf_object_model_property.hpp>
 #include <godot_cpp/classes/gltf_document_extension.hpp>
+#include <godot_cpp/classes/gltf_object_model_property.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -98,6 +98,67 @@ static JSValue js_GLTFDocument_append_from_file(JSContext* ctx, JSValueConst thi
     }
 
     Error result = typed_obj->append_from_file(arg_path, arg_state, arg_flags, arg_base_path);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: GLTFDocument::append_from_buffer
+static JSValue js_GLTFDocument_append_from_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.append_from_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.append_from_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.append_from_buffer: invalid or freed object");
+    }
+
+    GLTFDocument* typed_obj = Object::cast_to<GLTFDocument>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.append_from_buffer: object is not a GLTFDocument");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.append_from_buffer: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_bytes = qjs_ctx->js_to_variant(argv[1]);
+    const char* cstr_base_path = JS_ToCString(ctx, argv[2]); String arg_base_path = cstr_base_path ? cstr_base_path : ""; JS_FreeCString(ctx, cstr_base_path);
+    Ref<GLTFState> arg_state;
+    if (JS_IsNumber(argv[3])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_state; JS_ToInt64(ctx, &h_state, argv[3]);
+        Object* obj_state = qjs_ctx->get_object_registry()->get_object(h_state);
+        arg_state = Ref<GLTFState>(Object::cast_to<GLTFState>(obj_state));
+    } else {
+        // Object with __handle property
+        JSValue jh_state = JS_GetPropertyStr(ctx, argv[3], "__handle");
+        if (!JS_IsUndefined(jh_state)) {
+            int64_t h_state; JS_ToInt64(ctx, &h_state, jh_state);
+            Object* obj_state = qjs_ctx->get_object_registry()->get_object(h_state);
+            arg_state = Ref<GLTFState>(Object::cast_to<GLTFState>(obj_state));
+        }
+        JS_FreeValue(ctx, jh_state);
+    }
+    // Optional argument: flags (default: 0)
+    int64_t arg_flags = 0;
+    if (argc > 4) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_flags, argv[4]);
+    }
+
+    Error result = typed_obj->append_from_buffer(arg_bytes, arg_base_path, arg_state, arg_flags);
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -270,6 +331,59 @@ static JSValue js_GLTFDocument_generate_scene(JSContext* ctx, JSValueConst this_
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
     JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
+}
+
+// Method: GLTFDocument::generate_buffer
+static JSValue js_GLTFDocument_generate_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.generate_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.generate_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.generate_buffer: invalid or freed object");
+    }
+
+    GLTFDocument* typed_obj = Object::cast_to<GLTFDocument>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.generate_buffer: object is not a GLTFDocument");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.generate_buffer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<GLTFState> arg_state;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_state; JS_ToInt64(ctx, &h_state, argv[1]);
+        Object* obj_state = qjs_ctx->get_object_registry()->get_object(h_state);
+        arg_state = Ref<GLTFState>(Object::cast_to<GLTFState>(obj_state));
+    } else {
+        // Object with __handle property
+        JSValue jh_state = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_state)) {
+            int64_t h_state; JS_ToInt64(ctx, &h_state, jh_state);
+            Object* obj_state = qjs_ctx->get_object_registry()->get_object(h_state);
+            arg_state = Ref<GLTFState>(Object::cast_to<GLTFState>(obj_state));
+        }
+        JS_FreeValue(ctx, jh_state);
+    }
+
+    PackedByteArray result = typed_obj->generate_buffer(arg_state);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: GLTFDocument::write_to_filesystem
@@ -611,6 +725,36 @@ static JSValue js_GLTFDocument_unregister_gltf_document_extension(JSContext* ctx
 
     typed_obj->unregister_gltf_document_extension(arg_extension);
     return JS_UNDEFINED;
+}
+
+// Method: GLTFDocument::get_supported_gltf_extensions
+static JSValue js_GLTFDocument_get_supported_gltf_extensions(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.get_supported_gltf_extensions: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.get_supported_gltf_extensions: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.get_supported_gltf_extensions: invalid or freed object");
+    }
+
+    GLTFDocument* typed_obj = Object::cast_to<GLTFDocument>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFDocument.get_supported_gltf_extensions: object is not a GLTFDocument");
+    }
+
+    PackedStringArray result = typed_obj->get_supported_gltf_extensions();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Property getter: GLTFDocument::image_format
@@ -987,10 +1131,14 @@ void register_GLTFDocument_bindings(JSContext* ctx, JSValue global, JSValue clas
 
     JS_SetPropertyStr(ctx, methods, "append_from_file",
         JS_NewCFunction(ctx, js_GLTFDocument_append_from_file, "append_from_file", 5));
+    JS_SetPropertyStr(ctx, methods, "append_from_buffer",
+        JS_NewCFunction(ctx, js_GLTFDocument_append_from_buffer, "append_from_buffer", 5));
     JS_SetPropertyStr(ctx, methods, "append_from_scene",
         JS_NewCFunction(ctx, js_GLTFDocument_append_from_scene, "append_from_scene", 4));
     JS_SetPropertyStr(ctx, methods, "generate_scene",
         JS_NewCFunction(ctx, js_GLTFDocument_generate_scene, "generate_scene", 5));
+    JS_SetPropertyStr(ctx, methods, "generate_buffer",
+        JS_NewCFunction(ctx, js_GLTFDocument_generate_buffer, "generate_buffer", 2));
     JS_SetPropertyStr(ctx, methods, "write_to_filesystem",
         JS_NewCFunction(ctx, js_GLTFDocument_write_to_filesystem, "write_to_filesystem", 3));
     JS_SetPropertyStr(ctx, methods, "import_object_model_property",
@@ -1001,6 +1149,8 @@ void register_GLTFDocument_bindings(JSContext* ctx, JSValue global, JSValue clas
         JS_NewCFunction(ctx, js_GLTFDocument_register_gltf_document_extension, "register_gltf_document_extension", 3));
     JS_SetPropertyStr(ctx, methods, "unregister_gltf_document_extension",
         JS_NewCFunction(ctx, js_GLTFDocument_unregister_gltf_document_extension, "unregister_gltf_document_extension", 2));
+    JS_SetPropertyStr(ctx, methods, "get_supported_gltf_extensions",
+        JS_NewCFunction(ctx, js_GLTFDocument_get_supported_gltf_extensions, "get_supported_gltf_extensions", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

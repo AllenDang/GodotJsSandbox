@@ -9,11 +9,11 @@
 
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/material.hpp>
-#include <godot_cpp/classes/resource.hpp>
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/concave_polygon_shape3d.hpp>
-#include <godot_cpp/classes/convex_polygon_shape3d.hpp>
 #include <godot_cpp/classes/triangle_mesh.hpp>
+#include <godot_cpp/classes/resource.hpp>
+#include <godot_cpp/classes/convex_polygon_shape3d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -171,6 +171,44 @@ static JSValue js_Mesh_surface_get_arrays(JSContext* ctx, JSValueConst this_val,
     int64_t arg_surf_idx; JS_ToInt64(ctx, &arg_surf_idx, argv[1]);
 
     Array result = typed_obj->surface_get_arrays(arg_surf_idx);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Mesh::surface_get_blend_shape_arrays
+static JSValue js_Mesh_surface_get_blend_shape_arrays(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Mesh.surface_get_blend_shape_arrays: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Mesh.surface_get_blend_shape_arrays: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Mesh.surface_get_blend_shape_arrays: invalid or freed object");
+    }
+
+    Mesh* typed_obj = Object::cast_to<Mesh>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Mesh.surface_get_blend_shape_arrays: object is not a Mesh");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Mesh.surface_get_blend_shape_arrays: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_surf_idx; JS_ToInt64(ctx, &arg_surf_idx, argv[1]);
+
+    Array result = typed_obj->surface_get_blend_shape_arrays(arg_surf_idx);
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -668,6 +706,8 @@ void register_Mesh_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Mesh_get_surface_count, "get_surface_count", 1));
     JS_SetPropertyStr(ctx, methods, "surface_get_arrays",
         JS_NewCFunction(ctx, js_Mesh_surface_get_arrays, "surface_get_arrays", 2));
+    JS_SetPropertyStr(ctx, methods, "surface_get_blend_shape_arrays",
+        JS_NewCFunction(ctx, js_Mesh_surface_get_blend_shape_arrays, "surface_get_blend_shape_arrays", 2));
     JS_SetPropertyStr(ctx, methods, "surface_set_material",
         JS_NewCFunction(ctx, js_Mesh_surface_set_material, "surface_set_material", 3));
     JS_SetPropertyStr(ctx, methods, "surface_get_material",

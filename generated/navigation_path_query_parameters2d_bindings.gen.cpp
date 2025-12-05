@@ -32,6 +32,67 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "NavigationPathQueryParameters2D: unknown error"); \
     }
 
+// Property getter: NavigationPathQueryParameters2D::map
+static JSValue js_NavigationPathQueryParameters2D_get_map(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.map getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.map getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.map getter: invalid object");
+    }
+
+    NavigationPathQueryParameters2D* typed_obj = Object::cast_to<NavigationPathQueryParameters2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.map getter: wrong type");
+    }
+
+    RID value = typed_obj->get_map();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: NavigationPathQueryParameters2D::map
+static JSValue js_NavigationPathQueryParameters2D_set_map(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.map setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.map setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.map setter: invalid object");
+    }
+
+    NavigationPathQueryParameters2D* typed_obj = Object::cast_to<NavigationPathQueryParameters2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.map setter: wrong type");
+    }
+
+    RID value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_map(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: NavigationPathQueryParameters2D::start_position
 static JSValue js_NavigationPathQueryParameters2D_get_start_position(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -540,6 +601,128 @@ static JSValue js_NavigationPathQueryParameters2D_set_simplify_epsilon(JSContext
     return JS_UNDEFINED;
 }
 
+// Property getter: NavigationPathQueryParameters2D::excluded_regions
+static JSValue js_NavigationPathQueryParameters2D_get_excluded_regions(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.excluded_regions getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.excluded_regions getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.excluded_regions getter: invalid object");
+    }
+
+    NavigationPathQueryParameters2D* typed_obj = Object::cast_to<NavigationPathQueryParameters2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.excluded_regions getter: wrong type");
+    }
+
+    Array value = typed_obj->get_excluded_regions();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: NavigationPathQueryParameters2D::excluded_regions
+static JSValue js_NavigationPathQueryParameters2D_set_excluded_regions(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.excluded_regions setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.excluded_regions setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.excluded_regions setter: invalid object");
+    }
+
+    NavigationPathQueryParameters2D* typed_obj = Object::cast_to<NavigationPathQueryParameters2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.excluded_regions setter: wrong type");
+    }
+
+    Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_excluded_regions(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: NavigationPathQueryParameters2D::included_regions
+static JSValue js_NavigationPathQueryParameters2D_get_included_regions(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.included_regions getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.included_regions getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.included_regions getter: invalid object");
+    }
+
+    NavigationPathQueryParameters2D* typed_obj = Object::cast_to<NavigationPathQueryParameters2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.included_regions getter: wrong type");
+    }
+
+    Array value = typed_obj->get_included_regions();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: NavigationPathQueryParameters2D::included_regions
+static JSValue js_NavigationPathQueryParameters2D_set_included_regions(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.included_regions setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.included_regions setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.included_regions setter: invalid object");
+    }
+
+    NavigationPathQueryParameters2D* typed_obj = Object::cast_to<NavigationPathQueryParameters2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationPathQueryParameters2D.included_regions setter: wrong type");
+    }
+
+    Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_included_regions(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: NavigationPathQueryParameters2D::path_return_max_length
 static JSValue js_NavigationPathQueryParameters2D_get_path_return_max_length(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -797,6 +980,14 @@ void register_NavigationPathQueryParameters2D_bindings(JSContext* ctx, JSValue g
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_NavigationPathQueryParameters2D_get_map, "get_map", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_NavigationPathQueryParameters2D_set_map, "set_map", 2));
+        JS_SetPropertyStr(ctx, props, "map", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
             JS_NewCFunction(ctx, js_NavigationPathQueryParameters2D_get_start_position, "get_start_position", 1));
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_NavigationPathQueryParameters2D_set_start_position, "set_start_position", 2));
@@ -857,6 +1048,22 @@ void register_NavigationPathQueryParameters2D_bindings(JSContext* ctx, JSValue g
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_NavigationPathQueryParameters2D_set_simplify_epsilon, "set_simplify_epsilon", 2));
         JS_SetPropertyStr(ctx, props, "simplify_epsilon", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_NavigationPathQueryParameters2D_get_excluded_regions, "get_excluded_regions", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_NavigationPathQueryParameters2D_set_excluded_regions, "set_excluded_regions", 2));
+        JS_SetPropertyStr(ctx, props, "excluded_regions", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_NavigationPathQueryParameters2D_get_included_regions, "get_included_regions", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_NavigationPathQueryParameters2D_set_included_regions, "set_included_regions", 2));
+        JS_SetPropertyStr(ctx, props, "included_regions", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

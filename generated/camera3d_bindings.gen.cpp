@@ -584,6 +584,66 @@ static JSValue js_Camera3D_get_camera_transform(JSContext* ctx, JSValueConst thi
     return ret_obj;
 }
 
+// Method: Camera3D::get_camera_projection
+static JSValue js_Camera3D_get_camera_projection(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_camera_projection: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_camera_projection: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_camera_projection: invalid or freed object");
+    }
+
+    Camera3D* typed_obj = Object::cast_to<Camera3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_camera_projection: object is not a Camera3D");
+    }
+
+    Projection result = typed_obj->get_camera_projection();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Camera3D::get_frustum
+static JSValue js_Camera3D_get_frustum(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_frustum: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_frustum: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_frustum: invalid or freed object");
+    }
+
+    Camera3D* typed_obj = Object::cast_to<Camera3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_frustum: object is not a Camera3D");
+    }
+
+    Array result = typed_obj->get_frustum();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Camera3D::is_position_in_frustum
 static JSValue js_Camera3D_is_position_in_frustum(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -630,6 +690,66 @@ static JSValue js_Camera3D_is_position_in_frustum(JSContext* ctx, JSValueConst t
 
     bool result = typed_obj->is_position_in_frustum(arg_world_point);
     return JS_NewBool(ctx, result);
+}
+
+// Method: Camera3D::get_camera_rid
+static JSValue js_Camera3D_get_camera_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_camera_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_camera_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_camera_rid: invalid or freed object");
+    }
+
+    Camera3D* typed_obj = Object::cast_to<Camera3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_camera_rid: object is not a Camera3D");
+    }
+
+    RID result = typed_obj->get_camera_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Camera3D::get_pyramid_shape_rid
+static JSValue js_Camera3D_get_pyramid_shape_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_pyramid_shape_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_pyramid_shape_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_pyramid_shape_rid: invalid or freed object");
+    }
+
+    Camera3D* typed_obj = Object::cast_to<Camera3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Camera3D.get_pyramid_shape_rid: object is not a Camera3D");
+    }
+
+    RID result = typed_obj->get_pyramid_shape_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: Camera3D::set_cull_mask_value
@@ -1683,8 +1803,16 @@ void register_Camera3D_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_Camera3D_clear_current, "clear_current", 2));
     JS_SetPropertyStr(ctx, methods, "get_camera_transform",
         JS_NewCFunction(ctx, js_Camera3D_get_camera_transform, "get_camera_transform", 1));
+    JS_SetPropertyStr(ctx, methods, "get_camera_projection",
+        JS_NewCFunction(ctx, js_Camera3D_get_camera_projection, "get_camera_projection", 1));
+    JS_SetPropertyStr(ctx, methods, "get_frustum",
+        JS_NewCFunction(ctx, js_Camera3D_get_frustum, "get_frustum", 1));
     JS_SetPropertyStr(ctx, methods, "is_position_in_frustum",
         JS_NewCFunction(ctx, js_Camera3D_is_position_in_frustum, "is_position_in_frustum", 2));
+    JS_SetPropertyStr(ctx, methods, "get_camera_rid",
+        JS_NewCFunction(ctx, js_Camera3D_get_camera_rid, "get_camera_rid", 1));
+    JS_SetPropertyStr(ctx, methods, "get_pyramid_shape_rid",
+        JS_NewCFunction(ctx, js_Camera3D_get_pyramid_shape_rid, "get_pyramid_shape_rid", 1));
     JS_SetPropertyStr(ctx, methods, "set_cull_mask_value",
         JS_NewCFunction(ctx, js_Camera3D_set_cull_mask_value, "set_cull_mask_value", 3));
     JS_SetPropertyStr(ctx, methods, "get_cull_mask_value",

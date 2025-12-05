@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/importer_mesh.hpp>
-#include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/classes/array_mesh.hpp>
+#include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -206,6 +206,93 @@ static JSValue js_ImporterMesh_get_blend_shape_mode(JSContext* ctx, JSValueConst
 
     Mesh::BlendShapeMode result = typed_obj->get_blend_shape_mode();
     return JS_NewInt64(ctx, (int64_t)result);
+}
+
+// Method: ImporterMesh::add_surface
+static JSValue js_ImporterMesh_add_surface(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ImporterMesh.add_surface: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ImporterMesh.add_surface: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ImporterMesh.add_surface: invalid or freed object");
+    }
+
+    ImporterMesh* typed_obj = Object::cast_to<ImporterMesh>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ImporterMesh.add_surface: object is not a ImporterMesh");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "ImporterMesh.add_surface: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t tmp_primitive; JS_ToInt64(ctx, &tmp_primitive, argv[1]); Mesh::PrimitiveType arg_primitive = (Mesh::PrimitiveType)tmp_primitive;
+    Array arg_arrays = qjs_ctx->js_to_variant(argv[2]);
+    // Optional argument: blend_shapes (default: Array())
+    Array arg_blend_shapes = Array();
+    if (argc > 3) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Array arg_blend_shapes = qjs_ctx->js_to_variant(argv[3]);
+    }
+    // Optional argument: lods (default: Dictionary())
+    Dictionary arg_lods = Dictionary();
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Dictionary arg_lods = qjs_ctx->js_to_variant(argv[4]);
+    }
+    // Optional argument: material (default: nullptr)
+    Ref<Material> arg_material = nullptr;
+    if (argc > 5) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Ref<Material> arg_material;
+    if (JS_IsNumber(argv[5])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_material; JS_ToInt64(ctx, &h_material, argv[5]);
+        Object* obj_material = qjs_ctx->get_object_registry()->get_object(h_material);
+        arg_material = Ref<Material>(Object::cast_to<Material>(obj_material));
+    } else {
+        // Object with __handle property
+        JSValue jh_material = JS_GetPropertyStr(ctx, argv[5], "__handle");
+        if (!JS_IsUndefined(jh_material)) {
+            int64_t h_material; JS_ToInt64(ctx, &h_material, jh_material);
+            Object* obj_material = qjs_ctx->get_object_registry()->get_object(h_material);
+            arg_material = Ref<Material>(Object::cast_to<Material>(obj_material));
+        }
+        JS_FreeValue(ctx, jh_material);
+    }
+    }
+    // Optional argument: name (default: String())
+    String arg_name = String();
+    if (argc > 6) {
+        // Override default with provided value
+        const char* cstr_name = JS_ToCString(ctx, argv[6]); arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    }
+    // Optional argument: flags (default: 0)
+    int64_t arg_flags = 0;
+    if (argc > 7) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_flags, argv[7]);
+    }
+
+    typed_obj->add_surface(arg_primitive, arg_arrays, arg_blend_shapes, arg_lods, arg_material, arg_name, arg_flags);
+    return JS_UNDEFINED;
 }
 
 // Method: ImporterMesh::get_surface_count
@@ -466,6 +553,45 @@ static JSValue js_ImporterMesh_get_surface_lod_size(JSContext* ctx, JSValueConst
 
     double result = typed_obj->get_surface_lod_size(arg_surface_idx, arg_lod_idx);
     return JS_NewFloat64(ctx, result);
+}
+
+// Method: ImporterMesh::get_surface_lod_indices
+static JSValue js_ImporterMesh_get_surface_lod_indices(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ImporterMesh.get_surface_lod_indices: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ImporterMesh.get_surface_lod_indices: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ImporterMesh.get_surface_lod_indices: invalid or freed object");
+    }
+
+    ImporterMesh* typed_obj = Object::cast_to<ImporterMesh>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ImporterMesh.get_surface_lod_indices: object is not a ImporterMesh");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "ImporterMesh.get_surface_lod_indices: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_surface_idx; JS_ToInt64(ctx, &arg_surface_idx, argv[1]);
+    int64_t arg_lod_idx; JS_ToInt64(ctx, &arg_lod_idx, argv[2]);
+
+    PackedInt32Array result = typed_obj->get_surface_lod_indices(arg_surface_idx, arg_lod_idx);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: ImporterMesh::get_surface_material
@@ -900,6 +1026,8 @@ void register_ImporterMesh_bindings(JSContext* ctx, JSValue global, JSValue clas
         JS_NewCFunction(ctx, js_ImporterMesh_set_blend_shape_mode, "set_blend_shape_mode", 2));
     JS_SetPropertyStr(ctx, methods, "get_blend_shape_mode",
         JS_NewCFunction(ctx, js_ImporterMesh_get_blend_shape_mode, "get_blend_shape_mode", 1));
+    JS_SetPropertyStr(ctx, methods, "add_surface",
+        JS_NewCFunction(ctx, js_ImporterMesh_add_surface, "add_surface", 8));
     JS_SetPropertyStr(ctx, methods, "get_surface_count",
         JS_NewCFunction(ctx, js_ImporterMesh_get_surface_count, "get_surface_count", 1));
     JS_SetPropertyStr(ctx, methods, "get_surface_primitive_type",
@@ -914,6 +1042,8 @@ void register_ImporterMesh_bindings(JSContext* ctx, JSValue global, JSValue clas
         JS_NewCFunction(ctx, js_ImporterMesh_get_surface_lod_count, "get_surface_lod_count", 2));
     JS_SetPropertyStr(ctx, methods, "get_surface_lod_size",
         JS_NewCFunction(ctx, js_ImporterMesh_get_surface_lod_size, "get_surface_lod_size", 3));
+    JS_SetPropertyStr(ctx, methods, "get_surface_lod_indices",
+        JS_NewCFunction(ctx, js_ImporterMesh_get_surface_lod_indices, "get_surface_lod_indices", 3));
     JS_SetPropertyStr(ctx, methods, "get_surface_material",
         JS_NewCFunction(ctx, js_ImporterMesh_get_surface_material, "get_surface_material", 2));
     JS_SetPropertyStr(ctx, methods, "get_surface_format",

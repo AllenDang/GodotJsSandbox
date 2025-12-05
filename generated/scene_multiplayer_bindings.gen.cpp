@@ -100,6 +100,75 @@ static JSValue js_SceneMultiplayer_disconnect_peer(JSContext* ctx, JSValueConst 
     return JS_UNDEFINED;
 }
 
+// Method: SceneMultiplayer::get_authenticating_peers
+static JSValue js_SceneMultiplayer_get_authenticating_peers(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.get_authenticating_peers: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.get_authenticating_peers: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.get_authenticating_peers: invalid or freed object");
+    }
+
+    SceneMultiplayer* typed_obj = Object::cast_to<SceneMultiplayer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.get_authenticating_peers: object is not a SceneMultiplayer");
+    }
+
+    PackedInt32Array result = typed_obj->get_authenticating_peers();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: SceneMultiplayer::send_auth
+static JSValue js_SceneMultiplayer_send_auth(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.send_auth: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.send_auth: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.send_auth: invalid or freed object");
+    }
+
+    SceneMultiplayer* typed_obj = Object::cast_to<SceneMultiplayer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.send_auth: object is not a SceneMultiplayer");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.send_auth: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_id; JS_ToInt64(ctx, &arg_id, argv[1]);
+    PackedByteArray arg_data = qjs_ctx->js_to_variant(argv[2]);
+
+    Error result = typed_obj->send_auth(arg_id, arg_data);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: SceneMultiplayer::complete_auth
 static JSValue js_SceneMultiplayer_complete_auth(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -135,6 +204,62 @@ static JSValue js_SceneMultiplayer_complete_auth(JSContext* ctx, JSValueConst th
     int64_t arg_id; JS_ToInt64(ctx, &arg_id, argv[1]);
 
     Error result = typed_obj->complete_auth(arg_id);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: SceneMultiplayer::send_bytes
+static JSValue js_SceneMultiplayer_send_bytes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.send_bytes: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.send_bytes: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.send_bytes: invalid or freed object");
+    }
+
+    SceneMultiplayer* typed_obj = Object::cast_to<SceneMultiplayer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.send_bytes: object is not a SceneMultiplayer");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.send_bytes: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_bytes = qjs_ctx->js_to_variant(argv[1]);
+    // Optional argument: id (default: 0)
+    int64_t arg_id = 0;
+    if (argc > 2) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_id, argv[2]);
+    }
+    // Optional argument: mode (default: (MultiplayerPeer::TransferMode)2)
+    MultiplayerPeer::TransferMode arg_mode = (MultiplayerPeer::TransferMode)2;
+    if (argc > 3) {
+        // Override default with provided value
+        int64_t tmp_mode; JS_ToInt64(ctx, &tmp_mode, argv[3]); arg_mode = (MultiplayerPeer::TransferMode)tmp_mode;
+    }
+    // Optional argument: channel (default: 0)
+    int64_t arg_channel = 0;
+    if (argc > 4) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_channel, argv[4]);
+    }
+
+    Error result = typed_obj->send_bytes(arg_bytes, arg_id, arg_mode, arg_channel);
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -196,6 +321,67 @@ static JSValue js_SceneMultiplayer_set_root_path(JSContext* ctx, JSValueConst th
 
     const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_root_path(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: SceneMultiplayer::auth_callback
+static JSValue js_SceneMultiplayer_get_auth_callback(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.auth_callback getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.auth_callback getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.auth_callback getter: invalid object");
+    }
+
+    SceneMultiplayer* typed_obj = Object::cast_to<SceneMultiplayer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.auth_callback getter: wrong type");
+    }
+
+    Callable value = typed_obj->get_auth_callback();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: SceneMultiplayer::auth_callback
+static JSValue js_SceneMultiplayer_set_auth_callback(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.auth_callback setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.auth_callback setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.auth_callback setter: invalid object");
+    }
+
+    SceneMultiplayer* typed_obj = Object::cast_to<SceneMultiplayer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SceneMultiplayer.auth_callback setter: wrong type");
+    }
+
+    Callable value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_auth_callback(value);
     return JS_UNDEFINED;
 }
 
@@ -575,8 +761,14 @@ void register_SceneMultiplayer_bindings(JSContext* ctx, JSValue global, JSValue 
         JS_NewCFunction(ctx, js_SceneMultiplayer_clear, "clear", 1));
     JS_SetPropertyStr(ctx, methods, "disconnect_peer",
         JS_NewCFunction(ctx, js_SceneMultiplayer_disconnect_peer, "disconnect_peer", 2));
+    JS_SetPropertyStr(ctx, methods, "get_authenticating_peers",
+        JS_NewCFunction(ctx, js_SceneMultiplayer_get_authenticating_peers, "get_authenticating_peers", 1));
+    JS_SetPropertyStr(ctx, methods, "send_auth",
+        JS_NewCFunction(ctx, js_SceneMultiplayer_send_auth, "send_auth", 3));
     JS_SetPropertyStr(ctx, methods, "complete_auth",
         JS_NewCFunction(ctx, js_SceneMultiplayer_complete_auth, "complete_auth", 2));
+    JS_SetPropertyStr(ctx, methods, "send_bytes",
+        JS_NewCFunction(ctx, js_SceneMultiplayer_send_bytes, "send_bytes", 5));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
@@ -588,6 +780,14 @@ void register_SceneMultiplayer_bindings(JSContext* ctx, JSValue global, JSValue 
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_SceneMultiplayer_set_root_path, "set_root_path", 2));
         JS_SetPropertyStr(ctx, props, "root_path", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_SceneMultiplayer_get_auth_callback, "get_auth_callback", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_SceneMultiplayer_set_auth_callback, "set_auth_callback", 2));
+        JS_SetPropertyStr(ctx, props, "auth_callback", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

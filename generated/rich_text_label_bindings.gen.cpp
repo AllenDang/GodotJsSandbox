@@ -8,9 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/rich_text_label.hpp>
+#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/rich_text_effect.hpp>
-#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -3192,6 +3192,44 @@ static JSValue js_RichTextLabel_get_paragraph_offset(JSContext* ctx, JSValueCons
     return JS_NewFloat64(ctx, result);
 }
 
+// Method: RichTextLabel::parse_expressions_for_values
+static JSValue js_RichTextLabel_parse_expressions_for_values(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.parse_expressions_for_values: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.parse_expressions_for_values: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.parse_expressions_for_values: invalid or freed object");
+    }
+
+    RichTextLabel* typed_obj = Object::cast_to<RichTextLabel>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.parse_expressions_for_values: object is not a RichTextLabel");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "RichTextLabel.parse_expressions_for_values: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedStringArray arg_expressions = qjs_ctx->js_to_variant(argv[1]);
+
+    Dictionary result = typed_obj->parse_expressions_for_values(arg_expressions);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: RichTextLabel::install_effect
 static JSValue js_RichTextLabel_install_effect(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -5317,6 +5355,8 @@ void register_RichTextLabel_bindings(JSContext* ctx, JSValue global, JSValue cla
         JS_NewCFunction(ctx, js_RichTextLabel_get_line_offset, "get_line_offset", 2));
     JS_SetPropertyStr(ctx, methods, "get_paragraph_offset",
         JS_NewCFunction(ctx, js_RichTextLabel_get_paragraph_offset, "get_paragraph_offset", 2));
+    JS_SetPropertyStr(ctx, methods, "parse_expressions_for_values",
+        JS_NewCFunction(ctx, js_RichTextLabel_parse_expressions_for_values, "parse_expressions_for_values", 2));
     JS_SetPropertyStr(ctx, methods, "install_effect",
         JS_NewCFunction(ctx, js_RichTextLabel_install_effect, "install_effect", 2));
     JS_SetPropertyStr(ctx, methods, "reload_effects",

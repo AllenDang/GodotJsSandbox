@@ -32,6 +32,67 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "XRVRS: unknown error"); \
     }
 
+// Method: XRVRS::make_vrs_texture
+static JSValue js_XRVRS_make_vrs_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "XRVRS.make_vrs_texture: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "XRVRS.make_vrs_texture: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "XRVRS.make_vrs_texture: invalid or freed object");
+    }
+
+    XRVRS* typed_obj = Object::cast_to<XRVRS>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "XRVRS.make_vrs_texture: object is not a XRVRS");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "XRVRS.make_vrs_texture: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    double tmp_x_target_size, tmp_y_target_size;
+    JSValue jx_target_size = JS_GetPropertyStr(ctx, argv[1], "x");
+    JSValue jy_target_size = JS_GetPropertyStr(ctx, argv[1], "y");
+    JS_ToFloat64(ctx, &tmp_x_target_size, jx_target_size);
+    JS_ToFloat64(ctx, &tmp_y_target_size, jy_target_size);
+    JS_FreeValue(ctx, jx_target_size);
+    JS_FreeValue(ctx, jy_target_size);
+    Vector2 arg_target_size(tmp_x_target_size, tmp_y_target_size);
+    PackedVector2Array arg_eye_foci;
+    if (JS_IsArray(argv[2])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[2], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_eye_foci.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[2], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_eye_foci.set(i, Vector2(x, y));
+        }
+    }
+
+    RID result = typed_obj->make_vrs_texture(arg_target_size, arg_eye_foci);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Property getter: XRVRS::vrs_min_radius
 static JSValue js_XRVRS_get_vrs_min_radius(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -221,6 +282,8 @@ void register_XRVRS_bindings(JSContext* ctx, JSValue global, JSValue classes) {
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "make_vrs_texture",
+        JS_NewCFunction(ctx, js_XRVRS_make_vrs_texture, "make_vrs_texture", 3));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

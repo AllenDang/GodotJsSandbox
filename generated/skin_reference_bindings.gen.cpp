@@ -33,6 +33,36 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "SkinReference: unknown error"); \
     }
 
+// Method: SkinReference::get_skeleton
+static JSValue js_SkinReference_get_skeleton(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SkinReference.get_skeleton: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SkinReference.get_skeleton: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SkinReference.get_skeleton: invalid or freed object");
+    }
+
+    SkinReference* typed_obj = Object::cast_to<SkinReference>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SkinReference.get_skeleton: object is not a SkinReference");
+    }
+
+    RID result = typed_obj->get_skeleton();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: SkinReference::get_skin
 static JSValue js_SkinReference_get_skin(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -94,6 +124,8 @@ void register_SkinReference_bindings(JSContext* ctx, JSValue global, JSValue cla
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "get_skeleton",
+        JS_NewCFunction(ctx, js_SkinReference_get_skeleton, "get_skeleton", 1));
     JS_SetPropertyStr(ctx, methods, "get_skin",
         JS_NewCFunction(ctx, js_SkinReference_get_skin, "get_skin", 1));
 

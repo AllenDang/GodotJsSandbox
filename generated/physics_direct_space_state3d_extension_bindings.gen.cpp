@@ -32,12 +32,52 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "PhysicsDirectSpaceState3DExtension: unknown error"); \
     }
 
+// Method: PhysicsDirectSpaceState3DExtension::is_body_excluded_from_query
+static JSValue js_PhysicsDirectSpaceState3DExtension_is_body_excluded_from_query(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState3DExtension.is_body_excluded_from_query: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState3DExtension.is_body_excluded_from_query: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState3DExtension.is_body_excluded_from_query: invalid or freed object");
+    }
+
+    PhysicsDirectSpaceState3DExtension* typed_obj = Object::cast_to<PhysicsDirectSpaceState3DExtension>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState3DExtension.is_body_excluded_from_query: object is not a PhysicsDirectSpaceState3DExtension");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState3DExtension.is_body_excluded_from_query: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_body = qjs_ctx->js_to_variant(argv[1]);
+
+    bool result = typed_obj->is_body_excluded_from_query(arg_body);
+    return JS_NewBool(ctx, result);
+}
+
 
 // Registration function for PhysicsDirectSpaceState3DExtension
 void register_PhysicsDirectSpaceState3DExtension_bindings(JSContext* ctx, JSValue global, JSValue classes) {
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "is_body_excluded_from_query",
+        JS_NewCFunction(ctx, js_PhysicsDirectSpaceState3DExtension_is_body_excluded_from_query, "is_body_excluded_from_query", 2));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

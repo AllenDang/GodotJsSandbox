@@ -32,6 +32,36 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "ShaderIncludeDB: unknown error"); \
     }
 
+// Method: ShaderIncludeDB::list_built_in_include_files
+static JSValue js_ShaderIncludeDB_list_built_in_include_files(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ShaderIncludeDB.list_built_in_include_files: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ShaderIncludeDB.list_built_in_include_files: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ShaderIncludeDB.list_built_in_include_files: invalid or freed object");
+    }
+
+    ShaderIncludeDB* typed_obj = Object::cast_to<ShaderIncludeDB>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ShaderIncludeDB.list_built_in_include_files: object is not a ShaderIncludeDB");
+    }
+
+    PackedStringArray result = typed_obj->list_built_in_include_files();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: ShaderIncludeDB::has_built_in_include_file
 static JSValue js_ShaderIncludeDB_has_built_in_include_file(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -114,6 +144,8 @@ void register_ShaderIncludeDB_bindings(JSContext* ctx, JSValue global, JSValue c
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "list_built_in_include_files",
+        JS_NewCFunction(ctx, js_ShaderIncludeDB_list_built_in_include_files, "list_built_in_include_files", 1));
     JS_SetPropertyStr(ctx, methods, "has_built_in_include_file",
         JS_NewCFunction(ctx, js_ShaderIncludeDB_has_built_in_include_file, "has_built_in_include_file", 2));
     JS_SetPropertyStr(ctx, methods, "get_built_in_include_file",

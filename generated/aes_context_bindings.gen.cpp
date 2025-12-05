@@ -32,6 +32,120 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "AESContext: unknown error"); \
     }
 
+// Method: AESContext::start
+static JSValue js_AESContext_start(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AESContext.start: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AESContext.start: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AESContext.start: invalid or freed object");
+    }
+
+    AESContext* typed_obj = Object::cast_to<AESContext>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AESContext.start: object is not a AESContext");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "AESContext.start: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t tmp_mode; JS_ToInt64(ctx, &tmp_mode, argv[1]); AESContext::Mode arg_mode = (AESContext::Mode)tmp_mode;
+    PackedByteArray arg_key = qjs_ctx->js_to_variant(argv[2]);
+    // Optional argument: iv (default: PackedByteArray())
+    PackedByteArray arg_iv = PackedByteArray();
+    if (argc > 3) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        PackedByteArray arg_iv = qjs_ctx->js_to_variant(argv[3]);
+    }
+
+    Error result = typed_obj->start(arg_mode, arg_key, arg_iv);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: AESContext::update
+static JSValue js_AESContext_update(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AESContext.update: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AESContext.update: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AESContext.update: invalid or freed object");
+    }
+
+    AESContext* typed_obj = Object::cast_to<AESContext>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AESContext.update: object is not a AESContext");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "AESContext.update: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_src = qjs_ctx->js_to_variant(argv[1]);
+
+    PackedByteArray result = typed_obj->update(arg_src);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: AESContext::get_iv_state
+static JSValue js_AESContext_get_iv_state(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AESContext.get_iv_state: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AESContext.get_iv_state: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AESContext.get_iv_state: invalid or freed object");
+    }
+
+    AESContext* typed_obj = Object::cast_to<AESContext>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AESContext.get_iv_state: object is not a AESContext");
+    }
+
+    PackedByteArray result = typed_obj->get_iv_state();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: AESContext::finish
 static JSValue js_AESContext_finish(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -68,6 +182,12 @@ void register_AESContext_bindings(JSContext* ctx, JSValue global, JSValue classe
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "start",
+        JS_NewCFunction(ctx, js_AESContext_start, "start", 4));
+    JS_SetPropertyStr(ctx, methods, "update",
+        JS_NewCFunction(ctx, js_AESContext_update, "update", 2));
+    JS_SetPropertyStr(ctx, methods, "get_iv_state",
+        JS_NewCFunction(ctx, js_AESContext_get_iv_state, "get_iv_state", 1));
     JS_SetPropertyStr(ctx, methods, "finish",
         JS_NewCFunction(ctx, js_AESContext_finish, "finish", 1));
 

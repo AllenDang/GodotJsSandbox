@@ -299,6 +299,58 @@ static JSValue js_Shape2D_collide_with_motion_and_get_contacts(JSContext* ctx, J
     return arr;
 }
 
+// Method: Shape2D::draw
+static JSValue js_Shape2D_draw(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Shape2D.draw: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Shape2D.draw: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Shape2D.draw: invalid or freed object");
+    }
+
+    Shape2D* typed_obj = Object::cast_to<Shape2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Shape2D.draw: object is not a Shape2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "Shape2D.draw: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas_item = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[2], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[2], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[2], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[2], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+
+    typed_obj->draw(arg_canvas_item, arg_color);
+    return JS_UNDEFINED;
+}
+
 // Method: Shape2D::get_rect
 static JSValue js_Shape2D_get_rect(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -413,6 +465,8 @@ void register_Shape2D_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_NewCFunction(ctx, js_Shape2D_collide_and_get_contacts, "collide_and_get_contacts", 4));
     JS_SetPropertyStr(ctx, methods, "collide_with_motion_and_get_contacts",
         JS_NewCFunction(ctx, js_Shape2D_collide_with_motion_and_get_contacts, "collide_with_motion_and_get_contacts", 6));
+    JS_SetPropertyStr(ctx, methods, "draw",
+        JS_NewCFunction(ctx, js_Shape2D_draw, "draw", 3));
     JS_SetPropertyStr(ctx, methods, "get_rect",
         JS_NewCFunction(ctx, js_Shape2D_get_rect, "get_rect", 1));
 

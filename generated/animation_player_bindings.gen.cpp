@@ -786,6 +786,36 @@ static JSValue js_AnimationPlayer_queue(JSContext* ctx, JSValueConst this_val, i
     return JS_UNDEFINED;
 }
 
+// Method: AnimationPlayer::get_queue
+static JSValue js_AnimationPlayer_get_queue(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AnimationPlayer.get_queue: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AnimationPlayer.get_queue: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AnimationPlayer.get_queue: invalid or freed object");
+    }
+
+    AnimationPlayer* typed_obj = Object::cast_to<AnimationPlayer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AnimationPlayer.get_queue: object is not a AnimationPlayer");
+    }
+
+    PackedStringArray result = typed_obj->get_queue();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: AnimationPlayer::clear_queue
 static JSValue js_AnimationPlayer_clear_queue(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1841,6 +1871,8 @@ void register_AnimationPlayer_bindings(JSContext* ctx, JSValue global, JSValue c
         JS_NewCFunction(ctx, js_AnimationPlayer_is_playing, "is_playing", 1));
     JS_SetPropertyStr(ctx, methods, "queue",
         JS_NewCFunction(ctx, js_AnimationPlayer_queue, "queue", 2));
+    JS_SetPropertyStr(ctx, methods, "get_queue",
+        JS_NewCFunction(ctx, js_AnimationPlayer_get_queue, "get_queue", 1));
     JS_SetPropertyStr(ctx, methods, "clear_queue",
         JS_NewCFunction(ctx, js_AnimationPlayer_clear_queue, "clear_queue", 1));
     JS_SetPropertyStr(ctx, methods, "get_playing_speed",

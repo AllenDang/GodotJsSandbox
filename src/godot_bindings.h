@@ -8,6 +8,7 @@ namespace jsb {
 
 class QuickJSContext;
 class ObjectRegistry;
+class ArrayRegistry;
 
 // Data stored in GodotObject JS wrapper opaque pointer
 // Contains both the handle and the registry that owns it
@@ -67,6 +68,13 @@ private:
     static JSValue js_godot_call_script_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
     static JSValue js_godot_has_script_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
     static JSValue js_godot_has_signal(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+
+    // Array proxy functions
+    static JSValue js_godot_array_get(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_godot_array_set(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_godot_array_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_godot_array_push(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_godot_array_pop(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
     // GodotObject class callbacks
     static void godot_object_finalizer(JSRuntime* rt, JSValueConst val);

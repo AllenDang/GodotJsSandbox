@@ -8,9 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/mesh_library.hpp>
-#include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/navigation_mesh.hpp>
+#include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -1106,6 +1106,36 @@ static JSValue js_MeshLibrary_clear(JSContext* ctx, JSValueConst this_val, int a
     return JS_UNDEFINED;
 }
 
+// Method: MeshLibrary::get_item_list
+static JSValue js_MeshLibrary_get_item_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshLibrary.get_item_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshLibrary.get_item_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshLibrary.get_item_list: invalid or freed object");
+    }
+
+    MeshLibrary* typed_obj = Object::cast_to<MeshLibrary>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshLibrary.get_item_list: object is not a MeshLibrary");
+    }
+
+    PackedInt32Array result = typed_obj->get_item_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: MeshLibrary::get_last_unused_item_id
 static JSValue js_MeshLibrary_get_last_unused_item_id(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1186,6 +1216,8 @@ void register_MeshLibrary_bindings(JSContext* ctx, JSValue global, JSValue class
         JS_NewCFunction(ctx, js_MeshLibrary_find_item_by_name, "find_item_by_name", 2));
     JS_SetPropertyStr(ctx, methods, "clear",
         JS_NewCFunction(ctx, js_MeshLibrary_clear, "clear", 1));
+    JS_SetPropertyStr(ctx, methods, "get_item_list",
+        JS_NewCFunction(ctx, js_MeshLibrary_get_item_list, "get_item_list", 1));
     JS_SetPropertyStr(ctx, methods, "get_last_unused_item_id",
         JS_NewCFunction(ctx, js_MeshLibrary_get_last_unused_item_id, "get_last_unused_item_id", 1));
 

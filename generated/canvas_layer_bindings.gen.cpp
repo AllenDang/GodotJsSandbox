@@ -122,6 +122,36 @@ static JSValue js_CanvasLayer_get_final_transform(JSContext* ctx, JSValueConst t
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
+// Method: CanvasLayer::get_canvas
+static JSValue js_CanvasLayer_get_canvas(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasLayer.get_canvas: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasLayer.get_canvas: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasLayer.get_canvas: invalid or freed object");
+    }
+
+    CanvasLayer* typed_obj = Object::cast_to<CanvasLayer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasLayer.get_canvas: object is not a CanvasLayer");
+    }
+
+    RID result = typed_obj->get_canvas();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Property getter: CanvasLayer::layer
 static JSValue js_CanvasLayer_get_layer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -642,6 +672,8 @@ void register_CanvasLayer_bindings(JSContext* ctx, JSValue global, JSValue class
         JS_NewCFunction(ctx, js_CanvasLayer_hide, "hide", 1));
     JS_SetPropertyStr(ctx, methods, "get_final_transform",
         JS_NewCFunction(ctx, js_CanvasLayer_get_final_transform, "get_final_transform", 1));
+    JS_SetPropertyStr(ctx, methods, "get_canvas",
+        JS_NewCFunction(ctx, js_CanvasLayer_get_canvas, "get_canvas", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

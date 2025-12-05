@@ -229,7 +229,6 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_Font_bindings(ctx, global, classes);
     register_FontFile_bindings(ctx, global, classes);
     register_FontVariation_bindings(ctx, global, classes);
-    register_FramebufferCacheRD_bindings(ctx, global, classes);
     register_GDScriptSyntaxHighlighter_bindings(ctx, global, classes);
     register_GLTFAccessor_bindings(ctx, global, classes);
     register_GLTFAnimation_bindings(ctx, global, classes);
@@ -504,22 +503,6 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_PropertyTweener_bindings(ctx, global, classes);
     register_QuadMesh_bindings(ctx, global, classes);
     register_QuadOccluder3D_bindings(ctx, global, classes);
-    register_RDAttachmentFormat_bindings(ctx, global, classes);
-    register_RDFramebufferPass_bindings(ctx, global, classes);
-    register_RDPipelineColorBlendState_bindings(ctx, global, classes);
-    register_RDPipelineColorBlendStateAttachment_bindings(ctx, global, classes);
-    register_RDPipelineDepthStencilState_bindings(ctx, global, classes);
-    register_RDPipelineMultisampleState_bindings(ctx, global, classes);
-    register_RDPipelineRasterizationState_bindings(ctx, global, classes);
-    register_RDPipelineSpecializationConstant_bindings(ctx, global, classes);
-    register_RDSamplerState_bindings(ctx, global, classes);
-    register_RDShaderFile_bindings(ctx, global, classes);
-    register_RDShaderSPIRV_bindings(ctx, global, classes);
-    register_RDShaderSource_bindings(ctx, global, classes);
-    register_RDTextureFormat_bindings(ctx, global, classes);
-    register_RDTextureView_bindings(ctx, global, classes);
-    register_RDUniform_bindings(ctx, global, classes);
-    register_RDVertexAttribute_bindings(ctx, global, classes);
     register_RandomNumberGenerator_bindings(ctx, global, classes);
     register_Range_bindings(ctx, global, classes);
     register_RayCast2D_bindings(ctx, global, classes);
@@ -542,7 +525,6 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_RenderSceneData_bindings(ctx, global, classes);
     register_RenderSceneDataExtension_bindings(ctx, global, classes);
     register_RenderSceneDataRD_bindings(ctx, global, classes);
-    register_RenderingDevice_bindings(ctx, global, classes);
     register_Resource_bindings(ctx, global, classes);
     register_ResourceFormatLoader_bindings(ctx, global, classes);
     register_ResourceFormatSaver_bindings(ctx, global, classes);
@@ -684,7 +666,6 @@ void register_all_classes(JSContext* ctx, JSValue global) {
     register_UPNP_bindings(ctx, global, classes);
     register_UPNPDevice_bindings(ctx, global, classes);
     register_UndoRedo_bindings(ctx, global, classes);
-    register_UniformSetCacheRD_bindings(ctx, global, classes);
     register_VBoxContainer_bindings(ctx, global, classes);
     register_VFlowContainer_bindings(ctx, global, classes);
     register_VScrollBar_bindings(ctx, global, classes);

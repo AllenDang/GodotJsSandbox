@@ -32,6 +32,123 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "Font: unknown error"); \
     }
 
+// Method: Font::find_variation
+static JSValue js_Font_find_variation(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Font.find_variation: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Font.find_variation: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Font.find_variation: invalid or freed object");
+    }
+
+    Font* typed_obj = Object::cast_to<Font>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Font.find_variation: object is not a Font");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Font.find_variation: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Dictionary arg_variation_coordinates = qjs_ctx->js_to_variant(argv[1]);
+    // Optional argument: face_index (default: 0)
+    int64_t arg_face_index = 0;
+    if (argc > 2) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_face_index, argv[2]);
+    }
+    // Optional argument: strength (default: 0.0)
+    double arg_strength = 0.0;
+    if (argc > 3) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_strength, argv[3]);
+    }
+    // Optional argument: transform (default: Transform2D(1, 0, 0, 1, 0, 0))
+    Transform2D arg_transform = Transform2D(1, 0, 0, 1, 0, 0);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Transform2D arg_transform = qjs_ctx->js_to_variant(argv[4]);
+    }
+    // Optional argument: spacing_top (default: 0)
+    int64_t arg_spacing_top = 0;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_spacing_top, argv[5]);
+    }
+    // Optional argument: spacing_bottom (default: 0)
+    int64_t arg_spacing_bottom = 0;
+    if (argc > 6) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_spacing_bottom, argv[6]);
+    }
+    // Optional argument: spacing_space (default: 0)
+    int64_t arg_spacing_space = 0;
+    if (argc > 7) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_spacing_space, argv[7]);
+    }
+    // Optional argument: spacing_glyph (default: 0)
+    int64_t arg_spacing_glyph = 0;
+    if (argc > 8) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_spacing_glyph, argv[8]);
+    }
+    // Optional argument: baseline_offset (default: 0.0)
+    double arg_baseline_offset = 0.0;
+    if (argc > 9) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_baseline_offset, argv[9]);
+    }
+
+    RID result = typed_obj->find_variation(arg_variation_coordinates, arg_face_index, arg_strength, arg_transform, arg_spacing_top, arg_spacing_bottom, arg_spacing_space, arg_spacing_glyph, arg_baseline_offset);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Font::get_rids
+static JSValue js_Font_get_rids(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Font.get_rids: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Font.get_rids: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Font.get_rids: invalid or freed object");
+    }
+
+    Font* typed_obj = Object::cast_to<Font>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Font.get_rids: object is not a Font");
+    }
+
+    Array result = typed_obj->get_rids();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Font::get_height
 static JSValue js_Font_get_height(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -702,6 +819,482 @@ static JSValue js_Font_get_multiline_string_size(JSContext* ctx, JSValueConst th
     return ret_obj;
 }
 
+// Method: Font::draw_string
+static JSValue js_Font_draw_string(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Font.draw_string: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Font.draw_string: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Font.draw_string: invalid or freed object");
+    }
+
+    Font* typed_obj = Object::cast_to<Font>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Font.draw_string: object is not a Font");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "Font.draw_string: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas_item = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    // Optional argument: alignment (default: (HorizontalAlignment)0)
+    HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        int64_t tmp_alignment; JS_ToInt64(ctx, &tmp_alignment, argv[4]); HorizontalAlignment arg_alignment = (HorizontalAlignment)tmp_alignment;
+    }
+    // Optional argument: width (default: -1)
+    double arg_width = -1;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_width, argv[5]);
+    }
+    // Optional argument: font_size (default: 16)
+    int64_t arg_font_size = 16;
+    if (argc > 6) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_font_size, argv[6]);
+    }
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 7) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[7], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[7], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[7], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[7], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: justification_flags (default: 3)
+    BitField<TextServer::JustificationFlag> arg_justification_flags = 3;
+    if (argc > 8) {
+        // Override default with provided value
+        int64_t tmp_justification_flags; JS_ToInt64(ctx, &tmp_justification_flags, argv[8]); arg_justification_flags = (BitField<TextServer::JustificationFlag>)tmp_justification_flags;
+    }
+    // Optional argument: direction (default: (TextServer::Direction)0)
+    TextServer::Direction arg_direction = (TextServer::Direction)0;
+    if (argc > 9) {
+        // Override default with provided value
+        int64_t tmp_direction; JS_ToInt64(ctx, &tmp_direction, argv[9]); arg_direction = (TextServer::Direction)tmp_direction;
+    }
+    // Optional argument: orientation (default: (TextServer::Orientation)0)
+    TextServer::Orientation arg_orientation = (TextServer::Orientation)0;
+    if (argc > 10) {
+        // Override default with provided value
+        int64_t tmp_orientation; JS_ToInt64(ctx, &tmp_orientation, argv[10]); arg_orientation = (TextServer::Orientation)tmp_orientation;
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 11) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[11]);
+    }
+
+    typed_obj->draw_string(arg_canvas_item, arg_pos, arg_text, arg_alignment, arg_width, arg_font_size, arg_modulate, arg_justification_flags, arg_direction, arg_orientation, arg_oversampling);
+    return JS_UNDEFINED;
+}
+
+// Method: Font::draw_multiline_string
+static JSValue js_Font_draw_multiline_string(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Font.draw_multiline_string: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Font.draw_multiline_string: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Font.draw_multiline_string: invalid or freed object");
+    }
+
+    Font* typed_obj = Object::cast_to<Font>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Font.draw_multiline_string: object is not a Font");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "Font.draw_multiline_string: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas_item = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    // Optional argument: alignment (default: (HorizontalAlignment)0)
+    HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        int64_t tmp_alignment; JS_ToInt64(ctx, &tmp_alignment, argv[4]); HorizontalAlignment arg_alignment = (HorizontalAlignment)tmp_alignment;
+    }
+    // Optional argument: width (default: -1)
+    double arg_width = -1;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_width, argv[5]);
+    }
+    // Optional argument: font_size (default: 16)
+    int64_t arg_font_size = 16;
+    if (argc > 6) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_font_size, argv[6]);
+    }
+    // Optional argument: max_lines (default: -1)
+    int64_t arg_max_lines = -1;
+    if (argc > 7) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_max_lines, argv[7]);
+    }
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 8) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[8], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[8], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[8], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[8], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: brk_flags (default: 3)
+    BitField<TextServer::LineBreakFlag> arg_brk_flags = 3;
+    if (argc > 9) {
+        // Override default with provided value
+        int64_t tmp_brk_flags; JS_ToInt64(ctx, &tmp_brk_flags, argv[9]); arg_brk_flags = (BitField<TextServer::LineBreakFlag>)tmp_brk_flags;
+    }
+    // Optional argument: justification_flags (default: 3)
+    BitField<TextServer::JustificationFlag> arg_justification_flags = 3;
+    if (argc > 10) {
+        // Override default with provided value
+        int64_t tmp_justification_flags; JS_ToInt64(ctx, &tmp_justification_flags, argv[10]); arg_justification_flags = (BitField<TextServer::JustificationFlag>)tmp_justification_flags;
+    }
+    // Optional argument: direction (default: (TextServer::Direction)0)
+    TextServer::Direction arg_direction = (TextServer::Direction)0;
+    if (argc > 11) {
+        // Override default with provided value
+        int64_t tmp_direction; JS_ToInt64(ctx, &tmp_direction, argv[11]); arg_direction = (TextServer::Direction)tmp_direction;
+    }
+    // Optional argument: orientation (default: (TextServer::Orientation)0)
+    TextServer::Orientation arg_orientation = (TextServer::Orientation)0;
+    if (argc > 12) {
+        // Override default with provided value
+        int64_t tmp_orientation; JS_ToInt64(ctx, &tmp_orientation, argv[12]); arg_orientation = (TextServer::Orientation)tmp_orientation;
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 13) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[13]);
+    }
+
+    typed_obj->draw_multiline_string(arg_canvas_item, arg_pos, arg_text, arg_alignment, arg_width, arg_font_size, arg_max_lines, arg_modulate, arg_brk_flags, arg_justification_flags, arg_direction, arg_orientation, arg_oversampling);
+    return JS_UNDEFINED;
+}
+
+// Method: Font::draw_string_outline
+static JSValue js_Font_draw_string_outline(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Font.draw_string_outline: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Font.draw_string_outline: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Font.draw_string_outline: invalid or freed object");
+    }
+
+    Font* typed_obj = Object::cast_to<Font>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Font.draw_string_outline: object is not a Font");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "Font.draw_string_outline: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas_item = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    // Optional argument: alignment (default: (HorizontalAlignment)0)
+    HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        int64_t tmp_alignment; JS_ToInt64(ctx, &tmp_alignment, argv[4]); HorizontalAlignment arg_alignment = (HorizontalAlignment)tmp_alignment;
+    }
+    // Optional argument: width (default: -1)
+    double arg_width = -1;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_width, argv[5]);
+    }
+    // Optional argument: font_size (default: 16)
+    int64_t arg_font_size = 16;
+    if (argc > 6) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_font_size, argv[6]);
+    }
+    // Optional argument: size (default: 1)
+    int64_t arg_size = 1;
+    if (argc > 7) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_size, argv[7]);
+    }
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 8) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[8], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[8], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[8], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[8], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: justification_flags (default: 3)
+    BitField<TextServer::JustificationFlag> arg_justification_flags = 3;
+    if (argc > 9) {
+        // Override default with provided value
+        int64_t tmp_justification_flags; JS_ToInt64(ctx, &tmp_justification_flags, argv[9]); arg_justification_flags = (BitField<TextServer::JustificationFlag>)tmp_justification_flags;
+    }
+    // Optional argument: direction (default: (TextServer::Direction)0)
+    TextServer::Direction arg_direction = (TextServer::Direction)0;
+    if (argc > 10) {
+        // Override default with provided value
+        int64_t tmp_direction; JS_ToInt64(ctx, &tmp_direction, argv[10]); arg_direction = (TextServer::Direction)tmp_direction;
+    }
+    // Optional argument: orientation (default: (TextServer::Orientation)0)
+    TextServer::Orientation arg_orientation = (TextServer::Orientation)0;
+    if (argc > 11) {
+        // Override default with provided value
+        int64_t tmp_orientation; JS_ToInt64(ctx, &tmp_orientation, argv[11]); arg_orientation = (TextServer::Orientation)tmp_orientation;
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 12) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[12]);
+    }
+
+    typed_obj->draw_string_outline(arg_canvas_item, arg_pos, arg_text, arg_alignment, arg_width, arg_font_size, arg_size, arg_modulate, arg_justification_flags, arg_direction, arg_orientation, arg_oversampling);
+    return JS_UNDEFINED;
+}
+
+// Method: Font::draw_multiline_string_outline
+static JSValue js_Font_draw_multiline_string_outline(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Font.draw_multiline_string_outline: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Font.draw_multiline_string_outline: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Font.draw_multiline_string_outline: invalid or freed object");
+    }
+
+    Font* typed_obj = Object::cast_to<Font>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Font.draw_multiline_string_outline: object is not a Font");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "Font.draw_multiline_string_outline: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas_item = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    // Optional argument: alignment (default: (HorizontalAlignment)0)
+    HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        int64_t tmp_alignment; JS_ToInt64(ctx, &tmp_alignment, argv[4]); HorizontalAlignment arg_alignment = (HorizontalAlignment)tmp_alignment;
+    }
+    // Optional argument: width (default: -1)
+    double arg_width = -1;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_width, argv[5]);
+    }
+    // Optional argument: font_size (default: 16)
+    int64_t arg_font_size = 16;
+    if (argc > 6) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_font_size, argv[6]);
+    }
+    // Optional argument: max_lines (default: -1)
+    int64_t arg_max_lines = -1;
+    if (argc > 7) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_max_lines, argv[7]);
+    }
+    // Optional argument: size (default: 1)
+    int64_t arg_size = 1;
+    if (argc > 8) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_size, argv[8]);
+    }
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 9) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[9], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[9], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[9], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[9], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: brk_flags (default: 3)
+    BitField<TextServer::LineBreakFlag> arg_brk_flags = 3;
+    if (argc > 10) {
+        // Override default with provided value
+        int64_t tmp_brk_flags; JS_ToInt64(ctx, &tmp_brk_flags, argv[10]); arg_brk_flags = (BitField<TextServer::LineBreakFlag>)tmp_brk_flags;
+    }
+    // Optional argument: justification_flags (default: 3)
+    BitField<TextServer::JustificationFlag> arg_justification_flags = 3;
+    if (argc > 11) {
+        // Override default with provided value
+        int64_t tmp_justification_flags; JS_ToInt64(ctx, &tmp_justification_flags, argv[11]); arg_justification_flags = (BitField<TextServer::JustificationFlag>)tmp_justification_flags;
+    }
+    // Optional argument: direction (default: (TextServer::Direction)0)
+    TextServer::Direction arg_direction = (TextServer::Direction)0;
+    if (argc > 12) {
+        // Override default with provided value
+        int64_t tmp_direction; JS_ToInt64(ctx, &tmp_direction, argv[12]); arg_direction = (TextServer::Direction)tmp_direction;
+    }
+    // Optional argument: orientation (default: (TextServer::Orientation)0)
+    TextServer::Orientation arg_orientation = (TextServer::Orientation)0;
+    if (argc > 13) {
+        // Override default with provided value
+        int64_t tmp_orientation; JS_ToInt64(ctx, &tmp_orientation, argv[13]); arg_orientation = (TextServer::Orientation)tmp_orientation;
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 14) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[14]);
+    }
+
+    typed_obj->draw_multiline_string_outline(arg_canvas_item, arg_pos, arg_text, arg_alignment, arg_width, arg_font_size, arg_max_lines, arg_size, arg_modulate, arg_brk_flags, arg_justification_flags, arg_direction, arg_orientation, arg_oversampling);
+    return JS_UNDEFINED;
+}
+
 // Method: Font::get_char_size
 static JSValue js_Font_get_char_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -742,6 +1335,160 @@ static JSValue js_Font_get_char_size(JSContext* ctx, JSValueConst this_val, int 
     JS_SetPropertyStr(ctx, ret_obj, "x", JS_NewFloat64(ctx, result.x));
     JS_SetPropertyStr(ctx, ret_obj, "y", JS_NewFloat64(ctx, result.y));
     return ret_obj;
+}
+
+// Method: Font::draw_char
+static JSValue js_Font_draw_char(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Font.draw_char: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Font.draw_char: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Font.draw_char: invalid or freed object");
+    }
+
+    Font* typed_obj = Object::cast_to<Font>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Font.draw_char: object is not a Font");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 5) {
+        return JS_ThrowTypeError(ctx, "Font.draw_char: expected at least 4 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas_item = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    int64_t arg_char; JS_ToInt64(ctx, &arg_char, argv[3]);
+    int64_t arg_font_size; JS_ToInt64(ctx, &arg_font_size, argv[4]);
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 5) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[5], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[5], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[5], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[5], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 6) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[6]);
+    }
+
+    double result = typed_obj->draw_char(arg_canvas_item, arg_pos, arg_char, arg_font_size, arg_modulate, arg_oversampling);
+    return JS_NewFloat64(ctx, result);
+}
+
+// Method: Font::draw_char_outline
+static JSValue js_Font_draw_char_outline(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Font.draw_char_outline: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Font.draw_char_outline: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Font.draw_char_outline: invalid or freed object");
+    }
+
+    Font* typed_obj = Object::cast_to<Font>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Font.draw_char_outline: object is not a Font");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 5) {
+        return JS_ThrowTypeError(ctx, "Font.draw_char_outline: expected at least 4 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas_item = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    int64_t arg_char; JS_ToInt64(ctx, &arg_char, argv[3]);
+    int64_t arg_font_size; JS_ToInt64(ctx, &arg_font_size, argv[4]);
+    // Optional argument: size (default: -1)
+    int64_t arg_size = -1;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_size, argv[5]);
+    }
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 6) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[6], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[6], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[6], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[6], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 7) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[7]);
+    }
+
+    double result = typed_obj->draw_char_outline(arg_canvas_item, arg_pos, arg_char, arg_font_size, arg_size, arg_modulate, arg_oversampling);
+    return JS_NewFloat64(ctx, result);
 }
 
 // Method: Font::has_char
@@ -984,6 +1731,10 @@ void register_Font_bindings(JSContext* ctx, JSValue global, JSValue classes) {
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "find_variation",
+        JS_NewCFunction(ctx, js_Font_find_variation, "find_variation", 10));
+    JS_SetPropertyStr(ctx, methods, "get_rids",
+        JS_NewCFunction(ctx, js_Font_get_rids, "get_rids", 1));
     JS_SetPropertyStr(ctx, methods, "get_height",
         JS_NewCFunction(ctx, js_Font_get_height, "get_height", 2));
     JS_SetPropertyStr(ctx, methods, "get_ascent",
@@ -1016,8 +1767,20 @@ void register_Font_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Font_get_string_size, "get_string_size", 8));
     JS_SetPropertyStr(ctx, methods, "get_multiline_string_size",
         JS_NewCFunction(ctx, js_Font_get_multiline_string_size, "get_multiline_string_size", 10));
+    JS_SetPropertyStr(ctx, methods, "draw_string",
+        JS_NewCFunction(ctx, js_Font_draw_string, "draw_string", 12));
+    JS_SetPropertyStr(ctx, methods, "draw_multiline_string",
+        JS_NewCFunction(ctx, js_Font_draw_multiline_string, "draw_multiline_string", 14));
+    JS_SetPropertyStr(ctx, methods, "draw_string_outline",
+        JS_NewCFunction(ctx, js_Font_draw_string_outline, "draw_string_outline", 13));
+    JS_SetPropertyStr(ctx, methods, "draw_multiline_string_outline",
+        JS_NewCFunction(ctx, js_Font_draw_multiline_string_outline, "draw_multiline_string_outline", 15));
     JS_SetPropertyStr(ctx, methods, "get_char_size",
         JS_NewCFunction(ctx, js_Font_get_char_size, "get_char_size", 3));
+    JS_SetPropertyStr(ctx, methods, "draw_char",
+        JS_NewCFunction(ctx, js_Font_draw_char, "draw_char", 7));
+    JS_SetPropertyStr(ctx, methods, "draw_char_outline",
+        JS_NewCFunction(ctx, js_Font_draw_char_outline, "draw_char_outline", 8));
     JS_SetPropertyStr(ctx, methods, "has_char",
         JS_NewCFunction(ctx, js_Font_has_char, "has_char", 2));
     JS_SetPropertyStr(ctx, methods, "get_supported_chars",

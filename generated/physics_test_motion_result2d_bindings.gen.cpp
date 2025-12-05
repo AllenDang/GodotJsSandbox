@@ -227,6 +227,36 @@ static JSValue js_PhysicsTestMotionResult2D_get_collider_id(JSContext* ctx, JSVa
     return JS_NewInt64(ctx, result);
 }
 
+// Method: PhysicsTestMotionResult2D::get_collider_rid
+static JSValue js_PhysicsTestMotionResult2D_get_collider_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicsTestMotionResult2D.get_collider_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsTestMotionResult2D.get_collider_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsTestMotionResult2D.get_collider_rid: invalid or freed object");
+    }
+
+    PhysicsTestMotionResult2D* typed_obj = Object::cast_to<PhysicsTestMotionResult2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsTestMotionResult2D.get_collider_rid: object is not a PhysicsTestMotionResult2D");
+    }
+
+    RID result = typed_obj->get_collider_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: PhysicsTestMotionResult2D::get_collider
 static JSValue js_PhysicsTestMotionResult2D_get_collider(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -450,6 +480,8 @@ void register_PhysicsTestMotionResult2D_bindings(JSContext* ctx, JSValue global,
         JS_NewCFunction(ctx, js_PhysicsTestMotionResult2D_get_collider_velocity, "get_collider_velocity", 1));
     JS_SetPropertyStr(ctx, methods, "get_collider_id",
         JS_NewCFunction(ctx, js_PhysicsTestMotionResult2D_get_collider_id, "get_collider_id", 1));
+    JS_SetPropertyStr(ctx, methods, "get_collider_rid",
+        JS_NewCFunction(ctx, js_PhysicsTestMotionResult2D_get_collider_rid, "get_collider_rid", 1));
     JS_SetPropertyStr(ctx, methods, "get_collider",
         JS_NewCFunction(ctx, js_PhysicsTestMotionResult2D_get_collider, "get_collider", 1));
     JS_SetPropertyStr(ctx, methods, "get_collider_shape",

@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/open_xr_dpad_binding_modifier.hpp>
-#include <godot_cpp/classes/open_xr_action_set.hpp>
 #include <godot_cpp/classes/open_xr_haptic_base.hpp>
+#include <godot_cpp/classes/open_xr_action_set.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

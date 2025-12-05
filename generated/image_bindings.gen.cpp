@@ -747,6 +747,73 @@ static JSValue js_Image_create_empty(JSContext* ctx, JSValueConst this_val, int 
     return ret_obj;
 }
 
+// Method: Image::create_from_data
+static JSValue js_Image_create_from_data(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.create_from_data: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.create_from_data: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.create_from_data: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.create_from_data: object is not a Image");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 6) {
+        return JS_ThrowTypeError(ctx, "Image.create_from_data: expected at least 5 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_width; JS_ToInt64(ctx, &arg_width, argv[1]);
+    int64_t arg_height; JS_ToInt64(ctx, &arg_height, argv[2]);
+    bool arg_use_mipmaps = JS_ToBool(ctx, argv[3]);
+    int64_t tmp_format; JS_ToInt64(ctx, &tmp_format, argv[4]); Image::Format arg_format = (Image::Format)tmp_format;
+    PackedByteArray arg_data = qjs_ctx->js_to_variant(argv[5]);
+
+    Ref<Image> result = typed_obj->create_from_data(arg_width, arg_height, arg_use_mipmaps, arg_format, arg_data);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
 // Method: Image::is_empty
 static JSValue js_Image_is_empty(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -916,6 +983,36 @@ static JSValue js_Image_save_png(JSContext* ctx, JSValueConst this_val, int argc
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
+// Method: Image::save_png_to_buffer
+static JSValue js_Image_save_png_to_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.save_png_to_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.save_png_to_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.save_png_to_buffer: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.save_png_to_buffer: object is not a Image");
+    }
+
+    PackedByteArray result = typed_obj->save_png_to_buffer();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Image::save_jpg
 static JSValue js_Image_save_jpg(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -957,6 +1054,49 @@ static JSValue js_Image_save_jpg(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     Error result = typed_obj->save_jpg(arg_path, arg_quality);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Image::save_jpg_to_buffer
+static JSValue js_Image_save_jpg_to_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.save_jpg_to_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.save_jpg_to_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.save_jpg_to_buffer: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.save_jpg_to_buffer: object is not a Image");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.save_jpg_to_buffer: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: quality (default: 0.75)
+    double arg_quality = 0.75;
+    if (argc > 1) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_quality, argv[1]);
+    }
+
+    PackedByteArray result = typed_obj->save_jpg_to_buffer(arg_quality);
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -1004,6 +1144,49 @@ static JSValue js_Image_save_exr(JSContext* ctx, JSValueConst this_val, int argc
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
+// Method: Image::save_exr_to_buffer
+static JSValue js_Image_save_exr_to_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.save_exr_to_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.save_exr_to_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.save_exr_to_buffer: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.save_exr_to_buffer: object is not a Image");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.save_exr_to_buffer: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: grayscale (default: false)
+    bool arg_grayscale = false;
+    if (argc > 1) {
+        // Override default with provided value
+        arg_grayscale = JS_ToBool(ctx, argv[1]);
+    }
+
+    PackedByteArray result = typed_obj->save_exr_to_buffer(arg_grayscale);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Image::save_dds
 static JSValue js_Image_save_dds(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1039,6 +1222,36 @@ static JSValue js_Image_save_dds(JSContext* ctx, JSValueConst this_val, int argc
     const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
 
     Error result = typed_obj->save_dds(arg_path);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Image::save_dds_to_buffer
+static JSValue js_Image_save_dds_to_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.save_dds_to_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.save_dds_to_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.save_dds_to_buffer: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.save_dds_to_buffer: object is not a Image");
+    }
+
+    PackedByteArray result = typed_obj->save_dds_to_buffer();
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -1089,6 +1302,55 @@ static JSValue js_Image_save_webp(JSContext* ctx, JSValueConst this_val, int arg
     }
 
     Error result = typed_obj->save_webp(arg_path, arg_lossy, arg_quality);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Image::save_webp_to_buffer
+static JSValue js_Image_save_webp_to_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.save_webp_to_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.save_webp_to_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.save_webp_to_buffer: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.save_webp_to_buffer: object is not a Image");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.save_webp_to_buffer: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: lossy (default: false)
+    bool arg_lossy = false;
+    if (argc > 1) {
+        // Override default with provided value
+        arg_lossy = JS_ToBool(ctx, argv[1]);
+    }
+    // Optional argument: quality (default: 0.75)
+    double arg_quality = 0.75;
+    if (argc > 2) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_quality, argv[2]);
+    }
+
+    PackedByteArray result = typed_obj->save_webp_to_buffer(arg_lossy, arg_quality);
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -2453,6 +2715,316 @@ static JSValue js_Image_adjust_bcs(JSContext* ctx, JSValueConst this_val, int ar
     return JS_UNDEFINED;
 }
 
+// Method: Image::load_png_from_buffer
+static JSValue js_Image_load_png_from_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.load_png_from_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.load_png_from_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_png_from_buffer: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_png_from_buffer: object is not a Image");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Image.load_png_from_buffer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_buffer = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->load_png_from_buffer(arg_buffer);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Image::load_jpg_from_buffer
+static JSValue js_Image_load_jpg_from_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.load_jpg_from_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.load_jpg_from_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_jpg_from_buffer: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_jpg_from_buffer: object is not a Image");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Image.load_jpg_from_buffer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_buffer = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->load_jpg_from_buffer(arg_buffer);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Image::load_webp_from_buffer
+static JSValue js_Image_load_webp_from_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.load_webp_from_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.load_webp_from_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_webp_from_buffer: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_webp_from_buffer: object is not a Image");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Image.load_webp_from_buffer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_buffer = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->load_webp_from_buffer(arg_buffer);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Image::load_tga_from_buffer
+static JSValue js_Image_load_tga_from_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.load_tga_from_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.load_tga_from_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_tga_from_buffer: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_tga_from_buffer: object is not a Image");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Image.load_tga_from_buffer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_buffer = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->load_tga_from_buffer(arg_buffer);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Image::load_bmp_from_buffer
+static JSValue js_Image_load_bmp_from_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.load_bmp_from_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.load_bmp_from_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_bmp_from_buffer: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_bmp_from_buffer: object is not a Image");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Image.load_bmp_from_buffer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_buffer = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->load_bmp_from_buffer(arg_buffer);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Image::load_ktx_from_buffer
+static JSValue js_Image_load_ktx_from_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.load_ktx_from_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.load_ktx_from_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_ktx_from_buffer: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_ktx_from_buffer: object is not a Image");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Image.load_ktx_from_buffer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_buffer = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->load_ktx_from_buffer(arg_buffer);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Image::load_dds_from_buffer
+static JSValue js_Image_load_dds_from_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.load_dds_from_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.load_dds_from_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_dds_from_buffer: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_dds_from_buffer: object is not a Image");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Image.load_dds_from_buffer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_buffer = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->load_dds_from_buffer(arg_buffer);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Image::load_svg_from_buffer
+static JSValue js_Image_load_svg_from_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Image.load_svg_from_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Image.load_svg_from_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_svg_from_buffer: invalid or freed object");
+    }
+
+    Image* typed_obj = Object::cast_to<Image>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Image.load_svg_from_buffer: object is not a Image");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Image.load_svg_from_buffer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_buffer = qjs_ctx->js_to_variant(argv[1]);
+    // Optional argument: scale (default: 1.0)
+    double arg_scale = 1.0;
+    if (argc > 2) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_scale, argv[2]);
+    }
+
+    Error result = typed_obj->load_svg_from_buffer(arg_buffer, arg_scale);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Image::load_svg_from_string
 static JSValue js_Image_load_svg_from_string(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2541,6 +3113,8 @@ void register_Image_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Image_create, "create", 5));
     JS_SetPropertyStr(ctx, methods, "create_empty",
         JS_NewCFunction(ctx, js_Image_create_empty, "create_empty", 5));
+    JS_SetPropertyStr(ctx, methods, "create_from_data",
+        JS_NewCFunction(ctx, js_Image_create_from_data, "create_from_data", 6));
     JS_SetPropertyStr(ctx, methods, "is_empty",
         JS_NewCFunction(ctx, js_Image_is_empty, "is_empty", 1));
     JS_SetPropertyStr(ctx, methods, "load",
@@ -2549,14 +3123,24 @@ void register_Image_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Image_load_from_file, "load_from_file", 2));
     JS_SetPropertyStr(ctx, methods, "save_png",
         JS_NewCFunction(ctx, js_Image_save_png, "save_png", 2));
+    JS_SetPropertyStr(ctx, methods, "save_png_to_buffer",
+        JS_NewCFunction(ctx, js_Image_save_png_to_buffer, "save_png_to_buffer", 1));
     JS_SetPropertyStr(ctx, methods, "save_jpg",
         JS_NewCFunction(ctx, js_Image_save_jpg, "save_jpg", 3));
+    JS_SetPropertyStr(ctx, methods, "save_jpg_to_buffer",
+        JS_NewCFunction(ctx, js_Image_save_jpg_to_buffer, "save_jpg_to_buffer", 2));
     JS_SetPropertyStr(ctx, methods, "save_exr",
         JS_NewCFunction(ctx, js_Image_save_exr, "save_exr", 3));
+    JS_SetPropertyStr(ctx, methods, "save_exr_to_buffer",
+        JS_NewCFunction(ctx, js_Image_save_exr_to_buffer, "save_exr_to_buffer", 2));
     JS_SetPropertyStr(ctx, methods, "save_dds",
         JS_NewCFunction(ctx, js_Image_save_dds, "save_dds", 2));
+    JS_SetPropertyStr(ctx, methods, "save_dds_to_buffer",
+        JS_NewCFunction(ctx, js_Image_save_dds_to_buffer, "save_dds_to_buffer", 1));
     JS_SetPropertyStr(ctx, methods, "save_webp",
         JS_NewCFunction(ctx, js_Image_save_webp, "save_webp", 4));
+    JS_SetPropertyStr(ctx, methods, "save_webp_to_buffer",
+        JS_NewCFunction(ctx, js_Image_save_webp_to_buffer, "save_webp_to_buffer", 3));
     JS_SetPropertyStr(ctx, methods, "detect_alpha",
         JS_NewCFunction(ctx, js_Image_detect_alpha, "detect_alpha", 1));
     JS_SetPropertyStr(ctx, methods, "is_invisible",
@@ -2619,6 +3203,22 @@ void register_Image_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Image_set_pixel, "set_pixel", 4));
     JS_SetPropertyStr(ctx, methods, "adjust_bcs",
         JS_NewCFunction(ctx, js_Image_adjust_bcs, "adjust_bcs", 4));
+    JS_SetPropertyStr(ctx, methods, "load_png_from_buffer",
+        JS_NewCFunction(ctx, js_Image_load_png_from_buffer, "load_png_from_buffer", 2));
+    JS_SetPropertyStr(ctx, methods, "load_jpg_from_buffer",
+        JS_NewCFunction(ctx, js_Image_load_jpg_from_buffer, "load_jpg_from_buffer", 2));
+    JS_SetPropertyStr(ctx, methods, "load_webp_from_buffer",
+        JS_NewCFunction(ctx, js_Image_load_webp_from_buffer, "load_webp_from_buffer", 2));
+    JS_SetPropertyStr(ctx, methods, "load_tga_from_buffer",
+        JS_NewCFunction(ctx, js_Image_load_tga_from_buffer, "load_tga_from_buffer", 2));
+    JS_SetPropertyStr(ctx, methods, "load_bmp_from_buffer",
+        JS_NewCFunction(ctx, js_Image_load_bmp_from_buffer, "load_bmp_from_buffer", 2));
+    JS_SetPropertyStr(ctx, methods, "load_ktx_from_buffer",
+        JS_NewCFunction(ctx, js_Image_load_ktx_from_buffer, "load_ktx_from_buffer", 2));
+    JS_SetPropertyStr(ctx, methods, "load_dds_from_buffer",
+        JS_NewCFunction(ctx, js_Image_load_dds_from_buffer, "load_dds_from_buffer", 2));
+    JS_SetPropertyStr(ctx, methods, "load_svg_from_buffer",
+        JS_NewCFunction(ctx, js_Image_load_svg_from_buffer, "load_svg_from_buffer", 3));
     JS_SetPropertyStr(ctx, methods, "load_svg_from_string",
         JS_NewCFunction(ctx, js_Image_load_svg_from_string, "load_svg_from_string", 3));
 

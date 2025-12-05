@@ -8,10 +8,10 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/classes/scene_tree_timer.hpp>
 #include <godot_cpp/classes/tween.hpp>
-#include <godot_cpp/classes/multiplayer_api.hpp>
+#include <godot_cpp/classes/scene_tree_timer.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
+#include <godot_cpp/classes/multiplayer_api.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -268,6 +268,36 @@ static JSValue js_SceneTree_create_tween(JSContext* ctx, JSValueConst this_val, 
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
     JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
+}
+
+// Method: SceneTree::get_processed_tweens
+static JSValue js_SceneTree_get_processed_tweens(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SceneTree.get_processed_tweens: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SceneTree.get_processed_tweens: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SceneTree.get_processed_tweens: invalid or freed object");
+    }
+
+    SceneTree* typed_obj = Object::cast_to<SceneTree>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SceneTree.get_processed_tweens: object is not a SceneTree");
+    }
+
+    Array result = typed_obj->get_processed_tweens();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: SceneTree::get_node_count
@@ -584,6 +614,44 @@ static JSValue js_SceneTree_set_group(JSContext* ctx, JSValueConst this_val, int
 
     typed_obj->set_group(arg_group, arg_property, arg_value);
     return JS_UNDEFINED;
+}
+
+// Method: SceneTree::get_nodes_in_group
+static JSValue js_SceneTree_get_nodes_in_group(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SceneTree.get_nodes_in_group: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SceneTree.get_nodes_in_group: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SceneTree.get_nodes_in_group: invalid or freed object");
+    }
+
+    SceneTree* typed_obj = Object::cast_to<SceneTree>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SceneTree.get_nodes_in_group: object is not a SceneTree");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "SceneTree.get_nodes_in_group: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? cstr_group : ""; JS_FreeCString(ctx, cstr_group);
+
+    Array result = typed_obj->get_nodes_in_group(arg_group);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: SceneTree::get_first_node_in_group
@@ -1673,6 +1741,8 @@ void register_SceneTree_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_NewCFunction(ctx, js_SceneTree_create_timer, "create_timer", 5));
     JS_SetPropertyStr(ctx, methods, "create_tween",
         JS_NewCFunction(ctx, js_SceneTree_create_tween, "create_tween", 1));
+    JS_SetPropertyStr(ctx, methods, "get_processed_tweens",
+        JS_NewCFunction(ctx, js_SceneTree_get_processed_tweens, "get_processed_tweens", 1));
     JS_SetPropertyStr(ctx, methods, "get_node_count",
         JS_NewCFunction(ctx, js_SceneTree_get_node_count, "get_node_count", 1));
     JS_SetPropertyStr(ctx, methods, "get_frame",
@@ -1689,6 +1759,8 @@ void register_SceneTree_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_NewCFunction(ctx, js_SceneTree_notify_group, "notify_group", 3));
     JS_SetPropertyStr(ctx, methods, "set_group",
         JS_NewCFunction(ctx, js_SceneTree_set_group, "set_group", 4));
+    JS_SetPropertyStr(ctx, methods, "get_nodes_in_group",
+        JS_NewCFunction(ctx, js_SceneTree_get_nodes_in_group, "get_nodes_in_group", 2));
     JS_SetPropertyStr(ctx, methods, "get_first_node_in_group",
         JS_NewCFunction(ctx, js_SceneTree_get_first_node_in_group, "get_first_node_in_group", 2));
     JS_SetPropertyStr(ctx, methods, "get_node_count_in_group",

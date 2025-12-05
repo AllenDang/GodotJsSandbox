@@ -32,6 +32,36 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "SceneReplicationConfig: unknown error"); \
     }
 
+// Method: SceneReplicationConfig::get_properties
+static JSValue js_SceneReplicationConfig_get_properties(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SceneReplicationConfig.get_properties: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SceneReplicationConfig.get_properties: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SceneReplicationConfig.get_properties: invalid or freed object");
+    }
+
+    SceneReplicationConfig* typed_obj = Object::cast_to<SceneReplicationConfig>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SceneReplicationConfig.get_properties: object is not a SceneReplicationConfig");
+    }
+
+    Array result = typed_obj->get_properties();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: SceneReplicationConfig::add_property
 static JSValue js_SceneReplicationConfig_add_property(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -504,6 +534,8 @@ void register_SceneReplicationConfig_bindings(JSContext* ctx, JSValue global, JS
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "get_properties",
+        JS_NewCFunction(ctx, js_SceneReplicationConfig_get_properties, "get_properties", 1));
     JS_SetPropertyStr(ctx, methods, "add_property",
         JS_NewCFunction(ctx, js_SceneReplicationConfig_add_property, "add_property", 3));
     JS_SetPropertyStr(ctx, methods, "has_property",

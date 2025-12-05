@@ -63,6 +63,82 @@ static JSValue js_SpringArm3D_get_hit_length(JSContext* ctx, JSValueConst this_v
     return JS_NewFloat64(ctx, result);
 }
 
+// Method: SpringArm3D::add_excluded_object
+static JSValue js_SpringArm3D_add_excluded_object(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SpringArm3D.add_excluded_object: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SpringArm3D.add_excluded_object: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SpringArm3D.add_excluded_object: invalid or freed object");
+    }
+
+    SpringArm3D* typed_obj = Object::cast_to<SpringArm3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SpringArm3D.add_excluded_object: object is not a SpringArm3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "SpringArm3D.add_excluded_object: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_RID = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->add_excluded_object(arg_RID);
+    return JS_UNDEFINED;
+}
+
+// Method: SpringArm3D::remove_excluded_object
+static JSValue js_SpringArm3D_remove_excluded_object(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SpringArm3D.remove_excluded_object: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SpringArm3D.remove_excluded_object: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SpringArm3D.remove_excluded_object: invalid or freed object");
+    }
+
+    SpringArm3D* typed_obj = Object::cast_to<SpringArm3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SpringArm3D.remove_excluded_object: object is not a SpringArm3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "SpringArm3D.remove_excluded_object: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_RID = qjs_ctx->js_to_variant(argv[1]);
+
+    bool result = typed_obj->remove_excluded_object(arg_RID);
+    return JS_NewBool(ctx, result);
+}
+
 // Method: SpringArm3D::clear_excluded_objects
 static JSValue js_SpringArm3D_clear_excluded_objects(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -385,6 +461,10 @@ void register_SpringArm3D_bindings(JSContext* ctx, JSValue global, JSValue class
 
     JS_SetPropertyStr(ctx, methods, "get_hit_length",
         JS_NewCFunction(ctx, js_SpringArm3D_get_hit_length, "get_hit_length", 1));
+    JS_SetPropertyStr(ctx, methods, "add_excluded_object",
+        JS_NewCFunction(ctx, js_SpringArm3D_add_excluded_object, "add_excluded_object", 2));
+    JS_SetPropertyStr(ctx, methods, "remove_excluded_object",
+        JS_NewCFunction(ctx, js_SpringArm3D_remove_excluded_object, "remove_excluded_object", 2));
     JS_SetPropertyStr(ctx, methods, "clear_excluded_objects",
         JS_NewCFunction(ctx, js_SpringArm3D_clear_excluded_objects, "clear_excluded_objects", 1));
 

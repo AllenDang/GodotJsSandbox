@@ -8,10 +8,10 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/control.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
-#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/theme.hpp>
+#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -2814,6 +2814,46 @@ static JSValue js_Control_grab_click_focus(JSContext* ctx, JSValueConst this_val
     return JS_UNDEFINED;
 }
 
+// Method: Control::set_drag_forwarding
+static JSValue js_Control_set_drag_forwarding(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.set_drag_forwarding: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.set_drag_forwarding: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.set_drag_forwarding: invalid or freed object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.set_drag_forwarding: object is not a Control");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "Control.set_drag_forwarding: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Callable arg_drag_func = qjs_ctx->js_to_variant(argv[1]);
+    Callable arg_can_drop_func = qjs_ctx->js_to_variant(argv[2]);
+    Callable arg_drop_func = qjs_ctx->js_to_variant(argv[3]);
+
+    typed_obj->set_drag_forwarding(arg_drag_func, arg_can_drop_func, arg_drop_func);
+    return JS_UNDEFINED;
+}
+
 // Method: Control::set_drag_preview
 static JSValue js_Control_set_drag_preview(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -4679,6 +4719,250 @@ static JSValue js_Control_set_accessibility_live(JSContext* ctx, JSValueConst th
     return JS_UNDEFINED;
 }
 
+// Property getter: Control::accessibility_controls_nodes
+static JSValue js_Control_get_accessibility_controls_nodes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_controls_nodes getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_controls_nodes getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_controls_nodes getter: invalid object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_controls_nodes getter: wrong type");
+    }
+
+    Array value = typed_obj->get_accessibility_controls_nodes();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: Control::accessibility_controls_nodes
+static JSValue js_Control_set_accessibility_controls_nodes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_controls_nodes setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_controls_nodes setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_controls_nodes setter: invalid object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_controls_nodes setter: wrong type");
+    }
+
+    Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_accessibility_controls_nodes(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: Control::accessibility_described_by_nodes
+static JSValue js_Control_get_accessibility_described_by_nodes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_described_by_nodes getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_described_by_nodes getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_described_by_nodes getter: invalid object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_described_by_nodes getter: wrong type");
+    }
+
+    Array value = typed_obj->get_accessibility_described_by_nodes();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: Control::accessibility_described_by_nodes
+static JSValue js_Control_set_accessibility_described_by_nodes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_described_by_nodes setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_described_by_nodes setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_described_by_nodes setter: invalid object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_described_by_nodes setter: wrong type");
+    }
+
+    Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_accessibility_described_by_nodes(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: Control::accessibility_labeled_by_nodes
+static JSValue js_Control_get_accessibility_labeled_by_nodes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_labeled_by_nodes getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_labeled_by_nodes getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_labeled_by_nodes getter: invalid object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_labeled_by_nodes getter: wrong type");
+    }
+
+    Array value = typed_obj->get_accessibility_labeled_by_nodes();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: Control::accessibility_labeled_by_nodes
+static JSValue js_Control_set_accessibility_labeled_by_nodes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_labeled_by_nodes setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_labeled_by_nodes setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_labeled_by_nodes setter: invalid object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_labeled_by_nodes setter: wrong type");
+    }
+
+    Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_accessibility_labeled_by_nodes(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: Control::accessibility_flow_to_nodes
+static JSValue js_Control_get_accessibility_flow_to_nodes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_flow_to_nodes getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_flow_to_nodes getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_flow_to_nodes getter: invalid object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_flow_to_nodes getter: wrong type");
+    }
+
+    Array value = typed_obj->get_accessibility_flow_to_nodes();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: Control::accessibility_flow_to_nodes
+static JSValue js_Control_set_accessibility_flow_to_nodes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_flow_to_nodes setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_flow_to_nodes setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_flow_to_nodes setter: invalid object");
+    }
+
+    Control* typed_obj = Object::cast_to<Control>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Control.accessibility_flow_to_nodes setter: wrong type");
+    }
+
+    Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_accessibility_flow_to_nodes(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: Control::theme
 static JSValue js_Control_get_theme(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -4918,6 +5202,8 @@ void register_Control_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_NewCFunction(ctx, js_Control_get_mouse_filter_with_override, "get_mouse_filter_with_override", 1));
     JS_SetPropertyStr(ctx, methods, "grab_click_focus",
         JS_NewCFunction(ctx, js_Control_grab_click_focus, "grab_click_focus", 1));
+    JS_SetPropertyStr(ctx, methods, "set_drag_forwarding",
+        JS_NewCFunction(ctx, js_Control_set_drag_forwarding, "set_drag_forwarding", 4));
     JS_SetPropertyStr(ctx, methods, "set_drag_preview",
         JS_NewCFunction(ctx, js_Control_set_drag_preview, "set_drag_preview", 2));
     JS_SetPropertyStr(ctx, methods, "is_drag_successful",
@@ -5147,6 +5433,38 @@ void register_Control_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_Control_set_accessibility_live, "set_accessibility_live", 2));
         JS_SetPropertyStr(ctx, props, "accessibility_live", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_Control_get_accessibility_controls_nodes, "get_accessibility_controls_nodes", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_Control_set_accessibility_controls_nodes, "set_accessibility_controls_nodes", 2));
+        JS_SetPropertyStr(ctx, props, "accessibility_controls_nodes", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_Control_get_accessibility_described_by_nodes, "get_accessibility_described_by_nodes", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_Control_set_accessibility_described_by_nodes, "set_accessibility_described_by_nodes", 2));
+        JS_SetPropertyStr(ctx, props, "accessibility_described_by_nodes", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_Control_get_accessibility_labeled_by_nodes, "get_accessibility_labeled_by_nodes", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_Control_set_accessibility_labeled_by_nodes, "set_accessibility_labeled_by_nodes", 2));
+        JS_SetPropertyStr(ctx, props, "accessibility_labeled_by_nodes", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_Control_get_accessibility_flow_to_nodes, "get_accessibility_flow_to_nodes", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_Control_set_accessibility_flow_to_nodes, "set_accessibility_flow_to_nodes", 2));
+        JS_SetPropertyStr(ctx, props, "accessibility_flow_to_nodes", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

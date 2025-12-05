@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/skeleton3d.hpp>
-#include <godot_cpp/classes/skin_reference.hpp>
 #include <godot_cpp/classes/skin.hpp>
+#include <godot_cpp/classes/skin_reference.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -223,6 +223,44 @@ static JSValue js_Skeleton3D_get_bone_meta(JSContext* ctx, JSValueConst this_val
     const char* cstr_key = JS_ToCString(ctx, argv[2]); StringName arg_key = cstr_key ? cstr_key : ""; JS_FreeCString(ctx, cstr_key);
 
     Variant result = typed_obj->get_bone_meta(arg_bone_idx, arg_key);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Skeleton3D::get_bone_meta_list
+static JSValue js_Skeleton3D_get_bone_meta_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_bone_meta_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_bone_meta_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_bone_meta_list: invalid or freed object");
+    }
+
+    Skeleton3D* typed_obj = Object::cast_to<Skeleton3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_bone_meta_list: object is not a Skeleton3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_bone_meta_list: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_bone_idx; JS_ToInt64(ctx, &arg_bone_idx, argv[1]);
+
+    Array result = typed_obj->get_bone_meta_list(arg_bone_idx);
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -508,6 +546,74 @@ static JSValue js_Skeleton3D_unparent_bone_and_rest(JSContext* ctx, JSValueConst
 
     typed_obj->unparent_bone_and_rest(arg_bone_idx);
     return JS_UNDEFINED;
+}
+
+// Method: Skeleton3D::get_bone_children
+static JSValue js_Skeleton3D_get_bone_children(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_bone_children: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_bone_children: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_bone_children: invalid or freed object");
+    }
+
+    Skeleton3D* typed_obj = Object::cast_to<Skeleton3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_bone_children: object is not a Skeleton3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_bone_children: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_bone_idx; JS_ToInt64(ctx, &arg_bone_idx, argv[1]);
+
+    PackedInt32Array result = typed_obj->get_bone_children(arg_bone_idx);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Skeleton3D::get_parentless_bones
+static JSValue js_Skeleton3D_get_parentless_bones(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_parentless_bones: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_parentless_bones: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_parentless_bones: invalid or freed object");
+    }
+
+    Skeleton3D* typed_obj = Object::cast_to<Skeleton3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.get_parentless_bones: object is not a Skeleton3D");
+    }
+
+    PackedInt32Array result = typed_obj->get_parentless_bones();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: Skeleton3D::get_bone_rest
@@ -1961,6 +2067,126 @@ static JSValue js_Skeleton3D_physical_bones_stop_simulation(JSContext* ctx, JSVa
     return JS_UNDEFINED;
 }
 
+// Method: Skeleton3D::physical_bones_start_simulation
+static JSValue js_Skeleton3D_physical_bones_start_simulation(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_start_simulation: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_start_simulation: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_start_simulation: invalid or freed object");
+    }
+
+    Skeleton3D* typed_obj = Object::cast_to<Skeleton3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_start_simulation: object is not a Skeleton3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_start_simulation: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: bones (default: Array())
+    Array arg_bones = Array();
+    if (argc > 1) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Array arg_bones = qjs_ctx->js_to_variant(argv[1]);
+    }
+
+    typed_obj->physical_bones_start_simulation(arg_bones);
+    return JS_UNDEFINED;
+}
+
+// Method: Skeleton3D::physical_bones_add_collision_exception
+static JSValue js_Skeleton3D_physical_bones_add_collision_exception(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_add_collision_exception: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_add_collision_exception: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_add_collision_exception: invalid or freed object");
+    }
+
+    Skeleton3D* typed_obj = Object::cast_to<Skeleton3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_add_collision_exception: object is not a Skeleton3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_add_collision_exception: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_exception = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->physical_bones_add_collision_exception(arg_exception);
+    return JS_UNDEFINED;
+}
+
+// Method: Skeleton3D::physical_bones_remove_collision_exception
+static JSValue js_Skeleton3D_physical_bones_remove_collision_exception(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_remove_collision_exception: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_remove_collision_exception: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_remove_collision_exception: invalid or freed object");
+    }
+
+    Skeleton3D* typed_obj = Object::cast_to<Skeleton3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_remove_collision_exception: object is not a Skeleton3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Skeleton3D.physical_bones_remove_collision_exception: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_exception = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->physical_bones_remove_collision_exception(arg_exception);
+    return JS_UNDEFINED;
+}
+
 // Property getter: Skeleton3D::motion_scale
 static JSValue js_Skeleton3D_get_motion_scale(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2221,6 +2447,8 @@ void register_Skeleton3D_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_Skeleton3D_set_bone_name, "set_bone_name", 3));
     JS_SetPropertyStr(ctx, methods, "get_bone_meta",
         JS_NewCFunction(ctx, js_Skeleton3D_get_bone_meta, "get_bone_meta", 3));
+    JS_SetPropertyStr(ctx, methods, "get_bone_meta_list",
+        JS_NewCFunction(ctx, js_Skeleton3D_get_bone_meta_list, "get_bone_meta_list", 2));
     JS_SetPropertyStr(ctx, methods, "has_bone_meta",
         JS_NewCFunction(ctx, js_Skeleton3D_has_bone_meta, "has_bone_meta", 3));
     JS_SetPropertyStr(ctx, methods, "set_bone_meta",
@@ -2237,6 +2465,10 @@ void register_Skeleton3D_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_Skeleton3D_get_version, "get_version", 1));
     JS_SetPropertyStr(ctx, methods, "unparent_bone_and_rest",
         JS_NewCFunction(ctx, js_Skeleton3D_unparent_bone_and_rest, "unparent_bone_and_rest", 2));
+    JS_SetPropertyStr(ctx, methods, "get_bone_children",
+        JS_NewCFunction(ctx, js_Skeleton3D_get_bone_children, "get_bone_children", 2));
+    JS_SetPropertyStr(ctx, methods, "get_parentless_bones",
+        JS_NewCFunction(ctx, js_Skeleton3D_get_parentless_bones, "get_parentless_bones", 1));
     JS_SetPropertyStr(ctx, methods, "get_bone_rest",
         JS_NewCFunction(ctx, js_Skeleton3D_get_bone_rest, "get_bone_rest", 2));
     JS_SetPropertyStr(ctx, methods, "set_bone_rest",
@@ -2295,6 +2527,12 @@ void register_Skeleton3D_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_Skeleton3D_get_bone_global_pose_no_override, "get_bone_global_pose_no_override", 2));
     JS_SetPropertyStr(ctx, methods, "physical_bones_stop_simulation",
         JS_NewCFunction(ctx, js_Skeleton3D_physical_bones_stop_simulation, "physical_bones_stop_simulation", 1));
+    JS_SetPropertyStr(ctx, methods, "physical_bones_start_simulation",
+        JS_NewCFunction(ctx, js_Skeleton3D_physical_bones_start_simulation, "physical_bones_start_simulation", 2));
+    JS_SetPropertyStr(ctx, methods, "physical_bones_add_collision_exception",
+        JS_NewCFunction(ctx, js_Skeleton3D_physical_bones_add_collision_exception, "physical_bones_add_collision_exception", 2));
+    JS_SetPropertyStr(ctx, methods, "physical_bones_remove_collision_exception",
+        JS_NewCFunction(ctx, js_Skeleton3D_physical_bones_remove_collision_exception, "physical_bones_remove_collision_exception", 2));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

@@ -8,9 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/surface_tool.hpp>
+#include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/material.hpp>
-#include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -493,6 +493,44 @@ static JSValue js_SurfaceTool_set_uv2(JSContext* ctx, JSValueConst this_val, int
     return JS_UNDEFINED;
 }
 
+// Method: SurfaceTool::set_bones
+static JSValue js_SurfaceTool_set_bones(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.set_bones: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.set_bones: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.set_bones: invalid or freed object");
+    }
+
+    SurfaceTool* typed_obj = Object::cast_to<SurfaceTool>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.set_bones: object is not a SurfaceTool");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.set_bones: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedInt32Array arg_bones = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->set_bones(arg_bones);
+    return JS_UNDEFINED;
+}
+
 // Method: SurfaceTool::set_weights
 static JSValue js_SurfaceTool_set_weights(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -629,6 +667,159 @@ static JSValue js_SurfaceTool_set_smooth_group(JSContext* ctx, JSValueConst this
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
 
     typed_obj->set_smooth_group(arg_index);
+    return JS_UNDEFINED;
+}
+
+// Method: SurfaceTool::add_triangle_fan
+static JSValue js_SurfaceTool_add_triangle_fan(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.add_triangle_fan: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.add_triangle_fan: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.add_triangle_fan: invalid or freed object");
+    }
+
+    SurfaceTool* typed_obj = Object::cast_to<SurfaceTool>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.add_triangle_fan: object is not a SurfaceTool");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.add_triangle_fan: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedVector3Array arg_vertices;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_vertices.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double x = 0, y = 0, z = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JSValue jz = JS_GetPropertyStr(ctx, elem, "z");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy); JS_ToFloat64(ctx, &z, jz);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy); JS_FreeValue(ctx, jz);
+            JS_FreeValue(ctx, elem);
+            arg_vertices.set(i, Vector3(x, y, z));
+        }
+    }
+    // Optional argument: uvs (default: PackedVector2Array())
+    PackedVector2Array arg_uvs = PackedVector2Array();
+    if (argc > 2) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        PackedVector2Array arg_uvs;
+    if (JS_IsArray(argv[2])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[2], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_uvs.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[2], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_uvs.set(i, Vector2(x, y));
+        }
+    }
+    }
+    // Optional argument: colors (default: PackedColorArray())
+    PackedColorArray arg_colors = PackedColorArray();
+    if (argc > 3) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        PackedColorArray arg_colors;
+    if (JS_IsArray(argv[3])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[3], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_colors.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[3], i);
+            double r = 0, g = 0, b = 0, a = 1;
+            JSValue jr = JS_GetPropertyStr(ctx, elem, "r");
+            JSValue jg = JS_GetPropertyStr(ctx, elem, "g");
+            JSValue jb = JS_GetPropertyStr(ctx, elem, "b");
+            JSValue ja = JS_GetPropertyStr(ctx, elem, "a");
+            JS_ToFloat64(ctx, &r, jr); JS_ToFloat64(ctx, &g, jg); JS_ToFloat64(ctx, &b, jb);
+            if (!JS_IsUndefined(ja)) JS_ToFloat64(ctx, &a, ja);
+            JS_FreeValue(ctx, jr); JS_FreeValue(ctx, jg); JS_FreeValue(ctx, jb); JS_FreeValue(ctx, ja);
+            JS_FreeValue(ctx, elem);
+            arg_colors.set(i, Color(r, g, b, a));
+        }
+    }
+    }
+    // Optional argument: uv2s (default: PackedVector2Array())
+    PackedVector2Array arg_uv2s = PackedVector2Array();
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        PackedVector2Array arg_uv2s;
+    if (JS_IsArray(argv[4])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[4], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_uv2s.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[4], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_uv2s.set(i, Vector2(x, y));
+        }
+    }
+    }
+    // Optional argument: normals (default: PackedVector3Array())
+    PackedVector3Array arg_normals = PackedVector3Array();
+    if (argc > 5) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        PackedVector3Array arg_normals;
+    if (JS_IsArray(argv[5])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[5], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_normals.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[5], i);
+            double x = 0, y = 0, z = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JSValue jz = JS_GetPropertyStr(ctx, elem, "z");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy); JS_ToFloat64(ctx, &z, jz);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy); JS_FreeValue(ctx, jz);
+            JS_FreeValue(ctx, elem);
+            arg_normals.set(i, Vector3(x, y, z));
+        }
+    }
+    }
+    // Optional argument: tangents (default: Array())
+    Array arg_tangents = Array();
+    if (argc > 6) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Array arg_tangents = qjs_ctx->js_to_variant(argv[6]);
+    }
+
+    typed_obj->add_triangle_fan(arg_vertices, arg_uvs, arg_colors, arg_uv2s, arg_normals, arg_tangents);
     return JS_UNDEFINED;
 }
 
@@ -860,6 +1051,50 @@ static JSValue js_SurfaceTool_get_aabb(JSContext* ctx, JSValueConst this_val, in
     }
 
     AABB result = typed_obj->get_aabb();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: SurfaceTool::generate_lod
+static JSValue js_SurfaceTool_generate_lod(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.generate_lod: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.generate_lod: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.generate_lod: invalid or freed object");
+    }
+
+    SurfaceTool* typed_obj = Object::cast_to<SurfaceTool>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.generate_lod: object is not a SurfaceTool");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "SurfaceTool.generate_lod: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    double arg_nd_threshold; JS_ToFloat64(ctx, &arg_nd_threshold, argv[1]);
+    // Optional argument: target_index_count (default: 3)
+    int64_t arg_target_index_count = 3;
+    if (argc > 2) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_target_index_count, argv[2]);
+    }
+
+    PackedInt32Array result = typed_obj->generate_lod(arg_nd_threshold, arg_target_index_count);
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -1366,12 +1601,16 @@ void register_SurfaceTool_bindings(JSContext* ctx, JSValue global, JSValue class
         JS_NewCFunction(ctx, js_SurfaceTool_set_uv, "set_uv", 2));
     JS_SetPropertyStr(ctx, methods, "set_uv2",
         JS_NewCFunction(ctx, js_SurfaceTool_set_uv2, "set_uv2", 2));
+    JS_SetPropertyStr(ctx, methods, "set_bones",
+        JS_NewCFunction(ctx, js_SurfaceTool_set_bones, "set_bones", 2));
     JS_SetPropertyStr(ctx, methods, "set_weights",
         JS_NewCFunction(ctx, js_SurfaceTool_set_weights, "set_weights", 2));
     JS_SetPropertyStr(ctx, methods, "set_custom",
         JS_NewCFunction(ctx, js_SurfaceTool_set_custom, "set_custom", 3));
     JS_SetPropertyStr(ctx, methods, "set_smooth_group",
         JS_NewCFunction(ctx, js_SurfaceTool_set_smooth_group, "set_smooth_group", 2));
+    JS_SetPropertyStr(ctx, methods, "add_triangle_fan",
+        JS_NewCFunction(ctx, js_SurfaceTool_add_triangle_fan, "add_triangle_fan", 7));
     JS_SetPropertyStr(ctx, methods, "add_index",
         JS_NewCFunction(ctx, js_SurfaceTool_add_index, "add_index", 2));
     JS_SetPropertyStr(ctx, methods, "index",
@@ -1386,6 +1625,8 @@ void register_SurfaceTool_bindings(JSContext* ctx, JSValue global, JSValue class
         JS_NewCFunction(ctx, js_SurfaceTool_optimize_indices_for_cache, "optimize_indices_for_cache", 1));
     JS_SetPropertyStr(ctx, methods, "get_aabb",
         JS_NewCFunction(ctx, js_SurfaceTool_get_aabb, "get_aabb", 1));
+    JS_SetPropertyStr(ctx, methods, "generate_lod",
+        JS_NewCFunction(ctx, js_SurfaceTool_generate_lod, "generate_lod", 3));
     JS_SetPropertyStr(ctx, methods, "set_material",
         JS_NewCFunction(ctx, js_SurfaceTool_set_material, "set_material", 2));
     JS_SetPropertyStr(ctx, methods, "get_primitive_type",

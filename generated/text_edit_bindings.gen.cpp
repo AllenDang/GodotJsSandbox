@@ -1653,6 +1653,44 @@ static JSValue js_TextEdit_search(JSContext* ctx, JSValueConst this_val, int arg
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
+// Method: TextEdit::set_tooltip_request_func
+static JSValue js_TextEdit_set_tooltip_request_func(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_tooltip_request_func: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_tooltip_request_func: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_tooltip_request_func: invalid or freed object");
+    }
+
+    TextEdit* typed_obj = Object::cast_to<TextEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_tooltip_request_func: object is not a TextEdit");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_tooltip_request_func: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Callable arg_callback = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->set_tooltip_request_func(arg_callback);
+    return JS_UNDEFINED;
+}
+
 // Method: TextEdit::get_local_mouse_pos
 static JSValue js_TextEdit_get_local_mouse_pos(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2144,6 +2182,49 @@ static JSValue js_TextEdit_add_caret_at_carets(JSContext* ctx, JSValueConst this
 
     typed_obj->add_caret_at_carets(arg_below);
     return JS_UNDEFINED;
+}
+
+// Method: TextEdit::get_sorted_carets
+static JSValue js_TextEdit_get_sorted_carets(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_sorted_carets: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_sorted_carets: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_sorted_carets: invalid or freed object");
+    }
+
+    TextEdit* typed_obj = Object::cast_to<TextEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_sorted_carets: object is not a TextEdit");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_sorted_carets: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: include_ignored_carets (default: false)
+    bool arg_include_ignored_carets = false;
+    if (argc > 1) {
+        // Override default with provided value
+        arg_include_ignored_carets = JS_ToBool(ctx, argv[1]);
+    }
+
+    PackedInt32Array result = typed_obj->get_sorted_carets(arg_include_ignored_carets);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: TextEdit::collapse_carets
@@ -3187,6 +3268,55 @@ static JSValue js_TextEdit_get_selection_at_line_column(JSContext* ctx, JSValueC
     return JS_NewInt64(ctx, result);
 }
 
+// Method: TextEdit::get_line_ranges_from_carets
+static JSValue js_TextEdit_get_line_ranges_from_carets(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_ranges_from_carets: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_ranges_from_carets: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_ranges_from_carets: invalid or freed object");
+    }
+
+    TextEdit* typed_obj = Object::cast_to<TextEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_ranges_from_carets: object is not a TextEdit");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_ranges_from_carets: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: only_selections (default: false)
+    bool arg_only_selections = false;
+    if (argc > 1) {
+        // Override default with provided value
+        arg_only_selections = JS_ToBool(ctx, argv[1]);
+    }
+    // Optional argument: merge_adjacent (default: true)
+    bool arg_merge_adjacent = true;
+    if (argc > 2) {
+        // Override default with provided value
+        arg_merge_adjacent = JS_ToBool(ctx, argv[2]);
+    }
+
+    Array result = typed_obj->get_line_ranges_from_carets(arg_only_selections, arg_merge_adjacent);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: TextEdit::get_selection_origin_line
 static JSValue js_TextEdit_get_selection_origin_line(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -3787,6 +3917,44 @@ static JSValue js_TextEdit_get_line_wrap_index_at_column(JSContext* ctx, JSValue
 
     int64_t result = typed_obj->get_line_wrap_index_at_column(arg_line, arg_column);
     return JS_NewInt64(ctx, result);
+}
+
+// Method: TextEdit::get_line_wrapped_text
+static JSValue js_TextEdit_get_line_wrapped_text(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_wrapped_text: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_wrapped_text: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_wrapped_text: invalid or freed object");
+    }
+
+    TextEdit* typed_obj = Object::cast_to<TextEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_wrapped_text: object is not a TextEdit");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_line_wrapped_text: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_line; JS_ToInt64(ctx, &arg_line, argv[1]);
+
+    PackedStringArray result = typed_obj->get_line_wrapped_text(arg_line);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: TextEdit::get_v_scroll_bar
@@ -4992,6 +5160,45 @@ static JSValue js_TextEdit_merge_gutters(JSContext* ctx, JSValueConst this_val, 
     return JS_UNDEFINED;
 }
 
+// Method: TextEdit::set_gutter_custom_draw
+static JSValue js_TextEdit_set_gutter_custom_draw(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_gutter_custom_draw: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_gutter_custom_draw: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_gutter_custom_draw: invalid or freed object");
+    }
+
+    TextEdit* typed_obj = Object::cast_to<TextEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_gutter_custom_draw: object is not a TextEdit");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "TextEdit.set_gutter_custom_draw: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[1]);
+    Callable arg_draw_callback = qjs_ctx->js_to_variant(argv[2]);
+
+    typed_obj->set_gutter_custom_draw(arg_column, arg_draw_callback);
+    return JS_UNDEFINED;
+}
+
 // Method: TextEdit::get_total_gutter_width
 static JSValue js_TextEdit_get_total_gutter_width(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -5733,6 +5940,36 @@ static JSValue js_TextEdit_adjust_carets_after_edit(JSContext* ctx, JSValueConst
 
     typed_obj->adjust_carets_after_edit(arg_caret, arg_from_line, arg_from_col, arg_to_line, arg_to_col);
     return JS_UNDEFINED;
+}
+
+// Method: TextEdit::get_caret_index_edit_order
+static JSValue js_TextEdit_get_caret_index_edit_order(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_caret_index_edit_order: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_caret_index_edit_order: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_caret_index_edit_order: invalid or freed object");
+    }
+
+    TextEdit* typed_obj = Object::cast_to<TextEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextEdit.get_caret_index_edit_order: object is not a TextEdit");
+    }
+
+    PackedInt32Array result = typed_obj->get_caret_index_edit_order();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: TextEdit::get_selection_line
@@ -8824,6 +9061,8 @@ void register_TextEdit_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_TextEdit_set_search_flags, "set_search_flags", 2));
     JS_SetPropertyStr(ctx, methods, "search",
         JS_NewCFunction(ctx, js_TextEdit_search, "search", 5));
+    JS_SetPropertyStr(ctx, methods, "set_tooltip_request_func",
+        JS_NewCFunction(ctx, js_TextEdit_set_tooltip_request_func, "set_tooltip_request_func", 2));
     JS_SetPropertyStr(ctx, methods, "get_local_mouse_pos",
         JS_NewCFunction(ctx, js_TextEdit_get_local_mouse_pos, "get_local_mouse_pos", 1));
     JS_SetPropertyStr(ctx, methods, "get_word_at_pos",
@@ -8850,6 +9089,8 @@ void register_TextEdit_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_TextEdit_get_caret_count, "get_caret_count", 1));
     JS_SetPropertyStr(ctx, methods, "add_caret_at_carets",
         JS_NewCFunction(ctx, js_TextEdit_add_caret_at_carets, "add_caret_at_carets", 2));
+    JS_SetPropertyStr(ctx, methods, "get_sorted_carets",
+        JS_NewCFunction(ctx, js_TextEdit_get_sorted_carets, "get_sorted_carets", 2));
     JS_SetPropertyStr(ctx, methods, "collapse_carets",
         JS_NewCFunction(ctx, js_TextEdit_collapse_carets, "collapse_carets", 6));
     JS_SetPropertyStr(ctx, methods, "merge_overlapping_carets",
@@ -8902,6 +9143,8 @@ void register_TextEdit_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_TextEdit_get_selected_text, "get_selected_text", 2));
     JS_SetPropertyStr(ctx, methods, "get_selection_at_line_column",
         JS_NewCFunction(ctx, js_TextEdit_get_selection_at_line_column, "get_selection_at_line_column", 5));
+    JS_SetPropertyStr(ctx, methods, "get_line_ranges_from_carets",
+        JS_NewCFunction(ctx, js_TextEdit_get_line_ranges_from_carets, "get_line_ranges_from_carets", 3));
     JS_SetPropertyStr(ctx, methods, "get_selection_origin_line",
         JS_NewCFunction(ctx, js_TextEdit_get_selection_origin_line, "get_selection_origin_line", 2));
     JS_SetPropertyStr(ctx, methods, "get_selection_origin_column",
@@ -8930,6 +9173,8 @@ void register_TextEdit_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_TextEdit_get_line_wrap_count, "get_line_wrap_count", 2));
     JS_SetPropertyStr(ctx, methods, "get_line_wrap_index_at_column",
         JS_NewCFunction(ctx, js_TextEdit_get_line_wrap_index_at_column, "get_line_wrap_index_at_column", 3));
+    JS_SetPropertyStr(ctx, methods, "get_line_wrapped_text",
+        JS_NewCFunction(ctx, js_TextEdit_get_line_wrapped_text, "get_line_wrapped_text", 2));
     JS_SetPropertyStr(ctx, methods, "get_v_scroll_bar",
         JS_NewCFunction(ctx, js_TextEdit_get_v_scroll_bar, "get_v_scroll_bar", 1));
     JS_SetPropertyStr(ctx, methods, "get_h_scroll_bar",
@@ -8992,6 +9237,8 @@ void register_TextEdit_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_TextEdit_is_gutter_overwritable, "is_gutter_overwritable", 2));
     JS_SetPropertyStr(ctx, methods, "merge_gutters",
         JS_NewCFunction(ctx, js_TextEdit_merge_gutters, "merge_gutters", 3));
+    JS_SetPropertyStr(ctx, methods, "set_gutter_custom_draw",
+        JS_NewCFunction(ctx, js_TextEdit_set_gutter_custom_draw, "set_gutter_custom_draw", 3));
     JS_SetPropertyStr(ctx, methods, "get_total_gutter_width",
         JS_NewCFunction(ctx, js_TextEdit_get_total_gutter_width, "get_total_gutter_width", 1));
     JS_SetPropertyStr(ctx, methods, "set_line_gutter_metadata",
@@ -9026,6 +9273,8 @@ void register_TextEdit_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_TextEdit_menu_option, "menu_option", 2));
     JS_SetPropertyStr(ctx, methods, "adjust_carets_after_edit",
         JS_NewCFunction(ctx, js_TextEdit_adjust_carets_after_edit, "adjust_carets_after_edit", 6));
+    JS_SetPropertyStr(ctx, methods, "get_caret_index_edit_order",
+        JS_NewCFunction(ctx, js_TextEdit_get_caret_index_edit_order, "get_caret_index_edit_order", 1));
     JS_SetPropertyStr(ctx, methods, "get_selection_line",
         JS_NewCFunction(ctx, js_TextEdit_get_selection_line, "get_selection_line", 2));
     JS_SetPropertyStr(ctx, methods, "get_selection_column",

@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/tree_item.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -1954,6 +1954,83 @@ static JSValue js_TreeItem_set_custom_draw(JSContext* ctx, JSValueConst this_val
 
     typed_obj->set_custom_draw(arg_column, arg_object, arg_callback);
     return JS_UNDEFINED;
+}
+
+// Method: TreeItem::set_custom_draw_callback
+static JSValue js_TreeItem_set_custom_draw_callback(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TreeItem.set_custom_draw_callback: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TreeItem.set_custom_draw_callback: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TreeItem.set_custom_draw_callback: invalid or freed object");
+    }
+
+    TreeItem* typed_obj = Object::cast_to<TreeItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TreeItem.set_custom_draw_callback: object is not a TreeItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "TreeItem.set_custom_draw_callback: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[1]);
+    Callable arg_callback = qjs_ctx->js_to_variant(argv[2]);
+
+    typed_obj->set_custom_draw_callback(arg_column, arg_callback);
+    return JS_UNDEFINED;
+}
+
+// Method: TreeItem::get_custom_draw_callback
+static JSValue js_TreeItem_get_custom_draw_callback(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TreeItem.get_custom_draw_callback: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TreeItem.get_custom_draw_callback: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TreeItem.get_custom_draw_callback: invalid or freed object");
+    }
+
+    TreeItem* typed_obj = Object::cast_to<TreeItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TreeItem.get_custom_draw_callback: object is not a TreeItem");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TreeItem.get_custom_draw_callback: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[1]);
+
+    Callable result = typed_obj->get_custom_draw_callback(arg_column);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: TreeItem::set_collapsed_recursive
@@ -4630,6 +4707,36 @@ static JSValue js_TreeItem_get_child_count(JSContext* ctx, JSValueConst this_val
     return JS_NewInt64(ctx, result);
 }
 
+// Method: TreeItem::get_children
+static JSValue js_TreeItem_get_children(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TreeItem.get_children: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TreeItem.get_children: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TreeItem.get_children: invalid or freed object");
+    }
+
+    TreeItem* typed_obj = Object::cast_to<TreeItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TreeItem.get_children: object is not a TreeItem");
+    }
+
+    Array result = typed_obj->get_children();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: TreeItem::get_index
 static JSValue js_TreeItem_get_index(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -5108,6 +5215,10 @@ void register_TreeItem_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_TreeItem_get_metadata, "get_metadata", 2));
     JS_SetPropertyStr(ctx, methods, "set_custom_draw",
         JS_NewCFunction(ctx, js_TreeItem_set_custom_draw, "set_custom_draw", 4));
+    JS_SetPropertyStr(ctx, methods, "set_custom_draw_callback",
+        JS_NewCFunction(ctx, js_TreeItem_set_custom_draw_callback, "set_custom_draw_callback", 3));
+    JS_SetPropertyStr(ctx, methods, "get_custom_draw_callback",
+        JS_NewCFunction(ctx, js_TreeItem_get_custom_draw_callback, "get_custom_draw_callback", 2));
     JS_SetPropertyStr(ctx, methods, "set_collapsed_recursive",
         JS_NewCFunction(ctx, js_TreeItem_set_collapsed_recursive, "set_collapsed_recursive", 2));
     JS_SetPropertyStr(ctx, methods, "is_any_collapsed",
@@ -5224,6 +5335,8 @@ void register_TreeItem_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_TreeItem_get_child, "get_child", 2));
     JS_SetPropertyStr(ctx, methods, "get_child_count",
         JS_NewCFunction(ctx, js_TreeItem_get_child_count, "get_child_count", 1));
+    JS_SetPropertyStr(ctx, methods, "get_children",
+        JS_NewCFunction(ctx, js_TreeItem_get_children, "get_children", 1));
     JS_SetPropertyStr(ctx, methods, "get_index",
         JS_NewCFunction(ctx, js_TreeItem_get_index, "get_index", 1));
     JS_SetPropertyStr(ctx, methods, "move_before",

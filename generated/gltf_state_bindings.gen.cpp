@@ -72,6 +72,45 @@ static JSValue js_GLTFState_add_used_extension(JSContext* ctx, JSValueConst this
     return JS_UNDEFINED;
 }
 
+// Method: GLTFState::append_data_to_buffers
+static JSValue js_GLTFState_append_data_to_buffers(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFState.append_data_to_buffers: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFState.append_data_to_buffers: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFState.append_data_to_buffers: invalid or freed object");
+    }
+
+    GLTFState* typed_obj = Object::cast_to<GLTFState>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFState.append_data_to_buffers: object is not a GLTFState");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "GLTFState.append_data_to_buffers: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_data = qjs_ctx->js_to_variant(argv[1]);
+    bool arg_deduplication = JS_ToBool(ctx, argv[2]);
+
+    int64_t result = typed_obj->append_data_to_buffers(arg_data, arg_deduplication);
+    return JS_NewInt64(ctx, result);
+}
+
 // Method: GLTFState::append_gltf_node
 static JSValue js_GLTFState_append_gltf_node(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -680,6 +719,67 @@ static JSValue js_GLTFState_set_copyright(JSContext* ctx, JSValueConst this_val,
     return JS_UNDEFINED;
 }
 
+// Property getter: GLTFState::glb_data
+static JSValue js_GLTFState_get_glb_data(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFState.glb_data getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFState.glb_data getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFState.glb_data getter: invalid object");
+    }
+
+    GLTFState* typed_obj = Object::cast_to<GLTFState>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFState.glb_data getter: wrong type");
+    }
+
+    PackedByteArray value = typed_obj->get_glb_data();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: GLTFState::glb_data
+static JSValue js_GLTFState_set_glb_data(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GLTFState.glb_data setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFState.glb_data setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFState.glb_data setter: invalid object");
+    }
+
+    GLTFState* typed_obj = Object::cast_to<GLTFState>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFState.glb_data setter: wrong type");
+    }
+
+    PackedByteArray value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_glb_data(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: GLTFState::use_named_skin_binds
 static JSValue js_GLTFState_get_use_named_skin_binds(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -921,6 +1021,67 @@ static JSValue js_GLTFState_set_filename(JSContext* ctx, JSValueConst this_val, 
 
     const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_filename(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: GLTFState::root_nodes
+static JSValue js_GLTFState_get_root_nodes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFState.root_nodes getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFState.root_nodes getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFState.root_nodes getter: invalid object");
+    }
+
+    GLTFState* typed_obj = Object::cast_to<GLTFState>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFState.root_nodes getter: wrong type");
+    }
+
+    PackedInt32Array value = typed_obj->get_root_nodes();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: GLTFState::root_nodes
+static JSValue js_GLTFState_set_root_nodes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GLTFState.root_nodes setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFState.root_nodes setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFState.root_nodes setter: invalid object");
+    }
+
+    GLTFState* typed_obj = Object::cast_to<GLTFState>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFState.root_nodes setter: wrong type");
+    }
+
+    PackedInt32Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_root_nodes(value);
     return JS_UNDEFINED;
 }
 
@@ -1176,6 +1337,8 @@ void register_GLTFState_bindings(JSContext* ctx, JSValue global, JSValue classes
 
     JS_SetPropertyStr(ctx, methods, "add_used_extension",
         JS_NewCFunction(ctx, js_GLTFState_add_used_extension, "add_used_extension", 3));
+    JS_SetPropertyStr(ctx, methods, "append_data_to_buffers",
+        JS_NewCFunction(ctx, js_GLTFState_append_data_to_buffers, "append_data_to_buffers", 3));
     JS_SetPropertyStr(ctx, methods, "append_gltf_node",
         JS_NewCFunction(ctx, js_GLTFState_append_gltf_node, "append_gltf_node", 4));
     JS_SetPropertyStr(ctx, methods, "get_animation_players_count",
@@ -1229,6 +1392,14 @@ void register_GLTFState_bindings(JSContext* ctx, JSValue global, JSValue classes
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_GLTFState_get_glb_data, "get_glb_data", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_GLTFState_set_glb_data, "set_glb_data", 2));
+        JS_SetPropertyStr(ctx, props, "glb_data", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
             JS_NewCFunction(ctx, js_GLTFState_get_use_named_skin_binds, "get_use_named_skin_binds", 1));
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_GLTFState_set_use_named_skin_binds, "set_use_named_skin_binds", 2));
@@ -1257,6 +1428,14 @@ void register_GLTFState_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_GLTFState_set_filename, "set_filename", 2));
         JS_SetPropertyStr(ctx, props, "filename", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_GLTFState_get_root_nodes, "get_root_nodes", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_GLTFState_set_root_nodes, "set_root_nodes", 2));
+        JS_SetPropertyStr(ctx, props, "root_nodes", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

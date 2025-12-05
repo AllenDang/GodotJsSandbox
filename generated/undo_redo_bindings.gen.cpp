@@ -155,6 +155,82 @@ static JSValue js_UndoRedo_is_committing_action(JSContext* ctx, JSValueConst thi
     return JS_NewBool(ctx, result);
 }
 
+// Method: UndoRedo::add_do_method
+static JSValue js_UndoRedo_add_do_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "UndoRedo.add_do_method: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "UndoRedo.add_do_method: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "UndoRedo.add_do_method: invalid or freed object");
+    }
+
+    UndoRedo* typed_obj = Object::cast_to<UndoRedo>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "UndoRedo.add_do_method: object is not a UndoRedo");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "UndoRedo.add_do_method: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Callable arg_callable = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->add_do_method(arg_callable);
+    return JS_UNDEFINED;
+}
+
+// Method: UndoRedo::add_undo_method
+static JSValue js_UndoRedo_add_undo_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "UndoRedo.add_undo_method: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "UndoRedo.add_undo_method: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "UndoRedo.add_undo_method: invalid or freed object");
+    }
+
+    UndoRedo* typed_obj = Object::cast_to<UndoRedo>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "UndoRedo.add_undo_method: object is not a UndoRedo");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "UndoRedo.add_undo_method: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Callable arg_callable = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->add_undo_method(arg_callable);
+    return JS_UNDEFINED;
+}
+
 // Method: UndoRedo::add_do_property
 static JSValue js_UndoRedo_add_do_property(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -825,6 +901,10 @@ void register_UndoRedo_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_UndoRedo_commit_action, "commit_action", 2));
     JS_SetPropertyStr(ctx, methods, "is_committing_action",
         JS_NewCFunction(ctx, js_UndoRedo_is_committing_action, "is_committing_action", 1));
+    JS_SetPropertyStr(ctx, methods, "add_do_method",
+        JS_NewCFunction(ctx, js_UndoRedo_add_do_method, "add_do_method", 2));
+    JS_SetPropertyStr(ctx, methods, "add_undo_method",
+        JS_NewCFunction(ctx, js_UndoRedo_add_undo_method, "add_undo_method", 2));
     JS_SetPropertyStr(ctx, methods, "add_do_property",
         JS_NewCFunction(ctx, js_UndoRedo_add_do_property, "add_do_property", 4));
     JS_SetPropertyStr(ctx, methods, "add_undo_property",

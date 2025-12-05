@@ -8,6 +8,7 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/gltf_buffer_view.hpp>
+#include <godot_cpp/classes/gltf_state.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -31,6 +32,59 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
     } catch (...) { \
         return JS_ThrowInternalError(ctx, "GLTFBufferView: unknown error"); \
     }
+
+// Method: GLTFBufferView::load_buffer_view_data
+static JSValue js_GLTFBufferView_load_buffer_view_data(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFBufferView.load_buffer_view_data: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFBufferView.load_buffer_view_data: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFBufferView.load_buffer_view_data: invalid or freed object");
+    }
+
+    GLTFBufferView* typed_obj = Object::cast_to<GLTFBufferView>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFBufferView.load_buffer_view_data: object is not a GLTFBufferView");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GLTFBufferView.load_buffer_view_data: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<GLTFState> arg_state;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_state; JS_ToInt64(ctx, &h_state, argv[1]);
+        Object* obj_state = qjs_ctx->get_object_registry()->get_object(h_state);
+        arg_state = Ref<GLTFState>(Object::cast_to<GLTFState>(obj_state));
+    } else {
+        // Object with __handle property
+        JSValue jh_state = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_state)) {
+            int64_t h_state; JS_ToInt64(ctx, &h_state, jh_state);
+            Object* obj_state = qjs_ctx->get_object_registry()->get_object(h_state);
+            arg_state = Ref<GLTFState>(Object::cast_to<GLTFState>(obj_state));
+        }
+        JS_FreeValue(ctx, jh_state);
+    }
+
+    PackedByteArray result = typed_obj->load_buffer_view_data(arg_state);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
 
 // Property getter: GLTFBufferView::buffer
 static JSValue js_GLTFBufferView_get_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
@@ -404,6 +458,8 @@ void register_GLTFBufferView_bindings(JSContext* ctx, JSValue global, JSValue cl
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "load_buffer_view_data",
+        JS_NewCFunction(ctx, js_GLTFBufferView_load_buffer_view_data, "load_buffer_view_data", 2));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

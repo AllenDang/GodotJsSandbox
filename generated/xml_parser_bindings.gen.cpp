@@ -568,6 +568,44 @@ static JSValue js_XMLParser_open(JSContext* ctx, JSValueConst this_val, int argc
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
+// Method: XMLParser::open_buffer
+static JSValue js_XMLParser_open_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "XMLParser.open_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "XMLParser.open_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "XMLParser.open_buffer: invalid or freed object");
+    }
+
+    XMLParser* typed_obj = Object::cast_to<XMLParser>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "XMLParser.open_buffer: object is not a XMLParser");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "XMLParser.open_buffer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_buffer = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->open_buffer(arg_buffer);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 
 // Registration function for XMLParser
 void register_XMLParser_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -606,6 +644,8 @@ void register_XMLParser_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_NewCFunction(ctx, js_XMLParser_seek, "seek", 2));
     JS_SetPropertyStr(ctx, methods, "open",
         JS_NewCFunction(ctx, js_XMLParser_open, "open", 2));
+    JS_SetPropertyStr(ctx, methods, "open_buffer",
+        JS_NewCFunction(ctx, js_XMLParser_open_buffer, "open_buffer", 2));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

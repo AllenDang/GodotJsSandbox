@@ -126,6 +126,36 @@ static JSValue js_Skeleton2D_get_bone(JSContext* ctx, JSValueConst this_val, int
     return ret_obj;
 }
 
+// Method: Skeleton2D::get_skeleton
+static JSValue js_Skeleton2D_get_skeleton(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Skeleton2D.get_skeleton: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Skeleton2D.get_skeleton: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton2D.get_skeleton: invalid or freed object");
+    }
+
+    Skeleton2D* typed_obj = Object::cast_to<Skeleton2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Skeleton2D.get_skeleton: object is not a Skeleton2D");
+    }
+
+    RID result = typed_obj->get_skeleton();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Skeleton2D::set_modification_stack
 static JSValue js_Skeleton2D_set_modification_stack(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -362,6 +392,8 @@ void register_Skeleton2D_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_Skeleton2D_get_bone_count, "get_bone_count", 1));
     JS_SetPropertyStr(ctx, methods, "get_bone",
         JS_NewCFunction(ctx, js_Skeleton2D_get_bone, "get_bone", 2));
+    JS_SetPropertyStr(ctx, methods, "get_skeleton",
+        JS_NewCFunction(ctx, js_Skeleton2D_get_skeleton, "get_skeleton", 1));
     JS_SetPropertyStr(ctx, methods, "set_modification_stack",
         JS_NewCFunction(ctx, js_Skeleton2D_set_modification_stack, "set_modification_stack", 2));
     JS_SetPropertyStr(ctx, methods, "get_modification_stack",

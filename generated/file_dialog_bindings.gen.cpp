@@ -174,6 +174,44 @@ static JSValue js_FileDialog_get_option_name(JSContext* ctx, JSValueConst this_v
     return JS_NewString(ctx, result.utf8().get_data());
 }
 
+// Method: FileDialog::get_option_values
+static JSValue js_FileDialog_get_option_values(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FileDialog.get_option_values: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FileDialog.get_option_values: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FileDialog.get_option_values: invalid or freed object");
+    }
+
+    FileDialog* typed_obj = Object::cast_to<FileDialog>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FileDialog.get_option_values: object is not a FileDialog");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "FileDialog.get_option_values: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_option; JS_ToInt64(ctx, &arg_option, argv[1]);
+
+    PackedStringArray result = typed_obj->get_option_values(arg_option);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: FileDialog::get_option_default
 static JSValue js_FileDialog_get_option_default(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -251,6 +289,45 @@ static JSValue js_FileDialog_set_option_name(JSContext* ctx, JSValueConst this_v
     return JS_UNDEFINED;
 }
 
+// Method: FileDialog::set_option_values
+static JSValue js_FileDialog_set_option_values(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FileDialog.set_option_values: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FileDialog.set_option_values: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FileDialog.set_option_values: invalid or freed object");
+    }
+
+    FileDialog* typed_obj = Object::cast_to<FileDialog>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FileDialog.set_option_values: object is not a FileDialog");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "FileDialog.set_option_values: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_option; JS_ToInt64(ctx, &arg_option, argv[1]);
+    PackedStringArray arg_values = qjs_ctx->js_to_variant(argv[2]);
+
+    typed_obj->set_option_values(arg_option, arg_values);
+    return JS_UNDEFINED;
+}
+
 // Method: FileDialog::set_option_default
 static JSValue js_FileDialog_set_option_default(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -287,6 +364,46 @@ static JSValue js_FileDialog_set_option_default(JSContext* ctx, JSValueConst thi
     int64_t arg_default_value_index; JS_ToInt64(ctx, &arg_default_value_index, argv[2]);
 
     typed_obj->set_option_default(arg_option, arg_default_value_index);
+    return JS_UNDEFINED;
+}
+
+// Method: FileDialog::add_option
+static JSValue js_FileDialog_add_option(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FileDialog.add_option: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FileDialog.add_option: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FileDialog.add_option: invalid or freed object");
+    }
+
+    FileDialog* typed_obj = Object::cast_to<FileDialog>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FileDialog.add_option: object is not a FileDialog");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "FileDialog.add_option: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    PackedStringArray arg_values = qjs_ctx->js_to_variant(argv[2]);
+    int64_t arg_default_value_index; JS_ToInt64(ctx, &arg_default_value_index, argv[3]);
+
+    typed_obj->add_option(arg_name, arg_values, arg_default_value_index);
     return JS_UNDEFINED;
 }
 
@@ -795,6 +912,67 @@ static JSValue js_FileDialog_set_root_subfolder(JSContext* ctx, JSValueConst thi
     return JS_UNDEFINED;
 }
 
+// Property getter: FileDialog::filters
+static JSValue js_FileDialog_get_filters(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FileDialog.filters getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FileDialog.filters getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FileDialog.filters getter: invalid object");
+    }
+
+    FileDialog* typed_obj = Object::cast_to<FileDialog>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FileDialog.filters getter: wrong type");
+    }
+
+    PackedStringArray value = typed_obj->get_filters();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: FileDialog::filters
+static JSValue js_FileDialog_set_filters(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "FileDialog.filters setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FileDialog.filters setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FileDialog.filters setter: invalid object");
+    }
+
+    FileDialog* typed_obj = Object::cast_to<FileDialog>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FileDialog.filters setter: wrong type");
+    }
+
+    PackedStringArray value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_filters(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: FileDialog::filename_filter
 static JSValue js_FileDialog_get_filename_filter(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1236,12 +1414,18 @@ void register_FileDialog_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_FileDialog_clear_filename_filter, "clear_filename_filter", 1));
     JS_SetPropertyStr(ctx, methods, "get_option_name",
         JS_NewCFunction(ctx, js_FileDialog_get_option_name, "get_option_name", 2));
+    JS_SetPropertyStr(ctx, methods, "get_option_values",
+        JS_NewCFunction(ctx, js_FileDialog_get_option_values, "get_option_values", 2));
     JS_SetPropertyStr(ctx, methods, "get_option_default",
         JS_NewCFunction(ctx, js_FileDialog_get_option_default, "get_option_default", 2));
     JS_SetPropertyStr(ctx, methods, "set_option_name",
         JS_NewCFunction(ctx, js_FileDialog_set_option_name, "set_option_name", 3));
+    JS_SetPropertyStr(ctx, methods, "set_option_values",
+        JS_NewCFunction(ctx, js_FileDialog_set_option_values, "set_option_values", 3));
     JS_SetPropertyStr(ctx, methods, "set_option_default",
         JS_NewCFunction(ctx, js_FileDialog_set_option_default, "set_option_default", 3));
+    JS_SetPropertyStr(ctx, methods, "add_option",
+        JS_NewCFunction(ctx, js_FileDialog_add_option, "add_option", 4));
     JS_SetPropertyStr(ctx, methods, "get_selected_options",
         JS_NewCFunction(ctx, js_FileDialog_get_selected_options, "get_selected_options", 1));
     JS_SetPropertyStr(ctx, methods, "get_vbox",
@@ -1295,6 +1479,14 @@ void register_FileDialog_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_FileDialog_set_root_subfolder, "set_root_subfolder", 2));
         JS_SetPropertyStr(ctx, props, "root_subfolder", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_FileDialog_get_filters, "get_filters", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_FileDialog_set_filters, "set_filters", 2));
+        JS_SetPropertyStr(ctx, props, "filters", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

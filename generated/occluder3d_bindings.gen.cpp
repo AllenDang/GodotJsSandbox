@@ -70,6 +70,36 @@ static JSValue js_Occluder3D_get_vertices(JSContext* ctx, JSValueConst this_val,
     return arr;
 }
 
+// Method: Occluder3D::get_indices
+static JSValue js_Occluder3D_get_indices(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Occluder3D.get_indices: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Occluder3D.get_indices: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Occluder3D.get_indices: invalid or freed object");
+    }
+
+    Occluder3D* typed_obj = Object::cast_to<Occluder3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Occluder3D.get_indices: object is not a Occluder3D");
+    }
+
+    PackedInt32Array result = typed_obj->get_indices();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 
 // Registration function for Occluder3D
 void register_Occluder3D_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -78,6 +108,8 @@ void register_Occluder3D_bindings(JSContext* ctx, JSValue global, JSValue classe
 
     JS_SetPropertyStr(ctx, methods, "get_vertices",
         JS_NewCFunction(ctx, js_Occluder3D_get_vertices, "get_vertices", 1));
+    JS_SetPropertyStr(ctx, methods, "get_indices",
+        JS_NewCFunction(ctx, js_Occluder3D_get_indices, "get_indices", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

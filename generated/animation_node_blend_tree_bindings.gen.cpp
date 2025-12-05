@@ -358,6 +358,36 @@ static JSValue js_AnimationNodeBlendTree_disconnect_node(JSContext* ctx, JSValue
     return JS_UNDEFINED;
 }
 
+// Method: AnimationNodeBlendTree::get_node_list
+static JSValue js_AnimationNodeBlendTree_get_node_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AnimationNodeBlendTree.get_node_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AnimationNodeBlendTree.get_node_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AnimationNodeBlendTree.get_node_list: invalid or freed object");
+    }
+
+    AnimationNodeBlendTree* typed_obj = Object::cast_to<AnimationNodeBlendTree>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AnimationNodeBlendTree.get_node_list: object is not a AnimationNodeBlendTree");
+    }
+
+    Array result = typed_obj->get_node_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: AnimationNodeBlendTree::set_node_position
 static JSValue js_AnimationNodeBlendTree_set_node_position(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -536,6 +566,8 @@ void register_AnimationNodeBlendTree_bindings(JSContext* ctx, JSValue global, JS
         JS_NewCFunction(ctx, js_AnimationNodeBlendTree_connect_node, "connect_node", 4));
     JS_SetPropertyStr(ctx, methods, "disconnect_node",
         JS_NewCFunction(ctx, js_AnimationNodeBlendTree_disconnect_node, "disconnect_node", 3));
+    JS_SetPropertyStr(ctx, methods, "get_node_list",
+        JS_NewCFunction(ctx, js_AnimationNodeBlendTree_get_node_list, "get_node_list", 1));
     JS_SetPropertyStr(ctx, methods, "set_node_position",
         JS_NewCFunction(ctx, js_AnimationNodeBlendTree_set_node_position, "set_node_position", 3));
     JS_SetPropertyStr(ctx, methods, "get_node_position",

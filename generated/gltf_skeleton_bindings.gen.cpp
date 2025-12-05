@@ -180,6 +180,128 @@ static JSValue js_GLTFSkeleton_get_bone_attachment(JSContext* ctx, JSValueConst 
     return ret_obj;
 }
 
+// Property getter: GLTFSkeleton::joints
+static JSValue js_GLTFSkeleton_get_joints(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.joints getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.joints getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.joints getter: invalid object");
+    }
+
+    GLTFSkeleton* typed_obj = Object::cast_to<GLTFSkeleton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.joints getter: wrong type");
+    }
+
+    PackedInt32Array value = typed_obj->get_joints();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: GLTFSkeleton::joints
+static JSValue js_GLTFSkeleton_set_joints(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.joints setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.joints setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.joints setter: invalid object");
+    }
+
+    GLTFSkeleton* typed_obj = Object::cast_to<GLTFSkeleton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.joints setter: wrong type");
+    }
+
+    PackedInt32Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_joints(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: GLTFSkeleton::roots
+static JSValue js_GLTFSkeleton_get_roots(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.roots getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.roots getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.roots getter: invalid object");
+    }
+
+    GLTFSkeleton* typed_obj = Object::cast_to<GLTFSkeleton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.roots getter: wrong type");
+    }
+
+    PackedInt32Array value = typed_obj->get_roots();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: GLTFSkeleton::roots
+static JSValue js_GLTFSkeleton_set_roots(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.roots setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.roots setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.roots setter: invalid object");
+    }
+
+    GLTFSkeleton* typed_obj = Object::cast_to<GLTFSkeleton>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkeleton.roots setter: wrong type");
+    }
+
+    PackedInt32Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_roots(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: GLTFSkeleton::godot_bone_node
 static JSValue js_GLTFSkeleton_get_godot_bone_node(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -257,6 +379,22 @@ void register_GLTFSkeleton_bindings(JSContext* ctx, JSValue global, JSValue clas
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
 
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_GLTFSkeleton_get_joints, "get_joints", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_GLTFSkeleton_set_joints, "set_joints", 2));
+        JS_SetPropertyStr(ctx, props, "joints", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_GLTFSkeleton_get_roots, "get_roots", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_GLTFSkeleton_set_roots, "set_roots", 2));
+        JS_SetPropertyStr(ctx, props, "roots", prop_obj);
+    }
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",

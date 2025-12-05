@@ -32,6 +32,67 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "TextureLayeredRD: unknown error"); \
     }
 
+// Property getter: TextureLayeredRD::texture_rd_rid
+static JSValue js_TextureLayeredRD_get_texture_rd_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextureLayeredRD.texture_rd_rid getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureLayeredRD.texture_rd_rid getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureLayeredRD.texture_rd_rid getter: invalid object");
+    }
+
+    TextureLayeredRD* typed_obj = Object::cast_to<TextureLayeredRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureLayeredRD.texture_rd_rid getter: wrong type");
+    }
+
+    RID value = typed_obj->get_texture_rd_rid();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: TextureLayeredRD::texture_rd_rid
+static JSValue js_TextureLayeredRD_set_texture_rd_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "TextureLayeredRD.texture_rd_rid setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextureLayeredRD.texture_rd_rid setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextureLayeredRD.texture_rd_rid setter: invalid object");
+    }
+
+    TextureLayeredRD* typed_obj = Object::cast_to<TextureLayeredRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextureLayeredRD.texture_rd_rid setter: wrong type");
+    }
+
+    RID value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_texture_rd_rid(value);
+    return JS_UNDEFINED;
+}
+
 
 // Registration function for TextureLayeredRD
 void register_TextureLayeredRD_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -42,6 +103,14 @@ void register_TextureLayeredRD_bindings(JSContext* ctx, JSValue global, JSValue 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
 
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_TextureLayeredRD_get_texture_rd_rid, "get_texture_rd_rid", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_TextureLayeredRD_set_texture_rd_rid, "set_texture_rd_rid", 2));
+        JS_SetPropertyStr(ctx, props, "texture_rd_rid", prop_obj);
+    }
 
     // Register signals array
     JSValue signals_arr = JS_NewArray(ctx);

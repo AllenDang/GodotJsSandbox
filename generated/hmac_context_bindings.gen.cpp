@@ -32,12 +32,125 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "HMACContext: unknown error"); \
     }
 
+// Method: HMACContext::start
+static JSValue js_HMACContext_start(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "HMACContext.start: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "HMACContext.start: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "HMACContext.start: invalid or freed object");
+    }
+
+    HMACContext* typed_obj = Object::cast_to<HMACContext>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "HMACContext.start: object is not a HMACContext");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "HMACContext.start: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t tmp_hash_type; JS_ToInt64(ctx, &tmp_hash_type, argv[1]); HashingContext::HashType arg_hash_type = (HashingContext::HashType)tmp_hash_type;
+    PackedByteArray arg_key = qjs_ctx->js_to_variant(argv[2]);
+
+    Error result = typed_obj->start(arg_hash_type, arg_key);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: HMACContext::update
+static JSValue js_HMACContext_update(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "HMACContext.update: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "HMACContext.update: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "HMACContext.update: invalid or freed object");
+    }
+
+    HMACContext* typed_obj = Object::cast_to<HMACContext>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "HMACContext.update: object is not a HMACContext");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "HMACContext.update: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_data = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->update(arg_data);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: HMACContext::finish
+static JSValue js_HMACContext_finish(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "HMACContext.finish: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "HMACContext.finish: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "HMACContext.finish: invalid or freed object");
+    }
+
+    HMACContext* typed_obj = Object::cast_to<HMACContext>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "HMACContext.finish: object is not a HMACContext");
+    }
+
+    PackedByteArray result = typed_obj->finish();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 
 // Registration function for HMACContext
 void register_HMACContext_bindings(JSContext* ctx, JSValue global, JSValue classes) {
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "start",
+        JS_NewCFunction(ctx, js_HMACContext_start, "start", 3));
+    JS_SetPropertyStr(ctx, methods, "update",
+        JS_NewCFunction(ctx, js_HMACContext_update, "update", 2));
+    JS_SetPropertyStr(ctx, methods, "finish",
+        JS_NewCFunction(ctx, js_HMACContext_finish, "finish", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

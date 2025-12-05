@@ -9,6 +9,7 @@
 
 #include "quickjs_context.h"
 #include "object_registry.h"
+#include "array_registry.h"
 #include "sandbox_config.h"
 #include "execution_limiter.h"
 #include "safe_wrapper.h"
@@ -92,6 +93,7 @@ protected:
 private:
     std::unique_ptr<QuickJSContext> context_;
     std::unique_ptr<ObjectRegistry> object_registry_;
+    std::unique_ptr<ArrayRegistry> array_registry_;
     std::unique_ptr<SandboxConfig> sandbox_config_;
     std::unique_ptr<ExecutionLimiter> execution_limiter_;
     std::unique_ptr<SafeWrapper> safe_wrapper_;

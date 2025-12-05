@@ -265,6 +265,36 @@ static JSValue js_AnimationLibrary_get_animation(JSContext* ctx, JSValueConst th
     return ret_obj;
 }
 
+// Method: AnimationLibrary::get_animation_list
+static JSValue js_AnimationLibrary_get_animation_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AnimationLibrary.get_animation_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AnimationLibrary.get_animation_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AnimationLibrary.get_animation_list: invalid or freed object");
+    }
+
+    AnimationLibrary* typed_obj = Object::cast_to<AnimationLibrary>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AnimationLibrary.get_animation_list: object is not a AnimationLibrary");
+    }
+
+    Array result = typed_obj->get_animation_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: AnimationLibrary::get_animation_list_size
 static JSValue js_AnimationLibrary_get_animation_list_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -311,6 +341,8 @@ void register_AnimationLibrary_bindings(JSContext* ctx, JSValue global, JSValue 
         JS_NewCFunction(ctx, js_AnimationLibrary_has_animation, "has_animation", 2));
     JS_SetPropertyStr(ctx, methods, "get_animation",
         JS_NewCFunction(ctx, js_AnimationLibrary_get_animation, "get_animation", 2));
+    JS_SetPropertyStr(ctx, methods, "get_animation_list",
+        JS_NewCFunction(ctx, js_AnimationLibrary_get_animation_list, "get_animation_list", 1));
     JS_SetPropertyStr(ctx, methods, "get_animation_list_size",
         JS_NewCFunction(ctx, js_AnimationLibrary_get_animation_list_size, "get_animation_list_size", 1));
 

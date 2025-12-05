@@ -33,6 +33,69 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "AudioStreamMP3: unknown error"); \
     }
 
+// Method: AudioStreamMP3::load_from_buffer
+static JSValue js_AudioStreamMP3_load_from_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AudioStreamMP3.load_from_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AudioStreamMP3.load_from_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AudioStreamMP3.load_from_buffer: invalid or freed object");
+    }
+
+    AudioStreamMP3* typed_obj = Object::cast_to<AudioStreamMP3>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AudioStreamMP3.load_from_buffer: object is not a AudioStreamMP3");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "AudioStreamMP3.load_from_buffer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_stream_data = qjs_ctx->js_to_variant(argv[1]);
+
+    Ref<AudioStreamMP3> result = typed_obj->load_from_buffer(arg_stream_data);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
 // Method: AudioStreamMP3::load_from_file
 static JSValue js_AudioStreamMP3_load_from_file(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -94,6 +157,67 @@ static JSValue js_AudioStreamMP3_load_from_file(JSContext* ctx, JSValueConst thi
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
     JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
+}
+
+// Property getter: AudioStreamMP3::data
+static JSValue js_AudioStreamMP3_get_data(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AudioStreamMP3.data getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AudioStreamMP3.data getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AudioStreamMP3.data getter: invalid object");
+    }
+
+    AudioStreamMP3* typed_obj = Object::cast_to<AudioStreamMP3>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AudioStreamMP3.data getter: wrong type");
+    }
+
+    PackedByteArray value = typed_obj->get_data();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: AudioStreamMP3::data
+static JSValue js_AudioStreamMP3_set_data(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "AudioStreamMP3.data setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AudioStreamMP3.data setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AudioStreamMP3.data setter: invalid object");
+    }
+
+    AudioStreamMP3* typed_obj = Object::cast_to<AudioStreamMP3>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AudioStreamMP3.data setter: wrong type");
+    }
+
+    PackedByteArray value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_data(value);
+    return JS_UNDEFINED;
 }
 
 // Property getter: AudioStreamMP3::bpm
@@ -407,12 +531,22 @@ void register_AudioStreamMP3_bindings(JSContext* ctx, JSValue global, JSValue cl
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "load_from_buffer",
+        JS_NewCFunction(ctx, js_AudioStreamMP3_load_from_buffer, "load_from_buffer", 2));
     JS_SetPropertyStr(ctx, methods, "load_from_file",
         JS_NewCFunction(ctx, js_AudioStreamMP3_load_from_file, "load_from_file", 2));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
 
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_AudioStreamMP3_get_data, "get_data", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_AudioStreamMP3_set_data, "set_data", 2));
+        JS_SetPropertyStr(ctx, props, "data", prop_obj);
+    }
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",

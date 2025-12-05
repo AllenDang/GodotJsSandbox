@@ -221,6 +221,36 @@ static JSValue js_DPITexture_set_size_override(JSContext* ctx, JSValueConst this
     return JS_UNDEFINED;
 }
 
+// Method: DPITexture::get_scaled_rid
+static JSValue js_DPITexture_get_scaled_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "DPITexture.get_scaled_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "DPITexture.get_scaled_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "DPITexture.get_scaled_rid: invalid or freed object");
+    }
+
+    DPITexture* typed_obj = Object::cast_to<DPITexture>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "DPITexture.get_scaled_rid: object is not a DPITexture");
+    }
+
+    RID result = typed_obj->get_scaled_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Property getter: DPITexture::base_scale
 static JSValue js_DPITexture_get_base_scale(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -357,6 +387,8 @@ void register_DPITexture_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_DPITexture_get_source, "get_source", 1));
     JS_SetPropertyStr(ctx, methods, "set_size_override",
         JS_NewCFunction(ctx, js_DPITexture_set_size_override, "set_size_override", 2));
+    JS_SetPropertyStr(ctx, methods, "get_scaled_rid",
+        JS_NewCFunction(ctx, js_DPITexture_get_scaled_rid, "get_scaled_rid", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

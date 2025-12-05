@@ -234,6 +234,36 @@ static JSValue js_PhysicsBody2D_get_gravity(JSContext* ctx, JSValueConst this_va
     return ret_obj;
 }
 
+// Method: PhysicsBody2D::get_collision_exceptions
+static JSValue js_PhysicsBody2D_get_collision_exceptions(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicsBody2D.get_collision_exceptions: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsBody2D.get_collision_exceptions: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsBody2D.get_collision_exceptions: invalid or freed object");
+    }
+
+    PhysicsBody2D* typed_obj = Object::cast_to<PhysicsBody2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsBody2D.get_collision_exceptions: object is not a PhysicsBody2D");
+    }
+
+    Array result = typed_obj->get_collision_exceptions();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: PhysicsBody2D::add_collision_exception_with
 static JSValue js_PhysicsBody2D_add_collision_exception_with(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -352,6 +382,8 @@ void register_PhysicsBody2D_bindings(JSContext* ctx, JSValue global, JSValue cla
         JS_NewCFunction(ctx, js_PhysicsBody2D_test_move, "test_move", 6));
     JS_SetPropertyStr(ctx, methods, "get_gravity",
         JS_NewCFunction(ctx, js_PhysicsBody2D_get_gravity, "get_gravity", 1));
+    JS_SetPropertyStr(ctx, methods, "get_collision_exceptions",
+        JS_NewCFunction(ctx, js_PhysicsBody2D_get_collision_exceptions, "get_collision_exceptions", 1));
     JS_SetPropertyStr(ctx, methods, "add_collision_exception_with",
         JS_NewCFunction(ctx, js_PhysicsBody2D_add_collision_exception_with, "add_collision_exception_with", 2));
     JS_SetPropertyStr(ctx, methods, "remove_collision_exception_with",

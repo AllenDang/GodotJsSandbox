@@ -332,6 +332,69 @@ static JSValue js_PropertyTweener_set_ease(JSContext* ctx, JSValueConst this_val
     return ret_obj;
 }
 
+// Method: PropertyTweener::set_custom_interpolator
+static JSValue js_PropertyTweener_set_custom_interpolator(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PropertyTweener.set_custom_interpolator: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PropertyTweener.set_custom_interpolator: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PropertyTweener.set_custom_interpolator: invalid or freed object");
+    }
+
+    PropertyTweener* typed_obj = Object::cast_to<PropertyTweener>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PropertyTweener.set_custom_interpolator: object is not a PropertyTweener");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "PropertyTweener.set_custom_interpolator: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Callable arg_interpolator_method = qjs_ctx->js_to_variant(argv[1]);
+
+    Ref<PropertyTweener> result = typed_obj->set_custom_interpolator(arg_interpolator_method);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
 // Method: PropertyTweener::set_delay
 static JSValue js_PropertyTweener_set_delay(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -411,6 +474,8 @@ void register_PropertyTweener_bindings(JSContext* ctx, JSValue global, JSValue c
         JS_NewCFunction(ctx, js_PropertyTweener_set_trans, "set_trans", 2));
     JS_SetPropertyStr(ctx, methods, "set_ease",
         JS_NewCFunction(ctx, js_PropertyTweener_set_ease, "set_ease", 2));
+    JS_SetPropertyStr(ctx, methods, "set_custom_interpolator",
+        JS_NewCFunction(ctx, js_PropertyTweener_set_custom_interpolator, "set_custom_interpolator", 2));
     JS_SetPropertyStr(ctx, methods, "set_delay",
         JS_NewCFunction(ctx, js_PropertyTweener_set_delay, "set_delay", 2));
 

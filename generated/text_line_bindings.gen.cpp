@@ -482,6 +482,36 @@ static JSValue js_TextLine_get_size(JSContext* ctx, JSValueConst this_val, int a
     return ret_obj;
 }
 
+// Method: TextLine::get_rid
+static JSValue js_TextLine_get_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextLine.get_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextLine.get_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextLine.get_rid: invalid or freed object");
+    }
+
+    TextLine* typed_obj = Object::cast_to<TextLine>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextLine.get_rid: object is not a TextLine");
+    }
+
+    RID result = typed_obj->get_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: TextLine::get_line_ascent
 static JSValue js_TextLine_get_line_ascent(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -630,6 +660,156 @@ static JSValue js_TextLine_get_line_underline_thickness(JSContext* ctx, JSValueC
 
     double result = typed_obj->get_line_underline_thickness();
     return JS_NewFloat64(ctx, result);
+}
+
+// Method: TextLine::draw
+static JSValue js_TextLine_draw(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextLine.draw: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextLine.draw: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextLine.draw: invalid or freed object");
+    }
+
+    TextLine* typed_obj = Object::cast_to<TextLine>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextLine.draw: object is not a TextLine");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "TextLine.draw: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    // Optional argument: color (default: Color(1, 1, 1, 1))
+    Color arg_color = Color(1, 1, 1, 1);
+    if (argc > 3) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[3], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[3], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[3], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[3], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 4) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[4]);
+    }
+
+    typed_obj->draw(arg_canvas, arg_pos, arg_color, arg_oversampling);
+    return JS_UNDEFINED;
+}
+
+// Method: TextLine::draw_outline
+static JSValue js_TextLine_draw_outline(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TextLine.draw_outline: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TextLine.draw_outline: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TextLine.draw_outline: invalid or freed object");
+    }
+
+    TextLine* typed_obj = Object::cast_to<TextLine>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TextLine.draw_outline: object is not a TextLine");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "TextLine.draw_outline: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_pos, tmp_y_pos;
+    JSValue jx_pos = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_pos = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_pos, jx_pos);
+    JS_ToFloat64(ctx, &tmp_y_pos, jy_pos);
+    JS_FreeValue(ctx, jx_pos);
+    JS_FreeValue(ctx, jy_pos);
+    Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
+    // Optional argument: outline_size (default: 1)
+    int64_t arg_outline_size = 1;
+    if (argc > 3) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_outline_size, argv[3]);
+    }
+    // Optional argument: color (default: Color(1, 1, 1, 1))
+    Color arg_color = Color(1, 1, 1, 1);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
+    JSValue jr_color = JS_GetPropertyStr(ctx, argv[4], "r");
+    JSValue jg_color = JS_GetPropertyStr(ctx, argv[4], "g");
+    JSValue jb_color = JS_GetPropertyStr(ctx, argv[4], "b");
+    JSValue ja_color = JS_GetPropertyStr(ctx, argv[4], "a");
+    JS_ToFloat64(ctx, &tmp_r_color, jr_color);
+    JS_ToFloat64(ctx, &tmp_g_color, jg_color);
+    JS_ToFloat64(ctx, &tmp_b_color, jb_color);
+    if (!JS_IsUndefined(ja_color)) JS_ToFloat64(ctx, &tmp_a_color, ja_color);
+    JS_FreeValue(ctx, jr_color);
+    JS_FreeValue(ctx, jg_color);
+    JS_FreeValue(ctx, jb_color);
+    JS_FreeValue(ctx, ja_color);
+    Color arg_color(tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color);
+    }
+    // Optional argument: oversampling (default: 0.0)
+    double arg_oversampling = 0.0;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_oversampling, argv[5]);
+    }
+
+    typed_obj->draw_outline(arg_canvas, arg_pos, arg_outline_size, arg_color, arg_oversampling);
+    return JS_UNDEFINED;
 }
 
 // Method: TextLine::hit_test
@@ -1245,6 +1425,8 @@ void register_TextLine_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_TextLine_get_object_rect, "get_object_rect", 2));
     JS_SetPropertyStr(ctx, methods, "get_size",
         JS_NewCFunction(ctx, js_TextLine_get_size, "get_size", 1));
+    JS_SetPropertyStr(ctx, methods, "get_rid",
+        JS_NewCFunction(ctx, js_TextLine_get_rid, "get_rid", 1));
     JS_SetPropertyStr(ctx, methods, "get_line_ascent",
         JS_NewCFunction(ctx, js_TextLine_get_line_ascent, "get_line_ascent", 1));
     JS_SetPropertyStr(ctx, methods, "get_line_descent",
@@ -1255,6 +1437,10 @@ void register_TextLine_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_TextLine_get_line_underline_position, "get_line_underline_position", 1));
     JS_SetPropertyStr(ctx, methods, "get_line_underline_thickness",
         JS_NewCFunction(ctx, js_TextLine_get_line_underline_thickness, "get_line_underline_thickness", 1));
+    JS_SetPropertyStr(ctx, methods, "draw",
+        JS_NewCFunction(ctx, js_TextLine_draw, "draw", 5));
+    JS_SetPropertyStr(ctx, methods, "draw_outline",
+        JS_NewCFunction(ctx, js_TextLine_draw_outline, "draw_outline", 6));
     JS_SetPropertyStr(ctx, methods, "hit_test",
         JS_NewCFunction(ctx, js_TextLine_hit_test, "hit_test", 2));
 

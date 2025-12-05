@@ -94,6 +94,250 @@ static JSValue js_GLTFSkin_set_skin_root(JSContext* ctx, JSValueConst this_val, 
     return JS_UNDEFINED;
 }
 
+// Property getter: GLTFSkin::joints_original
+static JSValue js_GLTFSkin_get_joints_original(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints_original getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints_original getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints_original getter: invalid object");
+    }
+
+    GLTFSkin* typed_obj = Object::cast_to<GLTFSkin>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints_original getter: wrong type");
+    }
+
+    PackedInt32Array value = typed_obj->get_joints_original();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: GLTFSkin::joints_original
+static JSValue js_GLTFSkin_set_joints_original(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints_original setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints_original setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints_original setter: invalid object");
+    }
+
+    GLTFSkin* typed_obj = Object::cast_to<GLTFSkin>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints_original setter: wrong type");
+    }
+
+    PackedInt32Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_joints_original(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: GLTFSkin::joints
+static JSValue js_GLTFSkin_get_joints(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints getter: invalid object");
+    }
+
+    GLTFSkin* typed_obj = Object::cast_to<GLTFSkin>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints getter: wrong type");
+    }
+
+    PackedInt32Array value = typed_obj->get_joints();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: GLTFSkin::joints
+static JSValue js_GLTFSkin_set_joints(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints setter: invalid object");
+    }
+
+    GLTFSkin* typed_obj = Object::cast_to<GLTFSkin>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.joints setter: wrong type");
+    }
+
+    PackedInt32Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_joints(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: GLTFSkin::non_joints
+static JSValue js_GLTFSkin_get_non_joints(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.non_joints getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.non_joints getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.non_joints getter: invalid object");
+    }
+
+    GLTFSkin* typed_obj = Object::cast_to<GLTFSkin>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.non_joints getter: wrong type");
+    }
+
+    PackedInt32Array value = typed_obj->get_non_joints();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: GLTFSkin::non_joints
+static JSValue js_GLTFSkin_set_non_joints(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.non_joints setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.non_joints setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.non_joints setter: invalid object");
+    }
+
+    GLTFSkin* typed_obj = Object::cast_to<GLTFSkin>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.non_joints setter: wrong type");
+    }
+
+    PackedInt32Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_non_joints(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: GLTFSkin::roots
+static JSValue js_GLTFSkin_get_roots(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.roots getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.roots getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.roots getter: invalid object");
+    }
+
+    GLTFSkin* typed_obj = Object::cast_to<GLTFSkin>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.roots getter: wrong type");
+    }
+
+    PackedInt32Array value = typed_obj->get_roots();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: GLTFSkin::roots
+static JSValue js_GLTFSkin_set_roots(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.roots setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.roots setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.roots setter: invalid object");
+    }
+
+    GLTFSkin* typed_obj = Object::cast_to<GLTFSkin>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFSkin.roots setter: wrong type");
+    }
+
+    PackedInt32Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_roots(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: GLTFSkin::skeleton
 static JSValue js_GLTFSkin_get_skeleton(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -395,6 +639,38 @@ void register_GLTFSkin_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_GLTFSkin_set_skin_root, "set_skin_root", 2));
         JS_SetPropertyStr(ctx, props, "skin_root", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_GLTFSkin_get_joints_original, "get_joints_original", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_GLTFSkin_set_joints_original, "set_joints_original", 2));
+        JS_SetPropertyStr(ctx, props, "joints_original", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_GLTFSkin_get_joints, "get_joints", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_GLTFSkin_set_joints, "set_joints", 2));
+        JS_SetPropertyStr(ctx, props, "joints", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_GLTFSkin_get_non_joints, "get_non_joints", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_GLTFSkin_set_non_joints, "set_non_joints", 2));
+        JS_SetPropertyStr(ctx, props, "non_joints", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_GLTFSkin_get_roots, "get_roots", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_GLTFSkin_set_roots, "set_roots", 2));
+        JS_SetPropertyStr(ctx, props, "roots", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

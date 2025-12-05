@@ -416,6 +416,36 @@ static JSValue js_Node3D_add_gizmo(JSContext* ctx, JSValueConst this_val, int ar
     return JS_UNDEFINED;
 }
 
+// Method: Node3D::get_gizmos
+static JSValue js_Node3D_get_gizmos(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Node3D.get_gizmos: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Node3D.get_gizmos: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Node3D.get_gizmos: invalid or freed object");
+    }
+
+    Node3D* typed_obj = Object::cast_to<Node3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Node3D.get_gizmos: object is not a Node3D");
+    }
+
+    Array result = typed_obj->get_gizmos();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Node3D::clear_gizmos
 static JSValue js_Node3D_clear_gizmos(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2982,6 +3012,8 @@ void register_Node3D_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Node3D_update_gizmos, "update_gizmos", 1));
     JS_SetPropertyStr(ctx, methods, "add_gizmo",
         JS_NewCFunction(ctx, js_Node3D_add_gizmo, "add_gizmo", 2));
+    JS_SetPropertyStr(ctx, methods, "get_gizmos",
+        JS_NewCFunction(ctx, js_Node3D_get_gizmos, "get_gizmos", 1));
     JS_SetPropertyStr(ctx, methods, "clear_gizmos",
         JS_NewCFunction(ctx, js_Node3D_clear_gizmos, "clear_gizmos", 1));
     JS_SetPropertyStr(ctx, methods, "set_subgizmo_selection",

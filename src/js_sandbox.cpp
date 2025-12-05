@@ -36,6 +36,7 @@ JSSandbox::~JSSandbox() {
 
 bool JSSandbox::initialize() {
     object_registry_ = std::make_unique<ObjectRegistry>();
+    array_registry_ = std::make_unique<ArrayRegistry>();
     sandbox_config_ = std::make_unique<SandboxConfig>();
     execution_limiter_ = std::make_unique<ExecutionLimiter>();
     safe_wrapper_ = std::make_unique<SafeWrapper>();
@@ -56,6 +57,7 @@ bool JSSandbox::initialize() {
 
     // Configure context with all sandbox components
     context_->set_object_registry(object_registry_.get());
+    context_->set_array_registry(array_registry_.get());
     context_->set_sandbox_config(sandbox_config_.get());
     context_->set_execution_limiter(execution_limiter_.get());
     context_->set_safe_wrapper(safe_wrapper_.get());

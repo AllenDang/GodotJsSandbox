@@ -187,6 +187,36 @@ static JSValue js_CollisionObject3D_get_collision_mask_value(JSContext* ctx, JSV
     return JS_NewBool(ctx, result);
 }
 
+// Method: CollisionObject3D::get_rid
+static JSValue js_CollisionObject3D_get_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.get_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.get_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.get_rid: invalid or freed object");
+    }
+
+    CollisionObject3D* typed_obj = Object::cast_to<CollisionObject3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.get_rid: object is not a CollisionObject3D");
+    }
+
+    RID result = typed_obj->get_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: CollisionObject3D::create_shape_owner
 static JSValue js_CollisionObject3D_create_shape_owner(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -276,6 +306,36 @@ static JSValue js_CollisionObject3D_remove_shape_owner(JSContext* ctx, JSValueCo
 
     typed_obj->remove_shape_owner(arg_owner_id);
     return JS_UNDEFINED;
+}
+
+// Method: CollisionObject3D::get_shape_owners
+static JSValue js_CollisionObject3D_get_shape_owners(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.get_shape_owners: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.get_shape_owners: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.get_shape_owners: invalid or freed object");
+    }
+
+    CollisionObject3D* typed_obj = Object::cast_to<CollisionObject3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CollisionObject3D.get_shape_owners: object is not a CollisionObject3D");
+    }
+
+    PackedInt32Array result = typed_obj->get_shape_owners();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: CollisionObject3D::shape_owner_set_transform
@@ -1242,10 +1302,14 @@ void register_CollisionObject3D_bindings(JSContext* ctx, JSValue global, JSValue
         JS_NewCFunction(ctx, js_CollisionObject3D_set_collision_mask_value, "set_collision_mask_value", 3));
     JS_SetPropertyStr(ctx, methods, "get_collision_mask_value",
         JS_NewCFunction(ctx, js_CollisionObject3D_get_collision_mask_value, "get_collision_mask_value", 2));
+    JS_SetPropertyStr(ctx, methods, "get_rid",
+        JS_NewCFunction(ctx, js_CollisionObject3D_get_rid, "get_rid", 1));
     JS_SetPropertyStr(ctx, methods, "create_shape_owner",
         JS_NewCFunction(ctx, js_CollisionObject3D_create_shape_owner, "create_shape_owner", 2));
     JS_SetPropertyStr(ctx, methods, "remove_shape_owner",
         JS_NewCFunction(ctx, js_CollisionObject3D_remove_shape_owner, "remove_shape_owner", 2));
+    JS_SetPropertyStr(ctx, methods, "get_shape_owners",
+        JS_NewCFunction(ctx, js_CollisionObject3D_get_shape_owners, "get_shape_owners", 1));
     JS_SetPropertyStr(ctx, methods, "shape_owner_set_transform",
         JS_NewCFunction(ctx, js_CollisionObject3D_shape_owner_set_transform, "shape_owner_set_transform", 3));
     JS_SetPropertyStr(ctx, methods, "shape_owner_get_transform",

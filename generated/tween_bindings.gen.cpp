@@ -8,10 +8,12 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/tween.hpp>
-#include <godot_cpp/classes/interval_tweener.hpp>
+#include <godot_cpp/classes/property_tweener.hpp>
+#include <godot_cpp/classes/method_tweener.hpp>
 #include <godot_cpp/classes/subtween_tweener.hpp>
 #include <godot_cpp/classes/tween.hpp>
-#include <godot_cpp/classes/property_tweener.hpp>
+#include <godot_cpp/classes/callback_tweener.hpp>
+#include <godot_cpp/classes/interval_tweener.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -152,6 +154,135 @@ static JSValue js_Tween_tween_interval(JSContext* ctx, JSValueConst this_val, in
     double arg_time; JS_ToFloat64(ctx, &arg_time, argv[1]);
 
     Ref<IntervalTweener> result = typed_obj->tween_interval(arg_time);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Method: Tween::tween_callback
+static JSValue js_Tween_tween_callback(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Tween.tween_callback: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Tween.tween_callback: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Tween.tween_callback: invalid or freed object");
+    }
+
+    Tween* typed_obj = Object::cast_to<Tween>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Tween.tween_callback: object is not a Tween");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Tween.tween_callback: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Callable arg_callback = qjs_ctx->js_to_variant(argv[1]);
+
+    Ref<CallbackTweener> result = typed_obj->tween_callback(arg_callback);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
+
+// Method: Tween::tween_method
+static JSValue js_Tween_tween_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Tween.tween_method: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Tween.tween_method: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Tween.tween_method: invalid or freed object");
+    }
+
+    Tween* typed_obj = Object::cast_to<Tween>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Tween.tween_method: object is not a Tween");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 5) {
+        return JS_ThrowTypeError(ctx, "Tween.tween_method: expected at least 4 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Callable arg_method = qjs_ctx->js_to_variant(argv[1]);
+    Variant arg_from = qjs_ctx->js_to_variant(argv[2]);
+    Variant arg_to = qjs_ctx->js_to_variant(argv[3]);
+    double arg_duration; JS_ToFloat64(ctx, &arg_duration, argv[4]);
+
+    Ref<MethodTweener> result = typed_obj->tween_method(arg_method, arg_from, arg_to, arg_duration);
     if (result.is_null()) return JS_NULL;
     Object* ret_obj_ptr = result.ptr();
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
@@ -1296,6 +1427,10 @@ void register_Tween_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Tween_tween_property, "tween_property", 5));
     JS_SetPropertyStr(ctx, methods, "tween_interval",
         JS_NewCFunction(ctx, js_Tween_tween_interval, "tween_interval", 2));
+    JS_SetPropertyStr(ctx, methods, "tween_callback",
+        JS_NewCFunction(ctx, js_Tween_tween_callback, "tween_callback", 2));
+    JS_SetPropertyStr(ctx, methods, "tween_method",
+        JS_NewCFunction(ctx, js_Tween_tween_method, "tween_method", 5));
     JS_SetPropertyStr(ctx, methods, "tween_subtween",
         JS_NewCFunction(ctx, js_Tween_tween_subtween, "tween_subtween", 2));
     JS_SetPropertyStr(ctx, methods, "custom_step",

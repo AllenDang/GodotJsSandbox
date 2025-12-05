@@ -32,6 +32,60 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "PolygonPathFinder: unknown error"); \
     }
 
+// Method: PolygonPathFinder::setup
+static JSValue js_PolygonPathFinder_setup(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PolygonPathFinder.setup: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PolygonPathFinder.setup: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PolygonPathFinder.setup: invalid or freed object");
+    }
+
+    PolygonPathFinder* typed_obj = Object::cast_to<PolygonPathFinder>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PolygonPathFinder.setup: object is not a PolygonPathFinder");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "PolygonPathFinder.setup: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedVector2Array arg_points;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_points.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double x = 0, y = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy);
+            JS_FreeValue(ctx, elem);
+            arg_points.set(i, Vector2(x, y));
+        }
+    }
+    PackedInt32Array arg_connections = qjs_ctx->js_to_variant(argv[2]);
+
+    typed_obj->setup(arg_points, arg_connections);
+    return JS_UNDEFINED;
+}
+
 // Method: PolygonPathFinder::find_path
 static JSValue js_PolygonPathFinder_find_path(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -367,6 +421,8 @@ void register_PolygonPathFinder_bindings(JSContext* ctx, JSValue global, JSValue
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "setup",
+        JS_NewCFunction(ctx, js_PolygonPathFinder_setup, "setup", 3));
     JS_SetPropertyStr(ctx, methods, "find_path",
         JS_NewCFunction(ctx, js_PolygonPathFinder_find_path, "find_path", 3));
     JS_SetPropertyStr(ctx, methods, "get_intersections",

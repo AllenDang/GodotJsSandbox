@@ -32,6 +32,36 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "Joint2D: unknown error"); \
     }
 
+// Method: Joint2D::get_rid
+static JSValue js_Joint2D_get_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Joint2D.get_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Joint2D.get_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Joint2D.get_rid: invalid or freed object");
+    }
+
+    Joint2D* typed_obj = Object::cast_to<Joint2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Joint2D.get_rid: object is not a Joint2D");
+    }
+
+    RID result = typed_obj->get_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Property getter: Joint2D::node_a
 static JSValue js_Joint2D_get_node_a(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -282,6 +312,8 @@ void register_Joint2D_bindings(JSContext* ctx, JSValue global, JSValue classes) 
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "get_rid",
+        JS_NewCFunction(ctx, js_Joint2D_get_rid, "get_rid", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

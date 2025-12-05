@@ -280,6 +280,36 @@ static JSValue js_TileMapPattern_get_cell_alternative_tile(JSContext* ctx, JSVal
     return JS_NewInt64(ctx, result);
 }
 
+// Method: TileMapPattern::get_used_cells
+static JSValue js_TileMapPattern_get_used_cells(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "TileMapPattern.get_used_cells: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "TileMapPattern.get_used_cells: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "TileMapPattern.get_used_cells: invalid or freed object");
+    }
+
+    TileMapPattern* typed_obj = Object::cast_to<TileMapPattern>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "TileMapPattern.get_used_cells: object is not a TileMapPattern");
+    }
+
+    Array result = typed_obj->get_used_cells();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: TileMapPattern::get_size
 static JSValue js_TileMapPattern_get_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -396,6 +426,8 @@ void register_TileMapPattern_bindings(JSContext* ctx, JSValue global, JSValue cl
         JS_NewCFunction(ctx, js_TileMapPattern_get_cell_atlas_coords, "get_cell_atlas_coords", 2));
     JS_SetPropertyStr(ctx, methods, "get_cell_alternative_tile",
         JS_NewCFunction(ctx, js_TileMapPattern_get_cell_alternative_tile, "get_cell_alternative_tile", 2));
+    JS_SetPropertyStr(ctx, methods, "get_used_cells",
+        JS_NewCFunction(ctx, js_TileMapPattern_get_used_cells, "get_used_cells", 1));
     JS_SetPropertyStr(ctx, methods, "get_size",
         JS_NewCFunction(ctx, js_TileMapPattern_get_size, "get_size", 1));
     JS_SetPropertyStr(ctx, methods, "set_size",

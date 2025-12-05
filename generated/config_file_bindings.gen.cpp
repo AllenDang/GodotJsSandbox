@@ -195,6 +195,74 @@ static JSValue js_ConfigFile_has_section_key(JSContext* ctx, JSValueConst this_v
     return JS_NewBool(ctx, result);
 }
 
+// Method: ConfigFile::get_sections
+static JSValue js_ConfigFile_get_sections(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.get_sections: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.get_sections: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.get_sections: invalid or freed object");
+    }
+
+    ConfigFile* typed_obj = Object::cast_to<ConfigFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.get_sections: object is not a ConfigFile");
+    }
+
+    PackedStringArray result = typed_obj->get_sections();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: ConfigFile::get_section_keys
+static JSValue js_ConfigFile_get_section_keys(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.get_section_keys: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.get_section_keys: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.get_section_keys: invalid or freed object");
+    }
+
+    ConfigFile* typed_obj = Object::cast_to<ConfigFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.get_section_keys: object is not a ConfigFile");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.get_section_keys: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? cstr_section : ""; JS_FreeCString(ctx, cstr_section);
+
+    PackedStringArray result = typed_obj->get_section_keys(arg_section);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: ConfigFile::erase_section
 static JSValue js_ConfigFile_erase_section(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -416,6 +484,45 @@ static JSValue js_ConfigFile_encode_to_text(JSContext* ctx, JSValueConst this_va
     return JS_NewString(ctx, result.utf8().get_data());
 }
 
+// Method: ConfigFile::load_encrypted
+static JSValue js_ConfigFile_load_encrypted(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.load_encrypted: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.load_encrypted: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.load_encrypted: invalid or freed object");
+    }
+
+    ConfigFile* typed_obj = Object::cast_to<ConfigFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.load_encrypted: object is not a ConfigFile");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.load_encrypted: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    PackedByteArray arg_key = qjs_ctx->js_to_variant(argv[2]);
+
+    Error result = typed_obj->load_encrypted(arg_path, arg_key);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: ConfigFile::load_encrypted_pass
 static JSValue js_ConfigFile_load_encrypted_pass(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -452,6 +559,45 @@ static JSValue js_ConfigFile_load_encrypted_pass(JSContext* ctx, JSValueConst th
     const char* cstr_password = JS_ToCString(ctx, argv[2]); String arg_password = cstr_password ? cstr_password : ""; JS_FreeCString(ctx, cstr_password);
 
     Error result = typed_obj->load_encrypted_pass(arg_path, arg_password);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: ConfigFile::save_encrypted
+static JSValue js_ConfigFile_save_encrypted(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.save_encrypted: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.save_encrypted: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.save_encrypted: invalid or freed object");
+    }
+
+    ConfigFile* typed_obj = Object::cast_to<ConfigFile>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.save_encrypted: object is not a ConfigFile");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "ConfigFile.save_encrypted: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    PackedByteArray arg_key = qjs_ctx->js_to_variant(argv[2]);
+
+    Error result = typed_obj->save_encrypted(arg_path, arg_key);
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -538,6 +684,10 @@ void register_ConfigFile_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_ConfigFile_has_section, "has_section", 2));
     JS_SetPropertyStr(ctx, methods, "has_section_key",
         JS_NewCFunction(ctx, js_ConfigFile_has_section_key, "has_section_key", 3));
+    JS_SetPropertyStr(ctx, methods, "get_sections",
+        JS_NewCFunction(ctx, js_ConfigFile_get_sections, "get_sections", 1));
+    JS_SetPropertyStr(ctx, methods, "get_section_keys",
+        JS_NewCFunction(ctx, js_ConfigFile_get_section_keys, "get_section_keys", 2));
     JS_SetPropertyStr(ctx, methods, "erase_section",
         JS_NewCFunction(ctx, js_ConfigFile_erase_section, "erase_section", 2));
     JS_SetPropertyStr(ctx, methods, "erase_section_key",
@@ -550,8 +700,12 @@ void register_ConfigFile_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_ConfigFile_save, "save", 2));
     JS_SetPropertyStr(ctx, methods, "encode_to_text",
         JS_NewCFunction(ctx, js_ConfigFile_encode_to_text, "encode_to_text", 1));
+    JS_SetPropertyStr(ctx, methods, "load_encrypted",
+        JS_NewCFunction(ctx, js_ConfigFile_load_encrypted, "load_encrypted", 3));
     JS_SetPropertyStr(ctx, methods, "load_encrypted_pass",
         JS_NewCFunction(ctx, js_ConfigFile_load_encrypted_pass, "load_encrypted_pass", 3));
+    JS_SetPropertyStr(ctx, methods, "save_encrypted",
+        JS_NewCFunction(ctx, js_ConfigFile_save_encrypted, "save_encrypted", 3));
     JS_SetPropertyStr(ctx, methods, "save_encrypted_pass",
         JS_NewCFunction(ctx, js_ConfigFile_save_encrypted_pass, "save_encrypted_pass", 3));
     JS_SetPropertyStr(ctx, methods, "clear",

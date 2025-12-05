@@ -32,12 +32,219 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "XRInterfaceExtension: unknown error"); \
     }
 
+// Method: XRInterfaceExtension::get_color_texture
+static JSValue js_XRInterfaceExtension_get_color_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_color_texture: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_color_texture: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_color_texture: invalid or freed object");
+    }
+
+    XRInterfaceExtension* typed_obj = Object::cast_to<XRInterfaceExtension>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_color_texture: object is not a XRInterfaceExtension");
+    }
+
+    RID result = typed_obj->get_color_texture();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: XRInterfaceExtension::get_depth_texture
+static JSValue js_XRInterfaceExtension_get_depth_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_depth_texture: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_depth_texture: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_depth_texture: invalid or freed object");
+    }
+
+    XRInterfaceExtension* typed_obj = Object::cast_to<XRInterfaceExtension>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_depth_texture: object is not a XRInterfaceExtension");
+    }
+
+    RID result = typed_obj->get_depth_texture();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: XRInterfaceExtension::get_velocity_texture
+static JSValue js_XRInterfaceExtension_get_velocity_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_velocity_texture: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_velocity_texture: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_velocity_texture: invalid or freed object");
+    }
+
+    XRInterfaceExtension* typed_obj = Object::cast_to<XRInterfaceExtension>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_velocity_texture: object is not a XRInterfaceExtension");
+    }
+
+    RID result = typed_obj->get_velocity_texture();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: XRInterfaceExtension::add_blit
+static JSValue js_XRInterfaceExtension_add_blit(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.add_blit: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.add_blit: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.add_blit: invalid or freed object");
+    }
+
+    XRInterfaceExtension* typed_obj = Object::cast_to<XRInterfaceExtension>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.add_blit: object is not a XRInterfaceExtension");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 12) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.add_blit: expected at least 11 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_render_target = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_src_rect, tmp_y_src_rect, tmp_w_src_rect, tmp_h_src_rect;
+    JSValue jpos_src_rect = JS_GetPropertyStr(ctx, argv[2], "position");
+    JSValue jsize_src_rect = JS_GetPropertyStr(ctx, argv[2], "size");
+    JSValue jpx_src_rect = JS_GetPropertyStr(ctx, jpos_src_rect, "x");
+    JSValue jpy_src_rect = JS_GetPropertyStr(ctx, jpos_src_rect, "y");
+    JSValue jsx_src_rect = JS_GetPropertyStr(ctx, jsize_src_rect, "x");
+    JSValue jsy_src_rect = JS_GetPropertyStr(ctx, jsize_src_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_src_rect, jpx_src_rect);
+    JS_ToFloat64(ctx, &tmp_y_src_rect, jpy_src_rect);
+    JS_ToFloat64(ctx, &tmp_w_src_rect, jsx_src_rect);
+    JS_ToFloat64(ctx, &tmp_h_src_rect, jsy_src_rect);
+    JS_FreeValue(ctx, jpx_src_rect); JS_FreeValue(ctx, jpy_src_rect);
+    JS_FreeValue(ctx, jsx_src_rect); JS_FreeValue(ctx, jsy_src_rect);
+    JS_FreeValue(ctx, jpos_src_rect); JS_FreeValue(ctx, jsize_src_rect);
+    Rect2 arg_src_rect(tmp_x_src_rect, tmp_y_src_rect, tmp_w_src_rect, tmp_h_src_rect);
+    Rect2i arg_dst_rect = qjs_ctx->js_to_variant(argv[3]);
+    bool arg_use_layer = JS_ToBool(ctx, argv[4]);
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[5]);
+    bool arg_apply_lens_distortion = JS_ToBool(ctx, argv[6]);
+    double tmp_x_eye_center, tmp_y_eye_center;
+    JSValue jx_eye_center = JS_GetPropertyStr(ctx, argv[7], "x");
+    JSValue jy_eye_center = JS_GetPropertyStr(ctx, argv[7], "y");
+    JS_ToFloat64(ctx, &tmp_x_eye_center, jx_eye_center);
+    JS_ToFloat64(ctx, &tmp_y_eye_center, jy_eye_center);
+    JS_FreeValue(ctx, jx_eye_center);
+    JS_FreeValue(ctx, jy_eye_center);
+    Vector2 arg_eye_center(tmp_x_eye_center, tmp_y_eye_center);
+    double arg_k1; JS_ToFloat64(ctx, &arg_k1, argv[8]);
+    double arg_k2; JS_ToFloat64(ctx, &arg_k2, argv[9]);
+    double arg_upscale; JS_ToFloat64(ctx, &arg_upscale, argv[10]);
+    double arg_aspect_ratio; JS_ToFloat64(ctx, &arg_aspect_ratio, argv[11]);
+
+    typed_obj->add_blit(arg_render_target, arg_src_rect, arg_dst_rect, arg_use_layer, arg_layer, arg_apply_lens_distortion, arg_eye_center, arg_k1, arg_k2, arg_upscale, arg_aspect_ratio);
+    return JS_UNDEFINED;
+}
+
+// Method: XRInterfaceExtension::get_render_target_texture
+static JSValue js_XRInterfaceExtension_get_render_target_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_render_target_texture: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_render_target_texture: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_render_target_texture: invalid or freed object");
+    }
+
+    XRInterfaceExtension* typed_obj = Object::cast_to<XRInterfaceExtension>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_render_target_texture: object is not a XRInterfaceExtension");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "XRInterfaceExtension.get_render_target_texture: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_render_target = qjs_ctx->js_to_variant(argv[1]);
+
+    RID result = typed_obj->get_render_target_texture(arg_render_target);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 
 // Registration function for XRInterfaceExtension
 void register_XRInterfaceExtension_bindings(JSContext* ctx, JSValue global, JSValue classes) {
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "get_color_texture",
+        JS_NewCFunction(ctx, js_XRInterfaceExtension_get_color_texture, "get_color_texture", 1));
+    JS_SetPropertyStr(ctx, methods, "get_depth_texture",
+        JS_NewCFunction(ctx, js_XRInterfaceExtension_get_depth_texture, "get_depth_texture", 1));
+    JS_SetPropertyStr(ctx, methods, "get_velocity_texture",
+        JS_NewCFunction(ctx, js_XRInterfaceExtension_get_velocity_texture, "get_velocity_texture", 1));
+    JS_SetPropertyStr(ctx, methods, "add_blit",
+        JS_NewCFunction(ctx, js_XRInterfaceExtension_add_blit, "add_blit", 12));
+    JS_SetPropertyStr(ctx, methods, "get_render_target_texture",
+        JS_NewCFunction(ctx, js_XRInterfaceExtension_get_render_target_texture, "get_render_target_texture", 2));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

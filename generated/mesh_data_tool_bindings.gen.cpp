@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/mesh_data_tool.hpp>
-#include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/classes/array_mesh.hpp>
+#include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -825,6 +825,83 @@ static JSValue js_MeshDataTool_get_vertex_color(JSContext* ctx, JSValueConst thi
     return ret_obj;
 }
 
+// Method: MeshDataTool::set_vertex_bones
+static JSValue js_MeshDataTool_set_vertex_bones(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.set_vertex_bones: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.set_vertex_bones: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.set_vertex_bones: invalid or freed object");
+    }
+
+    MeshDataTool* typed_obj = Object::cast_to<MeshDataTool>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.set_vertex_bones: object is not a MeshDataTool");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.set_vertex_bones: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
+    PackedInt32Array arg_bones = qjs_ctx->js_to_variant(argv[2]);
+
+    typed_obj->set_vertex_bones(arg_idx, arg_bones);
+    return JS_UNDEFINED;
+}
+
+// Method: MeshDataTool::get_vertex_bones
+static JSValue js_MeshDataTool_get_vertex_bones(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_bones: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_bones: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_bones: invalid or freed object");
+    }
+
+    MeshDataTool* typed_obj = Object::cast_to<MeshDataTool>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_bones: object is not a MeshDataTool");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_bones: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
+
+    PackedInt32Array result = typed_obj->get_vertex_bones(arg_idx);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: MeshDataTool::set_vertex_weights
 static JSValue js_MeshDataTool_set_vertex_weights(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -994,6 +1071,82 @@ static JSValue js_MeshDataTool_get_vertex_meta(JSContext* ctx, JSValueConst this
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
+// Method: MeshDataTool::get_vertex_edges
+static JSValue js_MeshDataTool_get_vertex_edges(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_edges: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_edges: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_edges: invalid or freed object");
+    }
+
+    MeshDataTool* typed_obj = Object::cast_to<MeshDataTool>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_edges: object is not a MeshDataTool");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_edges: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
+
+    PackedInt32Array result = typed_obj->get_vertex_edges(arg_idx);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: MeshDataTool::get_vertex_faces
+static JSValue js_MeshDataTool_get_vertex_faces(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_faces: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_faces: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_faces: invalid or freed object");
+    }
+
+    MeshDataTool* typed_obj = Object::cast_to<MeshDataTool>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_faces: object is not a MeshDataTool");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_vertex_faces: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
+
+    PackedInt32Array result = typed_obj->get_vertex_faces(arg_idx);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: MeshDataTool::get_edge_vertex
 static JSValue js_MeshDataTool_get_edge_vertex(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1031,6 +1184,44 @@ static JSValue js_MeshDataTool_get_edge_vertex(JSContext* ctx, JSValueConst this
 
     int64_t result = typed_obj->get_edge_vertex(arg_idx, arg_vertex);
     return JS_NewInt64(ctx, result);
+}
+
+// Method: MeshDataTool::get_edge_faces
+static JSValue js_MeshDataTool_get_edge_faces(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_edge_faces: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_edge_faces: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_edge_faces: invalid or freed object");
+    }
+
+    MeshDataTool* typed_obj = Object::cast_to<MeshDataTool>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_edge_faces: object is not a MeshDataTool");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "MeshDataTool.get_edge_faces: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
+
+    PackedInt32Array result = typed_obj->get_edge_faces(arg_idx);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: MeshDataTool::set_edge_meta
@@ -1459,6 +1650,10 @@ void register_MeshDataTool_bindings(JSContext* ctx, JSValue global, JSValue clas
         JS_NewCFunction(ctx, js_MeshDataTool_set_vertex_color, "set_vertex_color", 3));
     JS_SetPropertyStr(ctx, methods, "get_vertex_color",
         JS_NewCFunction(ctx, js_MeshDataTool_get_vertex_color, "get_vertex_color", 2));
+    JS_SetPropertyStr(ctx, methods, "set_vertex_bones",
+        JS_NewCFunction(ctx, js_MeshDataTool_set_vertex_bones, "set_vertex_bones", 3));
+    JS_SetPropertyStr(ctx, methods, "get_vertex_bones",
+        JS_NewCFunction(ctx, js_MeshDataTool_get_vertex_bones, "get_vertex_bones", 2));
     JS_SetPropertyStr(ctx, methods, "set_vertex_weights",
         JS_NewCFunction(ctx, js_MeshDataTool_set_vertex_weights, "set_vertex_weights", 3));
     JS_SetPropertyStr(ctx, methods, "get_vertex_weights",
@@ -1467,8 +1662,14 @@ void register_MeshDataTool_bindings(JSContext* ctx, JSValue global, JSValue clas
         JS_NewCFunction(ctx, js_MeshDataTool_set_vertex_meta, "set_vertex_meta", 3));
     JS_SetPropertyStr(ctx, methods, "get_vertex_meta",
         JS_NewCFunction(ctx, js_MeshDataTool_get_vertex_meta, "get_vertex_meta", 2));
+    JS_SetPropertyStr(ctx, methods, "get_vertex_edges",
+        JS_NewCFunction(ctx, js_MeshDataTool_get_vertex_edges, "get_vertex_edges", 2));
+    JS_SetPropertyStr(ctx, methods, "get_vertex_faces",
+        JS_NewCFunction(ctx, js_MeshDataTool_get_vertex_faces, "get_vertex_faces", 2));
     JS_SetPropertyStr(ctx, methods, "get_edge_vertex",
         JS_NewCFunction(ctx, js_MeshDataTool_get_edge_vertex, "get_edge_vertex", 3));
+    JS_SetPropertyStr(ctx, methods, "get_edge_faces",
+        JS_NewCFunction(ctx, js_MeshDataTool_get_edge_faces, "get_edge_faces", 2));
     JS_SetPropertyStr(ctx, methods, "set_edge_meta",
         JS_NewCFunction(ctx, js_MeshDataTool_set_edge_meta, "set_edge_meta", 3));
     JS_SetPropertyStr(ctx, methods, "get_edge_meta",

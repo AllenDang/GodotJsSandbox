@@ -1,6 +1,7 @@
 #include "quickjs_context.h"
 #include "js_runtime_manager.h"
 #include "object_registry.h"
+#include "array_registry.h"
 #include "sandbox_config.h"
 #include "execution_limiter.h"
 #include "godot_bindings.h"
@@ -892,6 +893,28 @@ JSValue QuickJSContext::variant_to_js(const Variant &value) {
         }
 
         case Variant::ARRAY: {
+            // Use zero-copy proxy wrapper for Godot arrays
+            if (array_registry_) {
+                Array arr = value;
+                uint64_t handle = array_registry_->create_array_handle(arr);
+
+                // Call JS wrapper function
+                JSValue global = JS_GetGlobalObject(ctx_);
+                JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_godot_array");
+                if (JS_IsFunction(ctx_, wrap_fn)) {
+                    JSValue args[1];
+                    args[0] = JS_NewInt64(ctx_, handle);
+                    JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 1, args);
+                    JS_FreeValue(ctx_, args[0]);
+                    JS_FreeValue(ctx_, wrap_fn);
+                    JS_FreeValue(ctx_, global);
+                    return result;
+                }
+                JS_FreeValue(ctx_, wrap_fn);
+                JS_FreeValue(ctx_, global);
+            }
+
+            // Fallback: copy array (old behavior)
             Array arr = value;
             JSValue js_arr = JS_NewArray(ctx_);
             for (int i = 0; i < arr.size(); i++) {

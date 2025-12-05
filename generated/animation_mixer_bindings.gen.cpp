@@ -266,6 +266,36 @@ static JSValue js_AnimationMixer_get_animation_library(JSContext* ctx, JSValueCo
     return ret_obj;
 }
 
+// Method: AnimationMixer::get_animation_library_list
+static JSValue js_AnimationMixer_get_animation_library_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AnimationMixer.get_animation_library_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AnimationMixer.get_animation_library_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AnimationMixer.get_animation_library_list: invalid or freed object");
+    }
+
+    AnimationMixer* typed_obj = Object::cast_to<AnimationMixer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AnimationMixer.get_animation_library_list: object is not a AnimationMixer");
+    }
+
+    Array result = typed_obj->get_animation_library_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: AnimationMixer::has_animation
 static JSValue js_AnimationMixer_has_animation(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -365,6 +395,36 @@ static JSValue js_AnimationMixer_get_animation(JSContext* ctx, JSValueConst this
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
     JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
+}
+
+// Method: AnimationMixer::get_animation_list
+static JSValue js_AnimationMixer_get_animation_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AnimationMixer.get_animation_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AnimationMixer.get_animation_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AnimationMixer.get_animation_list: invalid or freed object");
+    }
+
+    AnimationMixer* typed_obj = Object::cast_to<AnimationMixer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AnimationMixer.get_animation_list: object is not a AnimationMixer");
+    }
+
+    PackedStringArray result = typed_obj->get_animation_list();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: AnimationMixer::get_root_motion_position
@@ -1424,10 +1484,14 @@ void register_AnimationMixer_bindings(JSContext* ctx, JSValue global, JSValue cl
         JS_NewCFunction(ctx, js_AnimationMixer_has_animation_library, "has_animation_library", 2));
     JS_SetPropertyStr(ctx, methods, "get_animation_library",
         JS_NewCFunction(ctx, js_AnimationMixer_get_animation_library, "get_animation_library", 2));
+    JS_SetPropertyStr(ctx, methods, "get_animation_library_list",
+        JS_NewCFunction(ctx, js_AnimationMixer_get_animation_library_list, "get_animation_library_list", 1));
     JS_SetPropertyStr(ctx, methods, "has_animation",
         JS_NewCFunction(ctx, js_AnimationMixer_has_animation, "has_animation", 2));
     JS_SetPropertyStr(ctx, methods, "get_animation",
         JS_NewCFunction(ctx, js_AnimationMixer_get_animation, "get_animation", 2));
+    JS_SetPropertyStr(ctx, methods, "get_animation_list",
+        JS_NewCFunction(ctx, js_AnimationMixer_get_animation_list, "get_animation_list", 1));
     JS_SetPropertyStr(ctx, methods, "get_root_motion_position",
         JS_NewCFunction(ctx, js_AnimationMixer_get_root_motion_position, "get_root_motion_position", 1));
     JS_SetPropertyStr(ctx, methods, "get_root_motion_rotation",

@@ -143,6 +143,66 @@ static JSValue js_RenderData_get_render_scene_data(JSContext* ctx, JSValueConst 
     return ret_obj;
 }
 
+// Method: RenderData::get_environment
+static JSValue js_RenderData_get_environment(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderData.get_environment: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderData.get_environment: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderData.get_environment: invalid or freed object");
+    }
+
+    RenderData* typed_obj = Object::cast_to<RenderData>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderData.get_environment: object is not a RenderData");
+    }
+
+    RID result = typed_obj->get_environment();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: RenderData::get_camera_attributes
+static JSValue js_RenderData_get_camera_attributes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderData.get_camera_attributes: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderData.get_camera_attributes: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderData.get_camera_attributes: invalid or freed object");
+    }
+
+    RenderData* typed_obj = Object::cast_to<RenderData>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderData.get_camera_attributes: object is not a RenderData");
+    }
+
+    RID result = typed_obj->get_camera_attributes();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 
 // Registration function for RenderData
 void register_RenderData_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -153,6 +213,10 @@ void register_RenderData_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_RenderData_get_render_scene_buffers, "get_render_scene_buffers", 1));
     JS_SetPropertyStr(ctx, methods, "get_render_scene_data",
         JS_NewCFunction(ctx, js_RenderData_get_render_scene_data, "get_render_scene_data", 1));
+    JS_SetPropertyStr(ctx, methods, "get_environment",
+        JS_NewCFunction(ctx, js_RenderData_get_environment, "get_environment", 1));
+    JS_SetPropertyStr(ctx, methods, "get_camera_attributes",
+        JS_NewCFunction(ctx, js_RenderData_get_camera_attributes, "get_camera_attributes", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

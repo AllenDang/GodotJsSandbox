@@ -63,6 +63,36 @@ static JSValue js_JavaClass_get_java_class_name(JSContext* ctx, JSValueConst thi
     return JS_NewString(ctx, result.utf8().get_data());
 }
 
+// Method: JavaClass::get_java_method_list
+static JSValue js_JavaClass_get_java_method_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "JavaClass.get_java_method_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "JavaClass.get_java_method_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "JavaClass.get_java_method_list: invalid or freed object");
+    }
+
+    JavaClass* typed_obj = Object::cast_to<JavaClass>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "JavaClass.get_java_method_list: object is not a JavaClass");
+    }
+
+    Array result = typed_obj->get_java_method_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: JavaClass::get_java_parent_class
 static JSValue js_JavaClass_get_java_parent_class(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -126,6 +156,8 @@ void register_JavaClass_bindings(JSContext* ctx, JSValue global, JSValue classes
 
     JS_SetPropertyStr(ctx, methods, "get_java_class_name",
         JS_NewCFunction(ctx, js_JavaClass_get_java_class_name, "get_java_class_name", 1));
+    JS_SetPropertyStr(ctx, methods, "get_java_method_list",
+        JS_NewCFunction(ctx, js_JavaClass_get_java_method_list, "get_java_method_list", 1));
     JS_SetPropertyStr(ctx, methods, "get_java_parent_class",
         JS_NewCFunction(ctx, js_JavaClass_get_java_parent_class, "get_java_parent_class", 1));
 

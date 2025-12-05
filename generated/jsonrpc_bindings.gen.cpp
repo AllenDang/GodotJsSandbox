@@ -32,6 +32,45 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "JSONRPC: unknown error"); \
     }
 
+// Method: JSONRPC::set_method
+static JSValue js_JSONRPC_set_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "JSONRPC.set_method: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "JSONRPC.set_method: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "JSONRPC.set_method: invalid or freed object");
+    }
+
+    JSONRPC* typed_obj = Object::cast_to<JSONRPC>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "JSONRPC.set_method: object is not a JSONRPC");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "JSONRPC.set_method: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    Callable arg_callback = qjs_ctx->js_to_variant(argv[2]);
+
+    typed_obj->set_method(arg_name, arg_callback);
+    return JS_UNDEFINED;
+}
+
 // Method: JSONRPC::process_action
 static JSValue js_JSONRPC_process_action(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -284,6 +323,8 @@ void register_JSONRPC_bindings(JSContext* ctx, JSValue global, JSValue classes) 
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "set_method",
+        JS_NewCFunction(ctx, js_JSONRPC_set_method, "set_method", 3));
     JS_SetPropertyStr(ctx, methods, "process_action",
         JS_NewCFunction(ctx, js_JSONRPC_process_action, "process_action", 3));
     JS_SetPropertyStr(ctx, methods, "process_string",

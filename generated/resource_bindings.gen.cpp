@@ -109,6 +109,36 @@ static JSValue js_Resource_set_path_cache(JSContext* ctx, JSValueConst this_val,
     return JS_UNDEFINED;
 }
 
+// Method: Resource::get_rid
+static JSValue js_Resource_get_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Resource.get_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Resource.get_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Resource.get_rid: invalid or freed object");
+    }
+
+    Resource* typed_obj = Object::cast_to<Resource>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Resource.get_rid: object is not a Resource");
+    }
+
+    RID result = typed_obj->get_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Resource::get_local_scene
 static JSValue js_Resource_get_local_scene(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -751,6 +781,8 @@ void register_Resource_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_Resource_take_over_path, "take_over_path", 2));
     JS_SetPropertyStr(ctx, methods, "set_path_cache",
         JS_NewCFunction(ctx, js_Resource_set_path_cache, "set_path_cache", 2));
+    JS_SetPropertyStr(ctx, methods, "get_rid",
+        JS_NewCFunction(ctx, js_Resource_get_rid, "get_rid", 1));
     JS_SetPropertyStr(ctx, methods, "get_local_scene",
         JS_NewCFunction(ctx, js_Resource_get_local_scene, "get_local_scene", 1));
     JS_SetPropertyStr(ctx, methods, "setup_local_to_scene",

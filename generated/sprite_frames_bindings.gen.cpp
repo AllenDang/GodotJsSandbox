@@ -225,6 +225,36 @@ static JSValue js_SpriteFrames_rename_animation(JSContext* ctx, JSValueConst thi
     return JS_UNDEFINED;
 }
 
+// Method: SpriteFrames::get_animation_names
+static JSValue js_SpriteFrames_get_animation_names(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SpriteFrames.get_animation_names: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SpriteFrames.get_animation_names: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SpriteFrames.get_animation_names: invalid or freed object");
+    }
+
+    SpriteFrames* typed_obj = Object::cast_to<SpriteFrames>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SpriteFrames.get_animation_names: object is not a SpriteFrames");
+    }
+
+    PackedStringArray result = typed_obj->get_animation_names();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: SpriteFrames::set_animation_speed
 static JSValue js_SpriteFrames_set_animation_speed(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -770,6 +800,8 @@ void register_SpriteFrames_bindings(JSContext* ctx, JSValue global, JSValue clas
         JS_NewCFunction(ctx, js_SpriteFrames_remove_animation, "remove_animation", 2));
     JS_SetPropertyStr(ctx, methods, "rename_animation",
         JS_NewCFunction(ctx, js_SpriteFrames_rename_animation, "rename_animation", 3));
+    JS_SetPropertyStr(ctx, methods, "get_animation_names",
+        JS_NewCFunction(ctx, js_SpriteFrames_get_animation_names, "get_animation_names", 1));
     JS_SetPropertyStr(ctx, methods, "set_animation_speed",
         JS_NewCFunction(ctx, js_SpriteFrames_set_animation_speed, "set_animation_speed", 3));
     JS_SetPropertyStr(ctx, methods, "get_animation_speed",

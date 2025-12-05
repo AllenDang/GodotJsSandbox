@@ -670,6 +670,47 @@ static JSValue js_XRInterface_get_transform_for_view(JSContext* ctx, JSValueCons
     return ret_obj;
 }
 
+// Method: XRInterface::get_projection_for_view
+static JSValue js_XRInterface_get_projection_for_view(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "XRInterface.get_projection_for_view: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "XRInterface.get_projection_for_view: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "XRInterface.get_projection_for_view: invalid or freed object");
+    }
+
+    XRInterface* typed_obj = Object::cast_to<XRInterface>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "XRInterface.get_projection_for_view: object is not a XRInterface");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 5) {
+        return JS_ThrowTypeError(ctx, "XRInterface.get_projection_for_view: expected at least 4 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_view; JS_ToInt64(ctx, &arg_view, argv[1]);
+    double arg_aspect; JS_ToFloat64(ctx, &arg_aspect, argv[2]);
+    double arg_near; JS_ToFloat64(ctx, &arg_near, argv[3]);
+    double arg_far; JS_ToFloat64(ctx, &arg_far, argv[4]);
+
+    Projection result = typed_obj->get_projection_for_view(arg_view, arg_aspect, arg_near, arg_far);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: XRInterface::get_supported_environment_blend_modes
 static JSValue js_XRInterface_get_supported_environment_blend_modes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -986,6 +1027,8 @@ void register_XRInterface_bindings(JSContext* ctx, JSValue global, JSValue class
         JS_NewCFunction(ctx, js_XRInterface_stop_passthrough, "stop_passthrough", 1));
     JS_SetPropertyStr(ctx, methods, "get_transform_for_view",
         JS_NewCFunction(ctx, js_XRInterface_get_transform_for_view, "get_transform_for_view", 3));
+    JS_SetPropertyStr(ctx, methods, "get_projection_for_view",
+        JS_NewCFunction(ctx, js_XRInterface_get_projection_for_view, "get_projection_for_view", 5));
     JS_SetPropertyStr(ctx, methods, "get_supported_environment_blend_modes",
         JS_NewCFunction(ctx, js_XRInterface_get_supported_environment_blend_modes, "get_supported_environment_blend_modes", 1));
 

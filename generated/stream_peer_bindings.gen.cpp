@@ -32,6 +32,82 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "StreamPeer: unknown error"); \
     }
 
+// Method: StreamPeer::put_data
+static JSValue js_StreamPeer_put_data(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "StreamPeer.put_data: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "StreamPeer.put_data: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "StreamPeer.put_data: invalid or freed object");
+    }
+
+    StreamPeer* typed_obj = Object::cast_to<StreamPeer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "StreamPeer.put_data: object is not a StreamPeer");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "StreamPeer.put_data: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_data = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->put_data(arg_data);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: StreamPeer::put_partial_data
+static JSValue js_StreamPeer_put_partial_data(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "StreamPeer.put_partial_data: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "StreamPeer.put_partial_data: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "StreamPeer.put_partial_data: invalid or freed object");
+    }
+
+    StreamPeer* typed_obj = Object::cast_to<StreamPeer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "StreamPeer.put_partial_data: object is not a StreamPeer");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "StreamPeer.put_partial_data: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_data = qjs_ctx->js_to_variant(argv[1]);
+
+    Array result = typed_obj->put_partial_data(arg_data);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: StreamPeer::get_data
 static JSValue js_StreamPeer_get_data(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1202,6 +1278,10 @@ void register_StreamPeer_bindings(JSContext* ctx, JSValue global, JSValue classe
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "put_data",
+        JS_NewCFunction(ctx, js_StreamPeer_put_data, "put_data", 2));
+    JS_SetPropertyStr(ctx, methods, "put_partial_data",
+        JS_NewCFunction(ctx, js_StreamPeer_put_partial_data, "put_partial_data", 2));
     JS_SetPropertyStr(ctx, methods, "get_data",
         JS_NewCFunction(ctx, js_StreamPeer_get_data, "get_data", 2));
     JS_SetPropertyStr(ctx, methods, "get_partial_data",

@@ -459,6 +459,128 @@ static JSValue js_GLTFAccessor_set_type(JSContext* ctx, JSValueConst this_val, i
     return JS_UNDEFINED;
 }
 
+// Property getter: GLTFAccessor::min
+static JSValue js_GLTFAccessor_get_min(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.min getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.min getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.min getter: invalid object");
+    }
+
+    GLTFAccessor* typed_obj = Object::cast_to<GLTFAccessor>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.min getter: wrong type");
+    }
+
+    PackedFloat64Array value = typed_obj->get_min();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: GLTFAccessor::min
+static JSValue js_GLTFAccessor_set_min(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.min setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.min setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.min setter: invalid object");
+    }
+
+    GLTFAccessor* typed_obj = Object::cast_to<GLTFAccessor>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.min setter: wrong type");
+    }
+
+    PackedFloat64Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_min(value);
+    return JS_UNDEFINED;
+}
+
+// Property getter: GLTFAccessor::max
+static JSValue js_GLTFAccessor_get_max(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.max getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.max getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.max getter: invalid object");
+    }
+
+    GLTFAccessor* typed_obj = Object::cast_to<GLTFAccessor>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.max getter: wrong type");
+    }
+
+    PackedFloat64Array value = typed_obj->get_max();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: GLTFAccessor::max
+static JSValue js_GLTFAccessor_set_max(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.max setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.max setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.max setter: invalid object");
+    }
+
+    GLTFAccessor* typed_obj = Object::cast_to<GLTFAccessor>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GLTFAccessor.max setter: wrong type");
+    }
+
+    PackedFloat64Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_max(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: GLTFAccessor::sparse_count
 static JSValue js_GLTFAccessor_get_sparse_count(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -890,6 +1012,22 @@ void register_GLTFAccessor_bindings(JSContext* ctx, JSValue global, JSValue clas
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_GLTFAccessor_set_type, "set_type", 2));
         JS_SetPropertyStr(ctx, props, "type", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_GLTFAccessor_get_min, "get_min", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_GLTFAccessor_set_min, "set_min", 2));
+        JS_SetPropertyStr(ctx, props, "min", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_GLTFAccessor_get_max, "get_max", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_GLTFAccessor_set_max, "set_max", 2));
+        JS_SetPropertyStr(ctx, props, "max", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

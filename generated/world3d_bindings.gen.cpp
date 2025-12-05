@@ -235,6 +235,96 @@ static JSValue js_World3D_set_fallback_environment(JSContext* ctx, JSValueConst 
     return JS_UNDEFINED;
 }
 
+// Property getter: World3D::space
+static JSValue js_World3D_get_space(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "World3D.space getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "World3D.space getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "World3D.space getter: invalid object");
+    }
+
+    World3D* typed_obj = Object::cast_to<World3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "World3D.space getter: wrong type");
+    }
+
+    RID value = typed_obj->get_space();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property getter: World3D::navigation_map
+static JSValue js_World3D_get_navigation_map(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "World3D.navigation_map getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "World3D.navigation_map getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "World3D.navigation_map getter: invalid object");
+    }
+
+    World3D* typed_obj = Object::cast_to<World3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "World3D.navigation_map getter: wrong type");
+    }
+
+    RID value = typed_obj->get_navigation_map();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property getter: World3D::scenario
+static JSValue js_World3D_get_scenario(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "World3D.scenario getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "World3D.scenario getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "World3D.scenario getter: invalid object");
+    }
+
+    World3D* typed_obj = Object::cast_to<World3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "World3D.scenario getter: wrong type");
+    }
+
+    RID value = typed_obj->get_scenario();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
 // Property getter: World3D::direct_space_state
 static JSValue js_World3D_get_direct_space_state(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -315,6 +405,24 @@ void register_World3D_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_World3D_set_fallback_environment, "set_fallback_environment", 2));
         JS_SetPropertyStr(ctx, props, "fallback_environment", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_World3D_get_space, "get_space", 1));
+        JS_SetPropertyStr(ctx, props, "space", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_World3D_get_navigation_map, "get_navigation_map", 1));
+        JS_SetPropertyStr(ctx, props, "navigation_map", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_World3D_get_scenario, "get_scenario", 1));
+        JS_SetPropertyStr(ctx, props, "scenario", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

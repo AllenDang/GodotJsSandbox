@@ -293,6 +293,96 @@ static JSValue js_GraphEdit_get_closest_connection_at_point(JSContext* ctx, JSVa
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
+// Method: GraphEdit::get_connection_list_from_node
+static JSValue js_GraphEdit_get_connection_list_from_node(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_connection_list_from_node: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_connection_list_from_node: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_connection_list_from_node: invalid or freed object");
+    }
+
+    GraphEdit* typed_obj = Object::cast_to<GraphEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_connection_list_from_node: object is not a GraphEdit");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_connection_list_from_node: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_node = JS_ToCString(ctx, argv[1]); StringName arg_node = cstr_node ? cstr_node : ""; JS_FreeCString(ctx, cstr_node);
+
+    Array result = typed_obj->get_connection_list_from_node(arg_node);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: GraphEdit::get_connections_intersecting_with_rect
+static JSValue js_GraphEdit_get_connections_intersecting_with_rect(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_connections_intersecting_with_rect: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_connections_intersecting_with_rect: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_connections_intersecting_with_rect: invalid or freed object");
+    }
+
+    GraphEdit* typed_obj = Object::cast_to<GraphEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_connections_intersecting_with_rect: object is not a GraphEdit");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_connections_intersecting_with_rect: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    double tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect;
+    JSValue jpos_rect = JS_GetPropertyStr(ctx, argv[1], "position");
+    JSValue jsize_rect = JS_GetPropertyStr(ctx, argv[1], "size");
+    JSValue jpx_rect = JS_GetPropertyStr(ctx, jpos_rect, "x");
+    JSValue jpy_rect = JS_GetPropertyStr(ctx, jpos_rect, "y");
+    JSValue jsx_rect = JS_GetPropertyStr(ctx, jsize_rect, "x");
+    JSValue jsy_rect = JS_GetPropertyStr(ctx, jsize_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_rect, jpx_rect);
+    JS_ToFloat64(ctx, &tmp_y_rect, jpy_rect);
+    JS_ToFloat64(ctx, &tmp_w_rect, jsx_rect);
+    JS_ToFloat64(ctx, &tmp_h_rect, jsy_rect);
+    JS_FreeValue(ctx, jpx_rect); JS_FreeValue(ctx, jpy_rect);
+    JS_FreeValue(ctx, jsx_rect); JS_FreeValue(ctx, jsy_rect);
+    JS_FreeValue(ctx, jpos_rect); JS_FreeValue(ctx, jsize_rect);
+    Rect2 arg_rect(tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect);
+
+    Array result = typed_obj->get_connections_intersecting_with_rect(arg_rect);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: GraphEdit::clear_connections
 static JSValue js_GraphEdit_clear_connections(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -820,6 +910,44 @@ static JSValue js_GraphEdit_get_element_frame(JSContext* ctx, JSValueConst this_
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
     JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
+}
+
+// Method: GraphEdit::get_attached_nodes_of_frame
+static JSValue js_GraphEdit_get_attached_nodes_of_frame(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_attached_nodes_of_frame: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_attached_nodes_of_frame: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_attached_nodes_of_frame: invalid or freed object");
+    }
+
+    GraphEdit* typed_obj = Object::cast_to<GraphEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_attached_nodes_of_frame: object is not a GraphEdit");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GraphEdit.get_attached_nodes_of_frame: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_frame = JS_ToCString(ctx, argv[1]); StringName arg_frame = cstr_frame ? cstr_frame : ""; JS_FreeCString(ctx, cstr_frame);
+
+    Array result = typed_obj->get_attached_nodes_of_frame(arg_frame);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: GraphEdit::get_menu_hbox
@@ -2401,6 +2529,10 @@ void register_GraphEdit_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_NewCFunction(ctx, js_GraphEdit_get_connection_count, "get_connection_count", 3));
     JS_SetPropertyStr(ctx, methods, "get_closest_connection_at_point",
         JS_NewCFunction(ctx, js_GraphEdit_get_closest_connection_at_point, "get_closest_connection_at_point", 3));
+    JS_SetPropertyStr(ctx, methods, "get_connection_list_from_node",
+        JS_NewCFunction(ctx, js_GraphEdit_get_connection_list_from_node, "get_connection_list_from_node", 2));
+    JS_SetPropertyStr(ctx, methods, "get_connections_intersecting_with_rect",
+        JS_NewCFunction(ctx, js_GraphEdit_get_connections_intersecting_with_rect, "get_connections_intersecting_with_rect", 2));
     JS_SetPropertyStr(ctx, methods, "clear_connections",
         JS_NewCFunction(ctx, js_GraphEdit_clear_connections, "clear_connections", 1));
     JS_SetPropertyStr(ctx, methods, "force_connection_drag_end",
@@ -2427,6 +2559,8 @@ void register_GraphEdit_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_NewCFunction(ctx, js_GraphEdit_detach_graph_element_from_frame, "detach_graph_element_from_frame", 2));
     JS_SetPropertyStr(ctx, methods, "get_element_frame",
         JS_NewCFunction(ctx, js_GraphEdit_get_element_frame, "get_element_frame", 2));
+    JS_SetPropertyStr(ctx, methods, "get_attached_nodes_of_frame",
+        JS_NewCFunction(ctx, js_GraphEdit_get_attached_nodes_of_frame, "get_attached_nodes_of_frame", 2));
     JS_SetPropertyStr(ctx, methods, "get_menu_hbox",
         JS_NewCFunction(ctx, js_GraphEdit_get_menu_hbox, "get_menu_hbox", 1));
     JS_SetPropertyStr(ctx, methods, "arrange_nodes",

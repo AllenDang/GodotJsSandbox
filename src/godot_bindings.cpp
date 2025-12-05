@@ -2,6 +2,7 @@
 #include "quickjs_context.h"
 #include "safe_wrapper.h"
 #include "object_registry.h"
+#include "array_registry.h"
 #include "sandbox_config.h"
 #include "signal_registry.h"
 #include "js_script.h"
@@ -244,6 +245,18 @@ void GodotBindings::setup_global_functions() {
     // __godot_has_signal(handle, signal_name) - check if object has a signal (built-in or custom)
     JS_SetPropertyStr(ctx, global, "__godot_has_signal",
         JS_NewCFunction(ctx, js_godot_has_signal, "__godot_has_signal", 2));
+
+    // Array proxy functions for zero-copy access to Godot arrays
+    JS_SetPropertyStr(ctx, global, "__godot_array_get",
+        JS_NewCFunction(ctx, js_godot_array_get, "__godot_array_get", 2));
+    JS_SetPropertyStr(ctx, global, "__godot_array_set",
+        JS_NewCFunction(ctx, js_godot_array_set, "__godot_array_set", 3));
+    JS_SetPropertyStr(ctx, global, "__godot_array_size",
+        JS_NewCFunction(ctx, js_godot_array_size, "__godot_array_size", 1));
+    JS_SetPropertyStr(ctx, global, "__godot_array_push",
+        JS_NewCFunction(ctx, js_godot_array_push, "__godot_array_push", 2));
+    JS_SetPropertyStr(ctx, global, "__godot_array_pop",
+        JS_NewCFunction(ctx, js_godot_array_pop, "__godot_array_pop", 1));
 
     // Time singleton (safe subset of methods)
     JSValue time_obj = JS_NewObject(ctx);
@@ -613,6 +626,109 @@ void GodotBindings::setup_godot_class_constructor() {
                 __class: className
             };
             return new Proxy(target, __godot_proxy_handler);
+        };
+
+        // Array proxy handler for zero-copy access to Godot arrays
+        globalThis.__godot_array_proxy_handler = {
+            get: function(target, prop, receiver) {
+                if (prop === '__array_handle') return target.__array_handle;
+                if (prop === '__is_godot_array') return true;
+                if (typeof prop === 'symbol') {
+                    if (prop === Symbol.toStringTag) return 'GodotArray';
+                    if (prop === Symbol.iterator) {
+                        var handle = target.__array_handle;
+                        var size = __godot_array_size(handle);
+                        return function*() {
+                            for (var i = 0; i < size; i++) {
+                                yield __godot_array_get(handle, i);
+                            }
+                        };
+                    }
+                    return undefined;
+                }
+                if (prop === 'length') {
+                    return __godot_array_size(target.__array_handle);
+                }
+                if (prop === 'toString') {
+                    return function() { return '[GodotArray]'; };
+                }
+                if (prop === 'push') {
+                    var handle = target.__array_handle;
+                    return function(value) {
+                        return __godot_array_push(handle, value);
+                    };
+                }
+                if (prop === 'pop') {
+                    var handle = target.__array_handle;
+                    return function() {
+                        return __godot_array_pop(handle);
+                    };
+                }
+                if (prop === 'forEach') {
+                    var handle = target.__array_handle;
+                    return function(callback) {
+                        var size = __godot_array_size(handle);
+                        for (var i = 0; i < size; i++) {
+                            callback(__godot_array_get(handle, i), i);
+                        }
+                    };
+                }
+                if (prop === 'map') {
+                    var handle = target.__array_handle;
+                    return function(callback) {
+                        var size = __godot_array_size(handle);
+                        var result = [];
+                        for (var i = 0; i < size; i++) {
+                            result.push(callback(__godot_array_get(handle, i), i));
+                        }
+                        return result;
+                    };
+                }
+                if (prop === 'filter') {
+                    var handle = target.__array_handle;
+                    return function(callback) {
+                        var size = __godot_array_size(handle);
+                        var result = [];
+                        for (var i = 0; i < size; i++) {
+                            var item = __godot_array_get(handle, i);
+                            if (callback(item, i)) {
+                                result.push(item);
+                            }
+                        }
+                        return result;
+                    };
+                }
+                // Numeric index access
+                var index = parseInt(prop);
+                if (!isNaN(index) && index >= 0) {
+                    return __godot_array_get(target.__array_handle, index);
+                }
+                return undefined;
+            },
+            set: function(target, prop, value) {
+                var index = parseInt(prop);
+                if (!isNaN(index) && index >= 0) {
+                    __godot_array_set(target.__array_handle, index, value);
+                    return true;
+                }
+                return false;
+            },
+            has: function(target, prop) {
+                if (prop === 'length' || prop === '__array_handle' || prop === '__is_godot_array') return true;
+                var index = parseInt(prop);
+                if (!isNaN(index) && index >= 0) {
+                    return index < __godot_array_size(target.__array_handle);
+                }
+                return prop === 'push' || prop === 'pop' || prop === 'forEach' || prop === 'map' || prop === 'filter';
+            }
+        };
+
+        // Wrap a Godot array handle with a proxy
+        globalThis.__wrap_godot_array = function(handle) {
+            var target = {
+                __array_handle: handle
+            };
+            return new Proxy(target, __godot_array_proxy_handler);
         };
         'factory done';
     )";
@@ -1461,6 +1577,161 @@ JSValue GodotBindings::js_godot_has_signal(JSContext* ctx, JSValueConst this_val
 
     // Check if the object has this signal (works for both built-in and custom signals)
     return JS_NewBool(ctx, target->has_signal(StringName(signal_name)));
+}
+
+// Array proxy functions for zero-copy access to Godot arrays
+
+// __godot_array_get(handle, index) - get element at index
+JSValue GodotBindings::js_godot_array_get(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_UNDEFINED;
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_UNDEFINED;
+    }
+
+    int64_t index;
+    if (JS_ToInt64(ctx, &index, argv[1]) != 0) {
+        return JS_UNDEFINED;
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_UNDEFINED;
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry) {
+        return JS_UNDEFINED;
+    }
+
+    Array arr = registry->get_array(handle);
+    if (index < 0 || index >= arr.size()) {
+        return JS_UNDEFINED;
+    }
+
+    return qjs_ctx->variant_to_js(arr[index]);
+}
+
+// __godot_array_set(handle, index, value) - set element at index
+JSValue GodotBindings::js_godot_array_set(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 3) {
+        return JS_FALSE;
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_FALSE;
+    }
+
+    int64_t index;
+    if (JS_ToInt64(ctx, &index, argv[1]) != 0) {
+        return JS_FALSE;
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_FALSE;
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry) {
+        return JS_FALSE;
+    }
+
+    Array arr = registry->get_array(handle);
+    if (index < 0 || index >= arr.size()) {
+        return JS_FALSE;
+    }
+
+    arr[index] = qjs_ctx->js_to_variant(argv[2]);
+    return JS_TRUE;
+}
+
+// __godot_array_size(handle) - get array size
+JSValue GodotBindings::js_godot_array_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_NewInt32(ctx, 0);
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_NewInt32(ctx, 0);
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_NewInt32(ctx, 0);
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry) {
+        return JS_NewInt32(ctx, 0);
+    }
+
+    Array arr = registry->get_array(handle);
+    return JS_NewInt32(ctx, arr.size());
+}
+
+// __godot_array_push(handle, value) - push element to end
+JSValue GodotBindings::js_godot_array_push(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_UNDEFINED;
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_UNDEFINED;
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_UNDEFINED;
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry) {
+        return JS_UNDEFINED;
+    }
+
+    Array arr = registry->get_array(handle);
+    arr.push_back(qjs_ctx->js_to_variant(argv[1]));
+
+    return JS_NewInt32(ctx, arr.size());
+}
+
+// __godot_array_pop(handle) - remove and return last element
+JSValue GodotBindings::js_godot_array_pop(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_UNDEFINED;
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_UNDEFINED;
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_UNDEFINED;
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry) {
+        return JS_UNDEFINED;
+    }
+
+    Array arr = registry->get_array(handle);
+    if (arr.is_empty()) {
+        return JS_UNDEFINED;
+    }
+
+    Variant last = arr.back();
+    arr.pop_back();
+
+    return qjs_ctx->variant_to_js(last);
 }
 
 } // namespace jsb

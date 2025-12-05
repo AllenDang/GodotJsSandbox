@@ -139,6 +139,94 @@ static JSValue js_SkeletonModification2DPhysicalBones_fetch_physical_bones(JSCon
     return JS_UNDEFINED;
 }
 
+// Method: SkeletonModification2DPhysicalBones::start_simulation
+static JSValue js_SkeletonModification2DPhysicalBones_start_simulation(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SkeletonModification2DPhysicalBones.start_simulation: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SkeletonModification2DPhysicalBones.start_simulation: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SkeletonModification2DPhysicalBones.start_simulation: invalid or freed object");
+    }
+
+    SkeletonModification2DPhysicalBones* typed_obj = Object::cast_to<SkeletonModification2DPhysicalBones>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SkeletonModification2DPhysicalBones.start_simulation: object is not a SkeletonModification2DPhysicalBones");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SkeletonModification2DPhysicalBones.start_simulation: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: bones (default: Array())
+    Array arg_bones = Array();
+    if (argc > 1) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Array arg_bones = qjs_ctx->js_to_variant(argv[1]);
+    }
+
+    typed_obj->start_simulation(arg_bones);
+    return JS_UNDEFINED;
+}
+
+// Method: SkeletonModification2DPhysicalBones::stop_simulation
+static JSValue js_SkeletonModification2DPhysicalBones_stop_simulation(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SkeletonModification2DPhysicalBones.stop_simulation: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SkeletonModification2DPhysicalBones.stop_simulation: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SkeletonModification2DPhysicalBones.stop_simulation: invalid or freed object");
+    }
+
+    SkeletonModification2DPhysicalBones* typed_obj = Object::cast_to<SkeletonModification2DPhysicalBones>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SkeletonModification2DPhysicalBones.stop_simulation: object is not a SkeletonModification2DPhysicalBones");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SkeletonModification2DPhysicalBones.stop_simulation: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: bones (default: Array())
+    Array arg_bones = Array();
+    if (argc > 1) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Array arg_bones = qjs_ctx->js_to_variant(argv[1]);
+    }
+
+    typed_obj->stop_simulation(arg_bones);
+    return JS_UNDEFINED;
+}
+
 // Property getter: SkeletonModification2DPhysicalBones::physical_bone_chain_length
 static JSValue js_SkeletonModification2DPhysicalBones_get_physical_bone_chain_length(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -212,6 +300,10 @@ void register_SkeletonModification2DPhysicalBones_bindings(JSContext* ctx, JSVal
         JS_NewCFunction(ctx, js_SkeletonModification2DPhysicalBones_get_physical_bone_node, "get_physical_bone_node", 2));
     JS_SetPropertyStr(ctx, methods, "fetch_physical_bones",
         JS_NewCFunction(ctx, js_SkeletonModification2DPhysicalBones_fetch_physical_bones, "fetch_physical_bones", 1));
+    JS_SetPropertyStr(ctx, methods, "start_simulation",
+        JS_NewCFunction(ctx, js_SkeletonModification2DPhysicalBones_start_simulation, "start_simulation", 2));
+    JS_SetPropertyStr(ctx, methods, "stop_simulation",
+        JS_NewCFunction(ctx, js_SkeletonModification2DPhysicalBones_stop_simulation, "stop_simulation", 2));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

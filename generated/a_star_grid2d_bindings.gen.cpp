@@ -482,6 +482,44 @@ static JSValue js_AStarGrid2D_get_point_position(JSContext* ctx, JSValueConst th
     return ret_obj;
 }
 
+// Method: AStarGrid2D::get_point_data_in_region
+static JSValue js_AStarGrid2D_get_point_data_in_region(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AStarGrid2D.get_point_data_in_region: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AStarGrid2D.get_point_data_in_region: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AStarGrid2D.get_point_data_in_region: invalid or freed object");
+    }
+
+    AStarGrid2D* typed_obj = Object::cast_to<AStarGrid2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AStarGrid2D.get_point_data_in_region: object is not a AStarGrid2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "AStarGrid2D.get_point_data_in_region: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Rect2i arg_region = qjs_ctx->js_to_variant(argv[1]);
+
+    Array result = typed_obj->get_point_data_in_region(arg_region);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: AStarGrid2D::get_point_path
 static JSValue js_AStarGrid2D_get_point_path(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -532,6 +570,51 @@ static JSValue js_AStarGrid2D_get_point_path(JSContext* ctx, JSValueConst this_v
         JS_SetPropertyUint32(ctx, arr, i, vec);
     }
     return arr;
+}
+
+// Method: AStarGrid2D::get_id_path
+static JSValue js_AStarGrid2D_get_id_path(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AStarGrid2D.get_id_path: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AStarGrid2D.get_id_path: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AStarGrid2D.get_id_path: invalid or freed object");
+    }
+
+    AStarGrid2D* typed_obj = Object::cast_to<AStarGrid2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AStarGrid2D.get_id_path: object is not a AStarGrid2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "AStarGrid2D.get_id_path: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Vector2i arg_from_id = qjs_ctx->js_to_variant(argv[1]);
+    Vector2i arg_to_id = qjs_ctx->js_to_variant(argv[2]);
+    // Optional argument: allow_partial_path (default: false)
+    bool arg_allow_partial_path = false;
+    if (argc > 3) {
+        // Override default with provided value
+        arg_allow_partial_path = JS_ToBool(ctx, argv[3]);
+    }
+
+    Array result = typed_obj->get_id_path(arg_from_id, arg_to_id, arg_allow_partial_path);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Property getter: AStarGrid2D::region
@@ -1133,8 +1216,12 @@ void register_AStarGrid2D_bindings(JSContext* ctx, JSValue global, JSValue class
         JS_NewCFunction(ctx, js_AStarGrid2D_clear, "clear", 1));
     JS_SetPropertyStr(ctx, methods, "get_point_position",
         JS_NewCFunction(ctx, js_AStarGrid2D_get_point_position, "get_point_position", 2));
+    JS_SetPropertyStr(ctx, methods, "get_point_data_in_region",
+        JS_NewCFunction(ctx, js_AStarGrid2D_get_point_data_in_region, "get_point_data_in_region", 2));
     JS_SetPropertyStr(ctx, methods, "get_point_path",
         JS_NewCFunction(ctx, js_AStarGrid2D_get_point_path, "get_point_path", 4));
+    JS_SetPropertyStr(ctx, methods, "get_id_path",
+        JS_NewCFunction(ctx, js_AStarGrid2D_get_id_path, "get_id_path", 4));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

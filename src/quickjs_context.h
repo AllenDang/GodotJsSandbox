@@ -15,6 +15,7 @@
 namespace jsb {
 
 class ObjectRegistry;
+class ArrayRegistry;
 class SandboxConfig;
 class ExecutionLimiter;
 class SafeWrapper;
@@ -81,12 +82,14 @@ public:
 
     // Sandbox components
     void set_object_registry(ObjectRegistry* registry) { object_registry_ = registry; }
+    void set_array_registry(ArrayRegistry* registry) { array_registry_ = registry; }
     void set_sandbox_config(SandboxConfig* config) { sandbox_config_ = config; }
     void set_execution_limiter(ExecutionLimiter* limiter) { execution_limiter_ = limiter; }
     void set_safe_wrapper(SafeWrapper* wrapper) { safe_wrapper_ = wrapper; }
     void set_signal_registry(SignalRegistry* registry) { signal_registry_ = registry; }
 
     ObjectRegistry* get_object_registry() const { return object_registry_; }
+    ArrayRegistry* get_array_registry() const { return array_registry_; }
     SandboxConfig* get_sandbox_config() const { return sandbox_config_; }
     ExecutionLimiter* get_execution_limiter() const { return execution_limiter_; }
     SafeWrapper* get_safe_wrapper() const { return safe_wrapper_; }
@@ -119,6 +122,7 @@ private:
     bool owns_runtime_ = false;  // True if we created our own runtime (legacy mode)
 
     ObjectRegistry* object_registry_ = nullptr;
+    ArrayRegistry* array_registry_ = nullptr;
     SandboxConfig* sandbox_config_ = nullptr;
     ExecutionLimiter* execution_limiter_ = nullptr;
     SafeWrapper* safe_wrapper_ = nullptr;

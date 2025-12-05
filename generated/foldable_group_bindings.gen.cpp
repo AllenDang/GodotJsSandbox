@@ -87,6 +87,36 @@ static JSValue js_FoldableGroup_get_expanded_container(JSContext* ctx, JSValueCo
     return ret_obj;
 }
 
+// Method: FoldableGroup::get_containers
+static JSValue js_FoldableGroup_get_containers(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "FoldableGroup.get_containers: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "FoldableGroup.get_containers: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "FoldableGroup.get_containers: invalid or freed object");
+    }
+
+    FoldableGroup* typed_obj = Object::cast_to<FoldableGroup>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "FoldableGroup.get_containers: object is not a FoldableGroup");
+    }
+
+    Array result = typed_obj->get_containers();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Property getter: FoldableGroup::allow_folding_all
 static JSValue js_FoldableGroup_get_allow_folding_all(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -156,6 +186,8 @@ void register_FoldableGroup_bindings(JSContext* ctx, JSValue global, JSValue cla
 
     JS_SetPropertyStr(ctx, methods, "get_expanded_container",
         JS_NewCFunction(ctx, js_FoldableGroup_get_expanded_container, "get_expanded_container", 1));
+    JS_SetPropertyStr(ctx, methods, "get_containers",
+        JS_NewCFunction(ctx, js_FoldableGroup_get_containers, "get_containers", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

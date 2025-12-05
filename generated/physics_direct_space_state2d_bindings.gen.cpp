@@ -8,8 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/physics_direct_space_state2d.hpp>
-#include <godot_cpp/classes/physics_ray_query_parameters2d.hpp>
 #include <godot_cpp/classes/physics_shape_query_parameters2d.hpp>
+#include <godot_cpp/classes/physics_point_query_parameters2d.hpp>
+#include <godot_cpp/classes/physics_ray_query_parameters2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -33,6 +34,65 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
     } catch (...) { \
         return JS_ThrowInternalError(ctx, "PhysicsDirectSpaceState2D: unknown error"); \
     }
+
+// Method: PhysicsDirectSpaceState2D::intersect_point
+static JSValue js_PhysicsDirectSpaceState2D_intersect_point(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.intersect_point: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.intersect_point: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.intersect_point: invalid or freed object");
+    }
+
+    PhysicsDirectSpaceState2D* typed_obj = Object::cast_to<PhysicsDirectSpaceState2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.intersect_point: object is not a PhysicsDirectSpaceState2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.intersect_point: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<PhysicsPointQueryParameters2D> arg_parameters;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_parameters; JS_ToInt64(ctx, &h_parameters, argv[1]);
+        Object* obj_parameters = qjs_ctx->get_object_registry()->get_object(h_parameters);
+        arg_parameters = Ref<PhysicsPointQueryParameters2D>(Object::cast_to<PhysicsPointQueryParameters2D>(obj_parameters));
+    } else {
+        // Object with __handle property
+        JSValue jh_parameters = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_parameters)) {
+            int64_t h_parameters; JS_ToInt64(ctx, &h_parameters, jh_parameters);
+            Object* obj_parameters = qjs_ctx->get_object_registry()->get_object(h_parameters);
+            arg_parameters = Ref<PhysicsPointQueryParameters2D>(Object::cast_to<PhysicsPointQueryParameters2D>(obj_parameters));
+        }
+        JS_FreeValue(ctx, jh_parameters);
+    }
+    // Optional argument: max_results (default: 32)
+    int64_t arg_max_results = 32;
+    if (argc > 2) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_max_results, argv[2]);
+    }
+
+    Array result = typed_obj->intersect_point(arg_parameters, arg_max_results);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
 
 // Method: PhysicsDirectSpaceState2D::intersect_ray
 static JSValue js_PhysicsDirectSpaceState2D_intersect_ray(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
@@ -84,6 +144,65 @@ static JSValue js_PhysicsDirectSpaceState2D_intersect_ray(JSContext* ctx, JSValu
     }
 
     Dictionary result = typed_obj->intersect_ray(arg_parameters);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: PhysicsDirectSpaceState2D::intersect_shape
+static JSValue js_PhysicsDirectSpaceState2D_intersect_shape(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.intersect_shape: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.intersect_shape: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.intersect_shape: invalid or freed object");
+    }
+
+    PhysicsDirectSpaceState2D* typed_obj = Object::cast_to<PhysicsDirectSpaceState2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.intersect_shape: object is not a PhysicsDirectSpaceState2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.intersect_shape: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<PhysicsShapeQueryParameters2D> arg_parameters;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_parameters; JS_ToInt64(ctx, &h_parameters, argv[1]);
+        Object* obj_parameters = qjs_ctx->get_object_registry()->get_object(h_parameters);
+        arg_parameters = Ref<PhysicsShapeQueryParameters2D>(Object::cast_to<PhysicsShapeQueryParameters2D>(obj_parameters));
+    } else {
+        // Object with __handle property
+        JSValue jh_parameters = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_parameters)) {
+            int64_t h_parameters; JS_ToInt64(ctx, &h_parameters, jh_parameters);
+            Object* obj_parameters = qjs_ctx->get_object_registry()->get_object(h_parameters);
+            arg_parameters = Ref<PhysicsShapeQueryParameters2D>(Object::cast_to<PhysicsShapeQueryParameters2D>(obj_parameters));
+        }
+        JS_FreeValue(ctx, jh_parameters);
+    }
+    // Optional argument: max_results (default: 32)
+    int64_t arg_max_results = 32;
+    if (argc > 2) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_max_results, argv[2]);
+    }
+
+    Array result = typed_obj->intersect_shape(arg_parameters, arg_max_results);
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -142,6 +261,65 @@ static JSValue js_PhysicsDirectSpaceState2D_cast_motion(JSContext* ctx, JSValueC
         JS_SetPropertyUint32(ctx, arr, i, JS_NewFloat64(ctx, result[i]));
     }
     return arr;
+}
+
+// Method: PhysicsDirectSpaceState2D::collide_shape
+static JSValue js_PhysicsDirectSpaceState2D_collide_shape(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.collide_shape: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.collide_shape: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.collide_shape: invalid or freed object");
+    }
+
+    PhysicsDirectSpaceState2D* typed_obj = Object::cast_to<PhysicsDirectSpaceState2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.collide_shape: object is not a PhysicsDirectSpaceState2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "PhysicsDirectSpaceState2D.collide_shape: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<PhysicsShapeQueryParameters2D> arg_parameters;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_parameters; JS_ToInt64(ctx, &h_parameters, argv[1]);
+        Object* obj_parameters = qjs_ctx->get_object_registry()->get_object(h_parameters);
+        arg_parameters = Ref<PhysicsShapeQueryParameters2D>(Object::cast_to<PhysicsShapeQueryParameters2D>(obj_parameters));
+    } else {
+        // Object with __handle property
+        JSValue jh_parameters = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_parameters)) {
+            int64_t h_parameters; JS_ToInt64(ctx, &h_parameters, jh_parameters);
+            Object* obj_parameters = qjs_ctx->get_object_registry()->get_object(h_parameters);
+            arg_parameters = Ref<PhysicsShapeQueryParameters2D>(Object::cast_to<PhysicsShapeQueryParameters2D>(obj_parameters));
+        }
+        JS_FreeValue(ctx, jh_parameters);
+    }
+    // Optional argument: max_results (default: 32)
+    int64_t arg_max_results = 32;
+    if (argc > 2) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_max_results, argv[2]);
+    }
+
+    Array result = typed_obj->collide_shape(arg_parameters, arg_max_results);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: PhysicsDirectSpaceState2D::get_rest_info
@@ -203,10 +381,16 @@ void register_PhysicsDirectSpaceState2D_bindings(JSContext* ctx, JSValue global,
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "intersect_point",
+        JS_NewCFunction(ctx, js_PhysicsDirectSpaceState2D_intersect_point, "intersect_point", 3));
     JS_SetPropertyStr(ctx, methods, "intersect_ray",
         JS_NewCFunction(ctx, js_PhysicsDirectSpaceState2D_intersect_ray, "intersect_ray", 2));
+    JS_SetPropertyStr(ctx, methods, "intersect_shape",
+        JS_NewCFunction(ctx, js_PhysicsDirectSpaceState2D_intersect_shape, "intersect_shape", 3));
     JS_SetPropertyStr(ctx, methods, "cast_motion",
         JS_NewCFunction(ctx, js_PhysicsDirectSpaceState2D_cast_motion, "cast_motion", 2));
+    JS_SetPropertyStr(ctx, methods, "collide_shape",
+        JS_NewCFunction(ctx, js_PhysicsDirectSpaceState2D_collide_shape, "collide_shape", 3));
     JS_SetPropertyStr(ctx, methods, "get_rest_info",
         JS_NewCFunction(ctx, js_PhysicsDirectSpaceState2D_get_rest_info, "get_rest_info", 2));
 

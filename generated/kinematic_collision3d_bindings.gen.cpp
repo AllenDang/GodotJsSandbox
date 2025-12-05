@@ -493,6 +493,49 @@ static JSValue js_KinematicCollision3D_get_collider_id(JSContext* ctx, JSValueCo
     return JS_NewInt64(ctx, result);
 }
 
+// Method: KinematicCollision3D::get_collider_rid
+static JSValue js_KinematicCollision3D_get_collider_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "KinematicCollision3D.get_collider_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "KinematicCollision3D.get_collider_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "KinematicCollision3D.get_collider_rid: invalid or freed object");
+    }
+
+    KinematicCollision3D* typed_obj = Object::cast_to<KinematicCollision3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "KinematicCollision3D.get_collider_rid: object is not a KinematicCollision3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "KinematicCollision3D.get_collider_rid: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: collision_index (default: 0)
+    int64_t arg_collision_index = 0;
+    if (argc > 1) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_collision_index, argv[1]);
+    }
+
+    RID result = typed_obj->get_collider_rid(arg_collision_index);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: KinematicCollision3D::get_collider_shape
 static JSValue js_KinematicCollision3D_get_collider_shape(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -677,6 +720,8 @@ void register_KinematicCollision3D_bindings(JSContext* ctx, JSValue global, JSVa
         JS_NewCFunction(ctx, js_KinematicCollision3D_get_collider, "get_collider", 2));
     JS_SetPropertyStr(ctx, methods, "get_collider_id",
         JS_NewCFunction(ctx, js_KinematicCollision3D_get_collider_id, "get_collider_id", 2));
+    JS_SetPropertyStr(ctx, methods, "get_collider_rid",
+        JS_NewCFunction(ctx, js_KinematicCollision3D_get_collider_rid, "get_collider_rid", 2));
     JS_SetPropertyStr(ctx, methods, "get_collider_shape",
         JS_NewCFunction(ctx, js_KinematicCollision3D_get_collider_shape, "get_collider_shape", 2));
     JS_SetPropertyStr(ctx, methods, "get_collider_shape_index",

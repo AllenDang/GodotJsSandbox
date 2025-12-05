@@ -330,6 +330,36 @@ static JSValue js_AnimationNodeStateMachinePlayback_get_fading_from_node(JSConte
     return JS_NewString(ctx, String(result).utf8().get_data());
 }
 
+// Method: AnimationNodeStateMachinePlayback::get_travel_path
+static JSValue js_AnimationNodeStateMachinePlayback_get_travel_path(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AnimationNodeStateMachinePlayback.get_travel_path: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AnimationNodeStateMachinePlayback.get_travel_path: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AnimationNodeStateMachinePlayback.get_travel_path: invalid or freed object");
+    }
+
+    AnimationNodeStateMachinePlayback* typed_obj = Object::cast_to<AnimationNodeStateMachinePlayback>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AnimationNodeStateMachinePlayback.get_travel_path: object is not a AnimationNodeStateMachinePlayback");
+    }
+
+    Array result = typed_obj->get_travel_path();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 
 // Registration function for AnimationNodeStateMachinePlayback
 void register_AnimationNodeStateMachinePlayback_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -354,6 +384,8 @@ void register_AnimationNodeStateMachinePlayback_bindings(JSContext* ctx, JSValue
         JS_NewCFunction(ctx, js_AnimationNodeStateMachinePlayback_get_current_length, "get_current_length", 1));
     JS_SetPropertyStr(ctx, methods, "get_fading_from_node",
         JS_NewCFunction(ctx, js_AnimationNodeStateMachinePlayback_get_fading_from_node, "get_fading_from_node", 1));
+    JS_SetPropertyStr(ctx, methods, "get_travel_path",
+        JS_NewCFunction(ctx, js_AnimationNodeStateMachinePlayback_get_travel_path, "get_travel_path", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

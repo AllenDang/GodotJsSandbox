@@ -342,6 +342,96 @@ static JSValue js_Script_has_script_signal(JSContext* ctx, JSValueConst this_val
     return JS_NewBool(ctx, result);
 }
 
+// Method: Script::get_script_property_list
+static JSValue js_Script_get_script_property_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Script.get_script_property_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Script.get_script_property_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Script.get_script_property_list: invalid or freed object");
+    }
+
+    Script* typed_obj = Object::cast_to<Script>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Script.get_script_property_list: object is not a Script");
+    }
+
+    Array result = typed_obj->get_script_property_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Script::get_script_method_list
+static JSValue js_Script_get_script_method_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Script.get_script_method_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Script.get_script_method_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Script.get_script_method_list: invalid or freed object");
+    }
+
+    Script* typed_obj = Object::cast_to<Script>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Script.get_script_method_list: object is not a Script");
+    }
+
+    Array result = typed_obj->get_script_method_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Script::get_script_signal_list
+static JSValue js_Script_get_script_signal_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Script.get_script_signal_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Script.get_script_signal_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Script.get_script_signal_list: invalid or freed object");
+    }
+
+    Script* typed_obj = Object::cast_to<Script>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Script.get_script_signal_list: object is not a Script");
+    }
+
+    Array result = typed_obj->get_script_signal_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Script::get_script_constant_map
 static JSValue js_Script_get_script_constant_map(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -583,6 +673,12 @@ void register_Script_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Script_get_global_name, "get_global_name", 1));
     JS_SetPropertyStr(ctx, methods, "has_script_signal",
         JS_NewCFunction(ctx, js_Script_has_script_signal, "has_script_signal", 2));
+    JS_SetPropertyStr(ctx, methods, "get_script_property_list",
+        JS_NewCFunction(ctx, js_Script_get_script_property_list, "get_script_property_list", 1));
+    JS_SetPropertyStr(ctx, methods, "get_script_method_list",
+        JS_NewCFunction(ctx, js_Script_get_script_method_list, "get_script_method_list", 1));
+    JS_SetPropertyStr(ctx, methods, "get_script_signal_list",
+        JS_NewCFunction(ctx, js_Script_get_script_signal_list, "get_script_signal_list", 1));
     JS_SetPropertyStr(ctx, methods, "get_script_constant_map",
         JS_NewCFunction(ctx, js_Script_get_script_constant_map, "get_script_constant_map", 1));
     JS_SetPropertyStr(ctx, methods, "get_property_default_value",

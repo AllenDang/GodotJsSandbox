@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/crypto.hpp>
-#include <godot_cpp/classes/crypto_key.hpp>
 #include <godot_cpp/classes/x509_certificate.hpp>
+#include <godot_cpp/classes/crypto_key.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -33,6 +33,44 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
     } catch (...) { \
         return JS_ThrowInternalError(ctx, "Crypto: unknown error"); \
     }
+
+// Method: Crypto::generate_random_bytes
+static JSValue js_Crypto_generate_random_bytes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Crypto.generate_random_bytes: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Crypto.generate_random_bytes: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.generate_random_bytes: invalid or freed object");
+    }
+
+    Crypto* typed_obj = Object::cast_to<Crypto>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.generate_random_bytes: object is not a Crypto");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "Crypto.generate_random_bytes: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_size; JS_ToInt64(ctx, &arg_size, argv[1]);
+
+    PackedByteArray result = typed_obj->generate_random_bytes(arg_size);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
 
 // Method: Crypto::generate_rsa
 static JSValue js_Crypto_generate_rsa(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
@@ -193,16 +231,328 @@ static JSValue js_Crypto_generate_self_signed_certificate(JSContext* ctx, JSValu
     return ret_obj;
 }
 
+// Method: Crypto::sign
+static JSValue js_Crypto_sign(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Crypto.sign: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Crypto.sign: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.sign: invalid or freed object");
+    }
+
+    Crypto* typed_obj = Object::cast_to<Crypto>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.sign: object is not a Crypto");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "Crypto.sign: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t tmp_hash_type; JS_ToInt64(ctx, &tmp_hash_type, argv[1]); HashingContext::HashType arg_hash_type = (HashingContext::HashType)tmp_hash_type;
+    PackedByteArray arg_hash = qjs_ctx->js_to_variant(argv[2]);
+    Ref<CryptoKey> arg_key;
+    if (JS_IsNumber(argv[3])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_key; JS_ToInt64(ctx, &h_key, argv[3]);
+        Object* obj_key = qjs_ctx->get_object_registry()->get_object(h_key);
+        arg_key = Ref<CryptoKey>(Object::cast_to<CryptoKey>(obj_key));
+    } else {
+        // Object with __handle property
+        JSValue jh_key = JS_GetPropertyStr(ctx, argv[3], "__handle");
+        if (!JS_IsUndefined(jh_key)) {
+            int64_t h_key; JS_ToInt64(ctx, &h_key, jh_key);
+            Object* obj_key = qjs_ctx->get_object_registry()->get_object(h_key);
+            arg_key = Ref<CryptoKey>(Object::cast_to<CryptoKey>(obj_key));
+        }
+        JS_FreeValue(ctx, jh_key);
+    }
+
+    PackedByteArray result = typed_obj->sign(arg_hash_type, arg_hash, arg_key);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Crypto::verify
+static JSValue js_Crypto_verify(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Crypto.verify: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Crypto.verify: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.verify: invalid or freed object");
+    }
+
+    Crypto* typed_obj = Object::cast_to<Crypto>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.verify: object is not a Crypto");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 5) {
+        return JS_ThrowTypeError(ctx, "Crypto.verify: expected at least 4 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t tmp_hash_type; JS_ToInt64(ctx, &tmp_hash_type, argv[1]); HashingContext::HashType arg_hash_type = (HashingContext::HashType)tmp_hash_type;
+    PackedByteArray arg_hash = qjs_ctx->js_to_variant(argv[2]);
+    PackedByteArray arg_signature = qjs_ctx->js_to_variant(argv[3]);
+    Ref<CryptoKey> arg_key;
+    if (JS_IsNumber(argv[4])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_key; JS_ToInt64(ctx, &h_key, argv[4]);
+        Object* obj_key = qjs_ctx->get_object_registry()->get_object(h_key);
+        arg_key = Ref<CryptoKey>(Object::cast_to<CryptoKey>(obj_key));
+    } else {
+        // Object with __handle property
+        JSValue jh_key = JS_GetPropertyStr(ctx, argv[4], "__handle");
+        if (!JS_IsUndefined(jh_key)) {
+            int64_t h_key; JS_ToInt64(ctx, &h_key, jh_key);
+            Object* obj_key = qjs_ctx->get_object_registry()->get_object(h_key);
+            arg_key = Ref<CryptoKey>(Object::cast_to<CryptoKey>(obj_key));
+        }
+        JS_FreeValue(ctx, jh_key);
+    }
+
+    bool result = typed_obj->verify(arg_hash_type, arg_hash, arg_signature, arg_key);
+    return JS_NewBool(ctx, result);
+}
+
+// Method: Crypto::encrypt
+static JSValue js_Crypto_encrypt(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Crypto.encrypt: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Crypto.encrypt: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.encrypt: invalid or freed object");
+    }
+
+    Crypto* typed_obj = Object::cast_to<Crypto>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.encrypt: object is not a Crypto");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "Crypto.encrypt: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<CryptoKey> arg_key;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_key; JS_ToInt64(ctx, &h_key, argv[1]);
+        Object* obj_key = qjs_ctx->get_object_registry()->get_object(h_key);
+        arg_key = Ref<CryptoKey>(Object::cast_to<CryptoKey>(obj_key));
+    } else {
+        // Object with __handle property
+        JSValue jh_key = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_key)) {
+            int64_t h_key; JS_ToInt64(ctx, &h_key, jh_key);
+            Object* obj_key = qjs_ctx->get_object_registry()->get_object(h_key);
+            arg_key = Ref<CryptoKey>(Object::cast_to<CryptoKey>(obj_key));
+        }
+        JS_FreeValue(ctx, jh_key);
+    }
+    PackedByteArray arg_plaintext = qjs_ctx->js_to_variant(argv[2]);
+
+    PackedByteArray result = typed_obj->encrypt(arg_key, arg_plaintext);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Crypto::decrypt
+static JSValue js_Crypto_decrypt(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Crypto.decrypt: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Crypto.decrypt: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.decrypt: invalid or freed object");
+    }
+
+    Crypto* typed_obj = Object::cast_to<Crypto>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.decrypt: object is not a Crypto");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "Crypto.decrypt: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Ref<CryptoKey> arg_key;
+    if (JS_IsNumber(argv[1])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_key; JS_ToInt64(ctx, &h_key, argv[1]);
+        Object* obj_key = qjs_ctx->get_object_registry()->get_object(h_key);
+        arg_key = Ref<CryptoKey>(Object::cast_to<CryptoKey>(obj_key));
+    } else {
+        // Object with __handle property
+        JSValue jh_key = JS_GetPropertyStr(ctx, argv[1], "__handle");
+        if (!JS_IsUndefined(jh_key)) {
+            int64_t h_key; JS_ToInt64(ctx, &h_key, jh_key);
+            Object* obj_key = qjs_ctx->get_object_registry()->get_object(h_key);
+            arg_key = Ref<CryptoKey>(Object::cast_to<CryptoKey>(obj_key));
+        }
+        JS_FreeValue(ctx, jh_key);
+    }
+    PackedByteArray arg_ciphertext = qjs_ctx->js_to_variant(argv[2]);
+
+    PackedByteArray result = typed_obj->decrypt(arg_key, arg_ciphertext);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Crypto::hmac_digest
+static JSValue js_Crypto_hmac_digest(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Crypto.hmac_digest: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Crypto.hmac_digest: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.hmac_digest: invalid or freed object");
+    }
+
+    Crypto* typed_obj = Object::cast_to<Crypto>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.hmac_digest: object is not a Crypto");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "Crypto.hmac_digest: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t tmp_hash_type; JS_ToInt64(ctx, &tmp_hash_type, argv[1]); HashingContext::HashType arg_hash_type = (HashingContext::HashType)tmp_hash_type;
+    PackedByteArray arg_key = qjs_ctx->js_to_variant(argv[2]);
+    PackedByteArray arg_msg = qjs_ctx->js_to_variant(argv[3]);
+
+    PackedByteArray result = typed_obj->hmac_digest(arg_hash_type, arg_key, arg_msg);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Crypto::constant_time_compare
+static JSValue js_Crypto_constant_time_compare(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Crypto.constant_time_compare: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Crypto.constant_time_compare: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.constant_time_compare: invalid or freed object");
+    }
+
+    Crypto* typed_obj = Object::cast_to<Crypto>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Crypto.constant_time_compare: object is not a Crypto");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "Crypto.constant_time_compare: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_trusted = qjs_ctx->js_to_variant(argv[1]);
+    PackedByteArray arg_received = qjs_ctx->js_to_variant(argv[2]);
+
+    bool result = typed_obj->constant_time_compare(arg_trusted, arg_received);
+    return JS_NewBool(ctx, result);
+}
+
 
 // Registration function for Crypto
 void register_Crypto_bindings(JSContext* ctx, JSValue global, JSValue classes) {
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "generate_random_bytes",
+        JS_NewCFunction(ctx, js_Crypto_generate_random_bytes, "generate_random_bytes", 2));
     JS_SetPropertyStr(ctx, methods, "generate_rsa",
         JS_NewCFunction(ctx, js_Crypto_generate_rsa, "generate_rsa", 2));
     JS_SetPropertyStr(ctx, methods, "generate_self_signed_certificate",
         JS_NewCFunction(ctx, js_Crypto_generate_self_signed_certificate, "generate_self_signed_certificate", 5));
+    JS_SetPropertyStr(ctx, methods, "sign",
+        JS_NewCFunction(ctx, js_Crypto_sign, "sign", 4));
+    JS_SetPropertyStr(ctx, methods, "verify",
+        JS_NewCFunction(ctx, js_Crypto_verify, "verify", 5));
+    JS_SetPropertyStr(ctx, methods, "encrypt",
+        JS_NewCFunction(ctx, js_Crypto_encrypt, "encrypt", 3));
+    JS_SetPropertyStr(ctx, methods, "decrypt",
+        JS_NewCFunction(ctx, js_Crypto_decrypt, "decrypt", 3));
+    JS_SetPropertyStr(ctx, methods, "hmac_digest",
+        JS_NewCFunction(ctx, js_Crypto_hmac_digest, "hmac_digest", 4));
+    JS_SetPropertyStr(ctx, methods, "constant_time_compare",
+        JS_NewCFunction(ctx, js_Crypto_constant_time_compare, "constant_time_compare", 3));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

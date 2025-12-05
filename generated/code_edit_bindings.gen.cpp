@@ -432,6 +432,36 @@ static JSValue js_CodeEdit_clear_breakpointed_lines(JSContext* ctx, JSValueConst
     return JS_UNDEFINED;
 }
 
+// Method: CodeEdit::get_breakpointed_lines
+static JSValue js_CodeEdit_get_breakpointed_lines(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_breakpointed_lines: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_breakpointed_lines: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_breakpointed_lines: invalid or freed object");
+    }
+
+    CodeEdit* typed_obj = Object::cast_to<CodeEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_breakpointed_lines: object is not a CodeEdit");
+    }
+
+    PackedInt32Array result = typed_obj->get_breakpointed_lines();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: CodeEdit::set_line_as_bookmarked
 static JSValue js_CodeEdit_set_line_as_bookmarked(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -539,6 +569,36 @@ static JSValue js_CodeEdit_clear_bookmarked_lines(JSContext* ctx, JSValueConst t
     return JS_UNDEFINED;
 }
 
+// Method: CodeEdit::get_bookmarked_lines
+static JSValue js_CodeEdit_get_bookmarked_lines(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_bookmarked_lines: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_bookmarked_lines: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_bookmarked_lines: invalid or freed object");
+    }
+
+    CodeEdit* typed_obj = Object::cast_to<CodeEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_bookmarked_lines: object is not a CodeEdit");
+    }
+
+    PackedInt32Array result = typed_obj->get_bookmarked_lines();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: CodeEdit::set_line_as_executing
 static JSValue js_CodeEdit_set_line_as_executing(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -644,6 +704,36 @@ static JSValue js_CodeEdit_clear_executing_lines(JSContext* ctx, JSValueConst th
 
     typed_obj->clear_executing_lines();
     return JS_UNDEFINED;
+}
+
+// Method: CodeEdit::get_executing_lines
+static JSValue js_CodeEdit_get_executing_lines(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_executing_lines: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_executing_lines: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_executing_lines: invalid or freed object");
+    }
+
+    CodeEdit* typed_obj = Object::cast_to<CodeEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_executing_lines: object is not a CodeEdit");
+    }
+
+    PackedInt32Array result = typed_obj->get_executing_lines();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: CodeEdit::can_fold_line
@@ -924,6 +1014,36 @@ static JSValue js_CodeEdit_is_line_folded(JSContext* ctx, JSValueConst this_val,
 
     bool result = typed_obj->is_line_folded(arg_line);
     return JS_NewBool(ctx, result);
+}
+
+// Method: CodeEdit::get_folded_lines
+static JSValue js_CodeEdit_get_folded_lines(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_folded_lines: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_folded_lines: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_folded_lines: invalid or freed object");
+    }
+
+    CodeEdit* typed_obj = Object::cast_to<CodeEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_folded_lines: object is not a CodeEdit");
+    }
+
+    Array result = typed_obj->get_folded_lines();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: CodeEdit::create_code_region
@@ -1971,6 +2091,36 @@ static JSValue js_CodeEdit_update_code_completion_options(JSContext* ctx, JSValu
 
     typed_obj->update_code_completion_options(arg_force);
     return JS_UNDEFINED;
+}
+
+// Method: CodeEdit::get_code_completion_options
+static JSValue js_CodeEdit_get_code_completion_options(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_code_completion_options: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_code_completion_options: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_code_completion_options: invalid or freed object");
+    }
+
+    CodeEdit* typed_obj = Object::cast_to<CodeEdit>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CodeEdit.get_code_completion_options: object is not a CodeEdit");
+    }
+
+    Array result = typed_obj->get_code_completion_options();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: CodeEdit::get_code_completion_option
@@ -3413,18 +3563,24 @@ void register_CodeEdit_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_CodeEdit_is_line_breakpointed, "is_line_breakpointed", 2));
     JS_SetPropertyStr(ctx, methods, "clear_breakpointed_lines",
         JS_NewCFunction(ctx, js_CodeEdit_clear_breakpointed_lines, "clear_breakpointed_lines", 1));
+    JS_SetPropertyStr(ctx, methods, "get_breakpointed_lines",
+        JS_NewCFunction(ctx, js_CodeEdit_get_breakpointed_lines, "get_breakpointed_lines", 1));
     JS_SetPropertyStr(ctx, methods, "set_line_as_bookmarked",
         JS_NewCFunction(ctx, js_CodeEdit_set_line_as_bookmarked, "set_line_as_bookmarked", 3));
     JS_SetPropertyStr(ctx, methods, "is_line_bookmarked",
         JS_NewCFunction(ctx, js_CodeEdit_is_line_bookmarked, "is_line_bookmarked", 2));
     JS_SetPropertyStr(ctx, methods, "clear_bookmarked_lines",
         JS_NewCFunction(ctx, js_CodeEdit_clear_bookmarked_lines, "clear_bookmarked_lines", 1));
+    JS_SetPropertyStr(ctx, methods, "get_bookmarked_lines",
+        JS_NewCFunction(ctx, js_CodeEdit_get_bookmarked_lines, "get_bookmarked_lines", 1));
     JS_SetPropertyStr(ctx, methods, "set_line_as_executing",
         JS_NewCFunction(ctx, js_CodeEdit_set_line_as_executing, "set_line_as_executing", 3));
     JS_SetPropertyStr(ctx, methods, "is_line_executing",
         JS_NewCFunction(ctx, js_CodeEdit_is_line_executing, "is_line_executing", 2));
     JS_SetPropertyStr(ctx, methods, "clear_executing_lines",
         JS_NewCFunction(ctx, js_CodeEdit_clear_executing_lines, "clear_executing_lines", 1));
+    JS_SetPropertyStr(ctx, methods, "get_executing_lines",
+        JS_NewCFunction(ctx, js_CodeEdit_get_executing_lines, "get_executing_lines", 1));
     JS_SetPropertyStr(ctx, methods, "can_fold_line",
         JS_NewCFunction(ctx, js_CodeEdit_can_fold_line, "can_fold_line", 2));
     JS_SetPropertyStr(ctx, methods, "fold_line",
@@ -3441,6 +3597,8 @@ void register_CodeEdit_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_CodeEdit_toggle_foldable_lines_at_carets, "toggle_foldable_lines_at_carets", 1));
     JS_SetPropertyStr(ctx, methods, "is_line_folded",
         JS_NewCFunction(ctx, js_CodeEdit_is_line_folded, "is_line_folded", 2));
+    JS_SetPropertyStr(ctx, methods, "get_folded_lines",
+        JS_NewCFunction(ctx, js_CodeEdit_get_folded_lines, "get_folded_lines", 1));
     JS_SetPropertyStr(ctx, methods, "create_code_region",
         JS_NewCFunction(ctx, js_CodeEdit_create_code_region, "create_code_region", 1));
     JS_SetPropertyStr(ctx, methods, "get_code_region_start_tag",
@@ -3493,6 +3651,8 @@ void register_CodeEdit_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_CodeEdit_add_code_completion_option, "add_code_completion_option", 8));
     JS_SetPropertyStr(ctx, methods, "update_code_completion_options",
         JS_NewCFunction(ctx, js_CodeEdit_update_code_completion_options, "update_code_completion_options", 2));
+    JS_SetPropertyStr(ctx, methods, "get_code_completion_options",
+        JS_NewCFunction(ctx, js_CodeEdit_get_code_completion_options, "get_code_completion_options", 1));
     JS_SetPropertyStr(ctx, methods, "get_code_completion_option",
         JS_NewCFunction(ctx, js_CodeEdit_get_code_completion_option, "get_code_completion_option", 2));
     JS_SetPropertyStr(ctx, methods, "get_code_completion_selected_index",

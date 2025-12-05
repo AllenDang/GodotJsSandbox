@@ -2,7 +2,8 @@
     "blocked_class_prefixes": [
         "Editor",
         "VisualShaderNode",
-        "ResourceImporter"
+        "ResourceImporter",
+        "RD"
     ],
     "blocked_class_suffixes": [],
     "blocked_classes": [
@@ -51,7 +52,10 @@
         "VisualShader",
         "TextServerAdvanced",
         "TextServerDummy",
-        "PhysicsServer3DRenderingServerHandler"
+        "PhysicsServer3DRenderingServerHandler",
+        "FramebufferCacheRD",
+        "RenderingDevice",
+        "UniformSetCacheRD"
     ],
     "blocked_methods": {
         "Object": ["call", "callv", "get_script", "set", "emit_signal", "free", "call_deferred", "set_deferred"],

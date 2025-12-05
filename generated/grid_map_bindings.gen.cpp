@@ -8,9 +8,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/grid_map.hpp>
+#include <godot_cpp/classes/physics_material.hpp>
 #include <godot_cpp/classes/resource.hpp>
 #include <godot_cpp/classes/mesh_library.hpp>
-#include <godot_cpp/classes/physics_material.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -187,6 +187,74 @@ static JSValue js_GridMap_get_collision_layer_value(JSContext* ctx, JSValueConst
 
     bool result = typed_obj->get_collision_layer_value(arg_layer_number);
     return JS_NewBool(ctx, result);
+}
+
+// Method: GridMap::set_navigation_map
+static JSValue js_GridMap_set_navigation_map(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GridMap.set_navigation_map: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GridMap.set_navigation_map: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GridMap.set_navigation_map: invalid or freed object");
+    }
+
+    GridMap* typed_obj = Object::cast_to<GridMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GridMap.set_navigation_map: object is not a GridMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GridMap.set_navigation_map: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_navigation_map = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->set_navigation_map(arg_navigation_map);
+    return JS_UNDEFINED;
+}
+
+// Method: GridMap::get_navigation_map
+static JSValue js_GridMap_get_navigation_map(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_navigation_map: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_navigation_map: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_navigation_map: invalid or freed object");
+    }
+
+    GridMap* typed_obj = Object::cast_to<GridMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_navigation_map: object is not a GridMap");
+    }
+
+    RID result = typed_obj->get_navigation_map();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: GridMap::set_cell_item
@@ -654,6 +722,74 @@ static JSValue js_GridMap_clear(JSContext* ctx, JSValueConst this_val, int argc,
     return JS_UNDEFINED;
 }
 
+// Method: GridMap::get_used_cells
+static JSValue js_GridMap_get_used_cells(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_used_cells: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_used_cells: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_used_cells: invalid or freed object");
+    }
+
+    GridMap* typed_obj = Object::cast_to<GridMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_used_cells: object is not a GridMap");
+    }
+
+    Array result = typed_obj->get_used_cells();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: GridMap::get_used_cells_by_item
+static JSValue js_GridMap_get_used_cells_by_item(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_used_cells_by_item: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_used_cells_by_item: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_used_cells_by_item: invalid or freed object");
+    }
+
+    GridMap* typed_obj = Object::cast_to<GridMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_used_cells_by_item: object is not a GridMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_used_cells_by_item: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_item; JS_ToInt64(ctx, &arg_item, argv[1]);
+
+    Array result = typed_obj->get_used_cells_by_item(arg_item);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: GridMap::get_meshes
 static JSValue js_GridMap_get_meshes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -711,6 +847,44 @@ static JSValue js_GridMap_get_bake_meshes(JSContext* ctx, JSValueConst this_val,
     }
 
     Array result = typed_obj->get_bake_meshes();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: GridMap::get_bake_mesh_instance
+static JSValue js_GridMap_get_bake_mesh_instance(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_bake_mesh_instance: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_bake_mesh_instance: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_bake_mesh_instance: invalid or freed object");
+    }
+
+    GridMap* typed_obj = Object::cast_to<GridMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_bake_mesh_instance: object is not a GridMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "GridMap.get_bake_mesh_instance: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
+
+    RID result = typed_obj->get_bake_mesh_instance(arg_idx);
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -1633,6 +1807,10 @@ void register_GridMap_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_NewCFunction(ctx, js_GridMap_set_collision_layer_value, "set_collision_layer_value", 3));
     JS_SetPropertyStr(ctx, methods, "get_collision_layer_value",
         JS_NewCFunction(ctx, js_GridMap_get_collision_layer_value, "get_collision_layer_value", 2));
+    JS_SetPropertyStr(ctx, methods, "set_navigation_map",
+        JS_NewCFunction(ctx, js_GridMap_set_navigation_map, "set_navigation_map", 2));
+    JS_SetPropertyStr(ctx, methods, "get_navigation_map",
+        JS_NewCFunction(ctx, js_GridMap_get_navigation_map, "get_navigation_map", 1));
     JS_SetPropertyStr(ctx, methods, "set_cell_item",
         JS_NewCFunction(ctx, js_GridMap_set_cell_item, "set_cell_item", 4));
     JS_SetPropertyStr(ctx, methods, "get_cell_item",
@@ -1653,10 +1831,16 @@ void register_GridMap_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_NewCFunction(ctx, js_GridMap_resource_changed, "resource_changed", 2));
     JS_SetPropertyStr(ctx, methods, "clear",
         JS_NewCFunction(ctx, js_GridMap_clear, "clear", 1));
+    JS_SetPropertyStr(ctx, methods, "get_used_cells",
+        JS_NewCFunction(ctx, js_GridMap_get_used_cells, "get_used_cells", 1));
+    JS_SetPropertyStr(ctx, methods, "get_used_cells_by_item",
+        JS_NewCFunction(ctx, js_GridMap_get_used_cells_by_item, "get_used_cells_by_item", 2));
     JS_SetPropertyStr(ctx, methods, "get_meshes",
         JS_NewCFunction(ctx, js_GridMap_get_meshes, "get_meshes", 1));
     JS_SetPropertyStr(ctx, methods, "get_bake_meshes",
         JS_NewCFunction(ctx, js_GridMap_get_bake_meshes, "get_bake_meshes", 1));
+    JS_SetPropertyStr(ctx, methods, "get_bake_mesh_instance",
+        JS_NewCFunction(ctx, js_GridMap_get_bake_mesh_instance, "get_bake_mesh_instance", 2));
     JS_SetPropertyStr(ctx, methods, "clear_baked_meshes",
         JS_NewCFunction(ctx, js_GridMap_clear_baked_meshes, "clear_baked_meshes", 1));
     JS_SetPropertyStr(ctx, methods, "make_baked_meshes",

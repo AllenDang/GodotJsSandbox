@@ -413,6 +413,116 @@ static JSValue js_Noise_get_seamless_image(JSContext* ctx, JSValueConst this_val
     return ret_obj;
 }
 
+// Method: Noise::get_image_3d
+static JSValue js_Noise_get_image_3d(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Noise.get_image_3d: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Noise.get_image_3d: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Noise.get_image_3d: invalid or freed object");
+    }
+
+    Noise* typed_obj = Object::cast_to<Noise>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Noise.get_image_3d: object is not a Noise");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "Noise.get_image_3d: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_width; JS_ToInt64(ctx, &arg_width, argv[1]);
+    int64_t arg_height; JS_ToInt64(ctx, &arg_height, argv[2]);
+    int64_t arg_depth; JS_ToInt64(ctx, &arg_depth, argv[3]);
+    // Optional argument: invert (default: false)
+    bool arg_invert = false;
+    if (argc > 4) {
+        // Override default with provided value
+        arg_invert = JS_ToBool(ctx, argv[4]);
+    }
+    // Optional argument: normalize (default: true)
+    bool arg_normalize = true;
+    if (argc > 5) {
+        // Override default with provided value
+        arg_normalize = JS_ToBool(ctx, argv[5]);
+    }
+
+    Array result = typed_obj->get_image_3d(arg_width, arg_height, arg_depth, arg_invert, arg_normalize);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Noise::get_seamless_image_3d
+static JSValue js_Noise_get_seamless_image_3d(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Noise.get_seamless_image_3d: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Noise.get_seamless_image_3d: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Noise.get_seamless_image_3d: invalid or freed object");
+    }
+
+    Noise* typed_obj = Object::cast_to<Noise>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Noise.get_seamless_image_3d: object is not a Noise");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "Noise.get_seamless_image_3d: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_width; JS_ToInt64(ctx, &arg_width, argv[1]);
+    int64_t arg_height; JS_ToInt64(ctx, &arg_height, argv[2]);
+    int64_t arg_depth; JS_ToInt64(ctx, &arg_depth, argv[3]);
+    // Optional argument: invert (default: false)
+    bool arg_invert = false;
+    if (argc > 4) {
+        // Override default with provided value
+        arg_invert = JS_ToBool(ctx, argv[4]);
+    }
+    // Optional argument: skirt (default: 0.1)
+    double arg_skirt = 0.1;
+    if (argc > 5) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_skirt, argv[5]);
+    }
+    // Optional argument: normalize (default: true)
+    bool arg_normalize = true;
+    if (argc > 6) {
+        // Override default with provided value
+        arg_normalize = JS_ToBool(ctx, argv[6]);
+    }
+
+    Array result = typed_obj->get_seamless_image_3d(arg_width, arg_height, arg_depth, arg_invert, arg_skirt, arg_normalize);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 
 // Registration function for Noise
 void register_Noise_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -433,6 +543,10 @@ void register_Noise_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_Noise_get_image, "get_image", 6));
     JS_SetPropertyStr(ctx, methods, "get_seamless_image",
         JS_NewCFunction(ctx, js_Noise_get_seamless_image, "get_seamless_image", 7));
+    JS_SetPropertyStr(ctx, methods, "get_image_3d",
+        JS_NewCFunction(ctx, js_Noise_get_image_3d, "get_image_3d", 6));
+    JS_SetPropertyStr(ctx, methods, "get_seamless_image_3d",
+        JS_NewCFunction(ctx, js_Noise_get_seamless_image_3d, "get_seamless_image_3d", 7));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

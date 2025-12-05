@@ -76,6 +76,82 @@ static JSValue js_MultiplayerSynchronizer_update_visibility(JSContext* ctx, JSVa
     return JS_UNDEFINED;
 }
 
+// Method: MultiplayerSynchronizer::add_visibility_filter
+static JSValue js_MultiplayerSynchronizer_add_visibility_filter(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSynchronizer.add_visibility_filter: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSynchronizer.add_visibility_filter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSynchronizer.add_visibility_filter: invalid or freed object");
+    }
+
+    MultiplayerSynchronizer* typed_obj = Object::cast_to<MultiplayerSynchronizer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSynchronizer.add_visibility_filter: object is not a MultiplayerSynchronizer");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSynchronizer.add_visibility_filter: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Callable arg_filter = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->add_visibility_filter(arg_filter);
+    return JS_UNDEFINED;
+}
+
+// Method: MultiplayerSynchronizer::remove_visibility_filter
+static JSValue js_MultiplayerSynchronizer_remove_visibility_filter(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSynchronizer.remove_visibility_filter: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSynchronizer.remove_visibility_filter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSynchronizer.remove_visibility_filter: invalid or freed object");
+    }
+
+    MultiplayerSynchronizer* typed_obj = Object::cast_to<MultiplayerSynchronizer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSynchronizer.remove_visibility_filter: object is not a MultiplayerSynchronizer");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "MultiplayerSynchronizer.remove_visibility_filter: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Callable arg_filter = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->remove_visibility_filter(arg_filter);
+    return JS_UNDEFINED;
+}
+
 // Method: MultiplayerSynchronizer::set_visibility_for
 static JSValue js_MultiplayerSynchronizer_set_visibility_for(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -567,6 +643,10 @@ void register_MultiplayerSynchronizer_bindings(JSContext* ctx, JSValue global, J
 
     JS_SetPropertyStr(ctx, methods, "update_visibility",
         JS_NewCFunction(ctx, js_MultiplayerSynchronizer_update_visibility, "update_visibility", 2));
+    JS_SetPropertyStr(ctx, methods, "add_visibility_filter",
+        JS_NewCFunction(ctx, js_MultiplayerSynchronizer_add_visibility_filter, "add_visibility_filter", 2));
+    JS_SetPropertyStr(ctx, methods, "remove_visibility_filter",
+        JS_NewCFunction(ctx, js_MultiplayerSynchronizer_remove_visibility_filter, "remove_visibility_filter", 2));
     JS_SetPropertyStr(ctx, methods, "set_visibility_for",
         JS_NewCFunction(ctx, js_MultiplayerSynchronizer_set_visibility_for, "set_visibility_for", 3));
     JS_SetPropertyStr(ctx, methods, "get_visibility_for",

@@ -174,6 +174,59 @@ static JSValue js_StyleBox_get_offset(JSContext* ctx, JSValueConst this_val, int
     return ret_obj;
 }
 
+// Method: StyleBox::draw
+static JSValue js_StyleBox_draw(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "StyleBox.draw: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "StyleBox.draw: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "StyleBox.draw: invalid or freed object");
+    }
+
+    StyleBox* typed_obj = Object::cast_to<StyleBox>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "StyleBox.draw: object is not a StyleBox");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "StyleBox.draw: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas_item = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect;
+    JSValue jpos_rect = JS_GetPropertyStr(ctx, argv[2], "position");
+    JSValue jsize_rect = JS_GetPropertyStr(ctx, argv[2], "size");
+    JSValue jpx_rect = JS_GetPropertyStr(ctx, jpos_rect, "x");
+    JSValue jpy_rect = JS_GetPropertyStr(ctx, jpos_rect, "y");
+    JSValue jsx_rect = JS_GetPropertyStr(ctx, jsize_rect, "x");
+    JSValue jsy_rect = JS_GetPropertyStr(ctx, jsize_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_rect, jpx_rect);
+    JS_ToFloat64(ctx, &tmp_y_rect, jpy_rect);
+    JS_ToFloat64(ctx, &tmp_w_rect, jsx_rect);
+    JS_ToFloat64(ctx, &tmp_h_rect, jsy_rect);
+    JS_FreeValue(ctx, jpx_rect); JS_FreeValue(ctx, jpy_rect);
+    JS_FreeValue(ctx, jsx_rect); JS_FreeValue(ctx, jsy_rect);
+    JS_FreeValue(ctx, jpos_rect); JS_FreeValue(ctx, jsize_rect);
+    Rect2 arg_rect(tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect);
+
+    typed_obj->draw(arg_canvas_item, arg_rect);
+    return JS_UNDEFINED;
+}
+
 // Method: StyleBox::get_current_item_drawn
 static JSValue js_StyleBox_get_current_item_drawn(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -303,6 +356,8 @@ void register_StyleBox_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_StyleBox_get_margin, "get_margin", 2));
     JS_SetPropertyStr(ctx, methods, "get_offset",
         JS_NewCFunction(ctx, js_StyleBox_get_offset, "get_offset", 1));
+    JS_SetPropertyStr(ctx, methods, "draw",
+        JS_NewCFunction(ctx, js_StyleBox_draw, "draw", 3));
     JS_SetPropertyStr(ctx, methods, "get_current_item_drawn",
         JS_NewCFunction(ctx, js_StyleBox_get_current_item_drawn, "get_current_item_drawn", 1));
     JS_SetPropertyStr(ctx, methods, "test_mask",

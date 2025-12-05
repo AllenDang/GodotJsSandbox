@@ -32,6 +32,44 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "PhysicsServer2DExtension: unknown error"); \
     }
 
+// Method: PhysicsServer2DExtension::body_test_motion_is_excluding_body
+static JSValue js_PhysicsServer2DExtension_body_test_motion_is_excluding_body(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicsServer2DExtension.body_test_motion_is_excluding_body: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsServer2DExtension.body_test_motion_is_excluding_body: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsServer2DExtension.body_test_motion_is_excluding_body: invalid or freed object");
+    }
+
+    PhysicsServer2DExtension* typed_obj = Object::cast_to<PhysicsServer2DExtension>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsServer2DExtension.body_test_motion_is_excluding_body: object is not a PhysicsServer2DExtension");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "PhysicsServer2DExtension.body_test_motion_is_excluding_body: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_body = qjs_ctx->js_to_variant(argv[1]);
+
+    bool result = typed_obj->body_test_motion_is_excluding_body(arg_body);
+    return JS_NewBool(ctx, result);
+}
+
 // Method: PhysicsServer2DExtension::body_test_motion_is_excluding_object
 static JSValue js_PhysicsServer2DExtension_body_test_motion_is_excluding_object(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -76,6 +114,8 @@ void register_PhysicsServer2DExtension_bindings(JSContext* ctx, JSValue global, 
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "body_test_motion_is_excluding_body",
+        JS_NewCFunction(ctx, js_PhysicsServer2DExtension_body_test_motion_is_excluding_body, "body_test_motion_is_excluding_body", 2));
     JS_SetPropertyStr(ctx, methods, "body_test_motion_is_excluding_object",
         JS_NewCFunction(ctx, js_PhysicsServer2DExtension_body_test_motion_is_excluding_object, "body_test_motion_is_excluding_object", 2));
 

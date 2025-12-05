@@ -92,6 +92,126 @@ static JSValue js_PhysicalBoneSimulator3D_physical_bones_stop_simulation(JSConte
     return JS_UNDEFINED;
 }
 
+// Method: PhysicalBoneSimulator3D::physical_bones_start_simulation
+static JSValue js_PhysicalBoneSimulator3D_physical_bones_start_simulation(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_start_simulation: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_start_simulation: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_start_simulation: invalid or freed object");
+    }
+
+    PhysicalBoneSimulator3D* typed_obj = Object::cast_to<PhysicalBoneSimulator3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_start_simulation: object is not a PhysicalBoneSimulator3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_start_simulation: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: bones (default: Array())
+    Array arg_bones = Array();
+    if (argc > 1) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Array arg_bones = qjs_ctx->js_to_variant(argv[1]);
+    }
+
+    typed_obj->physical_bones_start_simulation(arg_bones);
+    return JS_UNDEFINED;
+}
+
+// Method: PhysicalBoneSimulator3D::physical_bones_add_collision_exception
+static JSValue js_PhysicalBoneSimulator3D_physical_bones_add_collision_exception(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_add_collision_exception: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_add_collision_exception: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_add_collision_exception: invalid or freed object");
+    }
+
+    PhysicalBoneSimulator3D* typed_obj = Object::cast_to<PhysicalBoneSimulator3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_add_collision_exception: object is not a PhysicalBoneSimulator3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_add_collision_exception: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_exception = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->physical_bones_add_collision_exception(arg_exception);
+    return JS_UNDEFINED;
+}
+
+// Method: PhysicalBoneSimulator3D::physical_bones_remove_collision_exception
+static JSValue js_PhysicalBoneSimulator3D_physical_bones_remove_collision_exception(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_remove_collision_exception: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_remove_collision_exception: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_remove_collision_exception: invalid or freed object");
+    }
+
+    PhysicalBoneSimulator3D* typed_obj = Object::cast_to<PhysicalBoneSimulator3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_remove_collision_exception: object is not a PhysicalBoneSimulator3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "PhysicalBoneSimulator3D.physical_bones_remove_collision_exception: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_exception = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->physical_bones_remove_collision_exception(arg_exception);
+    return JS_UNDEFINED;
+}
+
 
 // Registration function for PhysicalBoneSimulator3D
 void register_PhysicalBoneSimulator3D_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -102,6 +222,12 @@ void register_PhysicalBoneSimulator3D_bindings(JSContext* ctx, JSValue global, J
         JS_NewCFunction(ctx, js_PhysicalBoneSimulator3D_is_simulating_physics, "is_simulating_physics", 1));
     JS_SetPropertyStr(ctx, methods, "physical_bones_stop_simulation",
         JS_NewCFunction(ctx, js_PhysicalBoneSimulator3D_physical_bones_stop_simulation, "physical_bones_stop_simulation", 1));
+    JS_SetPropertyStr(ctx, methods, "physical_bones_start_simulation",
+        JS_NewCFunction(ctx, js_PhysicalBoneSimulator3D_physical_bones_start_simulation, "physical_bones_start_simulation", 2));
+    JS_SetPropertyStr(ctx, methods, "physical_bones_add_collision_exception",
+        JS_NewCFunction(ctx, js_PhysicalBoneSimulator3D_physical_bones_add_collision_exception, "physical_bones_add_collision_exception", 2));
+    JS_SetPropertyStr(ctx, methods, "physical_bones_remove_collision_exception",
+        JS_NewCFunction(ctx, js_PhysicalBoneSimulator3D_physical_bones_remove_collision_exception, "physical_bones_remove_collision_exception", 2));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

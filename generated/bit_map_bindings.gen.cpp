@@ -517,6 +517,50 @@ static JSValue js_BitMap_convert_to_image(JSContext* ctx, JSValueConst this_val,
     return ret_obj;
 }
 
+// Method: BitMap::opaque_to_polygons
+static JSValue js_BitMap_opaque_to_polygons(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "BitMap.opaque_to_polygons: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "BitMap.opaque_to_polygons: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "BitMap.opaque_to_polygons: invalid or freed object");
+    }
+
+    BitMap* typed_obj = Object::cast_to<BitMap>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "BitMap.opaque_to_polygons: object is not a BitMap");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "BitMap.opaque_to_polygons: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Rect2i arg_rect = qjs_ctx->js_to_variant(argv[1]);
+    // Optional argument: epsilon (default: 2.0)
+    double arg_epsilon = 2.0;
+    if (argc > 2) {
+        // Override default with provided value
+        JS_ToFloat64(ctx, &arg_epsilon, argv[2]);
+    }
+
+    Array result = typed_obj->opaque_to_polygons(arg_rect, arg_epsilon);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 
 // Registration function for BitMap
 void register_BitMap_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -547,6 +591,8 @@ void register_BitMap_bindings(JSContext* ctx, JSValue global, JSValue classes) {
         JS_NewCFunction(ctx, js_BitMap_grow_mask, "grow_mask", 3));
     JS_SetPropertyStr(ctx, methods, "convert_to_image",
         JS_NewCFunction(ctx, js_BitMap_convert_to_image, "convert_to_image", 1));
+    JS_SetPropertyStr(ctx, methods, "opaque_to_polygons",
+        JS_NewCFunction(ctx, js_BitMap_opaque_to_polygons, "opaque_to_polygons", 3));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

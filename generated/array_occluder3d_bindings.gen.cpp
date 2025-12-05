@@ -32,6 +32,61 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "ArrayOccluder3D: unknown error"); \
     }
 
+// Method: ArrayOccluder3D::set_arrays
+static JSValue js_ArrayOccluder3D_set_arrays(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ArrayOccluder3D.set_arrays: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ArrayOccluder3D.set_arrays: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ArrayOccluder3D.set_arrays: invalid or freed object");
+    }
+
+    ArrayOccluder3D* typed_obj = Object::cast_to<ArrayOccluder3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ArrayOccluder3D.set_arrays: object is not a ArrayOccluder3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "ArrayOccluder3D.set_arrays: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedVector3Array arg_vertices;
+    if (JS_IsArray(argv[1])) {
+        JSValue len_val = JS_GetPropertyStr(ctx, argv[1], "length");
+        int64_t len = 0; JS_ToInt64(ctx, &len, len_val); JS_FreeValue(ctx, len_val);
+        arg_vertices.resize(len);
+        for (int64_t i = 0; i < len; i++) {
+            JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+            double x = 0, y = 0, z = 0;
+            JSValue jx = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue jy = JS_GetPropertyStr(ctx, elem, "y");
+            JSValue jz = JS_GetPropertyStr(ctx, elem, "z");
+            JS_ToFloat64(ctx, &x, jx); JS_ToFloat64(ctx, &y, jy); JS_ToFloat64(ctx, &z, jz);
+            JS_FreeValue(ctx, jx); JS_FreeValue(ctx, jy); JS_FreeValue(ctx, jz);
+            JS_FreeValue(ctx, elem);
+            arg_vertices.set(i, Vector3(x, y, z));
+        }
+    }
+    PackedInt32Array arg_indices = qjs_ctx->js_to_variant(argv[2]);
+
+    typed_obj->set_arrays(arg_vertices, arg_indices);
+    return JS_UNDEFINED;
+}
+
 // Property getter: ArrayOccluder3D::vertices
 static JSValue js_ArrayOccluder3D_get_vertices(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -117,12 +172,75 @@ static JSValue js_ArrayOccluder3D_set_vertices(JSContext* ctx, JSValueConst this
     return JS_UNDEFINED;
 }
 
+// Property getter: ArrayOccluder3D::indices
+static JSValue js_ArrayOccluder3D_get_indices(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ArrayOccluder3D.indices getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ArrayOccluder3D.indices getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ArrayOccluder3D.indices getter: invalid object");
+    }
+
+    ArrayOccluder3D* typed_obj = Object::cast_to<ArrayOccluder3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ArrayOccluder3D.indices getter: wrong type");
+    }
+
+    PackedInt32Array value = typed_obj->get_indices();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: ArrayOccluder3D::indices
+static JSValue js_ArrayOccluder3D_set_indices(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "ArrayOccluder3D.indices setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ArrayOccluder3D.indices setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ArrayOccluder3D.indices setter: invalid object");
+    }
+
+    ArrayOccluder3D* typed_obj = Object::cast_to<ArrayOccluder3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ArrayOccluder3D.indices setter: wrong type");
+    }
+
+    PackedInt32Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_indices(value);
+    return JS_UNDEFINED;
+}
+
 
 // Registration function for ArrayOccluder3D
 void register_ArrayOccluder3D_bindings(JSContext* ctx, JSValue global, JSValue classes) {
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "set_arrays",
+        JS_NewCFunction(ctx, js_ArrayOccluder3D_set_arrays, "set_arrays", 3));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
@@ -134,6 +252,14 @@ void register_ArrayOccluder3D_bindings(JSContext* ctx, JSValue global, JSValue c
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_ArrayOccluder3D_set_vertices, "set_vertices", 2));
         JS_SetPropertyStr(ctx, props, "vertices", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_ArrayOccluder3D_get_indices, "get_indices", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_ArrayOccluder3D_set_indices, "set_indices", 2));
+        JS_SetPropertyStr(ctx, props, "indices", prop_obj);
     }
 
     // Register signals array

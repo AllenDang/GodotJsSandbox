@@ -540,6 +540,36 @@ static JSValue js_RigidBody2D_add_constant_torque(JSContext* ctx, JSValueConst t
     return JS_UNDEFINED;
 }
 
+// Method: RigidBody2D::get_colliding_bodies
+static JSValue js_RigidBody2D_get_colliding_bodies(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RigidBody2D.get_colliding_bodies: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RigidBody2D.get_colliding_bodies: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RigidBody2D.get_colliding_bodies: invalid or freed object");
+    }
+
+    RigidBody2D* typed_obj = Object::cast_to<RigidBody2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RigidBody2D.get_colliding_bodies: object is not a RigidBody2D");
+    }
+
+    Array result = typed_obj->get_colliding_bodies();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Property getter: RigidBody2D::mass
 static JSValue js_RigidBody2D_get_mass(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -2041,6 +2071,8 @@ void register_RigidBody2D_bindings(JSContext* ctx, JSValue global, JSValue class
         JS_NewCFunction(ctx, js_RigidBody2D_add_constant_force, "add_constant_force", 3));
     JS_SetPropertyStr(ctx, methods, "add_constant_torque",
         JS_NewCFunction(ctx, js_RigidBody2D_add_constant_torque, "add_constant_torque", 2));
+    JS_SetPropertyStr(ctx, methods, "get_colliding_bodies",
+        JS_NewCFunction(ctx, js_RigidBody2D_get_colliding_bodies, "get_colliding_bodies", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

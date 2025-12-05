@@ -240,6 +240,44 @@ static JSValue js_ShapeCast3D_get_collider(JSContext* ctx, JSValueConst this_val
     return ret_obj;
 }
 
+// Method: ShapeCast3D::get_collider_rid
+static JSValue js_ShapeCast3D_get_collider_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.get_collider_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.get_collider_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.get_collider_rid: invalid or freed object");
+    }
+
+    ShapeCast3D* typed_obj = Object::cast_to<ShapeCast3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.get_collider_rid: object is not a ShapeCast3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.get_collider_rid: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
+
+    RID result = typed_obj->get_collider_rid(arg_index);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: ShapeCast3D::get_collider_shape
 static JSValue js_ShapeCast3D_get_collider_shape(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -422,6 +460,44 @@ static JSValue js_ShapeCast3D_get_closest_collision_unsafe_fraction(JSContext* c
     return JS_NewFloat64(ctx, result);
 }
 
+// Method: ShapeCast3D::add_exception_rid
+static JSValue js_ShapeCast3D_add_exception_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.add_exception_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.add_exception_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.add_exception_rid: invalid or freed object");
+    }
+
+    ShapeCast3D* typed_obj = Object::cast_to<ShapeCast3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.add_exception_rid: object is not a ShapeCast3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.add_exception_rid: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_rid = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->add_exception_rid(arg_rid);
+    return JS_UNDEFINED;
+}
+
 // Method: ShapeCast3D::add_exception
 static JSValue js_ShapeCast3D_add_exception(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -472,6 +548,44 @@ static JSValue js_ShapeCast3D_add_exception(JSContext* ctx, JSValueConst this_va
     }
 
     typed_obj->add_exception(arg_node);
+    return JS_UNDEFINED;
+}
+
+// Method: ShapeCast3D::remove_exception_rid
+static JSValue js_ShapeCast3D_remove_exception_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.remove_exception_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.remove_exception_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.remove_exception_rid: invalid or freed object");
+    }
+
+    ShapeCast3D* typed_obj = Object::cast_to<ShapeCast3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.remove_exception_rid: object is not a ShapeCast3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "ShapeCast3D.remove_exception_rid: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_rid = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->remove_exception_rid(arg_rid);
     return JS_UNDEFINED;
 }
 
@@ -1363,6 +1477,8 @@ void register_ShapeCast3D_bindings(JSContext* ctx, JSValue global, JSValue class
         JS_NewCFunction(ctx, js_ShapeCast3D_force_shapecast_update, "force_shapecast_update", 1));
     JS_SetPropertyStr(ctx, methods, "get_collider",
         JS_NewCFunction(ctx, js_ShapeCast3D_get_collider, "get_collider", 2));
+    JS_SetPropertyStr(ctx, methods, "get_collider_rid",
+        JS_NewCFunction(ctx, js_ShapeCast3D_get_collider_rid, "get_collider_rid", 2));
     JS_SetPropertyStr(ctx, methods, "get_collider_shape",
         JS_NewCFunction(ctx, js_ShapeCast3D_get_collider_shape, "get_collider_shape", 2));
     JS_SetPropertyStr(ctx, methods, "get_collision_point",
@@ -1373,8 +1489,12 @@ void register_ShapeCast3D_bindings(JSContext* ctx, JSValue global, JSValue class
         JS_NewCFunction(ctx, js_ShapeCast3D_get_closest_collision_safe_fraction, "get_closest_collision_safe_fraction", 1));
     JS_SetPropertyStr(ctx, methods, "get_closest_collision_unsafe_fraction",
         JS_NewCFunction(ctx, js_ShapeCast3D_get_closest_collision_unsafe_fraction, "get_closest_collision_unsafe_fraction", 1));
+    JS_SetPropertyStr(ctx, methods, "add_exception_rid",
+        JS_NewCFunction(ctx, js_ShapeCast3D_add_exception_rid, "add_exception_rid", 2));
     JS_SetPropertyStr(ctx, methods, "add_exception",
         JS_NewCFunction(ctx, js_ShapeCast3D_add_exception, "add_exception", 2));
+    JS_SetPropertyStr(ctx, methods, "remove_exception_rid",
+        JS_NewCFunction(ctx, js_ShapeCast3D_remove_exception_rid, "remove_exception_rid", 2));
     JS_SetPropertyStr(ctx, methods, "remove_exception",
         JS_NewCFunction(ctx, js_ShapeCast3D_remove_exception, "remove_exception", 2));
     JS_SetPropertyStr(ctx, methods, "clear_exceptions",

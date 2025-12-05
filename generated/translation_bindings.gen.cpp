@@ -77,6 +77,51 @@ static JSValue js_Translation_add_message(JSContext* ctx, JSValueConst this_val,
     return JS_UNDEFINED;
 }
 
+// Method: Translation::add_plural_message
+static JSValue js_Translation_add_plural_message(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Translation.add_plural_message: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Translation.add_plural_message: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Translation.add_plural_message: invalid or freed object");
+    }
+
+    Translation* typed_obj = Object::cast_to<Translation>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Translation.add_plural_message: object is not a Translation");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "Translation.add_plural_message: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_src_message = JS_ToCString(ctx, argv[1]); StringName arg_src_message = cstr_src_message ? cstr_src_message : ""; JS_FreeCString(ctx, cstr_src_message);
+    PackedStringArray arg_xlated_messages = qjs_ctx->js_to_variant(argv[2]);
+    // Optional argument: context (default: StringName())
+    StringName arg_context = StringName();
+    if (argc > 3) {
+        // Override default with provided value
+        const char* cstr_context = JS_ToCString(ctx, argv[3]); arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
+    }
+
+    typed_obj->add_plural_message(arg_src_message, arg_xlated_messages, arg_context);
+    return JS_UNDEFINED;
+}
+
 // Method: Translation::get_message
 static JSValue js_Translation_get_message(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -211,6 +256,66 @@ static JSValue js_Translation_erase_message(JSContext* ctx, JSValueConst this_va
     return JS_UNDEFINED;
 }
 
+// Method: Translation::get_message_list
+static JSValue js_Translation_get_message_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Translation.get_message_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Translation.get_message_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Translation.get_message_list: invalid or freed object");
+    }
+
+    Translation* typed_obj = Object::cast_to<Translation>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Translation.get_message_list: object is not a Translation");
+    }
+
+    PackedStringArray result = typed_obj->get_message_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Translation::get_translated_message_list
+static JSValue js_Translation_get_translated_message_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Translation.get_translated_message_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Translation.get_translated_message_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Translation.get_translated_message_list: invalid or freed object");
+    }
+
+    Translation* typed_obj = Object::cast_to<Translation>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Translation.get_translated_message_list: object is not a Translation");
+    }
+
+    PackedStringArray result = typed_obj->get_translated_message_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Translation::get_message_count
 static JSValue js_Translation_get_message_count(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -310,12 +415,18 @@ void register_Translation_bindings(JSContext* ctx, JSValue global, JSValue class
 
     JS_SetPropertyStr(ctx, methods, "add_message",
         JS_NewCFunction(ctx, js_Translation_add_message, "add_message", 4));
+    JS_SetPropertyStr(ctx, methods, "add_plural_message",
+        JS_NewCFunction(ctx, js_Translation_add_plural_message, "add_plural_message", 4));
     JS_SetPropertyStr(ctx, methods, "get_message",
         JS_NewCFunction(ctx, js_Translation_get_message, "get_message", 3));
     JS_SetPropertyStr(ctx, methods, "get_plural_message",
         JS_NewCFunction(ctx, js_Translation_get_plural_message, "get_plural_message", 5));
     JS_SetPropertyStr(ctx, methods, "erase_message",
         JS_NewCFunction(ctx, js_Translation_erase_message, "erase_message", 3));
+    JS_SetPropertyStr(ctx, methods, "get_message_list",
+        JS_NewCFunction(ctx, js_Translation_get_message_list, "get_message_list", 1));
+    JS_SetPropertyStr(ctx, methods, "get_translated_message_list",
+        JS_NewCFunction(ctx, js_Translation_get_translated_message_list, "get_translated_message_list", 1));
     JS_SetPropertyStr(ctx, methods, "get_message_count",
         JS_NewCFunction(ctx, js_Translation_get_message_count, "get_message_count", 1));
 

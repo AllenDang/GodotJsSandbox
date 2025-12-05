@@ -157,6 +157,258 @@ static JSValue js_Texture2D_has_alpha(JSContext* ctx, JSValueConst this_val, int
     return JS_NewBool(ctx, result);
 }
 
+// Method: Texture2D::draw
+static JSValue js_Texture2D_draw(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw: invalid or freed object");
+    }
+
+    Texture2D* typed_obj = Object::cast_to<Texture2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw: object is not a Texture2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas_item = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_position, tmp_y_position;
+    JSValue jx_position = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_position = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_position, jx_position);
+    JS_ToFloat64(ctx, &tmp_y_position, jy_position);
+    JS_FreeValue(ctx, jx_position);
+    JS_FreeValue(ctx, jy_position);
+    Vector2 arg_position(tmp_x_position, tmp_y_position);
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 3) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[3], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[3], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[3], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[3], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: transpose (default: false)
+    bool arg_transpose = false;
+    if (argc > 4) {
+        // Override default with provided value
+        arg_transpose = JS_ToBool(ctx, argv[4]);
+    }
+
+    typed_obj->draw(arg_canvas_item, arg_position, arg_modulate, arg_transpose);
+    return JS_UNDEFINED;
+}
+
+// Method: Texture2D::draw_rect
+static JSValue js_Texture2D_draw_rect(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw_rect: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw_rect: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw_rect: invalid or freed object");
+    }
+
+    Texture2D* typed_obj = Object::cast_to<Texture2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw_rect: object is not a Texture2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw_rect: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas_item = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect;
+    JSValue jpos_rect = JS_GetPropertyStr(ctx, argv[2], "position");
+    JSValue jsize_rect = JS_GetPropertyStr(ctx, argv[2], "size");
+    JSValue jpx_rect = JS_GetPropertyStr(ctx, jpos_rect, "x");
+    JSValue jpy_rect = JS_GetPropertyStr(ctx, jpos_rect, "y");
+    JSValue jsx_rect = JS_GetPropertyStr(ctx, jsize_rect, "x");
+    JSValue jsy_rect = JS_GetPropertyStr(ctx, jsize_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_rect, jpx_rect);
+    JS_ToFloat64(ctx, &tmp_y_rect, jpy_rect);
+    JS_ToFloat64(ctx, &tmp_w_rect, jsx_rect);
+    JS_ToFloat64(ctx, &tmp_h_rect, jsy_rect);
+    JS_FreeValue(ctx, jpx_rect); JS_FreeValue(ctx, jpy_rect);
+    JS_FreeValue(ctx, jsx_rect); JS_FreeValue(ctx, jsy_rect);
+    JS_FreeValue(ctx, jpos_rect); JS_FreeValue(ctx, jsize_rect);
+    Rect2 arg_rect(tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect);
+    bool arg_tile = JS_ToBool(ctx, argv[3]);
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[4], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[4], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[4], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[4], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: transpose (default: false)
+    bool arg_transpose = false;
+    if (argc > 5) {
+        // Override default with provided value
+        arg_transpose = JS_ToBool(ctx, argv[5]);
+    }
+
+    typed_obj->draw_rect(arg_canvas_item, arg_rect, arg_tile, arg_modulate, arg_transpose);
+    return JS_UNDEFINED;
+}
+
+// Method: Texture2D::draw_rect_region
+static JSValue js_Texture2D_draw_rect_region(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw_rect_region: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw_rect_region: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw_rect_region: invalid or freed object");
+    }
+
+    Texture2D* typed_obj = Object::cast_to<Texture2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw_rect_region: object is not a Texture2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 4) {
+        return JS_ThrowTypeError(ctx, "Texture2D.draw_rect_region: expected at least 3 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_canvas_item = qjs_ctx->js_to_variant(argv[1]);
+    double tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect;
+    JSValue jpos_rect = JS_GetPropertyStr(ctx, argv[2], "position");
+    JSValue jsize_rect = JS_GetPropertyStr(ctx, argv[2], "size");
+    JSValue jpx_rect = JS_GetPropertyStr(ctx, jpos_rect, "x");
+    JSValue jpy_rect = JS_GetPropertyStr(ctx, jpos_rect, "y");
+    JSValue jsx_rect = JS_GetPropertyStr(ctx, jsize_rect, "x");
+    JSValue jsy_rect = JS_GetPropertyStr(ctx, jsize_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_rect, jpx_rect);
+    JS_ToFloat64(ctx, &tmp_y_rect, jpy_rect);
+    JS_ToFloat64(ctx, &tmp_w_rect, jsx_rect);
+    JS_ToFloat64(ctx, &tmp_h_rect, jsy_rect);
+    JS_FreeValue(ctx, jpx_rect); JS_FreeValue(ctx, jpy_rect);
+    JS_FreeValue(ctx, jsx_rect); JS_FreeValue(ctx, jsy_rect);
+    JS_FreeValue(ctx, jpos_rect); JS_FreeValue(ctx, jsize_rect);
+    Rect2 arg_rect(tmp_x_rect, tmp_y_rect, tmp_w_rect, tmp_h_rect);
+    double tmp_x_src_rect, tmp_y_src_rect, tmp_w_src_rect, tmp_h_src_rect;
+    JSValue jpos_src_rect = JS_GetPropertyStr(ctx, argv[3], "position");
+    JSValue jsize_src_rect = JS_GetPropertyStr(ctx, argv[3], "size");
+    JSValue jpx_src_rect = JS_GetPropertyStr(ctx, jpos_src_rect, "x");
+    JSValue jpy_src_rect = JS_GetPropertyStr(ctx, jpos_src_rect, "y");
+    JSValue jsx_src_rect = JS_GetPropertyStr(ctx, jsize_src_rect, "x");
+    JSValue jsy_src_rect = JS_GetPropertyStr(ctx, jsize_src_rect, "y");
+    JS_ToFloat64(ctx, &tmp_x_src_rect, jpx_src_rect);
+    JS_ToFloat64(ctx, &tmp_y_src_rect, jpy_src_rect);
+    JS_ToFloat64(ctx, &tmp_w_src_rect, jsx_src_rect);
+    JS_ToFloat64(ctx, &tmp_h_src_rect, jsy_src_rect);
+    JS_FreeValue(ctx, jpx_src_rect); JS_FreeValue(ctx, jpy_src_rect);
+    JS_FreeValue(ctx, jsx_src_rect); JS_FreeValue(ctx, jsy_src_rect);
+    JS_FreeValue(ctx, jpos_src_rect); JS_FreeValue(ctx, jsize_src_rect);
+    Rect2 arg_src_rect(tmp_x_src_rect, tmp_y_src_rect, tmp_w_src_rect, tmp_h_src_rect);
+    // Optional argument: modulate (default: Color(1, 1, 1, 1))
+    Color arg_modulate = Color(1, 1, 1, 1);
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        double tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate = 1.0;
+    JSValue jr_modulate = JS_GetPropertyStr(ctx, argv[4], "r");
+    JSValue jg_modulate = JS_GetPropertyStr(ctx, argv[4], "g");
+    JSValue jb_modulate = JS_GetPropertyStr(ctx, argv[4], "b");
+    JSValue ja_modulate = JS_GetPropertyStr(ctx, argv[4], "a");
+    JS_ToFloat64(ctx, &tmp_r_modulate, jr_modulate);
+    JS_ToFloat64(ctx, &tmp_g_modulate, jg_modulate);
+    JS_ToFloat64(ctx, &tmp_b_modulate, jb_modulate);
+    if (!JS_IsUndefined(ja_modulate)) JS_ToFloat64(ctx, &tmp_a_modulate, ja_modulate);
+    JS_FreeValue(ctx, jr_modulate);
+    JS_FreeValue(ctx, jg_modulate);
+    JS_FreeValue(ctx, jb_modulate);
+    JS_FreeValue(ctx, ja_modulate);
+    Color arg_modulate(tmp_r_modulate, tmp_g_modulate, tmp_b_modulate, tmp_a_modulate);
+    }
+    // Optional argument: transpose (default: false)
+    bool arg_transpose = false;
+    if (argc > 5) {
+        // Override default with provided value
+        arg_transpose = JS_ToBool(ctx, argv[5]);
+    }
+    // Optional argument: clip_uv (default: true)
+    bool arg_clip_uv = true;
+    if (argc > 6) {
+        // Override default with provided value
+        arg_clip_uv = JS_ToBool(ctx, argv[6]);
+    }
+
+    typed_obj->draw_rect_region(arg_canvas_item, arg_rect, arg_src_rect, arg_modulate, arg_transpose, arg_clip_uv);
+    return JS_UNDEFINED;
+}
+
 // Method: Texture2D::get_image
 static JSValue js_Texture2D_get_image(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -281,6 +533,12 @@ void register_Texture2D_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_NewCFunction(ctx, js_Texture2D_get_size, "get_size", 1));
     JS_SetPropertyStr(ctx, methods, "has_alpha",
         JS_NewCFunction(ctx, js_Texture2D_has_alpha, "has_alpha", 1));
+    JS_SetPropertyStr(ctx, methods, "draw",
+        JS_NewCFunction(ctx, js_Texture2D_draw, "draw", 5));
+    JS_SetPropertyStr(ctx, methods, "draw_rect",
+        JS_NewCFunction(ctx, js_Texture2D_draw_rect, "draw_rect", 6));
+    JS_SetPropertyStr(ctx, methods, "draw_rect_region",
+        JS_NewCFunction(ctx, js_Texture2D_draw_rect_region, "draw_rect_region", 7));
     JS_SetPropertyStr(ctx, methods, "get_image",
         JS_NewCFunction(ctx, js_Texture2D_get_image, "get_image", 1));
     JS_SetPropertyStr(ctx, methods, "create_placeholder",

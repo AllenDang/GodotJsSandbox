@@ -9,6 +9,7 @@
 
 #include <godot_cpp/classes/render_scene_buffers_rd.hpp>
 #include <godot_cpp/classes/rd_texture_format.hpp>
+#include <godot_cpp/classes/rd_texture_view.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -70,6 +71,220 @@ static JSValue js_RenderSceneBuffersRD_has_texture(JSContext* ctx, JSValueConst 
 
     bool result = typed_obj->has_texture(arg_context, arg_name);
     return JS_NewBool(ctx, result);
+}
+
+// Method: RenderSceneBuffersRD::create_texture
+static JSValue js_RenderSceneBuffersRD_create_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture: invalid or freed object");
+    }
+
+    RenderSceneBuffersRD* typed_obj = Object::cast_to<RenderSceneBuffersRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture: object is not a RenderSceneBuffersRD");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 11) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture: expected at least 10 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    int64_t tmp_data_format; JS_ToInt64(ctx, &tmp_data_format, argv[3]); RenderingDevice::DataFormat arg_data_format = (RenderingDevice::DataFormat)tmp_data_format;
+    int64_t arg_usage_bits; JS_ToInt64(ctx, &arg_usage_bits, argv[4]);
+    int64_t tmp_texture_samples; JS_ToInt64(ctx, &tmp_texture_samples, argv[5]); RenderingDevice::TextureSamples arg_texture_samples = (RenderingDevice::TextureSamples)tmp_texture_samples;
+    Vector2i arg_size = qjs_ctx->js_to_variant(argv[6]);
+    int64_t arg_layers; JS_ToInt64(ctx, &arg_layers, argv[7]);
+    int64_t arg_mipmaps; JS_ToInt64(ctx, &arg_mipmaps, argv[8]);
+    bool arg_unique = JS_ToBool(ctx, argv[9]);
+    bool arg_discardable = JS_ToBool(ctx, argv[10]);
+
+    RID result = typed_obj->create_texture(arg_context, arg_name, arg_data_format, arg_usage_bits, arg_texture_samples, arg_size, arg_layers, arg_mipmaps, arg_unique, arg_discardable);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: RenderSceneBuffersRD::create_texture_from_format
+static JSValue js_RenderSceneBuffersRD_create_texture_from_format(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture_from_format: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture_from_format: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture_from_format: invalid or freed object");
+    }
+
+    RenderSceneBuffersRD* typed_obj = Object::cast_to<RenderSceneBuffersRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture_from_format: object is not a RenderSceneBuffersRD");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 6) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture_from_format: expected at least 5 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    Ref<RDTextureFormat> arg_format;
+    if (JS_IsNumber(argv[3])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_format; JS_ToInt64(ctx, &h_format, argv[3]);
+        Object* obj_format = qjs_ctx->get_object_registry()->get_object(h_format);
+        arg_format = Ref<RDTextureFormat>(Object::cast_to<RDTextureFormat>(obj_format));
+    } else {
+        // Object with __handle property
+        JSValue jh_format = JS_GetPropertyStr(ctx, argv[3], "__handle");
+        if (!JS_IsUndefined(jh_format)) {
+            int64_t h_format; JS_ToInt64(ctx, &h_format, jh_format);
+            Object* obj_format = qjs_ctx->get_object_registry()->get_object(h_format);
+            arg_format = Ref<RDTextureFormat>(Object::cast_to<RDTextureFormat>(obj_format));
+        }
+        JS_FreeValue(ctx, jh_format);
+    }
+    Ref<RDTextureView> arg_view;
+    if (JS_IsNumber(argv[4])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_view; JS_ToInt64(ctx, &h_view, argv[4]);
+        Object* obj_view = qjs_ctx->get_object_registry()->get_object(h_view);
+        arg_view = Ref<RDTextureView>(Object::cast_to<RDTextureView>(obj_view));
+    } else {
+        // Object with __handle property
+        JSValue jh_view = JS_GetPropertyStr(ctx, argv[4], "__handle");
+        if (!JS_IsUndefined(jh_view)) {
+            int64_t h_view; JS_ToInt64(ctx, &h_view, jh_view);
+            Object* obj_view = qjs_ctx->get_object_registry()->get_object(h_view);
+            arg_view = Ref<RDTextureView>(Object::cast_to<RDTextureView>(obj_view));
+        }
+        JS_FreeValue(ctx, jh_view);
+    }
+    bool arg_unique = JS_ToBool(ctx, argv[5]);
+
+    RID result = typed_obj->create_texture_from_format(arg_context, arg_name, arg_format, arg_view, arg_unique);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: RenderSceneBuffersRD::create_texture_view
+static JSValue js_RenderSceneBuffersRD_create_texture_view(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture_view: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture_view: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture_view: invalid or freed object");
+    }
+
+    RenderSceneBuffersRD* typed_obj = Object::cast_to<RenderSceneBuffersRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture_view: object is not a RenderSceneBuffersRD");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 5) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.create_texture_view: expected at least 4 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_view_name = JS_ToCString(ctx, argv[3]); StringName arg_view_name = cstr_view_name ? cstr_view_name : ""; JS_FreeCString(ctx, cstr_view_name);
+    Ref<RDTextureView> arg_view;
+    if (JS_IsNumber(argv[4])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_view; JS_ToInt64(ctx, &h_view, argv[4]);
+        Object* obj_view = qjs_ctx->get_object_registry()->get_object(h_view);
+        arg_view = Ref<RDTextureView>(Object::cast_to<RDTextureView>(obj_view));
+    } else {
+        // Object with __handle property
+        JSValue jh_view = JS_GetPropertyStr(ctx, argv[4], "__handle");
+        if (!JS_IsUndefined(jh_view)) {
+            int64_t h_view; JS_ToInt64(ctx, &h_view, jh_view);
+            Object* obj_view = qjs_ctx->get_object_registry()->get_object(h_view);
+            arg_view = Ref<RDTextureView>(Object::cast_to<RDTextureView>(obj_view));
+        }
+        JS_FreeValue(ctx, jh_view);
+    }
+
+    RID result = typed_obj->create_texture_view(arg_context, arg_name, arg_view_name, arg_view);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: RenderSceneBuffersRD::get_texture
+static JSValue js_RenderSceneBuffersRD_get_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture: invalid or freed object");
+    }
+
+    RenderSceneBuffersRD* typed_obj = Object::cast_to<RenderSceneBuffersRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture: object is not a RenderSceneBuffersRD");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+
+    RID result = typed_obj->get_texture(arg_context, arg_name);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: RenderSceneBuffersRD::get_texture_format
@@ -134,6 +349,108 @@ static JSValue js_RenderSceneBuffersRD_get_texture_format(JSContext* ctx, JSValu
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
     JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
+}
+
+// Method: RenderSceneBuffersRD::get_texture_slice
+static JSValue js_RenderSceneBuffersRD_get_texture_slice(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture_slice: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture_slice: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture_slice: invalid or freed object");
+    }
+
+    RenderSceneBuffersRD* typed_obj = Object::cast_to<RenderSceneBuffersRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture_slice: object is not a RenderSceneBuffersRD");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 7) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture_slice: expected at least 6 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[3]);
+    int64_t arg_mipmap; JS_ToInt64(ctx, &arg_mipmap, argv[4]);
+    int64_t arg_layers; JS_ToInt64(ctx, &arg_layers, argv[5]);
+    int64_t arg_mipmaps; JS_ToInt64(ctx, &arg_mipmaps, argv[6]);
+
+    RID result = typed_obj->get_texture_slice(arg_context, arg_name, arg_layer, arg_mipmap, arg_layers, arg_mipmaps);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: RenderSceneBuffersRD::get_texture_slice_view
+static JSValue js_RenderSceneBuffersRD_get_texture_slice_view(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture_slice_view: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture_slice_view: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture_slice_view: invalid or freed object");
+    }
+
+    RenderSceneBuffersRD* typed_obj = Object::cast_to<RenderSceneBuffersRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture_slice_view: object is not a RenderSceneBuffersRD");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 8) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_texture_slice_view: expected at least 7 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[3]);
+    int64_t arg_mipmap; JS_ToInt64(ctx, &arg_mipmap, argv[4]);
+    int64_t arg_layers; JS_ToInt64(ctx, &arg_layers, argv[5]);
+    int64_t arg_mipmaps; JS_ToInt64(ctx, &arg_mipmaps, argv[6]);
+    Ref<RDTextureView> arg_view;
+    if (JS_IsNumber(argv[7])) {
+        // Direct handle (unwrapped by JS proxy)
+        int64_t h_view; JS_ToInt64(ctx, &h_view, argv[7]);
+        Object* obj_view = qjs_ctx->get_object_registry()->get_object(h_view);
+        arg_view = Ref<RDTextureView>(Object::cast_to<RDTextureView>(obj_view));
+    } else {
+        // Object with __handle property
+        JSValue jh_view = JS_GetPropertyStr(ctx, argv[7], "__handle");
+        if (!JS_IsUndefined(jh_view)) {
+            int64_t h_view; JS_ToInt64(ctx, &h_view, jh_view);
+            Object* obj_view = qjs_ctx->get_object_registry()->get_object(h_view);
+            arg_view = Ref<RDTextureView>(Object::cast_to<RDTextureView>(obj_view));
+        }
+        JS_FreeValue(ctx, jh_view);
+    }
+
+    RID result = typed_obj->get_texture_slice_view(arg_context, arg_name, arg_layer, arg_mipmap, arg_layers, arg_mipmaps, arg_view);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: RenderSceneBuffersRD::get_texture_slice_size
@@ -212,6 +529,297 @@ static JSValue js_RenderSceneBuffersRD_clear_context(JSContext* ctx, JSValueCons
 
     typed_obj->clear_context(arg_context);
     return JS_UNDEFINED;
+}
+
+// Method: RenderSceneBuffersRD::get_color_texture
+static JSValue js_RenderSceneBuffersRD_get_color_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_color_texture: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_color_texture: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_color_texture: invalid or freed object");
+    }
+
+    RenderSceneBuffersRD* typed_obj = Object::cast_to<RenderSceneBuffersRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_color_texture: object is not a RenderSceneBuffersRD");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_color_texture: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: msaa (default: false)
+    bool arg_msaa = false;
+    if (argc > 1) {
+        // Override default with provided value
+        arg_msaa = JS_ToBool(ctx, argv[1]);
+    }
+
+    RID result = typed_obj->get_color_texture(arg_msaa);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: RenderSceneBuffersRD::get_color_layer
+static JSValue js_RenderSceneBuffersRD_get_color_layer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_color_layer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_color_layer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_color_layer: invalid or freed object");
+    }
+
+    RenderSceneBuffersRD* typed_obj = Object::cast_to<RenderSceneBuffersRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_color_layer: object is not a RenderSceneBuffersRD");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_color_layer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[1]);
+    // Optional argument: msaa (default: false)
+    bool arg_msaa = false;
+    if (argc > 2) {
+        // Override default with provided value
+        arg_msaa = JS_ToBool(ctx, argv[2]);
+    }
+
+    RID result = typed_obj->get_color_layer(arg_layer, arg_msaa);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: RenderSceneBuffersRD::get_depth_texture
+static JSValue js_RenderSceneBuffersRD_get_depth_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_depth_texture: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_depth_texture: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_depth_texture: invalid or freed object");
+    }
+
+    RenderSceneBuffersRD* typed_obj = Object::cast_to<RenderSceneBuffersRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_depth_texture: object is not a RenderSceneBuffersRD");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_depth_texture: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: msaa (default: false)
+    bool arg_msaa = false;
+    if (argc > 1) {
+        // Override default with provided value
+        arg_msaa = JS_ToBool(ctx, argv[1]);
+    }
+
+    RID result = typed_obj->get_depth_texture(arg_msaa);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: RenderSceneBuffersRD::get_depth_layer
+static JSValue js_RenderSceneBuffersRD_get_depth_layer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_depth_layer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_depth_layer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_depth_layer: invalid or freed object");
+    }
+
+    RenderSceneBuffersRD* typed_obj = Object::cast_to<RenderSceneBuffersRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_depth_layer: object is not a RenderSceneBuffersRD");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_depth_layer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[1]);
+    // Optional argument: msaa (default: false)
+    bool arg_msaa = false;
+    if (argc > 2) {
+        // Override default with provided value
+        arg_msaa = JS_ToBool(ctx, argv[2]);
+    }
+
+    RID result = typed_obj->get_depth_layer(arg_layer, arg_msaa);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: RenderSceneBuffersRD::get_velocity_texture
+static JSValue js_RenderSceneBuffersRD_get_velocity_texture(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_velocity_texture: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_velocity_texture: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_velocity_texture: invalid or freed object");
+    }
+
+    RenderSceneBuffersRD* typed_obj = Object::cast_to<RenderSceneBuffersRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_velocity_texture: object is not a RenderSceneBuffersRD");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_velocity_texture: expected at least 0 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    // Optional argument: msaa (default: false)
+    bool arg_msaa = false;
+    if (argc > 1) {
+        // Override default with provided value
+        arg_msaa = JS_ToBool(ctx, argv[1]);
+    }
+
+    RID result = typed_obj->get_velocity_texture(arg_msaa);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: RenderSceneBuffersRD::get_velocity_layer
+static JSValue js_RenderSceneBuffersRD_get_velocity_layer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_velocity_layer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_velocity_layer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_velocity_layer: invalid or freed object");
+    }
+
+    RenderSceneBuffersRD* typed_obj = Object::cast_to<RenderSceneBuffersRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_velocity_layer: object is not a RenderSceneBuffersRD");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_velocity_layer: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[1]);
+    // Optional argument: msaa (default: false)
+    bool arg_msaa = false;
+    if (argc > 2) {
+        // Override default with provided value
+        arg_msaa = JS_ToBool(ctx, argv[2]);
+    }
+
+    RID result = typed_obj->get_velocity_layer(arg_layer, arg_msaa);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: RenderSceneBuffersRD::get_render_target
+static JSValue js_RenderSceneBuffersRD_get_render_target(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_render_target: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_render_target: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_render_target: invalid or freed object");
+    }
+
+    RenderSceneBuffersRD* typed_obj = Object::cast_to<RenderSceneBuffersRD>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneBuffersRD.get_render_target: object is not a RenderSceneBuffersRD");
+    }
+
+    RID result = typed_obj->get_render_target();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: RenderSceneBuffersRD::get_view_count
@@ -522,12 +1130,38 @@ void register_RenderSceneBuffersRD_bindings(JSContext* ctx, JSValue global, JSVa
 
     JS_SetPropertyStr(ctx, methods, "has_texture",
         JS_NewCFunction(ctx, js_RenderSceneBuffersRD_has_texture, "has_texture", 3));
+    JS_SetPropertyStr(ctx, methods, "create_texture",
+        JS_NewCFunction(ctx, js_RenderSceneBuffersRD_create_texture, "create_texture", 11));
+    JS_SetPropertyStr(ctx, methods, "create_texture_from_format",
+        JS_NewCFunction(ctx, js_RenderSceneBuffersRD_create_texture_from_format, "create_texture_from_format", 6));
+    JS_SetPropertyStr(ctx, methods, "create_texture_view",
+        JS_NewCFunction(ctx, js_RenderSceneBuffersRD_create_texture_view, "create_texture_view", 5));
+    JS_SetPropertyStr(ctx, methods, "get_texture",
+        JS_NewCFunction(ctx, js_RenderSceneBuffersRD_get_texture, "get_texture", 3));
     JS_SetPropertyStr(ctx, methods, "get_texture_format",
         JS_NewCFunction(ctx, js_RenderSceneBuffersRD_get_texture_format, "get_texture_format", 3));
+    JS_SetPropertyStr(ctx, methods, "get_texture_slice",
+        JS_NewCFunction(ctx, js_RenderSceneBuffersRD_get_texture_slice, "get_texture_slice", 7));
+    JS_SetPropertyStr(ctx, methods, "get_texture_slice_view",
+        JS_NewCFunction(ctx, js_RenderSceneBuffersRD_get_texture_slice_view, "get_texture_slice_view", 8));
     JS_SetPropertyStr(ctx, methods, "get_texture_slice_size",
         JS_NewCFunction(ctx, js_RenderSceneBuffersRD_get_texture_slice_size, "get_texture_slice_size", 4));
     JS_SetPropertyStr(ctx, methods, "clear_context",
         JS_NewCFunction(ctx, js_RenderSceneBuffersRD_clear_context, "clear_context", 2));
+    JS_SetPropertyStr(ctx, methods, "get_color_texture",
+        JS_NewCFunction(ctx, js_RenderSceneBuffersRD_get_color_texture, "get_color_texture", 2));
+    JS_SetPropertyStr(ctx, methods, "get_color_layer",
+        JS_NewCFunction(ctx, js_RenderSceneBuffersRD_get_color_layer, "get_color_layer", 3));
+    JS_SetPropertyStr(ctx, methods, "get_depth_texture",
+        JS_NewCFunction(ctx, js_RenderSceneBuffersRD_get_depth_texture, "get_depth_texture", 2));
+    JS_SetPropertyStr(ctx, methods, "get_depth_layer",
+        JS_NewCFunction(ctx, js_RenderSceneBuffersRD_get_depth_layer, "get_depth_layer", 3));
+    JS_SetPropertyStr(ctx, methods, "get_velocity_texture",
+        JS_NewCFunction(ctx, js_RenderSceneBuffersRD_get_velocity_texture, "get_velocity_texture", 2));
+    JS_SetPropertyStr(ctx, methods, "get_velocity_layer",
+        JS_NewCFunction(ctx, js_RenderSceneBuffersRD_get_velocity_layer, "get_velocity_layer", 3));
+    JS_SetPropertyStr(ctx, methods, "get_render_target",
+        JS_NewCFunction(ctx, js_RenderSceneBuffersRD_get_render_target, "get_render_target", 1));
     JS_SetPropertyStr(ctx, methods, "get_view_count",
         JS_NewCFunction(ctx, js_RenderSceneBuffersRD_get_view_count, "get_view_count", 1));
     JS_SetPropertyStr(ctx, methods, "get_internal_size",

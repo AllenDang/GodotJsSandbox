@@ -62,6 +62,67 @@ static JSValue js_OpenXRRenderModel_get_top_level_path(JSContext* ctx, JSValueCo
     return JS_NewString(ctx, result.utf8().get_data());
 }
 
+// Property getter: OpenXRRenderModel::render_model
+static JSValue js_OpenXRRenderModel_get_render_model(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "OpenXRRenderModel.render_model getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "OpenXRRenderModel.render_model getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRRenderModel.render_model getter: invalid object");
+    }
+
+    OpenXRRenderModel* typed_obj = Object::cast_to<OpenXRRenderModel>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRRenderModel.render_model getter: wrong type");
+    }
+
+    RID value = typed_obj->get_render_model();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: OpenXRRenderModel::render_model
+static JSValue js_OpenXRRenderModel_set_render_model(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "OpenXRRenderModel.render_model setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "OpenXRRenderModel.render_model setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRRenderModel.render_model setter: invalid object");
+    }
+
+    OpenXRRenderModel* typed_obj = Object::cast_to<OpenXRRenderModel>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "OpenXRRenderModel.render_model setter: wrong type");
+    }
+
+    RID value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_render_model(value);
+    return JS_UNDEFINED;
+}
+
 
 // Registration function for OpenXRRenderModel
 void register_OpenXRRenderModel_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -74,6 +135,14 @@ void register_OpenXRRenderModel_bindings(JSContext* ctx, JSValue global, JSValue
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
 
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_OpenXRRenderModel_get_render_model, "get_render_model", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_OpenXRRenderModel_set_render_model, "set_render_model", 2));
+        JS_SetPropertyStr(ctx, props, "render_model", prop_obj);
+    }
 
     // Register signals array
     JSValue signals_arr = JS_NewArray(ctx);

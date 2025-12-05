@@ -32,6 +32,66 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "Area2D: unknown error"); \
     }
 
+// Method: Area2D::get_overlapping_bodies
+static JSValue js_Area2D_get_overlapping_bodies(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Area2D.get_overlapping_bodies: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Area2D.get_overlapping_bodies: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Area2D.get_overlapping_bodies: invalid or freed object");
+    }
+
+    Area2D* typed_obj = Object::cast_to<Area2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Area2D.get_overlapping_bodies: object is not a Area2D");
+    }
+
+    Array result = typed_obj->get_overlapping_bodies();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: Area2D::get_overlapping_areas
+static JSValue js_Area2D_get_overlapping_areas(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Area2D.get_overlapping_areas: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Area2D.get_overlapping_areas: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Area2D.get_overlapping_areas: invalid or freed object");
+    }
+
+    Area2D* typed_obj = Object::cast_to<Area2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Area2D.get_overlapping_areas: object is not a Area2D");
+    }
+
+    Array result = typed_obj->get_overlapping_areas();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: Area2D::has_overlapping_bodies
 static JSValue js_Area2D_has_overlapping_bodies(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1139,6 +1199,10 @@ void register_Area2D_bindings(JSContext* ctx, JSValue global, JSValue classes) {
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "get_overlapping_bodies",
+        JS_NewCFunction(ctx, js_Area2D_get_overlapping_bodies, "get_overlapping_bodies", 1));
+    JS_SetPropertyStr(ctx, methods, "get_overlapping_areas",
+        JS_NewCFunction(ctx, js_Area2D_get_overlapping_areas, "get_overlapping_areas", 1));
     JS_SetPropertyStr(ctx, methods, "has_overlapping_bodies",
         JS_NewCFunction(ctx, js_Area2D_has_overlapping_bodies, "has_overlapping_bodies", 1));
     JS_SetPropertyStr(ctx, methods, "has_overlapping_areas",

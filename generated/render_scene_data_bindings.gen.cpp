@@ -85,6 +85,36 @@ static JSValue js_RenderSceneData_get_cam_transform(JSContext* ctx, JSValueConst
     return ret_obj;
 }
 
+// Method: RenderSceneData::get_cam_projection
+static JSValue js_RenderSceneData_get_cam_projection(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneData.get_cam_projection: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneData.get_cam_projection: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneData.get_cam_projection: invalid or freed object");
+    }
+
+    RenderSceneData* typed_obj = Object::cast_to<RenderSceneData>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneData.get_cam_projection: object is not a RenderSceneData");
+    }
+
+    Projection result = typed_obj->get_cam_projection();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: RenderSceneData::get_view_count
 static JSValue js_RenderSceneData_get_view_count(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -157,6 +187,74 @@ static JSValue js_RenderSceneData_get_view_eye_offset(JSContext* ctx, JSValueCon
     return ret_obj;
 }
 
+// Method: RenderSceneData::get_view_projection
+static JSValue js_RenderSceneData_get_view_projection(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneData.get_view_projection: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneData.get_view_projection: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneData.get_view_projection: invalid or freed object");
+    }
+
+    RenderSceneData* typed_obj = Object::cast_to<RenderSceneData>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneData.get_view_projection: object is not a RenderSceneData");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "RenderSceneData.get_view_projection: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_view; JS_ToInt64(ctx, &arg_view, argv[1]);
+
+    Projection result = typed_obj->get_view_projection(arg_view);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: RenderSceneData::get_uniform_buffer
+static JSValue js_RenderSceneData_get_uniform_buffer(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "RenderSceneData.get_uniform_buffer: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "RenderSceneData.get_uniform_buffer: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneData.get_uniform_buffer: invalid or freed object");
+    }
+
+    RenderSceneData* typed_obj = Object::cast_to<RenderSceneData>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "RenderSceneData.get_uniform_buffer: object is not a RenderSceneData");
+    }
+
+    RID result = typed_obj->get_uniform_buffer();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 
 // Registration function for RenderSceneData
 void register_RenderSceneData_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -165,10 +263,16 @@ void register_RenderSceneData_bindings(JSContext* ctx, JSValue global, JSValue c
 
     JS_SetPropertyStr(ctx, methods, "get_cam_transform",
         JS_NewCFunction(ctx, js_RenderSceneData_get_cam_transform, "get_cam_transform", 1));
+    JS_SetPropertyStr(ctx, methods, "get_cam_projection",
+        JS_NewCFunction(ctx, js_RenderSceneData_get_cam_projection, "get_cam_projection", 1));
     JS_SetPropertyStr(ctx, methods, "get_view_count",
         JS_NewCFunction(ctx, js_RenderSceneData_get_view_count, "get_view_count", 1));
     JS_SetPropertyStr(ctx, methods, "get_view_eye_offset",
         JS_NewCFunction(ctx, js_RenderSceneData_get_view_eye_offset, "get_view_eye_offset", 2));
+    JS_SetPropertyStr(ctx, methods, "get_view_projection",
+        JS_NewCFunction(ctx, js_RenderSceneData_get_view_projection, "get_view_projection", 2));
+    JS_SetPropertyStr(ctx, methods, "get_uniform_buffer",
+        JS_NewCFunction(ctx, js_RenderSceneData_get_uniform_buffer, "get_uniform_buffer", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

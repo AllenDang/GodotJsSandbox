@@ -119,6 +119,74 @@ static JSValue js_PacketPeer_put_var(JSContext* ctx, JSValueConst this_val, int 
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
+// Method: PacketPeer::get_packet
+static JSValue js_PacketPeer_get_packet(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PacketPeer.get_packet: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PacketPeer.get_packet: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PacketPeer.get_packet: invalid or freed object");
+    }
+
+    PacketPeer* typed_obj = Object::cast_to<PacketPeer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PacketPeer.get_packet: object is not a PacketPeer");
+    }
+
+    PackedByteArray result = typed_obj->get_packet();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: PacketPeer::put_packet
+static JSValue js_PacketPeer_put_packet(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PacketPeer.put_packet: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PacketPeer.put_packet: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PacketPeer.put_packet: invalid or freed object");
+    }
+
+    PacketPeer* typed_obj = Object::cast_to<PacketPeer>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PacketPeer.put_packet: object is not a PacketPeer");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "PacketPeer.put_packet: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_buffer = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->put_packet(arg_buffer);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: PacketPeer::get_packet_error
 static JSValue js_PacketPeer_get_packet_error(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -250,6 +318,10 @@ void register_PacketPeer_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_PacketPeer_get_var, "get_var", 2));
     JS_SetPropertyStr(ctx, methods, "put_var",
         JS_NewCFunction(ctx, js_PacketPeer_put_var, "put_var", 3));
+    JS_SetPropertyStr(ctx, methods, "get_packet",
+        JS_NewCFunction(ctx, js_PacketPeer_get_packet, "get_packet", 1));
+    JS_SetPropertyStr(ctx, methods, "put_packet",
+        JS_NewCFunction(ctx, js_PacketPeer_put_packet, "put_packet", 2));
     JS_SetPropertyStr(ctx, methods, "get_packet_error",
         JS_NewCFunction(ctx, js_PacketPeer_get_packet_error, "get_packet_error", 1));
     JS_SetPropertyStr(ctx, methods, "get_available_packet_count",

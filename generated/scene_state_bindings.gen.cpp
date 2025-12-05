@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/scene_state.hpp>
-#include <godot_cpp/classes/scene_state.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
+#include <godot_cpp/classes/scene_state.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -444,6 +444,44 @@ static JSValue js_SceneState_get_node_instance(JSContext* ctx, JSValueConst this
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
     JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
+}
+
+// Method: SceneState::get_node_groups
+static JSValue js_SceneState_get_node_groups(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SceneState.get_node_groups: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SceneState.get_node_groups: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SceneState.get_node_groups: invalid or freed object");
+    }
+
+    SceneState* typed_obj = Object::cast_to<SceneState>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SceneState.get_node_groups: object is not a SceneState");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "SceneState.get_node_groups: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
+
+    PackedStringArray result = typed_obj->get_node_groups(arg_idx);
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: SceneState::get_node_index
@@ -922,6 +960,8 @@ void register_SceneState_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_SceneState_get_node_instance_placeholder, "get_node_instance_placeholder", 2));
     JS_SetPropertyStr(ctx, methods, "get_node_instance",
         JS_NewCFunction(ctx, js_SceneState_get_node_instance, "get_node_instance", 2));
+    JS_SetPropertyStr(ctx, methods, "get_node_groups",
+        JS_NewCFunction(ctx, js_SceneState_get_node_groups, "get_node_groups", 2));
     JS_SetPropertyStr(ctx, methods, "get_node_index",
         JS_NewCFunction(ctx, js_SceneState_get_node_index, "get_node_index", 2));
     JS_SetPropertyStr(ctx, methods, "get_node_property_count",

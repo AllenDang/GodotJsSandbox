@@ -8,6 +8,7 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/physics_ray_query_parameters2d.hpp>
+#include <godot_cpp/classes/physics_ray_query_parameters2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -31,6 +32,97 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
     } catch (...) { \
         return JS_ThrowInternalError(ctx, "PhysicsRayQueryParameters2D: unknown error"); \
     }
+
+// Method: PhysicsRayQueryParameters2D::create
+static JSValue js_PhysicsRayQueryParameters2D_create(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicsRayQueryParameters2D.create: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsRayQueryParameters2D.create: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsRayQueryParameters2D.create: invalid or freed object");
+    }
+
+    PhysicsRayQueryParameters2D* typed_obj = Object::cast_to<PhysicsRayQueryParameters2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsRayQueryParameters2D.create: object is not a PhysicsRayQueryParameters2D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "PhysicsRayQueryParameters2D.create: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    double tmp_x_from, tmp_y_from;
+    JSValue jx_from = JS_GetPropertyStr(ctx, argv[1], "x");
+    JSValue jy_from = JS_GetPropertyStr(ctx, argv[1], "y");
+    JS_ToFloat64(ctx, &tmp_x_from, jx_from);
+    JS_ToFloat64(ctx, &tmp_y_from, jy_from);
+    JS_FreeValue(ctx, jx_from);
+    JS_FreeValue(ctx, jy_from);
+    Vector2 arg_from(tmp_x_from, tmp_y_from);
+    double tmp_x_to, tmp_y_to;
+    JSValue jx_to = JS_GetPropertyStr(ctx, argv[2], "x");
+    JSValue jy_to = JS_GetPropertyStr(ctx, argv[2], "y");
+    JS_ToFloat64(ctx, &tmp_x_to, jx_to);
+    JS_ToFloat64(ctx, &tmp_y_to, jy_to);
+    JS_FreeValue(ctx, jx_to);
+    JS_FreeValue(ctx, jy_to);
+    Vector2 arg_to(tmp_x_to, tmp_y_to);
+    // Optional argument: collision_mask (default: 4294967295)
+    int64_t arg_collision_mask = 4294967295;
+    if (argc > 3) {
+        // Override default with provided value
+        JS_ToInt64(ctx, &arg_collision_mask, argv[3]);
+    }
+    // Optional argument: exclude (default: Array())
+    Array arg_exclude = Array();
+    if (argc > 4) {
+        // Override default with provided value
+        // Complex type - use full conversion
+        Array arg_exclude = qjs_ctx->js_to_variant(argv[4]);
+    }
+
+    Ref<PhysicsRayQueryParameters2D> result = typed_obj->create(arg_from, arg_to, arg_collision_mask, arg_exclude);
+    if (result.is_null()) return JS_NULL;
+    Object* ret_obj_ptr = result.ptr();
+    int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);
+    // Store class name in local String to avoid dangling pointer from temporary
+    String ret_class_str = ret_obj_ptr->get_class();
+    CharString ret_class_utf8 = ret_class_str.utf8();
+    const char* ret_class_name = ret_class_utf8.get_data();
+    // Use __wrap_existing_godot_object to create a proper Proxy with method/property access
+    JSValue global = JS_GetGlobalObject(ctx);
+    JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_existing_godot_object");
+    if (JS_IsFunction(ctx, wrap_fn)) {
+        JSValue args[2] = { JS_NewInt64(ctx, ret_handle), JS_NewString(ctx, ret_class_name) };
+        JSValue wrapped = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+        JS_FreeValue(ctx, args[0]);
+        JS_FreeValue(ctx, args[1]);
+        JS_FreeValue(ctx, wrap_fn);
+        JS_FreeValue(ctx, global);
+        return wrapped;
+    }
+    JS_FreeValue(ctx, wrap_fn);
+    JS_FreeValue(ctx, global);
+    // Fallback: return raw object
+    JSValue ret_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
+    JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
+    return ret_obj;
+}
 
 // Property getter: PhysicsRayQueryParameters2D::from
 static JSValue js_PhysicsRayQueryParameters2D_get_from(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
@@ -235,6 +327,67 @@ static JSValue js_PhysicsRayQueryParameters2D_set_collision_mask(JSContext* ctx,
     return JS_UNDEFINED;
 }
 
+// Property getter: PhysicsRayQueryParameters2D::exclude
+static JSValue js_PhysicsRayQueryParameters2D_get_exclude(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "PhysicsRayQueryParameters2D.exclude getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsRayQueryParameters2D.exclude getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsRayQueryParameters2D.exclude getter: invalid object");
+    }
+
+    PhysicsRayQueryParameters2D* typed_obj = Object::cast_to<PhysicsRayQueryParameters2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsRayQueryParameters2D.exclude getter: wrong type");
+    }
+
+    Array value = typed_obj->get_exclude();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: PhysicsRayQueryParameters2D::exclude
+static JSValue js_PhysicsRayQueryParameters2D_set_exclude(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "PhysicsRayQueryParameters2D.exclude setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "PhysicsRayQueryParameters2D.exclude setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsRayQueryParameters2D.exclude setter: invalid object");
+    }
+
+    PhysicsRayQueryParameters2D* typed_obj = Object::cast_to<PhysicsRayQueryParameters2D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "PhysicsRayQueryParameters2D.exclude setter: wrong type");
+    }
+
+    Array value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_exclude(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: PhysicsRayQueryParameters2D::collide_with_bodies
 static JSValue js_PhysicsRayQueryParameters2D_get_collide_with_bodies(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -424,6 +577,8 @@ void register_PhysicsRayQueryParameters2D_bindings(JSContext* ctx, JSValue globa
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "create",
+        JS_NewCFunction(ctx, js_PhysicsRayQueryParameters2D_create, "create", 5));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
@@ -451,6 +606,14 @@ void register_PhysicsRayQueryParameters2D_bindings(JSContext* ctx, JSValue globa
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_PhysicsRayQueryParameters2D_set_collision_mask, "set_collision_mask", 2));
         JS_SetPropertyStr(ctx, props, "collision_mask", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_PhysicsRayQueryParameters2D_get_exclude, "get_exclude", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_PhysicsRayQueryParameters2D_set_exclude, "set_exclude", 2));
+        JS_SetPropertyStr(ctx, props, "exclude", prop_obj);
     }
     {
         JSValue prop_obj = JS_NewObject(ctx);

@@ -32,6 +32,36 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "SoftBody3D: unknown error"); \
     }
 
+// Method: SoftBody3D::get_physics_rid
+static JSValue js_SoftBody3D_get_physics_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SoftBody3D.get_physics_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SoftBody3D.get_physics_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SoftBody3D.get_physics_rid: invalid or freed object");
+    }
+
+    SoftBody3D* typed_obj = Object::cast_to<SoftBody3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SoftBody3D.get_physics_rid: object is not a SoftBody3D");
+    }
+
+    RID result = typed_obj->get_physics_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: SoftBody3D::set_collision_mask_value
 static JSValue js_SoftBody3D_set_collision_mask_value(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -184,6 +214,36 @@ static JSValue js_SoftBody3D_get_collision_layer_value(JSContext* ctx, JSValueCo
 
     bool result = typed_obj->get_collision_layer_value(arg_layer_number);
     return JS_NewBool(ctx, result);
+}
+
+// Method: SoftBody3D::get_collision_exceptions
+static JSValue js_SoftBody3D_get_collision_exceptions(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SoftBody3D.get_collision_exceptions: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SoftBody3D.get_collision_exceptions: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SoftBody3D.get_collision_exceptions: invalid or freed object");
+    }
+
+    SoftBody3D* typed_obj = Object::cast_to<SoftBody3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SoftBody3D.get_collision_exceptions: object is not a SoftBody3D");
+    }
+
+    Array result = typed_obj->get_collision_exceptions();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: SoftBody3D::add_collision_exception_with
@@ -1356,6 +1416,8 @@ void register_SoftBody3D_bindings(JSContext* ctx, JSValue global, JSValue classe
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "get_physics_rid",
+        JS_NewCFunction(ctx, js_SoftBody3D_get_physics_rid, "get_physics_rid", 1));
     JS_SetPropertyStr(ctx, methods, "set_collision_mask_value",
         JS_NewCFunction(ctx, js_SoftBody3D_set_collision_mask_value, "set_collision_mask_value", 3));
     JS_SetPropertyStr(ctx, methods, "get_collision_mask_value",
@@ -1364,6 +1426,8 @@ void register_SoftBody3D_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_SoftBody3D_set_collision_layer_value, "set_collision_layer_value", 3));
     JS_SetPropertyStr(ctx, methods, "get_collision_layer_value",
         JS_NewCFunction(ctx, js_SoftBody3D_get_collision_layer_value, "get_collision_layer_value", 2));
+    JS_SetPropertyStr(ctx, methods, "get_collision_exceptions",
+        JS_NewCFunction(ctx, js_SoftBody3D_get_collision_exceptions, "get_collision_exceptions", 1));
     JS_SetPropertyStr(ctx, methods, "add_collision_exception_with",
         JS_NewCFunction(ctx, js_SoftBody3D_add_collision_exception_with, "add_collision_exception_with", 2));
     JS_SetPropertyStr(ctx, methods, "remove_collision_exception_with",

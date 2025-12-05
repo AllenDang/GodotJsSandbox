@@ -87,6 +87,36 @@ static JSValue js_ButtonGroup_get_pressed_button(JSContext* ctx, JSValueConst th
     return ret_obj;
 }
 
+// Method: ButtonGroup::get_buttons
+static JSValue js_ButtonGroup_get_buttons(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ButtonGroup.get_buttons: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ButtonGroup.get_buttons: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ButtonGroup.get_buttons: invalid or freed object");
+    }
+
+    ButtonGroup* typed_obj = Object::cast_to<ButtonGroup>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ButtonGroup.get_buttons: object is not a ButtonGroup");
+    }
+
+    Array result = typed_obj->get_buttons();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Property getter: ButtonGroup::allow_unpress
 static JSValue js_ButtonGroup_get_allow_unpress(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -156,6 +186,8 @@ void register_ButtonGroup_bindings(JSContext* ctx, JSValue global, JSValue class
 
     JS_SetPropertyStr(ctx, methods, "get_pressed_button",
         JS_NewCFunction(ctx, js_ButtonGroup_get_pressed_button, "get_pressed_button", 1));
+    JS_SetPropertyStr(ctx, methods, "get_buttons",
+        JS_NewCFunction(ctx, js_ButtonGroup_get_buttons, "get_buttons", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

@@ -361,6 +361,74 @@ static JSValue js_AStar3D_has_point(JSContext* ctx, JSValueConst this_val, int a
     return JS_NewBool(ctx, result);
 }
 
+// Method: AStar3D::get_point_connections
+static JSValue js_AStar3D_get_point_connections(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_point_connections: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_point_connections: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_point_connections: invalid or freed object");
+    }
+
+    AStar3D* typed_obj = Object::cast_to<AStar3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_point_connections: object is not a AStar3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_point_connections: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_id; JS_ToInt64(ctx, &arg_id, argv[1]);
+
+    PackedInt64Array result = typed_obj->get_point_connections(arg_id);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: AStar3D::get_point_ids
+static JSValue js_AStar3D_get_point_ids(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_point_ids: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_point_ids: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_point_ids: invalid or freed object");
+    }
+
+    AStar3D* typed_obj = Object::cast_to<AStar3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_point_ids: object is not a AStar3D");
+    }
+
+    PackedInt64Array result = typed_obj->get_point_ids();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: AStar3D::set_point_disabled
 static JSValue js_AStar3D_set_point_disabled(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -865,6 +933,51 @@ static JSValue js_AStar3D_get_point_path(JSContext* ctx, JSValueConst this_val, 
     return arr;
 }
 
+// Method: AStar3D::get_id_path
+static JSValue js_AStar3D_get_id_path(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_id_path: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_id_path: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_id_path: invalid or freed object");
+    }
+
+    AStar3D* typed_obj = Object::cast_to<AStar3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_id_path: object is not a AStar3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "AStar3D.get_id_path: expected at least 2 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    int64_t arg_from_id; JS_ToInt64(ctx, &arg_from_id, argv[1]);
+    int64_t arg_to_id; JS_ToInt64(ctx, &arg_to_id, argv[2]);
+    // Optional argument: allow_partial_path (default: false)
+    bool arg_allow_partial_path = false;
+    if (argc > 3) {
+        // Override default with provided value
+        arg_allow_partial_path = JS_ToBool(ctx, argv[3]);
+    }
+
+    PackedInt64Array result = typed_obj->get_id_path(arg_from_id, arg_to_id, arg_allow_partial_path);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Property getter: AStar3D::neighbor_filter_enabled
 static JSValue js_AStar3D_get_neighbor_filter_enabled(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -948,6 +1061,10 @@ void register_AStar3D_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_NewCFunction(ctx, js_AStar3D_remove_point, "remove_point", 2));
     JS_SetPropertyStr(ctx, methods, "has_point",
         JS_NewCFunction(ctx, js_AStar3D_has_point, "has_point", 2));
+    JS_SetPropertyStr(ctx, methods, "get_point_connections",
+        JS_NewCFunction(ctx, js_AStar3D_get_point_connections, "get_point_connections", 2));
+    JS_SetPropertyStr(ctx, methods, "get_point_ids",
+        JS_NewCFunction(ctx, js_AStar3D_get_point_ids, "get_point_ids", 1));
     JS_SetPropertyStr(ctx, methods, "set_point_disabled",
         JS_NewCFunction(ctx, js_AStar3D_set_point_disabled, "set_point_disabled", 3));
     JS_SetPropertyStr(ctx, methods, "is_point_disabled",
@@ -972,6 +1089,8 @@ void register_AStar3D_bindings(JSContext* ctx, JSValue global, JSValue classes) 
         JS_NewCFunction(ctx, js_AStar3D_get_closest_position_in_segment, "get_closest_position_in_segment", 2));
     JS_SetPropertyStr(ctx, methods, "get_point_path",
         JS_NewCFunction(ctx, js_AStar3D_get_point_path, "get_point_path", 4));
+    JS_SetPropertyStr(ctx, methods, "get_id_path",
+        JS_NewCFunction(ctx, js_AStar3D_get_id_path, "get_id_path", 4));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

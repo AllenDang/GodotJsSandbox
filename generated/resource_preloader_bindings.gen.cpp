@@ -265,6 +265,36 @@ static JSValue js_ResourcePreloader_get_resource(JSContext* ctx, JSValueConst th
     return ret_obj;
 }
 
+// Method: ResourcePreloader::get_resource_list
+static JSValue js_ResourcePreloader_get_resource_list(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ResourcePreloader.get_resource_list: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ResourcePreloader.get_resource_list: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ResourcePreloader.get_resource_list: invalid or freed object");
+    }
+
+    ResourcePreloader* typed_obj = Object::cast_to<ResourcePreloader>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ResourcePreloader.get_resource_list: object is not a ResourcePreloader");
+    }
+
+    PackedStringArray result = typed_obj->get_resource_list();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 
 // Registration function for ResourcePreloader
 void register_ResourcePreloader_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -281,6 +311,8 @@ void register_ResourcePreloader_bindings(JSContext* ctx, JSValue global, JSValue
         JS_NewCFunction(ctx, js_ResourcePreloader_has_resource, "has_resource", 2));
     JS_SetPropertyStr(ctx, methods, "get_resource",
         JS_NewCFunction(ctx, js_ResourcePreloader_get_resource, "get_resource", 2));
+    JS_SetPropertyStr(ctx, methods, "get_resource_list",
+        JS_NewCFunction(ctx, js_ResourcePreloader_get_resource_list, "get_resource_list", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

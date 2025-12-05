@@ -8,11 +8,11 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/viewport.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/input_event.hpp>
 #include <godot_cpp/classes/viewport_texture.hpp>
-#include <godot_cpp/classes/world2d.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/world3d.hpp>
+#include <godot_cpp/classes/world2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -313,6 +313,36 @@ static JSValue js_Viewport_get_texture(JSContext* ctx, JSValueConst this_val, in
     JS_SetPropertyStr(ctx, ret_obj, "__handle", JS_NewInt64(ctx, ret_handle));
     JS_SetPropertyStr(ctx, ret_obj, "__class", JS_NewString(ctx, ret_class_name));
     return ret_obj;
+}
+
+// Method: Viewport::get_viewport_rid
+static JSValue js_Viewport_get_viewport_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Viewport.get_viewport_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Viewport.get_viewport_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.get_viewport_rid: invalid or freed object");
+    }
+
+    Viewport* typed_obj = Object::cast_to<Viewport>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.get_viewport_rid: object is not a Viewport");
+    }
+
+    RID result = typed_obj->get_viewport_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: Viewport::push_text_input
@@ -1025,6 +1055,36 @@ static JSValue js_Viewport_is_input_handled(JSContext* ctx, JSValueConst this_va
 
     bool result = typed_obj->is_input_handled();
     return JS_NewBool(ctx, result);
+}
+
+// Method: Viewport::get_embedded_subwindows
+static JSValue js_Viewport_get_embedded_subwindows(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "Viewport.get_embedded_subwindows: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "Viewport.get_embedded_subwindows: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.get_embedded_subwindows: invalid or freed object");
+    }
+
+    Viewport* typed_obj = Object::cast_to<Viewport>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "Viewport.get_embedded_subwindows: object is not a Viewport");
+    }
+
+    Array result = typed_obj->get_embedded_subwindows();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: Viewport::set_canvas_cull_mask_bit
@@ -4203,6 +4263,8 @@ void register_Viewport_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_Viewport_get_render_info, "get_render_info", 3));
     JS_SetPropertyStr(ctx, methods, "get_texture",
         JS_NewCFunction(ctx, js_Viewport_get_texture, "get_texture", 1));
+    JS_SetPropertyStr(ctx, methods, "get_viewport_rid",
+        JS_NewCFunction(ctx, js_Viewport_get_viewport_rid, "get_viewport_rid", 1));
     JS_SetPropertyStr(ctx, methods, "push_text_input",
         JS_NewCFunction(ctx, js_Viewport_push_text_input, "push_text_input", 2));
     JS_SetPropertyStr(ctx, methods, "push_input",
@@ -4241,6 +4303,8 @@ void register_Viewport_bindings(JSContext* ctx, JSValue global, JSValue classes)
         JS_NewCFunction(ctx, js_Viewport_set_input_as_handled, "set_input_as_handled", 1));
     JS_SetPropertyStr(ctx, methods, "is_input_handled",
         JS_NewCFunction(ctx, js_Viewport_is_input_handled, "is_input_handled", 1));
+    JS_SetPropertyStr(ctx, methods, "get_embedded_subwindows",
+        JS_NewCFunction(ctx, js_Viewport_get_embedded_subwindows, "get_embedded_subwindows", 1));
     JS_SetPropertyStr(ctx, methods, "set_canvas_cull_mask_bit",
         JS_NewCFunction(ctx, js_Viewport_set_canvas_cull_mask_bit, "set_canvas_cull_mask_bit", 3));
     JS_SetPropertyStr(ctx, methods, "get_canvas_cull_mask_bit",

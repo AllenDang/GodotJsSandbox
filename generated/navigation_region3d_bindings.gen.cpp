@@ -33,6 +33,104 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "NavigationRegion3D: unknown error"); \
     }
 
+// Method: NavigationRegion3D::get_rid
+static JSValue js_NavigationRegion3D_get_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.get_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.get_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.get_rid: invalid or freed object");
+    }
+
+    NavigationRegion3D* typed_obj = Object::cast_to<NavigationRegion3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.get_rid: object is not a NavigationRegion3D");
+    }
+
+    RID result = typed_obj->get_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: NavigationRegion3D::set_navigation_map
+static JSValue js_NavigationRegion3D_set_navigation_map(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.set_navigation_map: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.set_navigation_map: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.set_navigation_map: invalid or freed object");
+    }
+
+    NavigationRegion3D* typed_obj = Object::cast_to<NavigationRegion3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.set_navigation_map: object is not a NavigationRegion3D");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.set_navigation_map: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    RID arg_navigation_map = qjs_ctx->js_to_variant(argv[1]);
+
+    typed_obj->set_navigation_map(arg_navigation_map);
+    return JS_UNDEFINED;
+}
+
+// Method: NavigationRegion3D::get_navigation_map
+static JSValue js_NavigationRegion3D_get_navigation_map(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.get_navigation_map: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.get_navigation_map: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.get_navigation_map: invalid or freed object");
+    }
+
+    NavigationRegion3D* typed_obj = Object::cast_to<NavigationRegion3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.get_navigation_map: object is not a NavigationRegion3D");
+    }
+
+    RID result = typed_obj->get_navigation_map();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: NavigationRegion3D::set_navigation_layer_value
 static JSValue js_NavigationRegion3D_set_navigation_layer_value(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -108,6 +206,36 @@ static JSValue js_NavigationRegion3D_get_navigation_layer_value(JSContext* ctx, 
 
     bool result = typed_obj->get_navigation_layer_value(arg_layer_number);
     return JS_NewBool(ctx, result);
+}
+
+// Method: NavigationRegion3D::get_region_rid
+static JSValue js_NavigationRegion3D_get_region_rid(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.get_region_rid: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.get_region_rid: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.get_region_rid: invalid or freed object");
+    }
+
+    NavigationRegion3D* typed_obj = Object::cast_to<NavigationRegion3D>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "NavigationRegion3D.get_region_rid: object is not a NavigationRegion3D");
+    }
+
+    RID result = typed_obj->get_region_rid();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Method: NavigationRegion3D::bake_navigation_mesh
@@ -625,10 +753,18 @@ void register_NavigationRegion3D_bindings(JSContext* ctx, JSValue global, JSValu
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "get_rid",
+        JS_NewCFunction(ctx, js_NavigationRegion3D_get_rid, "get_rid", 1));
+    JS_SetPropertyStr(ctx, methods, "set_navigation_map",
+        JS_NewCFunction(ctx, js_NavigationRegion3D_set_navigation_map, "set_navigation_map", 2));
+    JS_SetPropertyStr(ctx, methods, "get_navigation_map",
+        JS_NewCFunction(ctx, js_NavigationRegion3D_get_navigation_map, "get_navigation_map", 1));
     JS_SetPropertyStr(ctx, methods, "set_navigation_layer_value",
         JS_NewCFunction(ctx, js_NavigationRegion3D_set_navigation_layer_value, "set_navigation_layer_value", 3));
     JS_SetPropertyStr(ctx, methods, "get_navigation_layer_value",
         JS_NewCFunction(ctx, js_NavigationRegion3D_get_navigation_layer_value, "get_navigation_layer_value", 2));
+    JS_SetPropertyStr(ctx, methods, "get_region_rid",
+        JS_NewCFunction(ctx, js_NavigationRegion3D_get_region_rid, "get_region_rid", 1));
     JS_SetPropertyStr(ctx, methods, "bake_navigation_mesh",
         JS_NewCFunction(ctx, js_NavigationRegion3D_bake_navigation_mesh, "bake_navigation_mesh", 2));
     JS_SetPropertyStr(ctx, methods, "is_baking",

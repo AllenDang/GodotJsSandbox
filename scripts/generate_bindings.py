@@ -399,8 +399,15 @@ class BindingGenerator:
             for_return: If True, use Ref<T> for RefCounted types (for return values)
         """
         # Handle typed arrays like "typedarray::Node"
+        # Use plain Array to avoid incomplete type issues with forward-declared classes
+        # Godot will handle the type conversion internally
         if godot_type.startswith("typedarray::"):
-            return "TypedArray<" + godot_type[12:] + ">"
+            return "Array"
+
+        # Handle typed dictionaries like "typeddictionary::Color;Color"
+        # Use plain Dictionary - Godot handles the type conversion internally
+        if godot_type.startswith("typeddictionary::"):
+            return "Dictionary"
 
         # Handle enum types
         if godot_type.startswith("enum::"):
@@ -455,7 +462,7 @@ class BindingGenerator:
                 return f'NodePath("{inner}")'
             return default_value
 
-        # Array: [] -> Array()
+        # Array: [] -> Array() (also handles typedarray:: which maps to Array)
         if cpp_type == "Array":
             if default_value == "[]":
                 return "Array()"
@@ -980,9 +987,16 @@ class BindingGenerator:
         return self.find_header_for_class(class_name)
 
     def is_supported_type(self, godot_type: str) -> bool:
-        """Check if a type is supported for binding."""
-        # Skip complex types that need special handling
-        if godot_type.startswith("typedarray::"):
+        """Check if a type is supported for binding.
+
+        All types are supported EXCEPT raw pointers (unsafe low-level types).
+        - Value types (bool, int, float, Vector2, etc.) are copied
+        - Container types (Array, Dictionary, typedarray::*) use proxy
+        - Object types (Node, Resource, etc.) use handle/proxy
+        - Enums/bitfields are converted to int
+        """
+        # UNSAFE: Skip raw pointer types (low-level, unsafe)
+        if godot_type.endswith("*"):
             return False
 
         # Support enum types - they're converted to int
@@ -993,19 +1007,33 @@ class BindingGenerator:
         if godot_type.startswith("bitfield::"):
             return True
 
-        # Basic types we fully support
-        simple_types = {"void", "bool", "int", "float", "String", "StringName",
-                        "Vector2", "Vector2i", "Vector3", "Vector3i", "Color",
-                        "Variant", "NodePath", "Rect2", "Rect2i",
-                        "Transform2D", "Transform3D", "Basis", "Quaternion",
-                        "AABB", "Plane", "Array", "Dictionary",
-                        "PackedVector2Array", "PackedVector3Array", "PackedColorArray", "PackedFloat32Array"}
-        if godot_type in simple_types:
+        # Support typed arrays (returned as Godot Array via variant_to_js proxy)
+        if godot_type.startswith("typedarray::"):
             return True
 
-        # Object pointer types - support Node, RefCounted, and other Object subclasses
-        # Node types use T*, RefCounted types use Ref<T>, other Objects use T*
-        if self.is_node_type(godot_type) or self.is_refcounted_type(godot_type) or self.is_object_type(godot_type):
+        # Support typed dictionaries (returned as Godot Dictionary)
+        if godot_type.startswith("typeddictionary::"):
+            return True
+
+        # All value types we support (copied by value or converted via variant_to_js)
+        value_types = {
+            "void", "bool", "int", "float",
+            "String", "StringName", "NodePath",
+            "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", "Vector4i",
+            "Rect2", "Rect2i", "AABB", "Plane", "Projection",
+            "Transform2D", "Transform3D", "Basis", "Quaternion",
+            "Color", "RID", "Callable", "Signal",
+            "Array", "Dictionary", "Variant",
+            "PackedByteArray", "PackedInt32Array", "PackedInt64Array",
+            "PackedFloat32Array", "PackedFloat64Array", "PackedStringArray",
+            "PackedVector2Array", "PackedVector3Array", "PackedVector4Array", "PackedColorArray",
+        }
+        if godot_type in value_types:
+            return True
+
+        # Object types - support all Godot Object subclasses (Node, Resource, etc.)
+        # These use handle/proxy wrapping via variant_to_js
+        if self.is_object_type(godot_type):
             return True
 
         return False
@@ -1067,36 +1095,9 @@ class BindingGenerator:
 
     def is_supported_return_type(self, godot_type: str) -> bool:
         """Check if a type is supported as a method return type.
-        For return types, we need full type definitions (not just forward declarations).
+        Uses same logic as is_supported_type - all types except raw pointers are supported.
         """
-        # Basic types are always supported
-        simple_types = {"void", "bool", "int", "float", "String", "StringName",
-                        "Vector2", "Vector2i", "Vector3", "Vector3i", "Color",
-                        "Variant", "NodePath", "Rect2", "Rect2i",
-                        "Transform2D", "Transform3D", "Basis", "Quaternion",
-                        "AABB", "Plane", "Array", "Dictionary",
-                        "PackedVector2Array", "PackedVector3Array", "PackedColorArray", "PackedFloat32Array"}
-        if godot_type in simple_types:
-            return True
-
-        # Enums are supported (converted to int)
-        if godot_type.startswith("enum::"):
-            return True
-
-        # Bitfields are supported (converted to int64)
-        if godot_type.startswith("bitfield::"):
-            return True
-
-        # Skip complex types
-        if godot_type.startswith("typedarray::"):
-            return False
-
-        # For object return types, allow Node, RefCounted, and other Object subclasses
-        # Node types use T*, RefCounted types use Ref<T>, other Object types use T*
-        if self.is_node_type(godot_type) or self.is_refcounted_type(godot_type) or self.is_object_type(godot_type):
-            return True
-
-        return False
+        return self.is_supported_type(godot_type)
 
     def is_object_type(self, godot_type: str) -> bool:
         """Check if a type is a Godot Object subclass."""

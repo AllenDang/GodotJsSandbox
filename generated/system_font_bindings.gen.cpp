@@ -32,6 +32,67 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "SystemFont: unknown error"); \
     }
 
+// Property getter: SystemFont::font_names
+static JSValue js_SystemFont_get_font_names(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "SystemFont.font_names getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SystemFont.font_names getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SystemFont.font_names getter: invalid object");
+    }
+
+    SystemFont* typed_obj = Object::cast_to<SystemFont>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SystemFont.font_names getter: wrong type");
+    }
+
+    PackedStringArray value = typed_obj->get_font_names();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: SystemFont::font_names
+static JSValue js_SystemFont_set_font_names(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "SystemFont.font_names setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "SystemFont.font_names setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "SystemFont.font_names setter: invalid object");
+    }
+
+    SystemFont* typed_obj = Object::cast_to<SystemFont>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "SystemFont.font_names setter: wrong type");
+    }
+
+    PackedStringArray value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_font_names(value);
+    return JS_UNDEFINED;
+}
+
 // Property getter: SystemFont::font_italic
 static JSValue js_SystemFont_get_font_italic(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -1018,6 +1079,14 @@ void register_SystemFont_bindings(JSContext* ctx, JSValue global, JSValue classe
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);
 
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_SystemFont_get_font_names, "get_font_names", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_SystemFont_set_font_names, "set_font_names", 2));
+        JS_SetPropertyStr(ctx, props, "font_names", prop_obj);
+    }
     {
         JSValue prop_obj = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, prop_obj, "get",

@@ -32,6 +32,94 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
         return JS_ThrowInternalError(ctx, "VoxelGIData: unknown error"); \
     }
 
+// Method: VoxelGIData::allocate
+static JSValue js_VoxelGIData_allocate(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.allocate: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.allocate: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.allocate: invalid or freed object");
+    }
+
+    VoxelGIData* typed_obj = Object::cast_to<VoxelGIData>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.allocate: object is not a VoxelGIData");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 8) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.allocate: expected at least 7 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    Transform3D arg_to_cell_xform;
+    JSValue jbasis_to_cell_xform = JS_GetPropertyStr(ctx, argv[1], "basis");
+    JSValue jorigin_to_cell_xform = JS_GetPropertyStr(ctx, argv[1], "origin");
+    if (!JS_IsUndefined(jorigin_to_cell_xform)) {
+        double ox, oy, oz;
+        JSValue jox_to_cell_xform = JS_GetPropertyStr(ctx, jorigin_to_cell_xform, "x");
+        JSValue joy_to_cell_xform = JS_GetPropertyStr(ctx, jorigin_to_cell_xform, "y");
+        JSValue joz_to_cell_xform = JS_GetPropertyStr(ctx, jorigin_to_cell_xform, "z");
+        JS_ToFloat64(ctx, &ox, jox_to_cell_xform);
+        JS_ToFloat64(ctx, &oy, joy_to_cell_xform);
+        JS_ToFloat64(ctx, &oz, joz_to_cell_xform);
+        arg_to_cell_xform.origin = Vector3(ox, oy, oz);
+        JS_FreeValue(ctx, jox_to_cell_xform); JS_FreeValue(ctx, joy_to_cell_xform); JS_FreeValue(ctx, joz_to_cell_xform);
+    }
+    if (!JS_IsUndefined(jbasis_to_cell_xform)) {
+        JSValue jbx_to_cell_xform = JS_GetPropertyStr(ctx, jbasis_to_cell_xform, "x");
+        JSValue jby_to_cell_xform = JS_GetPropertyStr(ctx, jbasis_to_cell_xform, "y");
+        JSValue jbz_to_cell_xform = JS_GetPropertyStr(ctx, jbasis_to_cell_xform, "z");
+        if (!JS_IsUndefined(jbx_to_cell_xform) && !JS_IsUndefined(jby_to_cell_xform) && !JS_IsUndefined(jbz_to_cell_xform)) {
+            double xx, xy, xz, yx, yy, yz, zx, zy, zz;
+            JSValue jbxx = JS_GetPropertyStr(ctx, jbx_to_cell_xform, "x"); JSValue jbxy = JS_GetPropertyStr(ctx, jbx_to_cell_xform, "y"); JSValue jbxz = JS_GetPropertyStr(ctx, jbx_to_cell_xform, "z");
+            JSValue jbyx = JS_GetPropertyStr(ctx, jby_to_cell_xform, "x"); JSValue jbyy = JS_GetPropertyStr(ctx, jby_to_cell_xform, "y"); JSValue jbyz = JS_GetPropertyStr(ctx, jby_to_cell_xform, "z");
+            JSValue jbzx = JS_GetPropertyStr(ctx, jbz_to_cell_xform, "x"); JSValue jbzy = JS_GetPropertyStr(ctx, jbz_to_cell_xform, "y"); JSValue jbzz = JS_GetPropertyStr(ctx, jbz_to_cell_xform, "z");
+            JS_ToFloat64(ctx, &xx, jbxx); JS_ToFloat64(ctx, &xy, jbxy); JS_ToFloat64(ctx, &xz, jbxz);
+            JS_ToFloat64(ctx, &yx, jbyx); JS_ToFloat64(ctx, &yy, jbyy); JS_ToFloat64(ctx, &yz, jbyz);
+            JS_ToFloat64(ctx, &zx, jbzx); JS_ToFloat64(ctx, &zy, jbzy); JS_ToFloat64(ctx, &zz, jbzz);
+            arg_to_cell_xform.basis = Basis(Vector3(xx, xy, xz), Vector3(yx, yy, yz), Vector3(zx, zy, zz));
+            JS_FreeValue(ctx, jbxx); JS_FreeValue(ctx, jbxy); JS_FreeValue(ctx, jbxz);
+            JS_FreeValue(ctx, jbyx); JS_FreeValue(ctx, jbyy); JS_FreeValue(ctx, jbyz);
+            JS_FreeValue(ctx, jbzx); JS_FreeValue(ctx, jbzy); JS_FreeValue(ctx, jbzz);
+        }
+        JS_FreeValue(ctx, jbx_to_cell_xform); JS_FreeValue(ctx, jby_to_cell_xform); JS_FreeValue(ctx, jbz_to_cell_xform);
+    }
+    JS_FreeValue(ctx, jbasis_to_cell_xform);
+    JS_FreeValue(ctx, jorigin_to_cell_xform);
+    AABB arg_aabb = qjs_ctx->js_to_variant(argv[2]);
+    double tmp_x_octree_size, tmp_y_octree_size, tmp_z_octree_size;
+    JSValue jx_octree_size = JS_GetPropertyStr(ctx, argv[3], "x");
+    JSValue jy_octree_size = JS_GetPropertyStr(ctx, argv[3], "y");
+    JSValue jz_octree_size = JS_GetPropertyStr(ctx, argv[3], "z");
+    JS_ToFloat64(ctx, &tmp_x_octree_size, jx_octree_size);
+    JS_ToFloat64(ctx, &tmp_y_octree_size, jy_octree_size);
+    JS_ToFloat64(ctx, &tmp_z_octree_size, jz_octree_size);
+    JS_FreeValue(ctx, jx_octree_size);
+    JS_FreeValue(ctx, jy_octree_size);
+    JS_FreeValue(ctx, jz_octree_size);
+    Vector3 arg_octree_size(tmp_x_octree_size, tmp_y_octree_size, tmp_z_octree_size);
+    PackedByteArray arg_octree_cells = qjs_ctx->js_to_variant(argv[4]);
+    PackedByteArray arg_data_cells = qjs_ctx->js_to_variant(argv[5]);
+    PackedByteArray arg_distance_field = qjs_ctx->js_to_variant(argv[6]);
+    PackedInt32Array arg_level_counts = qjs_ctx->js_to_variant(argv[7]);
+
+    typed_obj->allocate(arg_to_cell_xform, arg_aabb, arg_octree_size, arg_octree_cells, arg_data_cells, arg_distance_field, arg_level_counts);
+    return JS_UNDEFINED;
+}
+
 // Method: VoxelGIData::get_bounds
 static JSValue js_VoxelGIData_get_bounds(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -147,6 +235,96 @@ static JSValue js_VoxelGIData_get_to_cell_xform(JSContext* ctx, JSValueConst thi
     JS_SetPropertyStr(ctx, ret_obj, "basis", basis_obj);
     JS_SetPropertyStr(ctx, ret_obj, "origin", origin_obj);
     return ret_obj;
+}
+
+// Method: VoxelGIData::get_octree_cells
+static JSValue js_VoxelGIData_get_octree_cells(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.get_octree_cells: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.get_octree_cells: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.get_octree_cells: invalid or freed object");
+    }
+
+    VoxelGIData* typed_obj = Object::cast_to<VoxelGIData>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.get_octree_cells: object is not a VoxelGIData");
+    }
+
+    PackedByteArray result = typed_obj->get_octree_cells();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: VoxelGIData::get_data_cells
+static JSValue js_VoxelGIData_get_data_cells(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.get_data_cells: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.get_data_cells: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.get_data_cells: invalid or freed object");
+    }
+
+    VoxelGIData* typed_obj = Object::cast_to<VoxelGIData>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.get_data_cells: object is not a VoxelGIData");
+    }
+
+    PackedByteArray result = typed_obj->get_data_cells();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
+// Method: VoxelGIData::get_level_counts
+static JSValue js_VoxelGIData_get_level_counts(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.get_level_counts: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.get_level_counts: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.get_level_counts: invalid or freed object");
+    }
+
+    VoxelGIData* typed_obj = Object::cast_to<VoxelGIData>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "VoxelGIData.get_level_counts: object is not a VoxelGIData");
+    }
+
+    PackedInt32Array result = typed_obj->get_level_counts();
+    return qjs_ctx->variant_to_js(Variant(result));
 }
 
 // Property getter: VoxelGIData::dynamic_range
@@ -582,12 +760,20 @@ void register_VoxelGIData_bindings(JSContext* ctx, JSValue global, JSValue class
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "allocate",
+        JS_NewCFunction(ctx, js_VoxelGIData_allocate, "allocate", 8));
     JS_SetPropertyStr(ctx, methods, "get_bounds",
         JS_NewCFunction(ctx, js_VoxelGIData_get_bounds, "get_bounds", 1));
     JS_SetPropertyStr(ctx, methods, "get_octree_size",
         JS_NewCFunction(ctx, js_VoxelGIData_get_octree_size, "get_octree_size", 1));
     JS_SetPropertyStr(ctx, methods, "get_to_cell_xform",
         JS_NewCFunction(ctx, js_VoxelGIData_get_to_cell_xform, "get_to_cell_xform", 1));
+    JS_SetPropertyStr(ctx, methods, "get_octree_cells",
+        JS_NewCFunction(ctx, js_VoxelGIData_get_octree_cells, "get_octree_cells", 1));
+    JS_SetPropertyStr(ctx, methods, "get_data_cells",
+        JS_NewCFunction(ctx, js_VoxelGIData_get_data_cells, "get_data_cells", 1));
+    JS_SetPropertyStr(ctx, methods, "get_level_counts",
+        JS_NewCFunction(ctx, js_VoxelGIData_get_level_counts, "get_level_counts", 1));
 
     // Create property getters/setters registry
     JSValue props = JS_NewObject(ctx);

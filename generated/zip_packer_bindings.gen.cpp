@@ -114,6 +114,44 @@ static JSValue js_ZIPPacker_start_file(JSContext* ctx, JSValueConst this_val, in
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
+// Method: ZIPPacker::write_file
+static JSValue js_ZIPPacker_write_file(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "ZIPPacker.write_file: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "ZIPPacker.write_file: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "ZIPPacker.write_file: invalid or freed object");
+    }
+
+    ZIPPacker* typed_obj = Object::cast_to<ZIPPacker>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "ZIPPacker.write_file: object is not a ZIPPacker");
+    }
+
+    // Argument count check (excluding handle) - only required args
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "ZIPPacker.write_file: expected at least 1 arguments, got %d", argc - 1);
+    }
+
+    // Convert arguments
+    PackedByteArray arg_data = qjs_ctx->js_to_variant(argv[1]);
+
+    Error result = typed_obj->write_file(arg_data);
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: ZIPPacker::close_file
 static JSValue js_ZIPPacker_close_file(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -245,6 +283,8 @@ void register_ZIPPacker_bindings(JSContext* ctx, JSValue global, JSValue classes
         JS_NewCFunction(ctx, js_ZIPPacker_open, "open", 3));
     JS_SetPropertyStr(ctx, methods, "start_file",
         JS_NewCFunction(ctx, js_ZIPPacker_start_file, "start_file", 2));
+    JS_SetPropertyStr(ctx, methods, "write_file",
+        JS_NewCFunction(ctx, js_ZIPPacker_write_file, "write_file", 2));
     JS_SetPropertyStr(ctx, methods, "close_file",
         JS_NewCFunction(ctx, js_ZIPPacker_close_file, "close_file", 1));
     JS_SetPropertyStr(ctx, methods, "close",

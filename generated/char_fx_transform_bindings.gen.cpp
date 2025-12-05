@@ -792,6 +792,67 @@ static JSValue js_CharFXTransform_set_relative_index(JSContext* ctx, JSValueCons
     return JS_UNDEFINED;
 }
 
+// Property getter: CharFXTransform::font
+static JSValue js_CharFXTransform_get_font(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CharFXTransform.font getter: missing handle");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CharFXTransform.font getter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CharFXTransform.font getter: invalid object");
+    }
+
+    CharFXTransform* typed_obj = Object::cast_to<CharFXTransform>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CharFXTransform.font getter: wrong type");
+    }
+
+    RID value = typed_obj->get_font();
+    return qjs_ctx->variant_to_js(Variant(value));
+}
+
+// Property setter: CharFXTransform::font
+static JSValue js_CharFXTransform_set_font(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "CharFXTransform.font setter: missing arguments");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CharFXTransform.font setter: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CharFXTransform.font setter: invalid object");
+    }
+
+    CharFXTransform* typed_obj = Object::cast_to<CharFXTransform>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CharFXTransform.font setter: wrong type");
+    }
+
+    RID value = qjs_ctx->js_to_variant(argv[1]);
+    typed_obj->set_font(value);
+    return JS_UNDEFINED;
+}
+
 
 // Registration function for CharFXTransform
 void register_CharFXTransform_bindings(JSContext* ctx, JSValue global, JSValue classes) {
@@ -897,6 +958,14 @@ void register_CharFXTransform_bindings(JSContext* ctx, JSValue global, JSValue c
         JS_SetPropertyStr(ctx, prop_obj, "set",
             JS_NewCFunction(ctx, js_CharFXTransform_set_relative_index, "set_relative_index", 2));
         JS_SetPropertyStr(ctx, props, "relative_index", prop_obj);
+    }
+    {
+        JSValue prop_obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, prop_obj, "get",
+            JS_NewCFunction(ctx, js_CharFXTransform_get_font, "get_font", 1));
+        JS_SetPropertyStr(ctx, prop_obj, "set",
+            JS_NewCFunction(ctx, js_CharFXTransform_set_font, "set_font", 2));
+        JS_SetPropertyStr(ctx, props, "font", prop_obj);
     }
 
     // Register signals array

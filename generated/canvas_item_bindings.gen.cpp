@@ -8,13 +8,13 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/canvas_item.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
-#include <godot_cpp/classes/multi_mesh.hpp>
-#include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/input_event.hpp>
-#include <godot_cpp/classes/world2d.hpp>
 #include <godot_cpp/classes/style_box.hpp>
+#include <godot_cpp/classes/mesh.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/world2d.hpp>
+#include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -38,6 +38,36 @@ static QuickJSContext* get_qjs_ctx(JSContext* ctx) {
     } catch (...) { \
         return JS_ThrowInternalError(ctx, "CanvasItem: unknown error"); \
     }
+
+// Method: CanvasItem::get_canvas_item
+static JSValue js_CanvasItem_get_canvas_item(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.get_canvas_item: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.get_canvas_item: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.get_canvas_item: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.get_canvas_item: object is not a CanvasItem");
+    }
+
+    RID result = typed_obj->get_canvas_item();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
 
 // Method: CanvasItem::is_visible_in_tree
 static JSValue js_CanvasItem_is_visible_in_tree(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
@@ -3201,6 +3231,36 @@ static JSValue js_CanvasItem_get_global_mouse_position(JSContext* ctx, JSValueCo
     return ret_obj;
 }
 
+// Method: CanvasItem::get_canvas
+static JSValue js_CanvasItem_get_canvas(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.get_canvas: missing handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) < 0) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.get_canvas: invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.get_canvas: invalid or freed object");
+    }
+
+    CanvasItem* typed_obj = Object::cast_to<CanvasItem>(obj);
+    if (!typed_obj) {
+        return JS_ThrowTypeError(ctx, "CanvasItem.get_canvas: object is not a CanvasItem");
+    }
+
+    RID result = typed_obj->get_canvas();
+    return qjs_ctx->variant_to_js(Variant(result));
+}
+
 // Method: CanvasItem::get_canvas_layer_node
 static JSValue js_CanvasItem_get_canvas_layer_node(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     if (argc < 1) {
@@ -4653,6 +4713,8 @@ void register_CanvasItem_bindings(JSContext* ctx, JSValue global, JSValue classe
     // Create method registry object for this class
     JSValue methods = JS_NewObject(ctx);
 
+    JS_SetPropertyStr(ctx, methods, "get_canvas_item",
+        JS_NewCFunction(ctx, js_CanvasItem_get_canvas_item, "get_canvas_item", 1));
     JS_SetPropertyStr(ctx, methods, "is_visible_in_tree",
         JS_NewCFunction(ctx, js_CanvasItem_is_visible_in_tree, "is_visible_in_tree", 1));
     JS_SetPropertyStr(ctx, methods, "show",
@@ -4741,6 +4803,8 @@ void register_CanvasItem_bindings(JSContext* ctx, JSValue global, JSValue classe
         JS_NewCFunction(ctx, js_CanvasItem_get_local_mouse_position, "get_local_mouse_position", 1));
     JS_SetPropertyStr(ctx, methods, "get_global_mouse_position",
         JS_NewCFunction(ctx, js_CanvasItem_get_global_mouse_position, "get_global_mouse_position", 1));
+    JS_SetPropertyStr(ctx, methods, "get_canvas",
+        JS_NewCFunction(ctx, js_CanvasItem_get_canvas, "get_canvas", 1));
     JS_SetPropertyStr(ctx, methods, "get_canvas_layer_node",
         JS_NewCFunction(ctx, js_CanvasItem_get_canvas_layer_node, "get_canvas_layer_node", 1));
     JS_SetPropertyStr(ctx, methods, "get_world_2d",
