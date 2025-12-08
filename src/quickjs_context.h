@@ -148,6 +148,10 @@ private:
     void setup_godot_bindings();
     void setup_module_loader();
 
+    // Create script instance from ES6 module source (handles import/export)
+    int64_t create_module_script_instance(const godot::String &source, const godot::String &filename,
+                                          godot::Object* owner, godot::String &error);
+
     static int interrupt_handler(JSRuntime* rt, void* opaque);
 
     // Module loader callbacks (called by QuickJS)

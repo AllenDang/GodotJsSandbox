@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/base_button.hpp>
-#include <godot_cpp/classes/shortcut.hpp>
 #include <godot_cpp/classes/button_group.hpp>
+#include <godot_cpp/classes/shortcut.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

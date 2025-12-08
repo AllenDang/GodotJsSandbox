@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/tile_data.hpp>
-#include <godot_cpp/classes/occluder_polygon2d.hpp>
 #include <godot_cpp/classes/navigation_polygon.hpp>
+#include <godot_cpp/classes/occluder_polygon2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

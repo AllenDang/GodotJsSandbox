@@ -76,6 +76,11 @@ private:
     static JSValue js_godot_array_push(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
     static JSValue js_godot_array_pop(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
+    // Packed array proxy functions (zero-copy access)
+    static JSValue js_packed_array_get(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_packed_array_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_packed_array_type(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+
     // GodotObject class callbacks
     static void godot_object_finalizer(JSRuntime* rt, JSValueConst val);
 

@@ -258,6 +258,14 @@ void GodotBindings::setup_global_functions() {
     JS_SetPropertyStr(ctx, global, "__godot_array_pop",
         JS_NewCFunction(ctx, js_godot_array_pop, "__godot_array_pop", 1));
 
+    // Packed array proxy functions for zero-copy access
+    JS_SetPropertyStr(ctx, global, "__packed_array_get",
+        JS_NewCFunction(ctx, js_packed_array_get, "__packed_array_get", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_array_size",
+        JS_NewCFunction(ctx, js_packed_array_size, "__packed_array_size", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_array_type",
+        JS_NewCFunction(ctx, js_packed_array_type, "__packed_array_type", 1));
+
     // Time singleton (safe subset of methods)
     JSValue time_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, time_obj, "get_ticks_msec",
@@ -637,11 +645,17 @@ void GodotBindings::setup_godot_class_constructor() {
                     if (prop === Symbol.toStringTag) return 'GodotArray';
                     if (prop === Symbol.iterator) {
                         var handle = target.__array_handle;
-                        var size = __godot_array_size(handle);
-                        return function*() {
-                            for (var i = 0; i < size; i++) {
-                                yield __godot_array_get(handle, i);
-                            }
+                        return function() {
+                            var idx = 0;
+                            var len = __godot_array_size(handle);
+                            return {
+                                next: function() {
+                                    if (idx < len) {
+                                        return { value: __godot_array_get(handle, idx++), done: false };
+                                    }
+                                    return { done: true };
+                                }
+                            };
                         };
                     }
                     return undefined;
@@ -729,6 +743,98 @@ void GodotBindings::setup_godot_class_constructor() {
                 __array_handle: handle
             };
             return new Proxy(target, __godot_array_proxy_handler);
+        };
+
+        // Packed array proxy handler for zero-copy access to Godot packed arrays
+        globalThis.__packed_array_proxy_handler = {
+            get: function(target, prop, receiver) {
+                if (prop === '__packed_handle') return target.__packed_handle;
+                if (prop === '__packed_type') return target.__packed_type;
+                if (prop === '__is_packed_array') return true;
+                if (typeof prop === 'symbol') {
+                    if (prop === Symbol.toStringTag) return target.__packed_type || 'PackedArray';
+                    if (prop === Symbol.iterator) {
+                        var handle = target.__packed_handle;
+                        return function() {
+                            var idx = 0;
+                            var len = __packed_array_size(handle);
+                            return {
+                                next: function() {
+                                    if (idx < len) {
+                                        return { value: __packed_array_get(handle, idx++), done: false };
+                                    }
+                                    return { done: true };
+                                }
+                            };
+                        };
+                    }
+                    return undefined;
+                }
+                if (prop === 'length') {
+                    return __packed_array_size(target.__packed_handle);
+                }
+                if (prop === 'toString') {
+                    var type = target.__packed_type || 'PackedArray';
+                    return function() { return '[' + type + ']'; };
+                }
+                if (prop === 'forEach') {
+                    var handle = target.__packed_handle;
+                    return function(callback) {
+                        var size = __packed_array_size(handle);
+                        for (var i = 0; i < size; i++) {
+                            callback(__packed_array_get(handle, i), i);
+                        }
+                    };
+                }
+                if (prop === 'map') {
+                    var handle = target.__packed_handle;
+                    return function(callback) {
+                        var size = __packed_array_size(handle);
+                        var result = [];
+                        for (var i = 0; i < size; i++) {
+                            result.push(callback(__packed_array_get(handle, i), i));
+                        }
+                        return result;
+                    };
+                }
+                if (prop === 'filter') {
+                    var handle = target.__packed_handle;
+                    return function(callback) {
+                        var size = __packed_array_size(handle);
+                        var result = [];
+                        for (var i = 0; i < size; i++) {
+                            var item = __packed_array_get(handle, i);
+                            if (callback(item, i)) {
+                                result.push(item);
+                            }
+                        }
+                        return result;
+                    };
+                }
+                // Numeric index access
+                var index = parseInt(prop);
+                if (!isNaN(index) && index >= 0) {
+                    return __packed_array_get(target.__packed_handle, index);
+                }
+                return undefined;
+            },
+            has: function(target, prop) {
+                if (prop === 'length' || prop === '__packed_handle' || prop === '__is_packed_array') return true;
+                var index = parseInt(prop);
+                if (!isNaN(index) && index >= 0) {
+                    return index < __packed_array_size(target.__packed_handle);
+                }
+                return prop === 'forEach' || prop === 'map' || prop === 'filter';
+            }
+        };
+
+        // Wrap a packed array handle with a proxy
+        globalThis.__wrap_packed_array = function(handle, type) {
+            var target = {
+                __packed_handle: handle,
+                __packed_type: type
+            };
+            return new Proxy(target, __packed_array_proxy_handler);
         };
         'factory done';
     )";
@@ -1732,6 +1838,174 @@ JSValue GodotBindings::js_godot_array_pop(JSContext* ctx, JSValueConst this_val,
     arr.pop_back();
 
     return qjs_ctx->variant_to_js(last);
+}
+
+// Packed array proxy functions for zero-copy access
+
+// __packed_array_get(handle, index) - get element at index from any packed array type
+JSValue GodotBindings::js_packed_array_get(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_UNDEFINED;
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_UNDEFINED;
+    }
+
+    int64_t index;
+    if (JS_ToInt64(ctx, &index, argv[1]) != 0) {
+        return JS_UNDEFINED;
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_UNDEFINED;
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) {
+        return JS_UNDEFINED;
+    }
+
+    CollectionType type = registry->get_handle_type(handle);
+
+    switch (type) {
+        case CollectionType::PACKED_BYTE_ARRAY: {
+            PackedByteArray arr = registry->get_packed_byte_array(handle);
+            if (index < 0 || index >= arr.size()) return JS_UNDEFINED;
+            return JS_NewInt32(ctx, arr[index]);
+        }
+        case CollectionType::PACKED_INT32_ARRAY: {
+            PackedInt32Array arr = registry->get_packed_int32_array(handle);
+            if (index < 0 || index >= arr.size()) return JS_UNDEFINED;
+            return JS_NewInt32(ctx, arr[index]);
+        }
+        case CollectionType::PACKED_INT64_ARRAY: {
+            PackedInt64Array arr = registry->get_packed_int64_array(handle);
+            if (index < 0 || index >= arr.size()) return JS_UNDEFINED;
+            return JS_NewInt64(ctx, arr[index]);
+        }
+        case CollectionType::PACKED_FLOAT32_ARRAY: {
+            PackedFloat32Array arr = registry->get_packed_float32_array(handle);
+            if (index < 0 || index >= arr.size()) return JS_UNDEFINED;
+            return JS_NewFloat64(ctx, arr[index]);
+        }
+        case CollectionType::PACKED_FLOAT64_ARRAY: {
+            PackedFloat64Array arr = registry->get_packed_float64_array(handle);
+            if (index < 0 || index >= arr.size()) return JS_UNDEFINED;
+            return JS_NewFloat64(ctx, arr[index]);
+        }
+        case CollectionType::PACKED_STRING_ARRAY: {
+            PackedStringArray arr = registry->get_packed_string_array(handle);
+            if (index < 0 || index >= arr.size()) return JS_UNDEFINED;
+            return JS_NewString(ctx, arr[index].utf8().get_data());
+        }
+        case CollectionType::PACKED_VECTOR2_ARRAY: {
+            PackedVector2Array arr = registry->get_packed_vector2_array(handle);
+            if (index < 0 || index >= arr.size()) return JS_UNDEFINED;
+            Vector2 v = arr[index];
+            JSValue obj = JS_NewObject(ctx);
+            JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, v.x));
+            JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, v.y));
+            return obj;
+        }
+        case CollectionType::PACKED_VECTOR3_ARRAY: {
+            PackedVector3Array arr = registry->get_packed_vector3_array(handle);
+            if (index < 0 || index >= arr.size()) return JS_UNDEFINED;
+            Vector3 v = arr[index];
+            JSValue obj = JS_NewObject(ctx);
+            JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, v.x));
+            JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, v.y));
+            JS_SetPropertyStr(ctx, obj, "z", JS_NewFloat64(ctx, v.z));
+            return obj;
+        }
+        case CollectionType::PACKED_COLOR_ARRAY: {
+            PackedColorArray arr = registry->get_packed_color_array(handle);
+            if (index < 0 || index >= arr.size()) return JS_UNDEFINED;
+            Color c = arr[index];
+            JSValue obj = JS_NewObject(ctx);
+            JS_SetPropertyStr(ctx, obj, "r", JS_NewFloat64(ctx, c.r));
+            JS_SetPropertyStr(ctx, obj, "g", JS_NewFloat64(ctx, c.g));
+            JS_SetPropertyStr(ctx, obj, "b", JS_NewFloat64(ctx, c.b));
+            JS_SetPropertyStr(ctx, obj, "a", JS_NewFloat64(ctx, c.a));
+            return obj;
+        }
+        case CollectionType::PACKED_VECTOR4_ARRAY: {
+            PackedVector4Array arr = registry->get_packed_vector4_array(handle);
+            if (index < 0 || index >= arr.size()) return JS_UNDEFINED;
+            Vector4 v = arr[index];
+            JSValue obj = JS_NewObject(ctx);
+            JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, v.x));
+            JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, v.y));
+            JS_SetPropertyStr(ctx, obj, "z", JS_NewFloat64(ctx, v.z));
+            JS_SetPropertyStr(ctx, obj, "w", JS_NewFloat64(ctx, v.w));
+            return obj;
+        }
+        default:
+            return JS_UNDEFINED;
+    }
+}
+
+// __packed_array_size(handle) - get size of packed array
+JSValue GodotBindings::js_packed_array_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_NewInt32(ctx, 0);
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_NewInt32(ctx, 0);
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_NewInt32(ctx, 0);
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry) {
+        return JS_NewInt32(ctx, 0);
+    }
+
+    return JS_NewInt64(ctx, registry->get_size(handle));
+}
+
+// __packed_array_type(handle) - get type string of packed array
+JSValue GodotBindings::js_packed_array_type(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_NewString(ctx, "unknown");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_NewString(ctx, "unknown");
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_NewString(ctx, "unknown");
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) {
+        return JS_NewString(ctx, "unknown");
+    }
+
+    CollectionType type = registry->get_handle_type(handle);
+    switch (type) {
+        case CollectionType::PACKED_BYTE_ARRAY: return JS_NewString(ctx, "PackedByteArray");
+        case CollectionType::PACKED_INT32_ARRAY: return JS_NewString(ctx, "PackedInt32Array");
+        case CollectionType::PACKED_INT64_ARRAY: return JS_NewString(ctx, "PackedInt64Array");
+        case CollectionType::PACKED_FLOAT32_ARRAY: return JS_NewString(ctx, "PackedFloat32Array");
+        case CollectionType::PACKED_FLOAT64_ARRAY: return JS_NewString(ctx, "PackedFloat64Array");
+        case CollectionType::PACKED_STRING_ARRAY: return JS_NewString(ctx, "PackedStringArray");
+        case CollectionType::PACKED_VECTOR2_ARRAY: return JS_NewString(ctx, "PackedVector2Array");
+        case CollectionType::PACKED_VECTOR3_ARRAY: return JS_NewString(ctx, "PackedVector3Array");
+        case CollectionType::PACKED_COLOR_ARRAY: return JS_NewString(ctx, "PackedColorArray");
+        case CollectionType::PACKED_VECTOR4_ARRAY: return JS_NewString(ctx, "PackedVector4Array");
+        default: return JS_NewString(ctx, "unknown");
+    }
 }
 
 } // namespace jsb

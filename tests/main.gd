@@ -14,6 +14,7 @@ const TestErrorCaptureClass = preload("res://test_cases/test_error_capture.gd")
 const TestAsyncSceneLoadingClass = preload("res://test_cases/test_async_scene_loading.gd")
 const TestEnumsClass = preload("res://test_cases/test_enums.gd")
 const TestArrayProxyClass = preload("res://test_cases/test_array_proxy.gd")
+const TestPackedArrayProxyClass = preload("res://test_cases/test_packed_array_proxy.gd")
 
 var sandbox: JSSandbox
 
@@ -106,6 +107,9 @@ func run_tests() -> void:
 
 	# Array proxy (zero-copy array access)
 	runner.add_suite(TestArrayProxyClass.new())
+
+	# Packed array proxy (zero-copy packed array access)
+	runner.add_suite(TestPackedArrayProxyClass.new())
 
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())
