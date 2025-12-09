@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/importer_mesh_instance3d.hpp>
-#include <godot_cpp/classes/skin.hpp>
 #include <godot_cpp/classes/importer_mesh.hpp>
+#include <godot_cpp/classes/skin.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

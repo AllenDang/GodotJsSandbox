@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/animation_node_state_machine.hpp>
-#include <godot_cpp/classes/animation_node_state_machine_transition.hpp>
 #include <godot_cpp/classes/animation_node.hpp>
+#include <godot_cpp/classes/animation_node_state_machine_transition.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

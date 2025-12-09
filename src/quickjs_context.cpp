@@ -5,6 +5,7 @@
 #include "sandbox_config.h"
 #include "execution_limiter.h"
 #include "godot_bindings.h"
+#include "../generated/generated_classes.gen.h"
 
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/time.hpp>
@@ -979,218 +980,14 @@ JSValue QuickJSContext::variant_to_js(const Variant &value) {
             return JS_NULL;
         }
 
-        // Packed arrays - use zero-copy proxy wrapper
-        case Variant::PACKED_BYTE_ARRAY: {
-            if (array_registry_) {
-                PackedByteArray arr = value;
-                uint64_t handle = array_registry_->create_packed_byte_array_handle(arr);
-                JSValue global = JS_GetGlobalObject(ctx_);
-                JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_packed_array");
-                if (JS_IsFunction(ctx_, wrap_fn)) {
-                    JSValue args[2] = { JS_NewInt64(ctx_, handle), JS_NewString(ctx_, "PackedByteArray") };
-                    JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 2, args);
-                    JS_FreeValue(ctx_, args[0]);
-                    JS_FreeValue(ctx_, args[1]);
-                    JS_FreeValue(ctx_, wrap_fn);
-                    JS_FreeValue(ctx_, global);
-                    return result;
-                }
-                JS_FreeValue(ctx_, wrap_fn);
-                JS_FreeValue(ctx_, global);
-            }
-            return JS_NewArray(ctx_);
-        }
-
-        case Variant::PACKED_INT32_ARRAY: {
-            if (array_registry_) {
-                PackedInt32Array arr = value;
-                uint64_t handle = array_registry_->create_packed_int32_array_handle(arr);
-                JSValue global = JS_GetGlobalObject(ctx_);
-                JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_packed_array");
-                if (JS_IsFunction(ctx_, wrap_fn)) {
-                    JSValue args[2] = { JS_NewInt64(ctx_, handle), JS_NewString(ctx_, "PackedInt32Array") };
-                    JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 2, args);
-                    JS_FreeValue(ctx_, args[0]);
-                    JS_FreeValue(ctx_, args[1]);
-                    JS_FreeValue(ctx_, wrap_fn);
-                    JS_FreeValue(ctx_, global);
-                    return result;
-                }
-                JS_FreeValue(ctx_, wrap_fn);
-                JS_FreeValue(ctx_, global);
-            }
-            return JS_NewArray(ctx_);
-        }
-
-        case Variant::PACKED_INT64_ARRAY: {
-            if (array_registry_) {
-                PackedInt64Array arr = value;
-                uint64_t handle = array_registry_->create_packed_int64_array_handle(arr);
-                JSValue global = JS_GetGlobalObject(ctx_);
-                JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_packed_array");
-                if (JS_IsFunction(ctx_, wrap_fn)) {
-                    JSValue args[2] = { JS_NewInt64(ctx_, handle), JS_NewString(ctx_, "PackedInt64Array") };
-                    JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 2, args);
-                    JS_FreeValue(ctx_, args[0]);
-                    JS_FreeValue(ctx_, args[1]);
-                    JS_FreeValue(ctx_, wrap_fn);
-                    JS_FreeValue(ctx_, global);
-                    return result;
-                }
-                JS_FreeValue(ctx_, wrap_fn);
-                JS_FreeValue(ctx_, global);
-            }
-            return JS_NewArray(ctx_);
-        }
-
-        case Variant::PACKED_FLOAT32_ARRAY: {
-            if (array_registry_) {
-                PackedFloat32Array arr = value;
-                uint64_t handle = array_registry_->create_packed_float32_array_handle(arr);
-                JSValue global = JS_GetGlobalObject(ctx_);
-                JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_packed_array");
-                if (JS_IsFunction(ctx_, wrap_fn)) {
-                    JSValue args[2] = { JS_NewInt64(ctx_, handle), JS_NewString(ctx_, "PackedFloat32Array") };
-                    JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 2, args);
-                    JS_FreeValue(ctx_, args[0]);
-                    JS_FreeValue(ctx_, args[1]);
-                    JS_FreeValue(ctx_, wrap_fn);
-                    JS_FreeValue(ctx_, global);
-                    return result;
-                }
-                JS_FreeValue(ctx_, wrap_fn);
-                JS_FreeValue(ctx_, global);
-            }
-            return JS_NewArray(ctx_);
-        }
-
-        case Variant::PACKED_FLOAT64_ARRAY: {
-            if (array_registry_) {
-                PackedFloat64Array arr = value;
-                uint64_t handle = array_registry_->create_packed_float64_array_handle(arr);
-                JSValue global = JS_GetGlobalObject(ctx_);
-                JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_packed_array");
-                if (JS_IsFunction(ctx_, wrap_fn)) {
-                    JSValue args[2] = { JS_NewInt64(ctx_, handle), JS_NewString(ctx_, "PackedFloat64Array") };
-                    JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 2, args);
-                    JS_FreeValue(ctx_, args[0]);
-                    JS_FreeValue(ctx_, args[1]);
-                    JS_FreeValue(ctx_, wrap_fn);
-                    JS_FreeValue(ctx_, global);
-                    return result;
-                }
-                JS_FreeValue(ctx_, wrap_fn);
-                JS_FreeValue(ctx_, global);
-            }
-            return JS_NewArray(ctx_);
-        }
-
-        case Variant::PACKED_STRING_ARRAY: {
-            if (array_registry_) {
-                PackedStringArray arr = value;
-                uint64_t handle = array_registry_->create_packed_string_array_handle(arr);
-                JSValue global = JS_GetGlobalObject(ctx_);
-                JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_packed_array");
-                if (JS_IsFunction(ctx_, wrap_fn)) {
-                    JSValue args[2] = { JS_NewInt64(ctx_, handle), JS_NewString(ctx_, "PackedStringArray") };
-                    JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 2, args);
-                    JS_FreeValue(ctx_, args[0]);
-                    JS_FreeValue(ctx_, args[1]);
-                    JS_FreeValue(ctx_, wrap_fn);
-                    JS_FreeValue(ctx_, global);
-                    return result;
-                }
-                JS_FreeValue(ctx_, wrap_fn);
-                JS_FreeValue(ctx_, global);
-            }
-            return JS_NewArray(ctx_);
-        }
-
-        case Variant::PACKED_VECTOR2_ARRAY: {
-            if (array_registry_) {
-                PackedVector2Array arr = value;
-                uint64_t handle = array_registry_->create_packed_vector2_array_handle(arr);
-                JSValue global = JS_GetGlobalObject(ctx_);
-                JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_packed_array");
-                if (JS_IsFunction(ctx_, wrap_fn)) {
-                    JSValue args[2] = { JS_NewInt64(ctx_, handle), JS_NewString(ctx_, "PackedVector2Array") };
-                    JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 2, args);
-                    JS_FreeValue(ctx_, args[0]);
-                    JS_FreeValue(ctx_, args[1]);
-                    JS_FreeValue(ctx_, wrap_fn);
-                    JS_FreeValue(ctx_, global);
-                    return result;
-                }
-                JS_FreeValue(ctx_, wrap_fn);
-                JS_FreeValue(ctx_, global);
-            }
-            return JS_NewArray(ctx_);
-        }
-
-        case Variant::PACKED_VECTOR3_ARRAY: {
-            if (array_registry_) {
-                PackedVector3Array arr = value;
-                uint64_t handle = array_registry_->create_packed_vector3_array_handle(arr);
-                JSValue global = JS_GetGlobalObject(ctx_);
-                JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_packed_array");
-                if (JS_IsFunction(ctx_, wrap_fn)) {
-                    JSValue args[2] = { JS_NewInt64(ctx_, handle), JS_NewString(ctx_, "PackedVector3Array") };
-                    JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 2, args);
-                    JS_FreeValue(ctx_, args[0]);
-                    JS_FreeValue(ctx_, args[1]);
-                    JS_FreeValue(ctx_, wrap_fn);
-                    JS_FreeValue(ctx_, global);
-                    return result;
-                }
-                JS_FreeValue(ctx_, wrap_fn);
-                JS_FreeValue(ctx_, global);
-            }
-            return JS_NewArray(ctx_);
-        }
-
-        case Variant::PACKED_COLOR_ARRAY: {
-            if (array_registry_) {
-                PackedColorArray arr = value;
-                uint64_t handle = array_registry_->create_packed_color_array_handle(arr);
-                JSValue global = JS_GetGlobalObject(ctx_);
-                JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_packed_array");
-                if (JS_IsFunction(ctx_, wrap_fn)) {
-                    JSValue args[2] = { JS_NewInt64(ctx_, handle), JS_NewString(ctx_, "PackedColorArray") };
-                    JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 2, args);
-                    JS_FreeValue(ctx_, args[0]);
-                    JS_FreeValue(ctx_, args[1]);
-                    JS_FreeValue(ctx_, wrap_fn);
-                    JS_FreeValue(ctx_, global);
-                    return result;
-                }
-                JS_FreeValue(ctx_, wrap_fn);
-                JS_FreeValue(ctx_, global);
-            }
-            return JS_NewArray(ctx_);
-        }
-
-        case Variant::PACKED_VECTOR4_ARRAY: {
-            if (array_registry_) {
-                PackedVector4Array arr = value;
-                uint64_t handle = array_registry_->create_packed_vector4_array_handle(arr);
-                JSValue global = JS_GetGlobalObject(ctx_);
-                JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_packed_array");
-                if (JS_IsFunction(ctx_, wrap_fn)) {
-                    JSValue args[2] = { JS_NewInt64(ctx_, handle), JS_NewString(ctx_, "PackedVector4Array") };
-                    JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 2, args);
-                    JS_FreeValue(ctx_, args[0]);
-                    JS_FreeValue(ctx_, args[1]);
-                    JS_FreeValue(ctx_, wrap_fn);
-                    JS_FreeValue(ctx_, global);
-                    return result;
-                }
-                JS_FreeValue(ctx_, wrap_fn);
-                JS_FreeValue(ctx_, global);
-            }
-            return JS_NewArray(ctx_);
-        }
-
         default:
+            // Check if this is a packed array type and use generated conversion
+            if (generated::is_packed_array_type(value.get_type())) {
+                JSValue result = generated::wrap_packed_array_variant(ctx_, array_registry_, value);
+                if (!JS_IsNull(result)) {
+                    return result;
+                }
+            }
             return JS_NewString(ctx_, String(value).utf8().get_data());
     }
 }
@@ -1263,6 +1060,24 @@ Variant QuickJSContext::js_to_variant(JSValue value) {
                 }
             } else {
                 JS_FreeValue(ctx_, handle_val);
+            }
+        }
+
+        // Check if this is a packed array proxy (has __packed_handle property)
+        // Uses generated conversion function to avoid hardcoded type list
+        if (array_registry_) {
+            JSValue packed_handle_val = JS_GetPropertyStr(ctx_, value, "__packed_handle");
+            if (JS_IsNumber(packed_handle_val)) {
+                int64_t handle;
+                JS_ToInt64(ctx_, &handle, packed_handle_val);
+                JS_FreeValue(ctx_, packed_handle_val);
+
+                Variant result;
+                if (generated::convert_packed_array_to_variant(array_registry_, handle, result)) {
+                    return result;
+                }
+            } else {
+                JS_FreeValue(ctx_, packed_handle_val);
             }
         }
 
@@ -1426,197 +1241,6 @@ Variant QuickJSContext::js_to_variant(JSValue value) {
 // Script Instance Management
 // ============================================================================
 
-// Create a script instance from an ES6 module that uses import/export
-int64_t QuickJSContext::create_module_script_instance(const String &source, const String &filename,
-                                                       Object* owner, String &error) {
-    // For module scripts, we:
-    // 1. Compile and run the module (which processes imports)
-    // 2. Get the exports
-    // 3. Wrap exports into the same instance interface as regular scripts
-
-    if (timeout_ms_ > 0) {
-        deadline_ = Time::get_singleton()->get_ticks_msec() + timeout_ms_;
-    } else {
-        deadline_ = 0;
-    }
-
-    CharString code_utf8 = source.utf8();
-    CharString filename_utf8 = filename.utf8();
-
-    // Compile as ES6 module
-    JSValue func_val = JS_Eval(ctx_, code_utf8.get_data(), code_utf8.length(),
-                                filename_utf8.get_data(),
-                                JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
-
-    if (JS_IsException(func_val)) {
-        deadline_ = 0;
-        error = get_exception_message();
-        return 0;
-    }
-
-    // Get module definition before evaluation
-    JSModuleDef* m = (JSModuleDef*)JS_VALUE_GET_PTR(func_val);
-
-    // Evaluate the module
-    JSValue eval_result = JS_EvalFunction(ctx_, func_val);
-
-    deadline_ = 0;
-
-    if (JS_IsException(eval_result)) {
-        error = get_exception_message();
-        JS_FreeValue(ctx_, eval_result);
-        return 0;
-    }
-    JS_FreeValue(ctx_, eval_result);
-
-    // Get the module's namespace object (contains all exports)
-    JSValue module_ns = JS_GetModuleNamespace(ctx_, m);
-    if (JS_IsException(module_ns) || JS_IsUndefined(module_ns)) {
-        error = "Failed to get module namespace";
-        return 0;
-    }
-
-    // Create instance wrapper that mirrors the regular script instance interface
-    // We'll wrap the module exports into an __instance object
-    String wrapper_code = R"(
-(function(moduleExports) {
-    var __instance = {};
-    var __owner_proxy = null;
-
-    __instance.__set_owner = function(ownerHandle, ownerClass) {
-        if (typeof __wrap_existing_godot_object === 'function') {
-            __owner_proxy = __wrap_existing_godot_object(ownerHandle, ownerClass);
-        } else {
-            __owner_proxy = { __handle: ownerHandle, __class: ownerClass };
-        }
-    };
-
-    __instance.__get_owner = function() {
-        return __owner_proxy;
-    };
-
-    __instance.__get_signals = function() {
-        return moduleExports.signals || null;
-    };
-
-    // Wrap each exported function with proper 'this' binding
-    var keys = Object.keys(moduleExports);
-    for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        if (typeof moduleExports[key] === 'function') {
-            (function(name, fn) {
-                __instance[name] = function() {
-                    return fn.apply(__owner_proxy, arguments);
-                };
-            })(key, moduleExports[key]);
-        }
-    }
-
-    // Also check 'exports' if it exists in the module (for CommonJS-style in modules)
-    if (moduleExports.exports && typeof moduleExports.exports === 'object') {
-        var exportKeys = Object.keys(moduleExports.exports);
-        for (var j = 0; j < exportKeys.length; j++) {
-            var expKey = exportKeys[j];
-            if (typeof moduleExports.exports[expKey] === 'function' && !__instance[expKey]) {
-                (function(name, fn) {
-                    __instance[name] = function() {
-                        return fn.apply(__owner_proxy, arguments);
-                    };
-                })(expKey, moduleExports.exports[expKey]);
-            }
-        }
-    }
-
-    return __instance;
-})
-)";
-
-    CharString wrapper_utf8 = wrapper_code.utf8();
-    JSValue wrapper_fn = JS_Eval(ctx_, wrapper_utf8.get_data(), wrapper_utf8.length(),
-                                  "<module-wrapper>", JS_EVAL_TYPE_GLOBAL);
-
-    if (JS_IsException(wrapper_fn)) {
-        error = "Failed to create module wrapper: " + get_exception_message();
-        JS_FreeValue(ctx_, module_ns);
-        return 0;
-    }
-
-    // Call the wrapper function with the module namespace
-    JSValue result = JS_Call(ctx_, wrapper_fn, JS_UNDEFINED, 1, &module_ns);
-    JS_FreeValue(ctx_, wrapper_fn);
-    JS_FreeValue(ctx_, module_ns);
-
-    if (JS_IsException(result)) {
-        error = get_exception_message();
-        JS_FreeValue(ctx_, result);
-        return 0;
-    }
-
-    if (!JS_IsObject(result)) {
-        error = "Module wrapper did not return an object";
-        JS_FreeValue(ctx_, result);
-        return 0;
-    }
-
-    // Store the instance
-    int64_t instance_id = next_instance_id_++;
-
-    ScriptInstanceData data;
-    data.js_object = result;
-    data.owner = owner;
-    data.valid = true;
-    data.wrapped_source = source;
-    data.file_path = filename;
-
-    script_instances_[instance_id] = data;
-
-    // Set the owner handle on the instance
-    if (owner && object_registry_) {
-        uint64_t owner_handle = object_registry_->get_or_create_handle(owner);
-        String owner_class = owner->get_class();
-        JSValue set_owner_fn = JS_GetPropertyStr(ctx_, result, "__set_owner");
-        if (JS_IsFunction(ctx_, set_owner_fn)) {
-            JSValue args[2] = {
-                JS_NewInt64(ctx_, owner_handle),
-                JS_NewString(ctx_, owner_class.utf8().get_data())
-            };
-            JSValue call_result = JS_Call(ctx_, set_owner_fn, result, 2, args);
-            JS_FreeValue(ctx_, call_result);
-            JS_FreeValue(ctx_, args[0]);
-            JS_FreeValue(ctx_, args[1]);
-        }
-        JS_FreeValue(ctx_, set_owner_fn);
-    }
-
-    // Register custom signals
-    if (owner) {
-        JSValue get_signals_fn = JS_GetPropertyStr(ctx_, result, "__get_signals");
-        if (JS_IsFunction(ctx_, get_signals_fn)) {
-            JSValue signals_val = JS_Call(ctx_, get_signals_fn, result, 0, nullptr);
-            if (JS_IsArray(signals_val)) {
-                JSValue length_val = JS_GetPropertyStr(ctx_, signals_val, "length");
-                int64_t length = 0;
-                JS_ToInt64(ctx_, &length, length_val);
-                JS_FreeValue(ctx_, length_val);
-
-                for (int64_t i = 0; i < length; i++) {
-                    JSValue sig = JS_GetPropertyUint32(ctx_, signals_val, i);
-                    const char* sig_name = JS_ToCString(ctx_, sig);
-                    if (sig_name) {
-                        owner->add_user_signal(String(sig_name));
-                        JS_FreeCString(ctx_, sig_name);
-                    }
-                    JS_FreeValue(ctx_, sig);
-                }
-            }
-            JS_FreeValue(ctx_, signals_val);
-        }
-        JS_FreeValue(ctx_, get_signals_fn);
-    }
-
-    return instance_id;
-}
-
 int64_t QuickJSContext::create_script_instance(const String &source, const String &filename,
                                                 Object* owner, String &error) {
     if (!is_valid()) {
@@ -1627,15 +1251,6 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
     if (source.is_empty()) {
         error = "Empty script source";
         return 0;
-    }
-
-    // Check if this script uses ES6 module syntax (import/export)
-    // If so, we need to handle it as a module first, then wrap it
-    bool uses_modules = source.find("import ") != -1 || source.find("import{") != -1 ||
-                        source.find("import\t") != -1 || source.find("import\n") != -1;
-
-    if (uses_modules) {
-        return create_module_script_instance(source, filename, owner, error);
     }
 
     // Script instance wrapper approach:

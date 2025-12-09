@@ -8,6 +8,10 @@
 #include <godot_cpp/variant/variant.hpp>
 
 namespace jsb {
+
+// Forward declaration for ArrayRegistry (in jsb namespace)
+class ArrayRegistry;
+
 namespace generated {
 
 // Initialize all generated bindings
@@ -26,6 +30,14 @@ void register_math_type_constructors(JSContext* ctx, JSValue global);
 // Packed array constructors and functions
 void register_packed_array_constructors(JSContext* ctx, JSValue global);
 void register_packed_array_functions(JSContext* ctx, JSValue global);
+
+// Packed array conversion functions (generated from packed_array_conversion.cpp.j2)
+// js_to_variant: Convert JS packed array proxy handle to Godot Variant
+bool convert_packed_array_to_variant(jsb::ArrayRegistry* registry, int64_t handle, godot::Variant& out_variant);
+// variant_to_js: Convert Godot packed array Variant to JS proxy
+JSValue wrap_packed_array_variant(JSContext* ctx, jsb::ArrayRegistry* registry, const godot::Variant& value);
+// Check if a Variant type is a packed array type
+bool is_packed_array_type(godot::Variant::Type type);
 
 // Class registration functions
 {% for class_name in classes %}

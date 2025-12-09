@@ -1643,7 +1643,7 @@ class BindingGenerator:
             },
         ]
 
-        # Generate using template
+        # Generate packed array bindings (constructors, get, set, push, size, resize)
         template = self.jinja_env.get_template("packed_array_bindings.cpp.j2")
         content = template.render(packed_array_types=packed_array_types)
 
@@ -1651,6 +1651,15 @@ class BindingGenerator:
             f.write(content)
 
         print(f"Generated: packed_array_bindings.gen.cpp ({len(packed_array_types)} packed array types)")
+
+        # Generate packed array conversion functions (variant_to_js and js_to_variant helpers)
+        conversion_template = self.jinja_env.get_template("packed_array_conversion.cpp.j2")
+        conversion_content = conversion_template.render(packed_array_types=packed_array_types)
+
+        with open(self.output_dir / "packed_array_conversion.gen.cpp", "w") as f:
+            f.write(conversion_content)
+
+        print(f"Generated: packed_array_conversion.gen.cpp")
 
     def generate_math_constructors(self):
         """Generate math type constructors (Vector2, Vector3, Color, etc.)."""
