@@ -5,6 +5,7 @@
 #include "../src/quickjs_context.h"
 #include "../src/object_registry.h"
 #include "../src/safe_wrapper.h"
+#include "../src/execution_limiter.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/ogg_packet_sequence.hpp>
@@ -47,6 +48,7 @@ static JSValue js_OggPacketSequence_get_length(JSContext* ctx, JSValueConst this
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -108,6 +110,12 @@ static JSValue js_OggPacketSequence_set_granule_positions(JSContext* ctx, JSValu
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "OggPacketSequence.granule_positions setter: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "OggPacketSequence.granule_positions setter: invalid object");
@@ -167,6 +175,12 @@ static JSValue js_OggPacketSequence_set_sampling_rate(JSContext* ctx, JSValueCon
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "OggPacketSequence.sampling_rate setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);

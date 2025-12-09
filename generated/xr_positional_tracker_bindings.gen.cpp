@@ -5,6 +5,7 @@
 #include "../src/quickjs_context.h"
 #include "../src/object_registry.h"
 #include "../src/safe_wrapper.h"
+#include "../src/execution_limiter.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/xr_positional_tracker.hpp>
@@ -49,6 +50,7 @@ static JSValue js_XRPositionalTracker_has_pose(JSContext* ctx, JSValueConst this
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "XRPositionalTracker.has_pose: invalid or freed object");
@@ -86,6 +88,7 @@ static JSValue js_XRPositionalTracker_get_pose(JSContext* ctx, JSValueConst this
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -150,6 +153,12 @@ static JSValue js_XRPositionalTracker_invalidate_pose(JSContext* ctx, JSValueCon
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "XRPositionalTracker.invalidate_pose: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "XRPositionalTracker.invalidate_pose: invalid or freed object");
@@ -186,6 +195,12 @@ static JSValue js_XRPositionalTracker_set_pose(JSContext* ctx, JSValueConst this
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "XRPositionalTracker.set_pose: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -284,6 +299,7 @@ static JSValue js_XRPositionalTracker_get_input(JSContext* ctx, JSValueConst thi
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "XRPositionalTracker.get_input: invalid or freed object");
@@ -320,6 +336,12 @@ static JSValue js_XRPositionalTracker_set_input(JSContext* ctx, JSValueConst thi
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "XRPositionalTracker.set_input: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -391,6 +413,12 @@ static JSValue js_XRPositionalTracker_set_profile(JSContext* ctx, JSValueConst t
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "XRPositionalTracker.profile setter: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "XRPositionalTracker.profile setter: invalid object");
@@ -450,6 +478,12 @@ static JSValue js_XRPositionalTracker_set_hand(JSContext* ctx, JSValueConst this
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "XRPositionalTracker.hand setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);

@@ -85,6 +85,10 @@ private:
     int max_heavy_ops_per_frame_ = 50;
     int write_ops_this_frame_ = 0;
     int heavy_ops_this_frame_ = 0;
+
+    // Auto-reset based on engine frame count
+    uint64_t last_frame_count_ = 0;
+    void check_auto_reset();
 };
 
 } // namespace jsb

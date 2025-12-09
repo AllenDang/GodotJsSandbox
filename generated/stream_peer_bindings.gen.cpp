@@ -5,6 +5,7 @@
 #include "../src/quickjs_context.h"
 #include "../src/object_registry.h"
 #include "../src/safe_wrapper.h"
+#include "../src/execution_limiter.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/stream_peer.hpp>
@@ -48,6 +49,12 @@ static JSValue js_StreamPeer_put_data(JSContext* ctx, JSValueConst this_val, int
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_data: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.put_data: invalid or freed object");
@@ -84,6 +91,12 @@ static JSValue js_StreamPeer_put_partial_data(JSContext* ctx, JSValueConst this_
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_partial_data: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -124,6 +137,7 @@ static JSValue js_StreamPeer_get_data(JSContext* ctx, JSValueConst this_val, int
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.get_data: invalid or freed object");
@@ -161,6 +175,7 @@ static JSValue js_StreamPeer_get_partial_data(JSContext* ctx, JSValueConst this_
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -200,6 +215,7 @@ static JSValue js_StreamPeer_get_available_bytes(JSContext* ctx, JSValueConst th
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.get_available_bytes: invalid or freed object");
@@ -228,6 +244,12 @@ static JSValue js_StreamPeer_put_8(JSContext* ctx, JSValueConst this_val, int ar
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_8: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -268,6 +290,12 @@ static JSValue js_StreamPeer_put_u8(JSContext* ctx, JSValueConst this_val, int a
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_u8: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.put_u8: invalid or freed object");
@@ -304,6 +332,12 @@ static JSValue js_StreamPeer_put_16(JSContext* ctx, JSValueConst this_val, int a
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_16: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -344,6 +378,12 @@ static JSValue js_StreamPeer_put_u16(JSContext* ctx, JSValueConst this_val, int 
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_u16: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.put_u16: invalid or freed object");
@@ -380,6 +420,12 @@ static JSValue js_StreamPeer_put_32(JSContext* ctx, JSValueConst this_val, int a
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_32: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -420,6 +466,12 @@ static JSValue js_StreamPeer_put_u32(JSContext* ctx, JSValueConst this_val, int 
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_u32: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.put_u32: invalid or freed object");
@@ -456,6 +508,12 @@ static JSValue js_StreamPeer_put_64(JSContext* ctx, JSValueConst this_val, int a
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_64: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -496,6 +554,12 @@ static JSValue js_StreamPeer_put_u64(JSContext* ctx, JSValueConst this_val, int 
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_u64: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.put_u64: invalid or freed object");
@@ -532,6 +596,12 @@ static JSValue js_StreamPeer_put_half(JSContext* ctx, JSValueConst this_val, int
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_half: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -572,6 +642,12 @@ static JSValue js_StreamPeer_put_float(JSContext* ctx, JSValueConst this_val, in
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_float: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.put_float: invalid or freed object");
@@ -608,6 +684,12 @@ static JSValue js_StreamPeer_put_double(JSContext* ctx, JSValueConst this_val, i
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_double: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -648,6 +730,12 @@ static JSValue js_StreamPeer_put_string(JSContext* ctx, JSValueConst this_val, i
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_string: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.put_string: invalid or freed object");
@@ -686,6 +774,12 @@ static JSValue js_StreamPeer_put_utf8_string(JSContext* ctx, JSValueConst this_v
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_utf8_string: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.put_utf8_string: invalid or freed object");
@@ -722,6 +816,12 @@ static JSValue js_StreamPeer_put_var(JSContext* ctx, JSValueConst this_val, int 
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.put_var: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -768,6 +868,7 @@ static JSValue js_StreamPeer_get_8(JSContext* ctx, JSValueConst this_val, int ar
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.get_8: invalid or freed object");
@@ -797,6 +898,7 @@ static JSValue js_StreamPeer_get_u8(JSContext* ctx, JSValueConst this_val, int a
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -828,6 +930,7 @@ static JSValue js_StreamPeer_get_16(JSContext* ctx, JSValueConst this_val, int a
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.get_16: invalid or freed object");
@@ -857,6 +960,7 @@ static JSValue js_StreamPeer_get_u16(JSContext* ctx, JSValueConst this_val, int 
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -888,6 +992,7 @@ static JSValue js_StreamPeer_get_32(JSContext* ctx, JSValueConst this_val, int a
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.get_32: invalid or freed object");
@@ -917,6 +1022,7 @@ static JSValue js_StreamPeer_get_u32(JSContext* ctx, JSValueConst this_val, int 
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -948,6 +1054,7 @@ static JSValue js_StreamPeer_get_64(JSContext* ctx, JSValueConst this_val, int a
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.get_64: invalid or freed object");
@@ -977,6 +1084,7 @@ static JSValue js_StreamPeer_get_u64(JSContext* ctx, JSValueConst this_val, int 
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -1008,6 +1116,7 @@ static JSValue js_StreamPeer_get_half(JSContext* ctx, JSValueConst this_val, int
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.get_half: invalid or freed object");
@@ -1037,6 +1146,7 @@ static JSValue js_StreamPeer_get_float(JSContext* ctx, JSValueConst this_val, in
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -1068,6 +1178,7 @@ static JSValue js_StreamPeer_get_double(JSContext* ctx, JSValueConst this_val, i
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.get_double: invalid or freed object");
@@ -1097,6 +1208,7 @@ static JSValue js_StreamPeer_get_string(JSContext* ctx, JSValueConst this_val, i
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -1141,6 +1253,7 @@ static JSValue js_StreamPeer_get_utf8_string(JSContext* ctx, JSValueConst this_v
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeer.get_utf8_string: invalid or freed object");
@@ -1183,6 +1296,7 @@ static JSValue js_StreamPeer_get_var(JSContext* ctx, JSValueConst this_val, int 
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -1255,6 +1369,12 @@ static JSValue js_StreamPeer_set_big_endian(JSContext* ctx, JSValueConst this_va
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeer.big_endian setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);

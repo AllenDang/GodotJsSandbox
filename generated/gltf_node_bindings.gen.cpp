@@ -5,6 +5,7 @@
 #include "../src/quickjs_context.h"
 #include "../src/object_registry.h"
 #include "../src/safe_wrapper.h"
+#include "../src/execution_limiter.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/gltf_node.hpp>
@@ -49,6 +50,12 @@ static JSValue js_GLTFNode_append_child_index(JSContext* ctx, JSValueConst this_
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.append_child_index: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "GLTFNode.append_child_index: invalid or freed object");
@@ -87,6 +94,7 @@ static JSValue js_GLTFNode_get_additional_data(JSContext* ctx, JSValueConst this
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "GLTFNode.get_additional_data: invalid or freed object");
@@ -123,6 +131,12 @@ static JSValue js_GLTFNode_set_additional_data(JSContext* ctx, JSValueConst this
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.set_additional_data: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -163,6 +177,7 @@ static JSValue js_GLTFNode_get_scene_node_path(JSContext* ctx, JSValueConst this
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -253,6 +268,12 @@ static JSValue js_GLTFNode_set_original_name(JSContext* ctx, JSValueConst this_v
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.original_name setter: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "GLTFNode.original_name setter: invalid object");
@@ -314,6 +335,12 @@ static JSValue js_GLTFNode_set_parent(JSContext* ctx, JSValueConst this_val, int
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.parent setter: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "GLTFNode.parent setter: invalid object");
@@ -373,6 +400,12 @@ static JSValue js_GLTFNode_set_height(JSContext* ctx, JSValueConst this_val, int
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.height setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -457,6 +490,12 @@ static JSValue js_GLTFNode_set_xform(JSContext* ctx, JSValueConst this_val, int 
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.xform setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -554,6 +593,12 @@ static JSValue js_GLTFNode_set_mesh(JSContext* ctx, JSValueConst this_val, int a
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.mesh setter: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "GLTFNode.mesh setter: invalid object");
@@ -613,6 +658,12 @@ static JSValue js_GLTFNode_set_camera(JSContext* ctx, JSValueConst this_val, int
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.camera setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -676,6 +727,12 @@ static JSValue js_GLTFNode_set_skin(JSContext* ctx, JSValueConst this_val, int a
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.skin setter: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "GLTFNode.skin setter: invalid object");
@@ -735,6 +792,12 @@ static JSValue js_GLTFNode_set_skeleton(JSContext* ctx, JSValueConst this_val, i
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.skeleton setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -800,6 +863,12 @@ static JSValue js_GLTFNode_set_position(JSContext* ctx, JSValueConst this_val, i
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.position setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -876,6 +945,12 @@ static JSValue js_GLTFNode_set_rotation(JSContext* ctx, JSValueConst this_val, i
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.rotation setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -956,6 +1031,12 @@ static JSValue js_GLTFNode_set_scale(JSContext* ctx, JSValueConst this_val, int 
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.scale setter: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "GLTFNode.scale setter: invalid object");
@@ -1027,6 +1108,12 @@ static JSValue js_GLTFNode_set_children(JSContext* ctx, JSValueConst this_val, i
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.children setter: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "GLTFNode.children setter: invalid object");
@@ -1088,6 +1175,12 @@ static JSValue js_GLTFNode_set_light(JSContext* ctx, JSValueConst this_val, int 
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.light setter: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "GLTFNode.light setter: invalid object");
@@ -1147,6 +1240,12 @@ static JSValue js_GLTFNode_set_visible(JSContext* ctx, JSValueConst this_val, in
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "GLTFNode.visible setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);

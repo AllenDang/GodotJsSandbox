@@ -5,6 +5,7 @@
 #include "../src/quickjs_context.h"
 #include "../src/object_registry.h"
 #include "../src/safe_wrapper.h"
+#include "../src/execution_limiter.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/stream_peer_buffer.hpp>
@@ -49,6 +50,12 @@ static JSValue js_StreamPeerBuffer_seek(JSContext* ctx, JSValueConst this_val, i
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeerBuffer.seek: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeerBuffer.seek: invalid or freed object");
@@ -87,6 +94,7 @@ static JSValue js_StreamPeerBuffer_get_size(JSContext* ctx, JSValueConst this_va
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeerBuffer.get_size: invalid or freed object");
@@ -117,6 +125,7 @@ static JSValue js_StreamPeerBuffer_get_position(JSContext* ctx, JSValueConst thi
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeerBuffer.get_position: invalid or freed object");
@@ -145,6 +154,12 @@ static JSValue js_StreamPeerBuffer_resize(JSContext* ctx, JSValueConst this_val,
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeerBuffer.resize: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -185,6 +200,12 @@ static JSValue js_StreamPeerBuffer_clear(JSContext* ctx, JSValueConst this_val, 
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeerBuffer.clear: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "StreamPeerBuffer.clear: invalid or freed object");
@@ -213,6 +234,12 @@ static JSValue js_StreamPeerBuffer_duplicate(JSContext* ctx, JSValueConst this_v
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check HEAVY rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::HEAVY)) {
+        return JS_ThrowInternalError(ctx, "StreamPeerBuffer.duplicate: heavy rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -298,6 +325,12 @@ static JSValue js_StreamPeerBuffer_set_data_array(JSContext* ctx, JSValueConst t
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "StreamPeerBuffer.data_array setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);

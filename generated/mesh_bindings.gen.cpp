@@ -5,14 +5,15 @@
 #include "../src/quickjs_context.h"
 #include "../src/object_registry.h"
 #include "../src/safe_wrapper.h"
+#include "../src/execution_limiter.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/mesh.hpp>
+#include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/classes/resource.hpp>
+#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/convex_polygon_shape3d.hpp>
-#include <godot_cpp/classes/material.hpp>
-#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/triangle_mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -54,6 +55,7 @@ static JSValue js_Mesh_get_aabb(JSContext* ctx, JSValueConst this_val, int argc,
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "Mesh.get_aabb: invalid or freed object");
@@ -83,6 +85,7 @@ static JSValue js_Mesh_get_faces(JSContext* ctx, JSValueConst this_val, int argc
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -122,6 +125,7 @@ static JSValue js_Mesh_get_surface_count(JSContext* ctx, JSValueConst this_val, 
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "Mesh.get_surface_count: invalid or freed object");
@@ -150,6 +154,12 @@ static JSValue js_Mesh_surface_get_arrays(JSContext* ctx, JSValueConst this_val,
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "Mesh.surface_get_arrays: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -190,6 +200,12 @@ static JSValue js_Mesh_surface_get_blend_shape_arrays(JSContext* ctx, JSValueCon
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "Mesh.surface_get_blend_shape_arrays: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "Mesh.surface_get_blend_shape_arrays: invalid or freed object");
@@ -226,6 +242,12 @@ static JSValue js_Mesh_surface_set_material(JSContext* ctx, JSValueConst this_va
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "Mesh.surface_set_material: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -280,6 +302,12 @@ static JSValue js_Mesh_surface_get_material(JSContext* ctx, JSValueConst this_va
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "Mesh.surface_get_material: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -345,6 +373,12 @@ static JSValue js_Mesh_create_placeholder(JSContext* ctx, JSValueConst this_val,
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check HEAVY rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::HEAVY)) {
+        return JS_ThrowInternalError(ctx, "Mesh.create_placeholder: heavy rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "Mesh.create_placeholder: invalid or freed object");
@@ -400,6 +434,12 @@ static JSValue js_Mesh_create_trimesh_shape(JSContext* ctx, JSValueConst this_va
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check HEAVY rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::HEAVY)) {
+        return JS_ThrowInternalError(ctx, "Mesh.create_trimesh_shape: heavy rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "Mesh.create_trimesh_shape: invalid or freed object");
@@ -453,6 +493,12 @@ static JSValue js_Mesh_create_convex_shape(JSContext* ctx, JSValueConst this_val
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check HEAVY rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::HEAVY)) {
+        return JS_ThrowInternalError(ctx, "Mesh.create_convex_shape: heavy rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -529,6 +575,12 @@ static JSValue js_Mesh_create_outline(JSContext* ctx, JSValueConst this_val, int
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check HEAVY rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::HEAVY)) {
+        return JS_ThrowInternalError(ctx, "Mesh.create_outline: heavy rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "Mesh.create_outline: invalid or freed object");
@@ -590,6 +642,12 @@ static JSValue js_Mesh_generate_triangle_mesh(JSContext* ctx, JSValueConst this_
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "Mesh.generate_triangle_mesh: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -675,6 +733,12 @@ static JSValue js_Mesh_set_lightmap_size_hint(JSContext* ctx, JSValueConst this_
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "Mesh.lightmap_size_hint setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);

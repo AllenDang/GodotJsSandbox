@@ -5,11 +5,12 @@
 #include "../src/quickjs_context.h"
 #include "../src/object_registry.h"
 #include "../src/safe_wrapper.h"
+#include "../src/execution_limiter.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/scene_state.hpp>
-#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/scene_state.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -50,6 +51,7 @@ static JSValue js_SceneState_get_path(JSContext* ctx, JSValueConst this_val, int
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SceneState.get_path: invalid or freed object");
@@ -79,6 +81,7 @@ static JSValue js_SceneState_get_base_scene_state(JSContext* ctx, JSValueConst t
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -135,6 +138,7 @@ static JSValue js_SceneState_get_node_count(JSContext* ctx, JSValueConst this_va
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SceneState.get_node_count: invalid or freed object");
@@ -164,6 +168,7 @@ static JSValue js_SceneState_get_node_type(JSContext* ctx, JSValueConst this_val
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -203,6 +208,7 @@ static JSValue js_SceneState_get_node_name(JSContext* ctx, JSValueConst this_val
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SceneState.get_node_name: invalid or freed object");
@@ -240,6 +246,7 @@ static JSValue js_SceneState_get_node_path(JSContext* ctx, JSValueConst this_val
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -285,6 +292,7 @@ static JSValue js_SceneState_get_node_owner_path(JSContext* ctx, JSValueConst th
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SceneState.get_node_owner_path: invalid or freed object");
@@ -322,6 +330,7 @@ static JSValue js_SceneState_is_node_instance_placeholder(JSContext* ctx, JSValu
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -361,6 +370,7 @@ static JSValue js_SceneState_get_node_instance_placeholder(JSContext* ctx, JSVal
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SceneState.get_node_instance_placeholder: invalid or freed object");
@@ -398,6 +408,7 @@ static JSValue js_SceneState_get_node_instance(JSContext* ctx, JSValueConst this
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -462,6 +473,7 @@ static JSValue js_SceneState_get_node_groups(JSContext* ctx, JSValueConst this_v
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SceneState.get_node_groups: invalid or freed object");
@@ -499,6 +511,7 @@ static JSValue js_SceneState_get_node_index(JSContext* ctx, JSValueConst this_va
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -538,6 +551,7 @@ static JSValue js_SceneState_get_node_property_count(JSContext* ctx, JSValueCons
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SceneState.get_node_property_count: invalid or freed object");
@@ -575,6 +589,7 @@ static JSValue js_SceneState_get_node_property_name(JSContext* ctx, JSValueConst
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -615,6 +630,7 @@ static JSValue js_SceneState_get_node_property_value(JSContext* ctx, JSValueCons
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SceneState.get_node_property_value: invalid or freed object");
@@ -654,6 +670,7 @@ static JSValue js_SceneState_get_connection_count(JSContext* ctx, JSValueConst t
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SceneState.get_connection_count: invalid or freed object");
@@ -683,6 +700,7 @@ static JSValue js_SceneState_get_connection_source(JSContext* ctx, JSValueConst 
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -722,6 +740,7 @@ static JSValue js_SceneState_get_connection_signal(JSContext* ctx, JSValueConst 
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SceneState.get_connection_signal: invalid or freed object");
@@ -759,6 +778,7 @@ static JSValue js_SceneState_get_connection_target(JSContext* ctx, JSValueConst 
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -798,6 +818,7 @@ static JSValue js_SceneState_get_connection_method(JSContext* ctx, JSValueConst 
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SceneState.get_connection_method: invalid or freed object");
@@ -835,6 +856,7 @@ static JSValue js_SceneState_get_connection_flags(JSContext* ctx, JSValueConst t
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -874,6 +896,7 @@ static JSValue js_SceneState_get_connection_binds(JSContext* ctx, JSValueConst t
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SceneState.get_connection_binds: invalid or freed object");
@@ -911,6 +934,7 @@ static JSValue js_SceneState_get_connection_unbinds(JSContext* ctx, JSValueConst
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {

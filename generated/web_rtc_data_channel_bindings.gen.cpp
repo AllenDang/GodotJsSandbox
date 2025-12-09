@@ -5,6 +5,7 @@
 #include "../src/quickjs_context.h"
 #include "../src/object_registry.h"
 #include "../src/safe_wrapper.h"
+#include "../src/execution_limiter.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/web_rtc_data_channel.hpp>
@@ -48,6 +49,12 @@ static JSValue js_WebRTCDataChannel_poll(JSContext* ctx, JSValueConst this_val, 
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "WebRTCDataChannel.poll: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "WebRTCDataChannel.poll: invalid or freed object");
@@ -76,6 +83,12 @@ static JSValue js_WebRTCDataChannel_close(JSContext* ctx, JSValueConst this_val,
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "WebRTCDataChannel.close: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -108,6 +121,7 @@ static JSValue js_WebRTCDataChannel_was_string_packet(JSContext* ctx, JSValueCon
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "WebRTCDataChannel.was_string_packet: invalid or freed object");
@@ -137,6 +151,7 @@ static JSValue js_WebRTCDataChannel_get_ready_state(JSContext* ctx, JSValueConst
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -168,6 +183,7 @@ static JSValue js_WebRTCDataChannel_get_label(JSContext* ctx, JSValueConst this_
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "WebRTCDataChannel.get_label: invalid or freed object");
@@ -197,6 +213,7 @@ static JSValue js_WebRTCDataChannel_is_ordered(JSContext* ctx, JSValueConst this
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -228,6 +245,7 @@ static JSValue js_WebRTCDataChannel_get_id(JSContext* ctx, JSValueConst this_val
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "WebRTCDataChannel.get_id: invalid or freed object");
@@ -257,6 +275,7 @@ static JSValue js_WebRTCDataChannel_get_max_packet_life_time(JSContext* ctx, JSV
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -288,6 +307,7 @@ static JSValue js_WebRTCDataChannel_get_max_retransmits(JSContext* ctx, JSValueC
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "WebRTCDataChannel.get_max_retransmits: invalid or freed object");
@@ -317,6 +337,7 @@ static JSValue js_WebRTCDataChannel_get_protocol(JSContext* ctx, JSValueConst th
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -348,6 +369,7 @@ static JSValue js_WebRTCDataChannel_is_negotiated(JSContext* ctx, JSValueConst t
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "WebRTCDataChannel.is_negotiated: invalid or freed object");
@@ -377,6 +399,7 @@ static JSValue js_WebRTCDataChannel_get_buffered_amount(JSContext* ctx, JSValueC
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -436,6 +459,12 @@ static JSValue js_WebRTCDataChannel_set_write_mode(JSContext* ctx, JSValueConst 
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "WebRTCDataChannel.write_mode setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);

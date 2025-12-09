@@ -184,6 +184,7 @@ class MethodInfo:
     required_arg_count: int = 0  # Number of required arguments (without defaults)
     js_name: str = ""  # Name to expose in JS (if different from API name)
     cpp_name: str = ""  # Actual C++ method name to call (if different from API name)
+    api_category: str = "WRITE"  # READ, WRITE, or HEAVY - for rate limiting per PRD Section 6.4
 
 
 @dataclass
@@ -384,6 +385,34 @@ class BindingGenerator:
         cpp_names = self.blocklist.get("method_cpp_names", {})
         class_cpp_names = cpp_names.get(class_name, {})
         return class_cpp_names.get(method_name, method_name)
+
+    def get_method_api_category(self, method_name: str) -> str:
+        """Determine API category for rate limiting per PRD Section 6.4.
+        Returns: READ, WRITE, or HEAVY"""
+        # HEAVY operations (50/frame) - create/destroy objects, major tree changes
+        heavy_methods = {
+            "queue_free", "free", "duplicate", "instantiate",
+            "add_child", "remove_child", "reparent", "add_sibling",
+            "move_child", "move_to_front", "move_to_back",
+            "create_instance", "create_child", "create_item",
+        }
+        heavy_prefixes = ("create_", "instantiate_", "spawn_")
+
+        if method_name in heavy_methods:
+            return "HEAVY"
+        if method_name.startswith(heavy_prefixes):
+            return "HEAVY"
+
+        # READ operations (unlimited) - only read state, no side effects
+        read_prefixes = (
+            "get_", "is_", "has_", "can_", "find_", "are_",
+            "was_", "were_", "should_", "will_", "does_",
+        )
+        if method_name.startswith(read_prefixes):
+            return "READ"
+
+        # WRITE operations (500/frame) - everything else that modifies state
+        return "WRITE"
 
     def is_property_blocked(self, class_name: str, property_name: str) -> bool:
         blocked_props = self.blocklist.get("blocked_properties", {})
@@ -1208,6 +1237,9 @@ class BindingGenerator:
 
         # Check for C++ name override (e.g., API 'get_node' -> C++ 'get_node_internal')
         method.cpp_name = self.get_method_cpp_name(class_name, method_name)
+
+        # Determine API category for rate limiting (PRD Section 6.4)
+        method.api_category = self.get_method_api_category(method_name)
 
         return method
 

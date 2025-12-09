@@ -5,6 +5,7 @@
 #include "../src/quickjs_context.h"
 #include "../src/object_registry.h"
 #include "../src/safe_wrapper.h"
+#include "../src/execution_limiter.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/skeleton_modification2dccdik.hpp>
@@ -48,6 +49,12 @@ static JSValue js_SkeletonModification2DCCDIK_set_ccdik_joint_bone2d_node(JSCont
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DCCDIK.set_ccdik_joint_bone2d_node: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DCCDIK.set_ccdik_joint_bone2d_node: invalid or freed object");
@@ -87,6 +94,7 @@ static JSValue js_SkeletonModification2DCCDIK_get_ccdik_joint_bone2d_node(JSCont
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DCCDIK.get_ccdik_joint_bone2d_node: invalid or freed object");
@@ -123,6 +131,12 @@ static JSValue js_SkeletonModification2DCCDIK_set_ccdik_joint_bone_index(JSConte
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DCCDIK.set_ccdik_joint_bone_index: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -164,6 +178,7 @@ static JSValue js_SkeletonModification2DCCDIK_get_ccdik_joint_bone_index(JSConte
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DCCDIK.get_ccdik_joint_bone_index: invalid or freed object");
@@ -200,6 +215,12 @@ static JSValue js_SkeletonModification2DCCDIK_set_ccdik_joint_rotate_from_joint(
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DCCDIK.set_ccdik_joint_rotate_from_joint: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -241,6 +262,7 @@ static JSValue js_SkeletonModification2DCCDIK_get_ccdik_joint_rotate_from_joint(
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DCCDIK.get_ccdik_joint_rotate_from_joint: invalid or freed object");
@@ -277,6 +299,12 @@ static JSValue js_SkeletonModification2DCCDIK_set_ccdik_joint_enable_constraint(
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DCCDIK.set_ccdik_joint_enable_constraint: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -318,6 +346,7 @@ static JSValue js_SkeletonModification2DCCDIK_get_ccdik_joint_enable_constraint(
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DCCDIK.get_ccdik_joint_enable_constraint: invalid or freed object");
@@ -354,6 +383,12 @@ static JSValue js_SkeletonModification2DCCDIK_set_ccdik_joint_constraint_angle_m
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DCCDIK.set_ccdik_joint_constraint_angle_min: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -395,6 +430,7 @@ static JSValue js_SkeletonModification2DCCDIK_get_ccdik_joint_constraint_angle_m
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DCCDIK.get_ccdik_joint_constraint_angle_min: invalid or freed object");
@@ -431,6 +467,12 @@ static JSValue js_SkeletonModification2DCCDIK_set_ccdik_joint_constraint_angle_m
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DCCDIK.set_ccdik_joint_constraint_angle_max: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -472,6 +514,7 @@ static JSValue js_SkeletonModification2DCCDIK_get_ccdik_joint_constraint_angle_m
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DCCDIK.get_ccdik_joint_constraint_angle_max: invalid or freed object");
@@ -508,6 +551,12 @@ static JSValue js_SkeletonModification2DCCDIK_set_ccdik_joint_constraint_angle_i
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DCCDIK.set_ccdik_joint_constraint_angle_invert: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -548,6 +597,7 @@ static JSValue js_SkeletonModification2DCCDIK_get_ccdik_joint_constraint_angle_i
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -617,6 +667,12 @@ static JSValue js_SkeletonModification2DCCDIK_set_target_nodepath(JSContext* ctx
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DCCDIK.target_nodepath setter: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DCCDIK.target_nodepath setter: invalid object");
@@ -678,6 +734,12 @@ static JSValue js_SkeletonModification2DCCDIK_set_tip_nodepath(JSContext* ctx, J
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DCCDIK.tip_nodepath setter: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DCCDIK.tip_nodepath setter: invalid object");
@@ -737,6 +799,12 @@ static JSValue js_SkeletonModification2DCCDIK_set_ccdik_data_chain_length(JSCont
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DCCDIK.ccdik_data_chain_length setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);

@@ -1241,6 +1241,43 @@ Variant QuickJSContext::js_to_variant(JSValue value) {
 // Script Instance Management
 // ============================================================================
 
+// Helper function to detect ES6 module syntax in source code
+static bool source_uses_es6_modules(const String& source) {
+    // Look for import statements: import ... from or import '...'
+    // Look for export statements: export function, export const, export default, export {
+
+    // Simple regex-like detection (avoid full regex for performance)
+    // Check for "import " at start of line or after semicolon/newline
+    int pos = 0;
+    while (pos < source.length()) {
+        // Skip whitespace
+        while (pos < source.length() && (source[pos] == ' ' || source[pos] == '\t' || source[pos] == '\n' || source[pos] == '\r')) {
+            pos++;
+        }
+        if (pos >= source.length()) break;
+
+        // Check for import keyword
+        if (source.substr(pos, 7) == "import " || source.substr(pos, 7) == "import\t") {
+            // Make sure it's not inside a string or comment
+            // For simplicity, if we see "import " at start of a line-ish position, assume ES6
+            return true;
+        }
+
+        // Check for export keyword
+        if (source.substr(pos, 7) == "export " || source.substr(pos, 7) == "export\t") {
+            return true;
+        }
+
+        // Move to next line or statement
+        while (pos < source.length() && source[pos] != '\n' && source[pos] != ';') {
+            pos++;
+        }
+        pos++;
+    }
+
+    return false;
+}
+
 int64_t QuickJSContext::create_script_instance(const String &source, const String &filename,
                                                 Object* owner, String &error) {
     if (!is_valid()) {
@@ -1251,6 +1288,13 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
     if (source.is_empty()) {
         error = "Empty script source";
         return 0;
+    }
+
+    // Check if source uses ES6 module syntax (import/export)
+    bool is_es6_module = source_uses_es6_modules(source);
+
+    if (is_es6_module) {
+        return create_module_script_instance(source, filename, owner, error);
     }
 
     // Script instance wrapper approach:
@@ -1448,6 +1492,184 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
                     const char* sig_name = JS_ToCString(ctx_, sig);
                     if (sig_name) {
                         // Register the signal with Godot
+                        owner->add_user_signal(String(sig_name));
+                        JS_FreeCString(ctx_, sig_name);
+                    }
+                    JS_FreeValue(ctx_, sig);
+                }
+            }
+            JS_FreeValue(ctx_, signals_val);
+        }
+        JS_FreeValue(ctx_, get_signals_fn);
+    }
+
+    return instance_id;
+}
+
+int64_t QuickJSContext::create_module_script_instance(const String &source, const String &filename,
+                                                       Object* owner, String &error) {
+    // ES6 module-based script instance
+    // For scripts that use import/export syntax, we evaluate them as proper ES6 modules
+    // and capture their exports to build the script instance
+
+    // Strategy:
+    // 1. Evaluate the user's script as an ES6 module to load it and its imports
+    // 2. Create a wrapper that collects exported functions and provides 'this' binding
+    //
+    // The module must export lifecycle methods (e.g., export function _ready() { })
+    // We store a global reference to capture exports from the module
+
+    // Generate unique instance ID and storage key
+    int64_t instance_id = next_instance_id_++;
+    String instance_key = "__module_instance_" + String::num_int64(instance_id);
+
+    // Create wrapper module that:
+    // 1. Imports all exports from the user script
+    // 2. Creates an instance object with bound methods
+    // 3. Stores it in globalThis for retrieval
+
+    // First, we need to make the user script available for import
+    // We'll store it in a map and use the module loader to serve it
+    // For now, since the module loader already handles file paths, we rely on the
+    // script being at its actual file path
+
+    String module_path = filename;
+    if (!module_path.begins_with("res://") && !module_path.begins_with("user://")) {
+        module_path = "user://" + filename;
+    }
+
+    // Create wrapper module code that imports from the user script and captures exports
+    String wrapper_code = String(R"(
+// Import all exports from user script
+import * as __userModule from ')") + module_path + String(R"(';
+
+// Create instance object to hold bound methods
+var __instance = {};
+var __owner_proxy = null;
+
+// Store owner reference for 'this' context
+__instance.__set_owner = function(ownerHandle, ownerClass) {
+    if (typeof __wrap_existing_godot_object === 'function') {
+        __owner_proxy = __wrap_existing_godot_object(ownerHandle, ownerClass);
+    } else {
+        __owner_proxy = { __handle: ownerHandle, __class: ownerClass };
+    }
+};
+
+__instance.__get_owner = function() {
+    return __owner_proxy;
+};
+
+// Get custom signals if defined
+__instance.__get_signals = function() {
+    return __userModule.signals || null;
+};
+
+// Bind all exported functions to use owner as 'this'
+for (var key in __userModule) {
+    if (typeof __userModule[key] === 'function') {
+        (function(methodName, methodFn) {
+            __instance[methodName] = function() {
+                return methodFn.apply(__owner_proxy, arguments);
+            };
+        })(key, __userModule[key]);
+    }
+}
+
+// Store instance globally for retrieval
+globalThis.)") + instance_key + String(R"( = __instance;
+)");
+
+    // Set deadline for timeout
+    if (timeout_ms_ > 0) {
+        deadline_ = Time::get_singleton()->get_ticks_msec() + timeout_ms_;
+    } else {
+        deadline_ = 0;
+    }
+
+    // Evaluate wrapper as module
+    CharString wrapper_utf8 = wrapper_code.utf8();
+    String wrapper_filename = "user://__wrapper_" + String::num_int64(instance_id) + ".js";
+    CharString wrapper_filename_utf8 = wrapper_filename.utf8();
+
+    JSValue func_val = JS_Eval(ctx_, wrapper_utf8.get_data(), wrapper_utf8.length(),
+                                wrapper_filename_utf8.get_data(),
+                                JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
+
+    if (JS_IsException(func_val)) {
+        deadline_ = 0;
+        error = "Failed to compile module wrapper: " + get_exception_message();
+        return 0;
+    }
+
+    JSValue ret = JS_EvalFunction(ctx_, func_val);
+    deadline_ = 0;
+
+    if (JS_IsException(ret)) {
+        error = "Failed to evaluate module: " + get_exception_message();
+        JS_FreeValue(ctx_, ret);
+        return 0;
+    }
+    JS_FreeValue(ctx_, ret);
+
+    // Retrieve the instance from globalThis
+    JSValue global = JS_GetGlobalObject(ctx_);
+    JSValue result = JS_GetPropertyStr(ctx_, global, instance_key.utf8().get_data());
+
+    if (!JS_IsObject(result)) {
+        JS_FreeValue(ctx_, result);
+        JS_FreeValue(ctx_, global);
+        error = "Module wrapper did not create instance object";
+        return 0;
+    }
+
+    // Clean up global reference (we hold our own reference now)
+    JS_DeleteProperty(ctx_, global, JS_NewAtom(ctx_, instance_key.utf8().get_data()), 0);
+    JS_FreeValue(ctx_, global);
+
+    // Store the instance
+    ScriptInstanceData data;
+    data.js_object = result;  // Takes ownership
+    data.owner = owner;
+    data.valid = true;
+    data.wrapped_source = source;  // Store original for error context
+    data.file_path = filename;
+
+    script_instances_[instance_id] = data;
+
+    // Set the owner handle on the instance
+    if (owner && object_registry_) {
+        uint64_t owner_handle = object_registry_->get_or_create_handle(owner);
+        String owner_class = owner->get_class();
+        JSValue set_owner_fn = JS_GetPropertyStr(ctx_, result, "__set_owner");
+        if (JS_IsFunction(ctx_, set_owner_fn)) {
+            JSValue args[2] = {
+                JS_NewInt64(ctx_, owner_handle),
+                JS_NewString(ctx_, owner_class.utf8().get_data())
+            };
+            JSValue call_result = JS_Call(ctx_, set_owner_fn, result, 2, args);
+            JS_FreeValue(ctx_, call_result);
+            JS_FreeValue(ctx_, args[0]);
+            JS_FreeValue(ctx_, args[1]);
+        }
+        JS_FreeValue(ctx_, set_owner_fn);
+    }
+
+    // Register custom signals
+    if (owner) {
+        JSValue get_signals_fn = JS_GetPropertyStr(ctx_, result, "__get_signals");
+        if (JS_IsFunction(ctx_, get_signals_fn)) {
+            JSValue signals_val = JS_Call(ctx_, get_signals_fn, result, 0, nullptr);
+            if (JS_IsArray(signals_val)) {
+                JSValue length_val = JS_GetPropertyStr(ctx_, signals_val, "length");
+                int64_t length = 0;
+                JS_ToInt64(ctx_, &length, length_val);
+                JS_FreeValue(ctx_, length_val);
+
+                for (int64_t i = 0; i < length; i++) {
+                    JSValue sig = JS_GetPropertyUint32(ctx_, signals_val, i);
+                    const char* sig_name = JS_ToCString(ctx_, sig);
+                    if (sig_name) {
                         owner->add_user_signal(String(sig_name));
                         JS_FreeCString(ctx_, sig_name);
                     }

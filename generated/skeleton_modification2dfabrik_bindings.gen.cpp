@@ -5,6 +5,7 @@
 #include "../src/quickjs_context.h"
 #include "../src/object_registry.h"
 #include "../src/safe_wrapper.h"
+#include "../src/execution_limiter.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/skeleton_modification2dfabrik.hpp>
@@ -48,6 +49,12 @@ static JSValue js_SkeletonModification2DFABRIK_set_fabrik_joint_bone2d_node(JSCo
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DFABRIK.set_fabrik_joint_bone2d_node: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DFABRIK.set_fabrik_joint_bone2d_node: invalid or freed object");
@@ -87,6 +94,7 @@ static JSValue js_SkeletonModification2DFABRIK_get_fabrik_joint_bone2d_node(JSCo
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DFABRIK.get_fabrik_joint_bone2d_node: invalid or freed object");
@@ -123,6 +131,12 @@ static JSValue js_SkeletonModification2DFABRIK_set_fabrik_joint_bone_index(JSCon
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DFABRIK.set_fabrik_joint_bone_index: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -164,6 +178,7 @@ static JSValue js_SkeletonModification2DFABRIK_get_fabrik_joint_bone_index(JSCon
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DFABRIK.get_fabrik_joint_bone_index: invalid or freed object");
@@ -200,6 +215,12 @@ static JSValue js_SkeletonModification2DFABRIK_set_fabrik_joint_magnet_position(
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DFABRIK.set_fabrik_joint_magnet_position: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
@@ -248,6 +269,7 @@ static JSValue js_SkeletonModification2DFABRIK_get_fabrik_joint_magnet_position(
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DFABRIK.get_fabrik_joint_magnet_position: invalid or freed object");
@@ -289,6 +311,12 @@ static JSValue js_SkeletonModification2DFABRIK_set_fabrik_joint_use_target_rotat
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check WRITE rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DFABRIK.set_fabrik_joint_use_target_rotation: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DFABRIK.set_fabrik_joint_use_target_rotation: invalid or freed object");
@@ -327,6 +355,7 @@ static JSValue js_SkeletonModification2DFABRIK_get_fabrik_joint_use_target_rotat
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
+
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
@@ -396,6 +425,12 @@ static JSValue js_SkeletonModification2DFABRIK_set_target_nodepath(JSContext* ct
         return JS_ThrowInternalError(ctx, "Context not initialized");
     }
 
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DFABRIK.target_nodepath setter: write rate limit exceeded");
+    }
+
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);
     if (!obj) {
         return JS_ThrowTypeError(ctx, "SkeletonModification2DFABRIK.target_nodepath setter: invalid object");
@@ -455,6 +490,12 @@ static JSValue js_SkeletonModification2DFABRIK_set_fabrik_data_chain_length(JSCo
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx || !qjs_ctx->get_object_registry()) {
         return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    // Check write rate limit (PRD Section 6.4)
+    ExecutionLimiter* limiter = qjs_ctx->get_execution_limiter();
+    if (limiter && !limiter->check_api_rate_limit(ApiCategory::WRITE)) {
+        return JS_ThrowInternalError(ctx, "SkeletonModification2DFABRIK.fabrik_data_chain_length setter: write rate limit exceeded");
     }
 
     Object* obj = qjs_ctx->get_object_registry()->get_object(handle);

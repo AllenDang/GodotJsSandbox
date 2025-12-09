@@ -1,12 +1,24 @@
 #include "execution_limiter.h"
 
 #include <godot_cpp/classes/time.hpp>
+#include <godot_cpp/classes/engine.hpp>
 
 using namespace godot;
 
 namespace jsb {
 
 ExecutionLimiter::ExecutionLimiter() {
+}
+
+void ExecutionLimiter::check_auto_reset() {
+    // Auto-reset frame counters when a new frame starts
+    uint64_t current_frame = Engine::get_singleton()->get_process_frames();
+    if (current_frame != last_frame_count_) {
+        last_frame_count_ = current_frame;
+        api_calls_this_frame_ = 0;
+        write_ops_this_frame_ = 0;
+        heavy_ops_this_frame_ = 0;
+    }
 }
 
 ExecutionLimiter::~ExecutionLimiter() {
@@ -73,6 +85,9 @@ bool ExecutionLimiter::check_api_rate_limit() {
 }
 
 bool ExecutionLimiter::check_api_rate_limit(ApiCategory category) {
+    // Auto-reset counters if we're in a new frame
+    check_auto_reset();
+
     total_api_calls_++;
     api_calls_this_frame_++;
 
