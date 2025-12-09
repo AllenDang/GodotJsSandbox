@@ -31,6 +31,27 @@ uint64_t ArrayRegistry::create_dict_handle(const Dictionary& dict) {
     return handle;
 }
 
+uint64_t ArrayRegistry::create_rid_handle(const Variant& rid_var) {
+    uint64_t handle = next_handle_++;
+    HandleEntry entry;
+    entry.type = CollectionType::RID_VARIANT;
+    entry.rid_variant = rid_var;  // Store the RID as Variant for proper round-trip
+    entry.is_valid = true;
+    handles_[handle] = entry;
+    return handle;
+}
+
+Variant ArrayRegistry::get_rid_variant(uint64_t handle) {
+    if (!handles_.has(handle)) {
+        return Variant();
+    }
+    const HandleEntry& entry = handles_[handle];
+    if (!entry.is_valid || entry.type != CollectionType::RID_VARIANT) {
+        return Variant();
+    }
+    return entry.rid_variant;
+}
+
 uint64_t ArrayRegistry::create_packed_byte_array_handle(const PackedByteArray& arr) {
     uint64_t handle = next_handle_++;
     HandleEntry entry;
@@ -287,6 +308,7 @@ int64_t ArrayRegistry::get_size(uint64_t handle) const {
         case CollectionType::PACKED_VECTOR3_ARRAY: return entry.packed_vector3.size();
         case CollectionType::PACKED_COLOR_ARRAY: return entry.packed_color.size();
         case CollectionType::PACKED_VECTOR4_ARRAY: return entry.packed_vector4.size();
+        case CollectionType::RID_VARIANT: return 1;  // RID is a single value, not a collection
         default: return 0;
     }
 }
@@ -360,6 +382,78 @@ PackedColorArray* ArrayRegistry::get_packed_color_array_ptr(uint64_t handle) {
     HandleEntry& entry = handles_[handle];
     if (!entry.is_valid || entry.type != CollectionType::PACKED_COLOR_ARRAY) return nullptr;
     return &entry.packed_color;
+}
+
+// Helper to get CollectionType from Variant::Type for math types
+static CollectionType variant_type_to_collection_type(Variant::Type vtype) {
+    switch (vtype) {
+        case Variant::VECTOR2: return CollectionType::MATH_VECTOR2;
+        case Variant::VECTOR3: return CollectionType::MATH_VECTOR3;
+        case Variant::VECTOR4: return CollectionType::MATH_VECTOR4;
+        case Variant::COLOR: return CollectionType::MATH_COLOR;
+        case Variant::QUATERNION: return CollectionType::MATH_QUATERNION;
+        case Variant::BASIS: return CollectionType::MATH_BASIS;
+        case Variant::TRANSFORM3D: return CollectionType::MATH_TRANSFORM3D;
+        case Variant::TRANSFORM2D: return CollectionType::MATH_TRANSFORM2D;
+        case Variant::PLANE: return CollectionType::MATH_PLANE;
+        case Variant::AABB: return CollectionType::MATH_AABB;
+        case Variant::RECT2: return CollectionType::MATH_RECT2;
+        default: return CollectionType::ARRAY;  // Invalid, caller should validate
+    }
+}
+
+uint64_t ArrayRegistry::create_math_handle(const Variant& math_var) {
+    Variant::Type vtype = math_var.get_type();
+    CollectionType ctype = variant_type_to_collection_type(vtype);
+
+    // Validate it's actually a math type
+    if (ctype == CollectionType::ARRAY) {
+        return 0;  // Invalid math type
+    }
+
+    uint64_t handle = next_handle_++;
+    HandleEntry entry;
+    entry.type = ctype;
+    entry.math_variant = math_var;
+    entry.is_valid = true;
+    handles_[handle] = entry;
+    return handle;
+}
+
+Variant ArrayRegistry::get_math_variant(uint64_t handle) {
+    if (!handles_.has(handle)) {
+        return Variant();
+    }
+    const HandleEntry& entry = handles_[handle];
+    if (!entry.is_valid || !is_math_handle(handle)) {
+        return Variant();
+    }
+    return entry.math_variant;
+}
+
+Variant* ArrayRegistry::get_math_variant_ptr(uint64_t handle) {
+    if (!handles_.has(handle)) return nullptr;
+    HandleEntry& entry = handles_[handle];
+    if (!entry.is_valid || !is_math_handle(handle)) return nullptr;
+    return &entry.math_variant;
+}
+
+bool ArrayRegistry::is_math_handle(uint64_t handle) const {
+    if (!handles_.has(handle)) {
+        return false;
+    }
+    CollectionType type = handles_[handle].type;
+    return type == CollectionType::MATH_VECTOR2 ||
+           type == CollectionType::MATH_VECTOR3 ||
+           type == CollectionType::MATH_VECTOR4 ||
+           type == CollectionType::MATH_COLOR ||
+           type == CollectionType::MATH_QUATERNION ||
+           type == CollectionType::MATH_BASIS ||
+           type == CollectionType::MATH_TRANSFORM3D ||
+           type == CollectionType::MATH_TRANSFORM2D ||
+           type == CollectionType::MATH_PLANE ||
+           type == CollectionType::MATH_AABB ||
+           type == CollectionType::MATH_RECT2;
 }
 
 } // namespace jsb

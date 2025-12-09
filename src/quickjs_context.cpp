@@ -805,91 +805,74 @@ JSValue QuickJSContext::variant_to_js(const Variant &value) {
             return JS_NewString(ctx_, str.utf8().get_data());
         }
 
-        case Variant::VECTOR2: {
-            Vector2 v = value;
+        // Math types - use handle-based zero-copy architecture
+        case Variant::VECTOR2:
+        case Variant::VECTOR3:
+        case Variant::VECTOR4:
+        case Variant::COLOR:
+        case Variant::QUATERNION:
+        case Variant::BASIS:
+        case Variant::TRANSFORM3D:
+        case Variant::TRANSFORM2D:
+        case Variant::PLANE:
+        case Variant::AABB:
+        case Variant::RECT2: {
+            if (array_registry_) {
+                uint64_t handle = array_registry_->create_math_handle(value);
+                if (handle != 0) {
+                    // Get type name
+                    const char* type_name = nullptr;
+                    switch (value.get_type()) {
+                        case Variant::VECTOR2: type_name = "Vector2"; break;
+                        case Variant::VECTOR3: type_name = "Vector3"; break;
+                        case Variant::VECTOR4: type_name = "Vector4"; break;
+                        case Variant::COLOR: type_name = "Color"; break;
+                        case Variant::QUATERNION: type_name = "Quaternion"; break;
+                        case Variant::BASIS: type_name = "Basis"; break;
+                        case Variant::TRANSFORM3D: type_name = "Transform3D"; break;
+                        case Variant::TRANSFORM2D: type_name = "Transform2D"; break;
+                        case Variant::PLANE: type_name = "Plane"; break;
+                        case Variant::AABB: type_name = "AABB"; break;
+                        case Variant::RECT2: type_name = "Rect2"; break;
+                        default: type_name = "unknown"; break;
+                    }
+                    // Use JS wrapper function
+                    JSValue global = JS_GetGlobalObject(ctx_);
+                    JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_math_type");
+                    if (JS_IsFunction(ctx_, wrap_fn)) {
+                        JSValue args[2] = {
+                            JS_NewInt64(ctx_, handle),
+                            JS_NewString(ctx_, type_name)
+                        };
+                        JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 2, args);
+                        JS_FreeValue(ctx_, args[0]);
+                        JS_FreeValue(ctx_, args[1]);
+                        JS_FreeValue(ctx_, wrap_fn);
+                        JS_FreeValue(ctx_, global);
+                        return result;
+                    }
+                    JS_FreeValue(ctx_, wrap_fn);
+                    JS_FreeValue(ctx_, global);
+                }
+            }
+            // Fallback: value copy for backward compatibility (should not reach here)
             JSValue obj = JS_NewObject(ctx_);
-            JS_SetPropertyStr(ctx_, obj, "x", JS_NewFloat64(ctx_, v.x));
-            JS_SetPropertyStr(ctx_, obj, "y", JS_NewFloat64(ctx_, v.y));
-            return obj;
-        }
-
-        case Variant::VECTOR3: {
-            Vector3 v = value;
-            JSValue obj = JS_NewObject(ctx_);
-            JS_SetPropertyStr(ctx_, obj, "x", JS_NewFloat64(ctx_, v.x));
-            JS_SetPropertyStr(ctx_, obj, "y", JS_NewFloat64(ctx_, v.y));
-            JS_SetPropertyStr(ctx_, obj, "z", JS_NewFloat64(ctx_, v.z));
-            return obj;
-        }
-
-        case Variant::COLOR: {
-            Color c = value;
-            JSValue obj = JS_NewObject(ctx_);
-            JS_SetPropertyStr(ctx_, obj, "r", JS_NewFloat64(ctx_, c.r));
-            JS_SetPropertyStr(ctx_, obj, "g", JS_NewFloat64(ctx_, c.g));
-            JS_SetPropertyStr(ctx_, obj, "b", JS_NewFloat64(ctx_, c.b));
-            JS_SetPropertyStr(ctx_, obj, "a", JS_NewFloat64(ctx_, c.a));
-            return obj;
-        }
-
-        case Variant::QUATERNION: {
-            Quaternion q = value;
-            JSValue obj = JS_NewObject(ctx_);
-            JS_SetPropertyStr(ctx_, obj, "x", JS_NewFloat64(ctx_, q.x));
-            JS_SetPropertyStr(ctx_, obj, "y", JS_NewFloat64(ctx_, q.y));
-            JS_SetPropertyStr(ctx_, obj, "z", JS_NewFloat64(ctx_, q.z));
-            JS_SetPropertyStr(ctx_, obj, "w", JS_NewFloat64(ctx_, q.w));
-            return obj;
-        }
-
-        case Variant::BASIS: {
-            Basis b = value;
-            JSValue obj = JS_NewObject(ctx_);
-            JSValue x_row = JS_NewObject(ctx_);
-            JSValue y_row = JS_NewObject(ctx_);
-            JSValue z_row = JS_NewObject(ctx_);
-            JS_SetPropertyStr(ctx_, x_row, "x", JS_NewFloat64(ctx_, b.rows[0].x));
-            JS_SetPropertyStr(ctx_, x_row, "y", JS_NewFloat64(ctx_, b.rows[0].y));
-            JS_SetPropertyStr(ctx_, x_row, "z", JS_NewFloat64(ctx_, b.rows[0].z));
-            JS_SetPropertyStr(ctx_, y_row, "x", JS_NewFloat64(ctx_, b.rows[1].x));
-            JS_SetPropertyStr(ctx_, y_row, "y", JS_NewFloat64(ctx_, b.rows[1].y));
-            JS_SetPropertyStr(ctx_, y_row, "z", JS_NewFloat64(ctx_, b.rows[1].z));
-            JS_SetPropertyStr(ctx_, z_row, "x", JS_NewFloat64(ctx_, b.rows[2].x));
-            JS_SetPropertyStr(ctx_, z_row, "y", JS_NewFloat64(ctx_, b.rows[2].y));
-            JS_SetPropertyStr(ctx_, z_row, "z", JS_NewFloat64(ctx_, b.rows[2].z));
-            JS_SetPropertyStr(ctx_, obj, "x", x_row);
-            JS_SetPropertyStr(ctx_, obj, "y", y_row);
-            JS_SetPropertyStr(ctx_, obj, "z", z_row);
-            return obj;
-        }
-
-        case Variant::TRANSFORM3D: {
-            Transform3D t = value;
-            JSValue obj = JS_NewObject(ctx_);
-            // Basis
-            JSValue basis_obj = JS_NewObject(ctx_);
-            JSValue bx_row = JS_NewObject(ctx_);
-            JSValue by_row = JS_NewObject(ctx_);
-            JSValue bz_row = JS_NewObject(ctx_);
-            JS_SetPropertyStr(ctx_, bx_row, "x", JS_NewFloat64(ctx_, t.basis.rows[0].x));
-            JS_SetPropertyStr(ctx_, bx_row, "y", JS_NewFloat64(ctx_, t.basis.rows[0].y));
-            JS_SetPropertyStr(ctx_, bx_row, "z", JS_NewFloat64(ctx_, t.basis.rows[0].z));
-            JS_SetPropertyStr(ctx_, by_row, "x", JS_NewFloat64(ctx_, t.basis.rows[1].x));
-            JS_SetPropertyStr(ctx_, by_row, "y", JS_NewFloat64(ctx_, t.basis.rows[1].y));
-            JS_SetPropertyStr(ctx_, by_row, "z", JS_NewFloat64(ctx_, t.basis.rows[1].z));
-            JS_SetPropertyStr(ctx_, bz_row, "x", JS_NewFloat64(ctx_, t.basis.rows[2].x));
-            JS_SetPropertyStr(ctx_, bz_row, "y", JS_NewFloat64(ctx_, t.basis.rows[2].y));
-            JS_SetPropertyStr(ctx_, bz_row, "z", JS_NewFloat64(ctx_, t.basis.rows[2].z));
-            JS_SetPropertyStr(ctx_, basis_obj, "x", bx_row);
-            JS_SetPropertyStr(ctx_, basis_obj, "y", by_row);
-            JS_SetPropertyStr(ctx_, basis_obj, "z", bz_row);
-            // Origin
-            JSValue origin_obj = JS_NewObject(ctx_);
-            JS_SetPropertyStr(ctx_, origin_obj, "x", JS_NewFloat64(ctx_, t.origin.x));
-            JS_SetPropertyStr(ctx_, origin_obj, "y", JS_NewFloat64(ctx_, t.origin.y));
-            JS_SetPropertyStr(ctx_, origin_obj, "z", JS_NewFloat64(ctx_, t.origin.z));
-            JS_SetPropertyStr(ctx_, obj, "basis", basis_obj);
-            JS_SetPropertyStr(ctx_, obj, "origin", origin_obj);
+            if (value.get_type() == Variant::VECTOR2) {
+                Vector2 v = value;
+                JS_SetPropertyStr(ctx_, obj, "x", JS_NewFloat64(ctx_, v.x));
+                JS_SetPropertyStr(ctx_, obj, "y", JS_NewFloat64(ctx_, v.y));
+            } else if (value.get_type() == Variant::VECTOR3) {
+                Vector3 v = value;
+                JS_SetPropertyStr(ctx_, obj, "x", JS_NewFloat64(ctx_, v.x));
+                JS_SetPropertyStr(ctx_, obj, "y", JS_NewFloat64(ctx_, v.y));
+                JS_SetPropertyStr(ctx_, obj, "z", JS_NewFloat64(ctx_, v.z));
+            } else if (value.get_type() == Variant::COLOR) {
+                Color c = value;
+                JS_SetPropertyStr(ctx_, obj, "r", JS_NewFloat64(ctx_, c.r));
+                JS_SetPropertyStr(ctx_, obj, "g", JS_NewFloat64(ctx_, c.g));
+                JS_SetPropertyStr(ctx_, obj, "b", JS_NewFloat64(ctx_, c.b));
+                JS_SetPropertyStr(ctx_, obj, "a", JS_NewFloat64(ctx_, c.a));
+            }
             return obj;
         }
 
@@ -978,6 +961,39 @@ JSValue QuickJSContext::variant_to_js(const Variant &value) {
                 return js_obj;
             }
             return JS_NULL;
+        }
+
+        case Variant::RID: {
+            // RID is a resource identifier - wrap it in an object with is_valid() and get_id() methods
+            // Store the RID Variant in array_registry for proper round-trip conversion
+            godot::RID rid = value;
+            JSValue obj = JS_NewObject(ctx_);
+
+            // Store the RID in the registry for later retrieval
+            if (array_registry_) {
+                uint64_t handle = array_registry_->create_rid_handle(value);
+                JS_SetPropertyStr(ctx_, obj, "__rid_handle", JS_NewInt64(ctx_, handle));
+            }
+
+            // Store the RID ID for is_valid() check
+            JS_SetPropertyStr(ctx_, obj, "__rid_id", JS_NewInt64(ctx_, rid.get_id()));
+            // Add is_valid() method
+            JS_SetPropertyStr(ctx_, obj, "is_valid", JS_NewCFunction(ctx_, [](JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) -> JSValue {
+                JSValue id_val = JS_GetPropertyStr(ctx, this_val, "__rid_id");
+                int64_t id = 0;
+                JS_ToInt64(ctx, &id, id_val);
+                JS_FreeValue(ctx, id_val);
+                return JS_NewBool(ctx, id != 0);
+            }, "is_valid", 0));
+            // Add get_id() method
+            JS_SetPropertyStr(ctx_, obj, "get_id", JS_NewCFunction(ctx_, [](JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) -> JSValue {
+                JSValue id_val = JS_GetPropertyStr(ctx, this_val, "__rid_id");
+                int64_t id = 0;
+                JS_ToInt64(ctx, &id, id_val);
+                JS_FreeValue(ctx, id_val);
+                return JS_NewInt64(ctx, id);
+            }, "get_id", 0));
+            return obj;
         }
 
         default:
@@ -1081,7 +1097,42 @@ Variant QuickJSContext::js_to_variant(JSValue value) {
             }
         }
 
-        // Check for Vector2 (has x, y but not z)
+        // Check if this is an RID object (has __rid_id property)
+        // Note: We store the original RID Variant in array_registry for proper round-trip
+        JSValue rid_handle_val = JS_GetPropertyStr(ctx_, value, "__rid_handle");
+        if (JS_IsNumber(rid_handle_val)) {
+            int64_t handle;
+            JS_ToInt64(ctx_, &handle, rid_handle_val);
+            JS_FreeValue(ctx_, rid_handle_val);
+            if (array_registry_) {
+                Variant rid_var = array_registry_->get_rid_variant(handle);
+                if (rid_var.get_type() == Variant::RID) {
+                    return rid_var;
+                }
+            }
+        } else {
+            JS_FreeValue(ctx_, rid_handle_val);
+        }
+
+        // Check if this is a math type proxy (has __math_handle property)
+        // Uses zero-copy handle to retrieve original Godot math value
+        if (array_registry_) {
+            JSValue math_handle_val = JS_GetPropertyStr(ctx_, value, "__math_handle");
+            if (JS_IsNumber(math_handle_val)) {
+                int64_t handle;
+                JS_ToInt64(ctx_, &handle, math_handle_val);
+                JS_FreeValue(ctx_, math_handle_val);
+
+                Variant math_var = array_registry_->get_math_variant(handle);
+                if (math_var.get_type() != Variant::NIL) {
+                    return math_var;
+                }
+            } else {
+                JS_FreeValue(ctx_, math_handle_val);
+            }
+        }
+
+        // Fallback: Check for Vector2 (has x, y but not z) - for backward compatibility
         JSValue x_val = JS_GetPropertyStr(ctx_, value, "x");
         JSValue y_val = JS_GetPropertyStr(ctx_, value, "y");
         JSValue z_val = JS_GetPropertyStr(ctx_, value, "z");

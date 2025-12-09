@@ -15,6 +15,8 @@
 #include <godot_cpp/classes/tween.hpp>
 #include <godot_cpp/classes/callback_tweener.hpp>
 #include <godot_cpp/classes/method_tweener.hpp>
+#include <godot_cpp/classes/rendering_server.hpp>
+#include <godot_cpp/classes/rendering_device.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -72,6 +74,9 @@ bool GodotBindings::initialize() {
     // Register singleton class enums (Input.MOUSE_MODE_*, etc.)
     // Must be after setup_global_functions() which creates the singleton objects
     generated::register_singleton_enums(ctx, global);
+
+    // Register class enums for non-singleton classes (RenderingDevice constants, etc.)
+    generated::register_class_enums(ctx, global);
     JS_FreeValue(ctx, global);
 
     setup_proxy_handler();  // No-op, but kept for structure
@@ -206,6 +211,46 @@ static JSValue js_input_get_mouse_mode(JSContext* ctx, JSValueConst this_val, in
     return JS_NewInt64(ctx, (int64_t)Input::get_singleton()->get_mouse_mode());
 }
 
+// RenderingServer singleton wrapper functions
+static JSValue js_rendering_server_get_rendering_device(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    RenderingDevice* rd = RenderingServer::get_singleton()->get_rendering_device();
+    if (!rd) {
+        return JS_NULL;
+    }
+
+    // Get context and registry
+    QuickJSContext* qjs_ctx = GodotBindings::get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_NULL;
+    }
+
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_NULL;
+    }
+
+    // Create a handle for the RenderingDevice
+    int64_t handle = registry->get_or_create_handle(rd);
+
+    // Create wrapped object using JS factory
+    const char* factory_code = "globalThis.__wrap_existing_godot_object";
+    JSValue factory = JS_Eval(ctx, factory_code, strlen(factory_code), "<rendering_server>", JS_EVAL_TYPE_GLOBAL);
+    if (JS_IsException(factory)) {
+        return factory;
+    }
+
+    JSValue args[2] = {
+        JS_NewInt64(ctx, handle),
+        JS_NewString(ctx, "RenderingDevice")
+    };
+    JSValue wrapped = JS_Call(ctx, factory, JS_UNDEFINED, 2, args);
+    JS_FreeValue(ctx, factory);
+    JS_FreeValue(ctx, args[0]);
+    JS_FreeValue(ctx, args[1]);
+
+    return wrapped;
+}
+
 void GodotBindings::setup_global_functions() {
     JSContext* ctx = context_->ctx();
     JSValue global = JS_GetGlobalObject(ctx);
@@ -266,6 +311,14 @@ void GodotBindings::setup_global_functions() {
     JS_SetPropertyStr(ctx, global, "__packed_array_type",
         JS_NewCFunction(ctx, js_packed_array_type, "__packed_array_type", 1));
 
+    // Math type proxy functions for zero-copy access
+    JS_SetPropertyStr(ctx, global, "__math_get_property",
+        JS_NewCFunction(ctx, js_math_get_property, "__math_get_property", 2));
+    JS_SetPropertyStr(ctx, global, "__math_set_property",
+        JS_NewCFunction(ctx, js_math_set_property, "__math_set_property", 3));
+    JS_SetPropertyStr(ctx, global, "__math_get_type",
+        JS_NewCFunction(ctx, js_math_get_type, "__math_get_type", 1));
+
     // Time singleton (safe subset of methods)
     JSValue time_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, time_obj, "get_ticks_msec",
@@ -309,6 +362,12 @@ void GodotBindings::setup_global_functions() {
     // by register_singleton_enums() from extension_api.json
 
     JS_SetPropertyStr(ctx, global, "Input", input_obj);
+
+    // RenderingServer singleton (for compute shader access)
+    JSValue rendering_server_obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, rendering_server_obj, "get_rendering_device",
+        JS_NewCFunction(ctx, js_rendering_server_get_rendering_device, "get_rendering_device", 0));
+    JS_SetPropertyStr(ctx, global, "RenderingServer", rendering_server_obj);
 
     JS_FreeValue(ctx, global);
 }
@@ -788,6 +847,108 @@ void GodotBindings::setup_godot_class_constructor() {
                         return result;
                     };
                 }
+                if (prop === 'resize') {
+                    var handle = target.__packed_handle;
+                    var type = target.__packed_type;
+                    return function(newSize) {
+                        // Call type-specific resize function
+                        var fn = globalThis['__' + type.toLowerCase().replace(/array$/, '_array') + '_resize'];
+                        if (!fn) {
+                            // Try the snake_case version for packed arrays
+                            var snakeType = type.replace(/([A-Z])/g, function(m) { return '_' + m.toLowerCase(); }).replace(/^_/, '');
+                            fn = globalThis['__' + snakeType + '_resize'];
+                        }
+                        return fn ? fn(handle, newSize) : false;
+                    };
+                }
+                if (prop === 'push_back' || prop === 'push') {
+                    var handle = target.__packed_handle;
+                    var type = target.__packed_type;
+                    return function(value) {
+                        // Call type-specific push function
+                        var fn = globalThis['__' + type.toLowerCase().replace(/array$/, '_array') + '_push'];
+                        if (!fn) {
+                            var snakeType = type.replace(/([A-Z])/g, function(m) { return '_' + m.toLowerCase(); }).replace(/^_/, '');
+                            fn = globalThis['__' + snakeType + '_push'];
+                        }
+                        return fn ? fn(handle, value) : false;
+                    };
+                }
+                // PackedByteArray-specific encode/decode methods
+                if (target.__packed_type === 'PackedByteArray') {
+                    if (prop === 'encode_float') {
+                        var handle = target.__packed_handle;
+                        return function(byte_offset, value) {
+                            return __packed_byte_array_encode_float(handle, byte_offset, value);
+                        };
+                    }
+                    if (prop === 'encode_double') {
+                        var handle = target.__packed_handle;
+                        return function(byte_offset, value) {
+                            return __packed_byte_array_encode_double(handle, byte_offset, value);
+                        };
+                    }
+                    if (prop === 'encode_u32') {
+                        var handle = target.__packed_handle;
+                        return function(byte_offset, value) {
+                            return __packed_byte_array_encode_u32(handle, byte_offset, value);
+                        };
+                    }
+                    if (prop === 'encode_s32') {
+                        var handle = target.__packed_handle;
+                        return function(byte_offset, value) {
+                            return __packed_byte_array_encode_s32(handle, byte_offset, value);
+                        };
+                    }
+                    if (prop === 'encode_u64') {
+                        var handle = target.__packed_handle;
+                        return function(byte_offset, value) {
+                            return __packed_byte_array_encode_u64(handle, byte_offset, value);
+                        };
+                    }
+                    if (prop === 'encode_s64') {
+                        var handle = target.__packed_handle;
+                        return function(byte_offset, value) {
+                            return __packed_byte_array_encode_s64(handle, byte_offset, value);
+                        };
+                    }
+                    if (prop === 'decode_float') {
+                        var handle = target.__packed_handle;
+                        return function(byte_offset) {
+                            return __packed_byte_array_decode_float(handle, byte_offset);
+                        };
+                    }
+                    if (prop === 'decode_double') {
+                        var handle = target.__packed_handle;
+                        return function(byte_offset) {
+                            return __packed_byte_array_decode_double(handle, byte_offset);
+                        };
+                    }
+                    if (prop === 'decode_u32') {
+                        var handle = target.__packed_handle;
+                        return function(byte_offset) {
+                            return __packed_byte_array_decode_u32(handle, byte_offset);
+                        };
+                    }
+                    if (prop === 'decode_s32') {
+                        var handle = target.__packed_handle;
+                        return function(byte_offset) {
+                            return __packed_byte_array_decode_s32(handle, byte_offset);
+                        };
+                    }
+                    if (prop === 'decode_u64') {
+                        var handle = target.__packed_handle;
+                        return function(byte_offset) {
+                            return __packed_byte_array_decode_u64(handle, byte_offset);
+                        };
+                    }
+                    if (prop === 'decode_s64') {
+                        var handle = target.__packed_handle;
+                        return function(byte_offset) {
+                            return __packed_byte_array_decode_s64(handle, byte_offset);
+                        };
+                    }
+                }
                 // Numeric index access
                 var index = parseInt(prop);
                 if (!isNaN(index) && index >= 0) {
@@ -801,7 +962,15 @@ void GodotBindings::setup_godot_class_constructor() {
                 if (!isNaN(index) && index >= 0) {
                     return index < __packed_array_size(target.__packed_handle);
                 }
-                return prop === 'forEach' || prop === 'map' || prop === 'filter';
+                if (prop === 'forEach' || prop === 'map' || prop === 'filter' || prop === 'resize' || prop === 'push_back' || prop === 'push') return true;
+                // PackedByteArray-specific methods
+                if (target.__packed_type === 'PackedByteArray') {
+                    if (prop === 'encode_float' || prop === 'encode_double' || prop === 'encode_u32' ||
+                        prop === 'encode_s32' || prop === 'encode_u64' || prop === 'encode_s64' ||
+                        prop === 'decode_float' || prop === 'decode_double' || prop === 'decode_u32' ||
+                        prop === 'decode_s32' || prop === 'decode_u64' || prop === 'decode_s64') return true;
+                }
+                return false;
             }
         };
 
@@ -812,6 +981,52 @@ void GodotBindings::setup_godot_class_constructor() {
                 __packed_type: type
             };
             return new Proxy(target, __packed_array_proxy_handler);
+        };
+
+        // Math type proxy handler for zero-copy access to Vector2, Vector3, Color, etc.
+        globalThis.__math_type_proxy_handler = {
+            get: function(target, prop, receiver) {
+                if (prop === '__math_handle') return target.__math_handle;
+                if (prop === '__math_type') return target.__math_type;
+                if (prop === '__is_math_type') return true;
+                if (typeof prop === 'symbol') {
+                    if (prop === Symbol.toStringTag) return target.__math_type || 'MathType';
+                    return undefined;
+                }
+                if (prop === 'toString') {
+                    var type = target.__math_type || 'MathType';
+                    return function() { return '[' + type + ']'; };
+                }
+                // Property access (x, y, z, w, r, g, b, a, etc.)
+                return __math_get_property(target.__math_handle, prop);
+            },
+            set: function(target, prop, value) {
+                if (prop === '__math_handle' || prop === '__math_type') {
+                    target[prop] = value;
+                    return true;
+                }
+                // Property modification (x, y, z, w, r, g, b, a, etc.)
+                return __math_set_property(target.__math_handle, prop, value) === true;
+            },
+            has: function(target, prop) {
+                if (prop === '__math_handle' || prop === '__math_type' || prop === '__is_math_type') return true;
+                var type = target.__math_type;
+                if (type === 'Vector2') return prop === 'x' || prop === 'y';
+                if (type === 'Vector3') return prop === 'x' || prop === 'y' || prop === 'z';
+                if (type === 'Vector4' || type === 'Quaternion') return prop === 'x' || prop === 'y' || prop === 'z' || prop === 'w';
+                if (type === 'Color') return prop === 'r' || prop === 'g' || prop === 'b' || prop === 'a';
+                if (type === 'Transform3D') return prop === 'origin' || prop === 'basis';
+                return false;
+            }
+        };
+
+        // Wrap a math type handle with a proxy
+        globalThis.__wrap_math_type = function(handle, type) {
+            var target = {
+                __math_handle: handle,
+                __math_type: type
+            };
+            return new Proxy(target, __math_type_proxy_handler);
         };
         'factory done';
     )";
@@ -2130,5 +2345,252 @@ JSValue GodotBindings::js_packed_array_set(JSContext* ctx, JSValueConst this_val
 
 // NOTE: Packed array constructors are now generated
 // See generated/packed_array_bindings.gen.cpp
+
+// Math type proxy functions for zero-copy access
+
+// __math_get_property(handle, prop_name) - get property from math type
+JSValue GodotBindings::js_math_get_property(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_UNDEFINED;
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_UNDEFINED;
+    }
+
+    const char* prop_name = JS_ToCString(ctx, argv[1]);
+    if (!prop_name) {
+        return JS_UNDEFINED;
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        JS_FreeCString(ctx, prop_name);
+        return JS_UNDEFINED;
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_math_handle(handle)) {
+        JS_FreeCString(ctx, prop_name);
+        return JS_UNDEFINED;
+    }
+
+    Variant var = registry->get_math_variant(handle);
+    String prop = prop_name;
+    JS_FreeCString(ctx, prop_name);
+
+    // Get property based on type
+    switch (var.get_type()) {
+        case Variant::VECTOR2: {
+            Vector2 v = var;
+            if (prop == "x") return JS_NewFloat64(ctx, v.x);
+            if (prop == "y") return JS_NewFloat64(ctx, v.y);
+            break;
+        }
+        case Variant::VECTOR3: {
+            Vector3 v = var;
+            if (prop == "x") return JS_NewFloat64(ctx, v.x);
+            if (prop == "y") return JS_NewFloat64(ctx, v.y);
+            if (prop == "z") return JS_NewFloat64(ctx, v.z);
+            break;
+        }
+        case Variant::VECTOR4: {
+            Vector4 v = var;
+            if (prop == "x") return JS_NewFloat64(ctx, v.x);
+            if (prop == "y") return JS_NewFloat64(ctx, v.y);
+            if (prop == "z") return JS_NewFloat64(ctx, v.z);
+            if (prop == "w") return JS_NewFloat64(ctx, v.w);
+            break;
+        }
+        case Variant::COLOR: {
+            Color c = var;
+            if (prop == "r") return JS_NewFloat64(ctx, c.r);
+            if (prop == "g") return JS_NewFloat64(ctx, c.g);
+            if (prop == "b") return JS_NewFloat64(ctx, c.b);
+            if (prop == "a") return JS_NewFloat64(ctx, c.a);
+            break;
+        }
+        case Variant::QUATERNION: {
+            Quaternion q = var;
+            if (prop == "x") return JS_NewFloat64(ctx, q.x);
+            if (prop == "y") return JS_NewFloat64(ctx, q.y);
+            if (prop == "z") return JS_NewFloat64(ctx, q.z);
+            if (prop == "w") return JS_NewFloat64(ctx, q.w);
+            break;
+        }
+        case Variant::TRANSFORM3D: {
+            Transform3D t = var;
+            if (prop == "origin") {
+                // Return a new handle for the origin vector
+                uint64_t origin_handle = registry->create_math_handle(Variant(t.origin));
+                if (origin_handle == 0) return JS_UNDEFINED;
+                // Wrap via JS helper
+                JSValue global = JS_GetGlobalObject(ctx);
+                JSValue wrap_fn = JS_GetPropertyStr(ctx, global, "__wrap_math_type");
+                if (JS_IsFunction(ctx, wrap_fn)) {
+                    JSValue args[2] = { JS_NewInt64(ctx, origin_handle), JS_NewString(ctx, "Vector3") };
+                    JSValue result = JS_Call(ctx, wrap_fn, JS_UNDEFINED, 2, args);
+                    JS_FreeValue(ctx, args[0]);
+                    JS_FreeValue(ctx, args[1]);
+                    JS_FreeValue(ctx, wrap_fn);
+                    JS_FreeValue(ctx, global);
+                    return result;
+                }
+                JS_FreeValue(ctx, wrap_fn);
+                JS_FreeValue(ctx, global);
+            }
+            // For basis, return as nested object (keep value copy for now, complex structure)
+            if (prop == "basis") {
+                JSValue obj = JS_NewObject(ctx);
+                JSValue x_row = JS_NewObject(ctx);
+                JSValue y_row = JS_NewObject(ctx);
+                JSValue z_row = JS_NewObject(ctx);
+                JS_SetPropertyStr(ctx, x_row, "x", JS_NewFloat64(ctx, t.basis.rows[0].x));
+                JS_SetPropertyStr(ctx, x_row, "y", JS_NewFloat64(ctx, t.basis.rows[0].y));
+                JS_SetPropertyStr(ctx, x_row, "z", JS_NewFloat64(ctx, t.basis.rows[0].z));
+                JS_SetPropertyStr(ctx, y_row, "x", JS_NewFloat64(ctx, t.basis.rows[1].x));
+                JS_SetPropertyStr(ctx, y_row, "y", JS_NewFloat64(ctx, t.basis.rows[1].y));
+                JS_SetPropertyStr(ctx, y_row, "z", JS_NewFloat64(ctx, t.basis.rows[1].z));
+                JS_SetPropertyStr(ctx, z_row, "x", JS_NewFloat64(ctx, t.basis.rows[2].x));
+                JS_SetPropertyStr(ctx, z_row, "y", JS_NewFloat64(ctx, t.basis.rows[2].y));
+                JS_SetPropertyStr(ctx, z_row, "z", JS_NewFloat64(ctx, t.basis.rows[2].z));
+                JS_SetPropertyStr(ctx, obj, "x", x_row);
+                JS_SetPropertyStr(ctx, obj, "y", y_row);
+                JS_SetPropertyStr(ctx, obj, "z", z_row);
+                return obj;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+    return JS_UNDEFINED;
+}
+
+// __math_set_property(handle, prop_name, value) - set property on math type
+JSValue GodotBindings::js_math_set_property(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 3) {
+        return JS_FALSE;
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_FALSE;
+    }
+
+    const char* prop_name = JS_ToCString(ctx, argv[1]);
+    if (!prop_name) {
+        return JS_FALSE;
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        JS_FreeCString(ctx, prop_name);
+        return JS_FALSE;
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_math_handle(handle)) {
+        JS_FreeCString(ctx, prop_name);
+        return JS_FALSE;
+    }
+
+    Variant* var_ptr = registry->get_math_variant_ptr(handle);
+    if (!var_ptr) {
+        JS_FreeCString(ctx, prop_name);
+        return JS_FALSE;
+    }
+
+    String prop = prop_name;
+    JS_FreeCString(ctx, prop_name);
+
+    double new_val;
+    if (JS_ToFloat64(ctx, &new_val, argv[2]) != 0) {
+        return JS_FALSE;
+    }
+
+    // Set property based on type
+    switch (var_ptr->get_type()) {
+        case Variant::VECTOR2: {
+            Vector2 v = *var_ptr;
+            if (prop == "x") { v.x = new_val; *var_ptr = v; return JS_TRUE; }
+            if (prop == "y") { v.y = new_val; *var_ptr = v; return JS_TRUE; }
+            break;
+        }
+        case Variant::VECTOR3: {
+            Vector3 v = *var_ptr;
+            if (prop == "x") { v.x = new_val; *var_ptr = v; return JS_TRUE; }
+            if (prop == "y") { v.y = new_val; *var_ptr = v; return JS_TRUE; }
+            if (prop == "z") { v.z = new_val; *var_ptr = v; return JS_TRUE; }
+            break;
+        }
+        case Variant::VECTOR4: {
+            Vector4 v = *var_ptr;
+            if (prop == "x") { v.x = new_val; *var_ptr = v; return JS_TRUE; }
+            if (prop == "y") { v.y = new_val; *var_ptr = v; return JS_TRUE; }
+            if (prop == "z") { v.z = new_val; *var_ptr = v; return JS_TRUE; }
+            if (prop == "w") { v.w = new_val; *var_ptr = v; return JS_TRUE; }
+            break;
+        }
+        case Variant::COLOR: {
+            Color c = *var_ptr;
+            if (prop == "r") { c.r = new_val; *var_ptr = c; return JS_TRUE; }
+            if (prop == "g") { c.g = new_val; *var_ptr = c; return JS_TRUE; }
+            if (prop == "b") { c.b = new_val; *var_ptr = c; return JS_TRUE; }
+            if (prop == "a") { c.a = new_val; *var_ptr = c; return JS_TRUE; }
+            break;
+        }
+        case Variant::QUATERNION: {
+            Quaternion q = *var_ptr;
+            if (prop == "x") { q.x = new_val; *var_ptr = q; return JS_TRUE; }
+            if (prop == "y") { q.y = new_val; *var_ptr = q; return JS_TRUE; }
+            if (prop == "z") { q.z = new_val; *var_ptr = q; return JS_TRUE; }
+            if (prop == "w") { q.w = new_val; *var_ptr = q; return JS_TRUE; }
+            break;
+        }
+        default:
+            break;
+    }
+    return JS_FALSE;
+}
+
+// __math_get_type(handle) - get type name of math value
+JSValue GodotBindings::js_math_get_type(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_NewString(ctx, "unknown");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_NewString(ctx, "unknown");
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_NewString(ctx, "unknown");
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_math_handle(handle)) {
+        return JS_NewString(ctx, "unknown");
+    }
+
+    CollectionType type = registry->get_handle_type(handle);
+    switch (type) {
+        case CollectionType::MATH_VECTOR2: return JS_NewString(ctx, "Vector2");
+        case CollectionType::MATH_VECTOR3: return JS_NewString(ctx, "Vector3");
+        case CollectionType::MATH_VECTOR4: return JS_NewString(ctx, "Vector4");
+        case CollectionType::MATH_COLOR: return JS_NewString(ctx, "Color");
+        case CollectionType::MATH_QUATERNION: return JS_NewString(ctx, "Quaternion");
+        case CollectionType::MATH_BASIS: return JS_NewString(ctx, "Basis");
+        case CollectionType::MATH_TRANSFORM3D: return JS_NewString(ctx, "Transform3D");
+        case CollectionType::MATH_TRANSFORM2D: return JS_NewString(ctx, "Transform2D");
+        case CollectionType::MATH_PLANE: return JS_NewString(ctx, "Plane");
+        case CollectionType::MATH_AABB: return JS_NewString(ctx, "AABB");
+        case CollectionType::MATH_RECT2: return JS_NewString(ctx, "Rect2");
+        default: return JS_NewString(ctx, "unknown");
+    }
+}
 
 } // namespace jsb

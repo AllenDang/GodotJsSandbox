@@ -9,6 +9,7 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/image_texture3d.hpp>
+#include <godot_cpp/classes/image.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

@@ -84,6 +84,11 @@ private:
     static JSValue js_packed_array_resize(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
     static JSValue js_packed_array_set(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
+    // Math type proxy functions (zero-copy access)
+    static JSValue js_math_get_property(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_math_set_property(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_math_get_type(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+
     // GodotObject class callbacks
     static void godot_object_finalizer(JSRuntime* rt, JSValueConst val);
 

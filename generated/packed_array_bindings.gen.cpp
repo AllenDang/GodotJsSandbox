@@ -1686,6 +1686,1315 @@ static JSValue js_packed_color_array_resize(JSContext* ctx, JSValueConst this_va
 
 
 // ============================================================================
+// PACKED BYTE ARRAY ENCODE/DECODE FUNCTIONS
+// For binary data manipulation (encode_float, encode_u32, decode_float, decode_u32, etc.)
+// ============================================================================
+
+// encode_float: Write a 32-bit float at byte offset
+static JSValue js_packed_byte_array_encode_float(JSContext* ctx, JSValueConst this_val,
+                                                   int argc, JSValueConst* argv) {
+    if (argc < 3) return JS_UNDEFINED;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_UNDEFINED;
+
+    int64_t byte_offset;
+    if (JS_ToInt64(ctx, &byte_offset, argv[1]) != 0) return JS_UNDEFINED;
+
+    double value;
+    if (JS_ToFloat64(ctx, &value, argv[2]) != 0) return JS_UNDEFINED;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_UNDEFINED;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_UNDEFINED;
+
+    PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
+    if (!arr || byte_offset < 0 || byte_offset + 4 > arr->size()) return JS_UNDEFINED;
+
+    arr->encode_float(byte_offset, (float)value);
+    return JS_UNDEFINED;
+}
+
+// encode_double: Write a 64-bit float at byte offset
+static JSValue js_packed_byte_array_encode_double(JSContext* ctx, JSValueConst this_val,
+                                                    int argc, JSValueConst* argv) {
+    if (argc < 3) return JS_UNDEFINED;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_UNDEFINED;
+
+    int64_t byte_offset;
+    if (JS_ToInt64(ctx, &byte_offset, argv[1]) != 0) return JS_UNDEFINED;
+
+    double value;
+    if (JS_ToFloat64(ctx, &value, argv[2]) != 0) return JS_UNDEFINED;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_UNDEFINED;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_UNDEFINED;
+
+    PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
+    if (!arr || byte_offset < 0 || byte_offset + 8 > arr->size()) return JS_UNDEFINED;
+
+    arr->encode_double(byte_offset, value);
+    return JS_UNDEFINED;
+}
+
+// encode_u32: Write a 32-bit unsigned int at byte offset
+static JSValue js_packed_byte_array_encode_u32(JSContext* ctx, JSValueConst this_val,
+                                                 int argc, JSValueConst* argv) {
+    if (argc < 3) return JS_UNDEFINED;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_UNDEFINED;
+
+    int64_t byte_offset;
+    if (JS_ToInt64(ctx, &byte_offset, argv[1]) != 0) return JS_UNDEFINED;
+
+    int64_t value;
+    if (JS_ToInt64(ctx, &value, argv[2]) != 0) return JS_UNDEFINED;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_UNDEFINED;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_UNDEFINED;
+
+    PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
+    if (!arr || byte_offset < 0 || byte_offset + 4 > arr->size()) return JS_UNDEFINED;
+
+    arr->encode_u32(byte_offset, (uint32_t)value);
+    return JS_UNDEFINED;
+}
+
+// encode_s32: Write a 32-bit signed int at byte offset
+static JSValue js_packed_byte_array_encode_s32(JSContext* ctx, JSValueConst this_val,
+                                                 int argc, JSValueConst* argv) {
+    if (argc < 3) return JS_UNDEFINED;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_UNDEFINED;
+
+    int64_t byte_offset;
+    if (JS_ToInt64(ctx, &byte_offset, argv[1]) != 0) return JS_UNDEFINED;
+
+    int64_t value;
+    if (JS_ToInt64(ctx, &value, argv[2]) != 0) return JS_UNDEFINED;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_UNDEFINED;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_UNDEFINED;
+
+    PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
+    if (!arr || byte_offset < 0 || byte_offset + 4 > arr->size()) return JS_UNDEFINED;
+
+    arr->encode_s32(byte_offset, (int32_t)value);
+    return JS_UNDEFINED;
+}
+
+// encode_u64: Write a 64-bit unsigned int at byte offset
+static JSValue js_packed_byte_array_encode_u64(JSContext* ctx, JSValueConst this_val,
+                                                 int argc, JSValueConst* argv) {
+    if (argc < 3) return JS_UNDEFINED;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_UNDEFINED;
+
+    int64_t byte_offset;
+    if (JS_ToInt64(ctx, &byte_offset, argv[1]) != 0) return JS_UNDEFINED;
+
+    int64_t value;
+    if (JS_ToInt64(ctx, &value, argv[2]) != 0) return JS_UNDEFINED;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_UNDEFINED;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_UNDEFINED;
+
+    PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
+    if (!arr || byte_offset < 0 || byte_offset + 8 > arr->size()) return JS_UNDEFINED;
+
+    arr->encode_u64(byte_offset, (uint64_t)value);
+    return JS_UNDEFINED;
+}
+
+// encode_s64: Write a 64-bit signed int at byte offset
+static JSValue js_packed_byte_array_encode_s64(JSContext* ctx, JSValueConst this_val,
+                                                 int argc, JSValueConst* argv) {
+    if (argc < 3) return JS_UNDEFINED;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_UNDEFINED;
+
+    int64_t byte_offset;
+    if (JS_ToInt64(ctx, &byte_offset, argv[1]) != 0) return JS_UNDEFINED;
+
+    int64_t value;
+    if (JS_ToInt64(ctx, &value, argv[2]) != 0) return JS_UNDEFINED;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_UNDEFINED;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_UNDEFINED;
+
+    PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
+    if (!arr || byte_offset < 0 || byte_offset + 8 > arr->size()) return JS_UNDEFINED;
+
+    arr->encode_s64(byte_offset, value);
+    return JS_UNDEFINED;
+}
+
+// decode_float: Read a 32-bit float from byte offset
+static JSValue js_packed_byte_array_decode_float(JSContext* ctx, JSValueConst this_val,
+                                                   int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_UNDEFINED;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_UNDEFINED;
+
+    int64_t byte_offset;
+    if (JS_ToInt64(ctx, &byte_offset, argv[1]) != 0) return JS_UNDEFINED;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_UNDEFINED;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_UNDEFINED;
+
+    PackedByteArray arr = registry->get_packed_byte_array(handle);
+    if (byte_offset < 0 || byte_offset + 4 > arr.size()) return JS_UNDEFINED;
+
+    return JS_NewFloat64(ctx, arr.decode_float(byte_offset));
+}
+
+// decode_double: Read a 64-bit float from byte offset
+static JSValue js_packed_byte_array_decode_double(JSContext* ctx, JSValueConst this_val,
+                                                    int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_UNDEFINED;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_UNDEFINED;
+
+    int64_t byte_offset;
+    if (JS_ToInt64(ctx, &byte_offset, argv[1]) != 0) return JS_UNDEFINED;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_UNDEFINED;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_UNDEFINED;
+
+    PackedByteArray arr = registry->get_packed_byte_array(handle);
+    if (byte_offset < 0 || byte_offset + 8 > arr.size()) return JS_UNDEFINED;
+
+    return JS_NewFloat64(ctx, arr.decode_double(byte_offset));
+}
+
+// decode_u32: Read a 32-bit unsigned int from byte offset
+static JSValue js_packed_byte_array_decode_u32(JSContext* ctx, JSValueConst this_val,
+                                                 int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_UNDEFINED;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_UNDEFINED;
+
+    int64_t byte_offset;
+    if (JS_ToInt64(ctx, &byte_offset, argv[1]) != 0) return JS_UNDEFINED;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_UNDEFINED;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_UNDEFINED;
+
+    PackedByteArray arr = registry->get_packed_byte_array(handle);
+    if (byte_offset < 0 || byte_offset + 4 > arr.size()) return JS_UNDEFINED;
+
+    return JS_NewInt64(ctx, arr.decode_u32(byte_offset));
+}
+
+// decode_s32: Read a 32-bit signed int from byte offset
+static JSValue js_packed_byte_array_decode_s32(JSContext* ctx, JSValueConst this_val,
+                                                 int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_UNDEFINED;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_UNDEFINED;
+
+    int64_t byte_offset;
+    if (JS_ToInt64(ctx, &byte_offset, argv[1]) != 0) return JS_UNDEFINED;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_UNDEFINED;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_UNDEFINED;
+
+    PackedByteArray arr = registry->get_packed_byte_array(handle);
+    if (byte_offset < 0 || byte_offset + 4 > arr.size()) return JS_UNDEFINED;
+
+    return JS_NewInt64(ctx, arr.decode_s32(byte_offset));
+}
+
+// decode_u64: Read a 64-bit unsigned int from byte offset
+static JSValue js_packed_byte_array_decode_u64(JSContext* ctx, JSValueConst this_val,
+                                                 int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_UNDEFINED;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_UNDEFINED;
+
+    int64_t byte_offset;
+    if (JS_ToInt64(ctx, &byte_offset, argv[1]) != 0) return JS_UNDEFINED;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_UNDEFINED;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_UNDEFINED;
+
+    PackedByteArray arr = registry->get_packed_byte_array(handle);
+    if (byte_offset < 0 || byte_offset + 8 > arr.size()) return JS_UNDEFINED;
+
+    // Note: JS can only safely represent integers up to 2^53-1
+    return JS_NewInt64(ctx, (int64_t)arr.decode_u64(byte_offset));
+}
+
+// decode_s64: Read a 64-bit signed int from byte offset
+static JSValue js_packed_byte_array_decode_s64(JSContext* ctx, JSValueConst this_val,
+                                                 int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_UNDEFINED;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_UNDEFINED;
+
+    int64_t byte_offset;
+    if (JS_ToInt64(ctx, &byte_offset, argv[1]) != 0) return JS_UNDEFINED;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_UNDEFINED;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_UNDEFINED;
+
+    PackedByteArray arr = registry->get_packed_byte_array(handle);
+    if (byte_offset < 0 || byte_offset + 8 > arr.size()) return JS_UNDEFINED;
+
+    return JS_NewInt64(ctx, arr.decode_s64(byte_offset));
+}
+
+// ============================================================================
+// BULK ENCODE FUNCTIONS (from JS array to packed array - zero-copy architecture)
+// ============================================================================
+
+// PackedByteArray bulk encode from JS array
+static JSValue js_packed_byte_array_bulk_encode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    // Resize array if needed
+    if (arr->size() < length) {
+        arr->resize(length);
+    }
+
+    // Encode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        int64_t val = 0;
+        JS_ToInt64(ctx, &val, elem);
+        arr->set(i, (uint8_t)val);
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedInt32Array bulk encode from JS array
+static JSValue js_packed_int32_array_bulk_encode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedInt32Array* arr = registry->get_packed_int32_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    // Resize array if needed
+    if (arr->size() < length) {
+        arr->resize(length);
+    }
+
+    // Encode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        int64_t val = 0;
+        JS_ToInt64(ctx, &val, elem);
+        arr->set(i, (int32_t)val);
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedInt64Array bulk encode from JS array
+static JSValue js_packed_int64_array_bulk_encode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedInt64Array* arr = registry->get_packed_int64_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    // Resize array if needed
+    if (arr->size() < length) {
+        arr->resize(length);
+    }
+
+    // Encode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        int64_t val = 0;
+        JS_ToInt64(ctx, &val, elem);
+        arr->set(i, (int64_t)val);
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedFloat32Array bulk encode from JS array
+static JSValue js_packed_float32_array_bulk_encode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedFloat32Array* arr = registry->get_packed_float32_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    // Resize array if needed
+    if (arr->size() < length) {
+        arr->resize(length);
+    }
+
+    // Encode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        double val = 0;
+        JS_ToFloat64(ctx, &val, elem);
+        arr->set(i, (float)val);
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedFloat64Array bulk encode from JS array
+static JSValue js_packed_float64_array_bulk_encode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedFloat64Array* arr = registry->get_packed_float64_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    // Resize array if needed
+    if (arr->size() < length) {
+        arr->resize(length);
+    }
+
+    // Encode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        double val = 0;
+        JS_ToFloat64(ctx, &val, elem);
+        arr->set(i, (double)val);
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedStringArray bulk encode from JS array
+static JSValue js_packed_string_array_bulk_encode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedStringArray* arr = registry->get_packed_string_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    // Resize array if needed
+    if (arr->size() < length) {
+        arr->resize(length);
+    }
+
+    // Encode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        const char* str = JS_ToCString(ctx, elem);
+        arr->set(i, str ? str : "");
+        JS_FreeCString(ctx, str);
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedVector2Array bulk encode from JS array
+static JSValue js_packed_vector2_array_bulk_encode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedVector2Array* arr = registry->get_packed_vector2_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    // Resize array if needed
+    if (arr->size() < length) {
+        arr->resize(length);
+    }
+
+    // Encode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        if (JS_IsObject(elem)) {
+            JSValue x_val = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue y_val = JS_GetPropertyStr(ctx, elem, "y");
+            double x = 0;
+            double y = 0;
+            JS_ToFloat64(ctx, &x, x_val);
+            JS_ToFloat64(ctx, &y, y_val);
+            arr->set(i, Vector2(x, y));
+            JS_FreeValue(ctx, x_val);
+            JS_FreeValue(ctx, y_val);
+        }
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedVector3Array bulk encode from JS array
+static JSValue js_packed_vector3_array_bulk_encode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedVector3Array* arr = registry->get_packed_vector3_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    // Resize array if needed
+    if (arr->size() < length) {
+        arr->resize(length);
+    }
+
+    // Encode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        if (JS_IsObject(elem)) {
+            JSValue x_val = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue y_val = JS_GetPropertyStr(ctx, elem, "y");
+            JSValue z_val = JS_GetPropertyStr(ctx, elem, "z");
+            double x = 0;
+            double y = 0;
+            double z = 0;
+            JS_ToFloat64(ctx, &x, x_val);
+            JS_ToFloat64(ctx, &y, y_val);
+            JS_ToFloat64(ctx, &z, z_val);
+            arr->set(i, Vector3(x, y, z));
+            JS_FreeValue(ctx, x_val);
+            JS_FreeValue(ctx, y_val);
+            JS_FreeValue(ctx, z_val);
+        }
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedVector4Array bulk encode from JS array
+static JSValue js_packed_vector4_array_bulk_encode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedVector4Array* arr = registry->get_packed_vector4_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    // Resize array if needed
+    if (arr->size() < length) {
+        arr->resize(length);
+    }
+
+    // Encode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        if (JS_IsObject(elem)) {
+            JSValue x_val = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue y_val = JS_GetPropertyStr(ctx, elem, "y");
+            JSValue z_val = JS_GetPropertyStr(ctx, elem, "z");
+            JSValue w_val = JS_GetPropertyStr(ctx, elem, "w");
+            double x = 0;
+            double y = 0;
+            double z = 0;
+            double w = 0;
+            JS_ToFloat64(ctx, &x, x_val);
+            JS_ToFloat64(ctx, &y, y_val);
+            JS_ToFloat64(ctx, &z, z_val);
+            JS_ToFloat64(ctx, &w, w_val);
+            arr->set(i, Vector4(x, y, z, w));
+            JS_FreeValue(ctx, x_val);
+            JS_FreeValue(ctx, y_val);
+            JS_FreeValue(ctx, z_val);
+            JS_FreeValue(ctx, w_val);
+        }
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedColorArray bulk encode from JS array
+static JSValue js_packed_color_array_bulk_encode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedColorArray* arr = registry->get_packed_color_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    // Resize array if needed
+    if (arr->size() < length) {
+        arr->resize(length);
+    }
+
+    // Encode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        if (JS_IsObject(elem)) {
+            JSValue r_val = JS_GetPropertyStr(ctx, elem, "r");
+            JSValue g_val = JS_GetPropertyStr(ctx, elem, "g");
+            JSValue b_val = JS_GetPropertyStr(ctx, elem, "b");
+            JSValue a_val = JS_GetPropertyStr(ctx, elem, "a");
+            double r = 0;
+            double g = 0;
+            double b = 0;
+            double a = 1.0;
+            JS_ToFloat64(ctx, &r, r_val);
+            JS_ToFloat64(ctx, &g, g_val);
+            JS_ToFloat64(ctx, &b, b_val);
+            if (!JS_IsUndefined(a_val)) JS_ToFloat64(ctx, &a, a_val);
+            arr->set(i, Color(r, g, b, a));
+            JS_FreeValue(ctx, r_val);
+            JS_FreeValue(ctx, g_val);
+            JS_FreeValue(ctx, b_val);
+            JS_FreeValue(ctx, a_val);
+        }
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+
+// ============================================================================
+// BULK DECODE FUNCTIONS (from packed array to JS array - zero-copy architecture)
+// ============================================================================
+
+// PackedByteArray bulk decode to JS array
+static JSValue js_packed_byte_array_bulk_decode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_NewArray(ctx);
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NewArray(ctx);
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NewArray(ctx);
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NewArray(ctx);
+
+    PackedByteArray arr = registry->get_packed_byte_array(handle);
+    int64_t length = arr.size();
+
+    JSValue result = JS_NewArray(ctx);
+
+    // Decode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JS_SetPropertyUint32(ctx, result, i, JS_NewInt64(ctx, arr[i]));
+    }
+
+    return result;
+}
+
+// PackedInt32Array bulk decode to JS array
+static JSValue js_packed_int32_array_bulk_decode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_NewArray(ctx);
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NewArray(ctx);
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NewArray(ctx);
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NewArray(ctx);
+
+    PackedInt32Array arr = registry->get_packed_int32_array(handle);
+    int64_t length = arr.size();
+
+    JSValue result = JS_NewArray(ctx);
+
+    // Decode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JS_SetPropertyUint32(ctx, result, i, JS_NewInt64(ctx, arr[i]));
+    }
+
+    return result;
+}
+
+// PackedInt64Array bulk decode to JS array
+static JSValue js_packed_int64_array_bulk_decode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_NewArray(ctx);
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NewArray(ctx);
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NewArray(ctx);
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NewArray(ctx);
+
+    PackedInt64Array arr = registry->get_packed_int64_array(handle);
+    int64_t length = arr.size();
+
+    JSValue result = JS_NewArray(ctx);
+
+    // Decode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JS_SetPropertyUint32(ctx, result, i, JS_NewInt64(ctx, arr[i]));
+    }
+
+    return result;
+}
+
+// PackedFloat32Array bulk decode to JS array
+static JSValue js_packed_float32_array_bulk_decode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_NewArray(ctx);
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NewArray(ctx);
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NewArray(ctx);
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NewArray(ctx);
+
+    PackedFloat32Array arr = registry->get_packed_float32_array(handle);
+    int64_t length = arr.size();
+
+    JSValue result = JS_NewArray(ctx);
+
+    // Decode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JS_SetPropertyUint32(ctx, result, i, JS_NewFloat64(ctx, arr[i]));
+    }
+
+    return result;
+}
+
+// PackedFloat64Array bulk decode to JS array
+static JSValue js_packed_float64_array_bulk_decode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_NewArray(ctx);
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NewArray(ctx);
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NewArray(ctx);
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NewArray(ctx);
+
+    PackedFloat64Array arr = registry->get_packed_float64_array(handle);
+    int64_t length = arr.size();
+
+    JSValue result = JS_NewArray(ctx);
+
+    // Decode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JS_SetPropertyUint32(ctx, result, i, JS_NewFloat64(ctx, arr[i]));
+    }
+
+    return result;
+}
+
+// PackedStringArray bulk decode to JS array
+static JSValue js_packed_string_array_bulk_decode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_NewArray(ctx);
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NewArray(ctx);
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NewArray(ctx);
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NewArray(ctx);
+
+    PackedStringArray arr = registry->get_packed_string_array(handle);
+    int64_t length = arr.size();
+
+    JSValue result = JS_NewArray(ctx);
+
+    // Decode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        JS_SetPropertyUint32(ctx, result, i, JS_NewString(ctx, arr[i].utf8().get_data()));
+    }
+
+    return result;
+}
+
+// PackedVector2Array bulk decode to JS array
+static JSValue js_packed_vector2_array_bulk_decode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_NewArray(ctx);
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NewArray(ctx);
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NewArray(ctx);
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NewArray(ctx);
+
+    PackedVector2Array arr = registry->get_packed_vector2_array(handle);
+    int64_t length = arr.size();
+
+    JSValue result = JS_NewArray(ctx);
+
+    // Decode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        Vector2 v = arr[i];
+        JSValue obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, v.x));
+        JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, v.y));
+        JS_SetPropertyUint32(ctx, result, i, obj);
+    }
+
+    return result;
+}
+
+// PackedVector3Array bulk decode to JS array
+static JSValue js_packed_vector3_array_bulk_decode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_NewArray(ctx);
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NewArray(ctx);
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NewArray(ctx);
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NewArray(ctx);
+
+    PackedVector3Array arr = registry->get_packed_vector3_array(handle);
+    int64_t length = arr.size();
+
+    JSValue result = JS_NewArray(ctx);
+
+    // Decode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        Vector3 v = arr[i];
+        JSValue obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, v.x));
+        JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, v.y));
+        JS_SetPropertyStr(ctx, obj, "z", JS_NewFloat64(ctx, v.z));
+        JS_SetPropertyUint32(ctx, result, i, obj);
+    }
+
+    return result;
+}
+
+// PackedVector4Array bulk decode to JS array
+static JSValue js_packed_vector4_array_bulk_decode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_NewArray(ctx);
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NewArray(ctx);
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NewArray(ctx);
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NewArray(ctx);
+
+    PackedVector4Array arr = registry->get_packed_vector4_array(handle);
+    int64_t length = arr.size();
+
+    JSValue result = JS_NewArray(ctx);
+
+    // Decode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        Vector4 v = arr[i];
+        JSValue obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, v.x));
+        JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, v.y));
+        JS_SetPropertyStr(ctx, obj, "z", JS_NewFloat64(ctx, v.z));
+        JS_SetPropertyStr(ctx, obj, "w", JS_NewFloat64(ctx, v.w));
+        JS_SetPropertyUint32(ctx, result, i, obj);
+    }
+
+    return result;
+}
+
+// PackedColorArray bulk decode to JS array
+static JSValue js_packed_color_array_bulk_decode(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 1) return JS_NewArray(ctx);
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NewArray(ctx);
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NewArray(ctx);
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NewArray(ctx);
+
+    PackedColorArray arr = registry->get_packed_color_array(handle);
+    int64_t length = arr.size();
+
+    JSValue result = JS_NewArray(ctx);
+
+    // Decode all values in C++ (no per-element JS-C++ round trips)
+    for (int64_t i = 0; i < length; i++) {
+        Color v = arr[i];
+        JSValue obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, obj, "r", JS_NewFloat64(ctx, v.r));
+        JS_SetPropertyStr(ctx, obj, "g", JS_NewFloat64(ctx, v.g));
+        JS_SetPropertyStr(ctx, obj, "b", JS_NewFloat64(ctx, v.b));
+        JS_SetPropertyStr(ctx, obj, "a", JS_NewFloat64(ctx, v.a));
+        JS_SetPropertyUint32(ctx, result, i, obj);
+    }
+
+    return result;
+}
+
+
+// ============================================================================
+// PACKED BYTE ARRAY BINARY BULK OPERATIONS
+// Special functions for GPU buffer encode/decode (vec4, vec2, uint32, float32)
+// ============================================================================
+
+// Bulk encode vec4 array to PackedByteArray (16 bytes per element: x,y,z,w as floats)
+static JSValue js_packed_byte_array_encode_vec4_array(JSContext* ctx, JSValueConst this_val,
+                                                       int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    int64_t required_size = length * 16;
+    if (arr->size() < required_size) arr->resize(required_size);
+
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        int64_t offset = i * 16;
+
+        JSValue x_val = JS_GetPropertyStr(ctx, elem, "x");
+        JSValue y_val = JS_GetPropertyStr(ctx, elem, "y");
+        JSValue z_val = JS_GetPropertyStr(ctx, elem, "z");
+
+        double x = 0, y = 0, z = 0;
+        JS_ToFloat64(ctx, &x, x_val);
+        JS_ToFloat64(ctx, &y, y_val);
+        JS_ToFloat64(ctx, &z, z_val);
+
+        arr->encode_float(offset, (float)x);
+        arr->encode_float(offset + 4, (float)y);
+        arr->encode_float(offset + 8, (float)z);
+        arr->encode_float(offset + 12, 1.0f);
+
+        JS_FreeValue(ctx, x_val);
+        JS_FreeValue(ctx, y_val);
+        JS_FreeValue(ctx, z_val);
+        JS_FreeValue(ctx, elem);
+    }
+    return JS_TRUE;
+}
+
+// Bulk encode vec2 array to PackedByteArray (8 bytes per element: x,y as floats)
+static JSValue js_packed_byte_array_encode_vec2_array(JSContext* ctx, JSValueConst this_val,
+                                                       int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    int64_t required_size = length * 8;
+    if (arr->size() < required_size) arr->resize(required_size);
+
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        int64_t offset = i * 8;
+
+        JSValue x_val = JS_GetPropertyStr(ctx, elem, "x");
+        JSValue y_val = JS_GetPropertyStr(ctx, elem, "y");
+
+        double x = 0, y = 0;
+        JS_ToFloat64(ctx, &x, x_val);
+        JS_ToFloat64(ctx, &y, y_val);
+
+        arr->encode_float(offset, (float)x);
+        arr->encode_float(offset + 4, (float)y);
+
+        JS_FreeValue(ctx, x_val);
+        JS_FreeValue(ctx, y_val);
+        JS_FreeValue(ctx, elem);
+    }
+    return JS_TRUE;
+}
+
+// Bulk encode uint32 array to PackedByteArray (4 bytes per element)
+static JSValue js_packed_byte_array_encode_uint32_array(JSContext* ctx, JSValueConst this_val,
+                                                         int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    int64_t required_size = length * 4;
+    if (arr->size() < required_size) arr->resize(required_size);
+
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        int64_t val = 0;
+        JS_ToInt64(ctx, &val, elem);
+        arr->encode_u32(i * 4, (uint32_t)val);
+        JS_FreeValue(ctx, elem);
+    }
+    return JS_TRUE;
+}
+
+// Bulk decode vec3 from PackedByteArray (16 bytes per element, returns {x,y,z})
+static JSValue js_packed_byte_array_to_vec3_array(JSContext* ctx, JSValueConst this_val,
+                                                   int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_NewArray(ctx);
+
+    int64_t handle, count;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NewArray(ctx);
+    if (JS_ToInt64(ctx, &count, argv[1]) != 0) return JS_NewArray(ctx);
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NewArray(ctx);
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NewArray(ctx);
+
+    PackedByteArray arr = registry->get_packed_byte_array(handle);
+    if (count * 16 > arr.size()) return JS_NewArray(ctx);
+
+    JSValue result = JS_NewArray(ctx);
+    const uint8_t* data = arr.ptr();
+
+    for (int64_t i = 0; i < count; i++) {
+        float x, y, z;
+        memcpy(&x, data + i * 16, 4);
+        memcpy(&y, data + i * 16 + 4, 4);
+        memcpy(&z, data + i * 16 + 8, 4);
+
+        JSValue obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, x));
+        JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, y));
+        JS_SetPropertyStr(ctx, obj, "z", JS_NewFloat64(ctx, z));
+        JS_SetPropertyUint32(ctx, result, i, obj);
+    }
+    return result;
+}
+
+// Bulk decode vec2 from PackedByteArray (8 bytes per element)
+static JSValue js_packed_byte_array_to_vec2_array(JSContext* ctx, JSValueConst this_val,
+                                                   int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_NewArray(ctx);
+
+    int64_t handle, count;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NewArray(ctx);
+    if (JS_ToInt64(ctx, &count, argv[1]) != 0) return JS_NewArray(ctx);
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NewArray(ctx);
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NewArray(ctx);
+
+    PackedByteArray arr = registry->get_packed_byte_array(handle);
+    if (count * 8 > arr.size()) return JS_NewArray(ctx);
+
+    JSValue result = JS_NewArray(ctx);
+    const uint8_t* data = arr.ptr();
+
+    for (int64_t i = 0; i < count; i++) {
+        float x, y;
+        memcpy(&x, data + i * 8, 4);
+        memcpy(&y, data + i * 8 + 4, 4);
+
+        JSValue obj = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, x));
+        JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, y));
+        JS_SetPropertyUint32(ctx, result, i, obj);
+    }
+    return result;
+}
+
+// Bulk decode uint32 from PackedByteArray
+static JSValue js_packed_byte_array_decode_uint32s(JSContext* ctx, JSValueConst this_val,
+                                                    int argc, JSValueConst* argv) {
+    if (argc < 3) return JS_NewArray(ctx);
+
+    int64_t handle, offset, count;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NewArray(ctx);
+    if (JS_ToInt64(ctx, &offset, argv[1]) != 0) return JS_NewArray(ctx);
+    if (JS_ToInt64(ctx, &count, argv[2]) != 0) return JS_NewArray(ctx);
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NewArray(ctx);
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NewArray(ctx);
+
+    PackedByteArray arr = registry->get_packed_byte_array(handle);
+    if (offset < 0 || offset + count * 4 > arr.size()) return JS_NewArray(ctx);
+
+    JSValue result = JS_NewArray(ctx);
+    const uint8_t* data = arr.ptr();
+
+    for (int64_t i = 0; i < count; i++) {
+        uint32_t val;
+        memcpy(&val, data + offset + i * 4, 4);
+        JS_SetPropertyUint32(ctx, result, i, JS_NewInt64(ctx, val));
+    }
+    return result;
+}
+
+// ============================================================================
 // REGISTRATION
 // ============================================================================
 
@@ -1723,7 +3032,7 @@ void register_packed_array_constructors(JSContext* ctx, JSValue global) {
 }
 
 void register_packed_array_functions(JSContext* ctx, JSValue global) {
-    // Generic packed array functions (type-agnostic wrappers)
+    // Per-element packed array functions
     JS_SetPropertyStr(ctx, global, "__packed_byte_array_get",
         JS_NewCFunction(ctx, js_packed_byte_array_get, "__packed_byte_array_get", 2));
     JS_SetPropertyStr(ctx, global, "__packed_byte_array_set",
@@ -1824,6 +3133,88 @@ void register_packed_array_functions(JSContext* ctx, JSValue global) {
         JS_NewCFunction(ctx, js_packed_color_array_size, "__packed_color_array_size", 1));
     JS_SetPropertyStr(ctx, global, "__packed_color_array_resize",
         JS_NewCFunction(ctx, js_packed_color_array_resize, "__packed_color_array_resize", 2));
+
+    // Bulk encode/decode functions for all packed array types (zero-copy architecture)
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_bulk_encode",
+        JS_NewCFunction(ctx, js_packed_byte_array_bulk_encode, "__packed_byte_array_bulk_encode", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_bulk_decode",
+        JS_NewCFunction(ctx, js_packed_byte_array_bulk_decode, "__packed_byte_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_int32_array_bulk_encode",
+        JS_NewCFunction(ctx, js_packed_int32_array_bulk_encode, "__packed_int32_array_bulk_encode", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_int32_array_bulk_decode",
+        JS_NewCFunction(ctx, js_packed_int32_array_bulk_decode, "__packed_int32_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_int64_array_bulk_encode",
+        JS_NewCFunction(ctx, js_packed_int64_array_bulk_encode, "__packed_int64_array_bulk_encode", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_int64_array_bulk_decode",
+        JS_NewCFunction(ctx, js_packed_int64_array_bulk_decode, "__packed_int64_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_float32_array_bulk_encode",
+        JS_NewCFunction(ctx, js_packed_float32_array_bulk_encode, "__packed_float32_array_bulk_encode", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_float32_array_bulk_decode",
+        JS_NewCFunction(ctx, js_packed_float32_array_bulk_decode, "__packed_float32_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_float64_array_bulk_encode",
+        JS_NewCFunction(ctx, js_packed_float64_array_bulk_encode, "__packed_float64_array_bulk_encode", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_float64_array_bulk_decode",
+        JS_NewCFunction(ctx, js_packed_float64_array_bulk_decode, "__packed_float64_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_string_array_bulk_encode",
+        JS_NewCFunction(ctx, js_packed_string_array_bulk_encode, "__packed_string_array_bulk_encode", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_string_array_bulk_decode",
+        JS_NewCFunction(ctx, js_packed_string_array_bulk_decode, "__packed_string_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_vector2_array_bulk_encode",
+        JS_NewCFunction(ctx, js_packed_vector2_array_bulk_encode, "__packed_vector2_array_bulk_encode", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_vector2_array_bulk_decode",
+        JS_NewCFunction(ctx, js_packed_vector2_array_bulk_decode, "__packed_vector2_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_vector3_array_bulk_encode",
+        JS_NewCFunction(ctx, js_packed_vector3_array_bulk_encode, "__packed_vector3_array_bulk_encode", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_vector3_array_bulk_decode",
+        JS_NewCFunction(ctx, js_packed_vector3_array_bulk_decode, "__packed_vector3_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_vector4_array_bulk_encode",
+        JS_NewCFunction(ctx, js_packed_vector4_array_bulk_encode, "__packed_vector4_array_bulk_encode", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_vector4_array_bulk_decode",
+        JS_NewCFunction(ctx, js_packed_vector4_array_bulk_decode, "__packed_vector4_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_color_array_bulk_encode",
+        JS_NewCFunction(ctx, js_packed_color_array_bulk_encode, "__packed_color_array_bulk_encode", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_color_array_bulk_decode",
+        JS_NewCFunction(ctx, js_packed_color_array_bulk_decode, "__packed_color_array_bulk_decode", 1));
+
+    // PackedByteArray per-element encode/decode functions for binary data manipulation
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_encode_float",
+        JS_NewCFunction(ctx, js_packed_byte_array_encode_float, "__packed_byte_array_encode_float", 3));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_encode_double",
+        JS_NewCFunction(ctx, js_packed_byte_array_encode_double, "__packed_byte_array_encode_double", 3));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_encode_u32",
+        JS_NewCFunction(ctx, js_packed_byte_array_encode_u32, "__packed_byte_array_encode_u32", 3));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_encode_s32",
+        JS_NewCFunction(ctx, js_packed_byte_array_encode_s32, "__packed_byte_array_encode_s32", 3));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_encode_u64",
+        JS_NewCFunction(ctx, js_packed_byte_array_encode_u64, "__packed_byte_array_encode_u64", 3));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_encode_s64",
+        JS_NewCFunction(ctx, js_packed_byte_array_encode_s64, "__packed_byte_array_encode_s64", 3));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_decode_float",
+        JS_NewCFunction(ctx, js_packed_byte_array_decode_float, "__packed_byte_array_decode_float", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_decode_double",
+        JS_NewCFunction(ctx, js_packed_byte_array_decode_double, "__packed_byte_array_decode_double", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_decode_u32",
+        JS_NewCFunction(ctx, js_packed_byte_array_decode_u32, "__packed_byte_array_decode_u32", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_decode_s32",
+        JS_NewCFunction(ctx, js_packed_byte_array_decode_s32, "__packed_byte_array_decode_s32", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_decode_u64",
+        JS_NewCFunction(ctx, js_packed_byte_array_decode_u64, "__packed_byte_array_decode_u64", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_decode_s64",
+        JS_NewCFunction(ctx, js_packed_byte_array_decode_s64, "__packed_byte_array_decode_s64", 2));
+
+    // PackedByteArray bulk binary operations for GPU buffers
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_encode_vec4_array",
+        JS_NewCFunction(ctx, js_packed_byte_array_encode_vec4_array, "__packed_byte_array_encode_vec4_array", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_encode_vec2_array",
+        JS_NewCFunction(ctx, js_packed_byte_array_encode_vec2_array, "__packed_byte_array_encode_vec2_array", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_encode_uint32_array",
+        JS_NewCFunction(ctx, js_packed_byte_array_encode_uint32_array, "__packed_byte_array_encode_uint32_array", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_to_vec3_array",
+        JS_NewCFunction(ctx, js_packed_byte_array_to_vec3_array, "__packed_byte_array_to_vec3_array", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_to_vec2_array",
+        JS_NewCFunction(ctx, js_packed_byte_array_to_vec2_array, "__packed_byte_array_to_vec2_array", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_decode_uint32s",
+        JS_NewCFunction(ctx, js_packed_byte_array_decode_uint32s, "__packed_byte_array_decode_uint32s", 3));
 }
 
 } // namespace generated

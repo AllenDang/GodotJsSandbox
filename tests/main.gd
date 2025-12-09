@@ -15,6 +15,7 @@ const TestAsyncSceneLoadingClass = preload("res://test_cases/test_async_scene_lo
 const TestEnumsClass = preload("res://test_cases/test_enums.gd")
 const TestArrayProxyClass = preload("res://test_cases/test_array_proxy.gd")
 const TestPackedArrayProxyClass = preload("res://test_cases/test_packed_array_proxy.gd")
+const TestBulkOperationsClass = preload("res://test_cases/test_bulk_operations.gd")
 
 var sandbox: JSSandbox
 
@@ -110,6 +111,9 @@ func run_tests() -> void:
 
 	# Packed array proxy (zero-copy packed array access)
 	runner.add_suite(TestPackedArrayProxyClass.new())
+
+	# Bulk operations (zero-copy bulk encode/decode for all packed array types)
+	runner.add_suite(TestBulkOperationsClass.new())
 
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())

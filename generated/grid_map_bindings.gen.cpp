@@ -9,9 +9,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/grid_map.hpp>
-#include <godot_cpp/classes/mesh_library.hpp>
-#include <godot_cpp/classes/physics_material.hpp>
 #include <godot_cpp/classes/resource.hpp>
+#include <godot_cpp/classes/physics_material.hpp>
+#include <godot_cpp/classes/mesh_library.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/lightmap_gi.hpp>
-#include <godot_cpp/classes/sky.hpp>
 #include <godot_cpp/classes/lightmap_gi_data.hpp>
+#include <godot_cpp/classes/sky.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

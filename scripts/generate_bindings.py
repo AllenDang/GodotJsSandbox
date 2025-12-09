@@ -1103,6 +1103,13 @@ class BindingGenerator:
             current = cls_data.get("inherits", "")
         return False
 
+    def extract_inner_type(self, godot_type: str) -> str | None:
+        """Extract the inner type from typed arrays or other container types.
+        Returns the inner type name or None if not a container type."""
+        if godot_type.startswith("typedarray::"):
+            return godot_type[12:]  # Remove "typedarray::" prefix
+        return None
+
     def is_refcounted_type(self, godot_type: str) -> bool:
         """Check if a type is a RefCounted/Resource subclass (returns Ref<T>)."""
         classes_by_name = {c.get("name"): c for c in self.api_data.get("classes", [])}
@@ -1121,6 +1128,17 @@ class BindingGenerator:
                 break
             current = cls_data.get("inherits", "")
         return False
+
+    def collect_type_includes(self, godot_type: str, includes_set: set):
+        """Collect all header includes needed for a type, including inner types of containers."""
+        # Check the type itself
+        if self.is_refcounted_type(godot_type):
+            includes_set.add(self.class_name_to_header(godot_type))
+
+        # Check inner types (e.g., typedarray::RDFramebufferPass)
+        inner_type = self.extract_inner_type(godot_type)
+        if inner_type and self.is_refcounted_type(inner_type):
+            includes_set.add(self.class_name_to_header(inner_type))
 
     def is_supported_return_type(self, godot_type: str) -> bool:
         """Check if a type is supported as a method return type.
@@ -1411,13 +1429,12 @@ class BindingGenerator:
             if method:
                 class_info.methods.append(method)
                 # Collect RefCounted types used in method arguments and return type
+                # (including inner types of typed arrays)
                 return_type = method_data.get("return_value", {}).get("type", "void")
-                if self.is_refcounted_type(return_type):
-                    refcounted_includes.add(self.class_name_to_header(return_type))
+                self.collect_type_includes(return_type, refcounted_includes)
                 for arg_data in method_data.get("arguments", []):
                     arg_type = arg_data.get("type", "Variant")
-                    if self.is_refcounted_type(arg_type):
-                        refcounted_includes.add(self.class_name_to_header(arg_type))
+                    self.collect_type_includes(arg_type, refcounted_includes)
 
         # Get all methods including from parent classes for property getter/setter lookup
         all_methods = self.get_all_methods_for_class(class_name)
@@ -1427,10 +1444,9 @@ class BindingGenerator:
             prop = self.process_property(class_name, prop_data, all_methods)
             if prop:
                 class_info.properties.append(prop)
-                # Collect RefCounted types used in properties
+                # Collect RefCounted types used in properties (including inner types)
                 prop_type = prop_data.get("type", "Variant")
-                if self.is_refcounted_type(prop_type):
-                    refcounted_includes.add(self.class_name_to_header(prop_type))
+                self.collect_type_includes(prop_type, refcounted_includes)
 
         # Add extra includes for RefCounted types (from methods and properties)
         class_info.extra_includes = list(refcounted_includes)
@@ -1588,6 +1604,61 @@ class BindingGenerator:
             f.write(enums_content)
 
         print(f"Generated: singleton_enums.gen.cpp ({len(singletons_with_enums)} singletons, {total_enum_values} enum values)")
+
+        # Also generate class enums for non-singleton classes that have important enums
+        self.generate_class_enums()
+
+    def generate_class_enums(self):
+        """Generate class enums for non-singleton classes (RenderingDevice, etc.) as global objects."""
+        # List of non-singleton classes whose enums should be exposed globally
+        # These are classes that JS code commonly needs enum constants from
+        target_classes = ["RenderingDevice"]
+
+        classes_by_name = {c.get("name"): c for c in self.api_data.get("classes", [])}
+
+        classes_with_enums = []
+        total_enum_values = 0
+
+        for class_name in target_classes:
+            class_data = classes_by_name.get(class_name)
+            if not class_data:
+                continue
+
+            class_enums = class_data.get("enums", [])
+            if not class_enums:
+                continue
+
+            # Convert enum data to simple dict format for template
+            enums_data = []
+            for enum in class_enums:
+                enum_values = []
+                for value in enum.get("values", []):
+                    enum_values.append({
+                        "name": value.get("name", ""),
+                        "value": value.get("value", 0)
+                    })
+                    total_enum_values += 1
+                enums_data.append({
+                    "name": enum.get("name", ""),
+                    "values": enum_values
+                })
+
+            classes_with_enums.append({
+                "name": class_name,
+                "enums": enums_data
+            })
+
+        if not classes_with_enums:
+            return
+
+        # Generate the C++ file for class enums
+        enums_template = self.jinja_env.get_template("class_enums.cpp.j2")
+        enums_content = enums_template.render(classes=classes_with_enums)
+
+        with open(self.output_dir / "class_enums.gen.cpp", "w") as f:
+            f.write(enums_content)
+
+        print(f"Generated: class_enums.gen.cpp ({len(classes_with_enums)} classes, {total_enum_values} enum values)")
 
     def generate_packed_array_bindings(self):
         """Generate packed array bindings (constructors, get, set, push, size, resize)."""

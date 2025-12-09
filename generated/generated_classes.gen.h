@@ -24,6 +24,10 @@ void register_global_enums(JSContext* ctx, JSValue global);
 // Must be called AFTER singletons are created on global
 void register_singleton_enums(JSContext* ctx, JSValue global);
 
+// Class enums registration (RenderingDevice constants, etc.)
+// Creates global objects with enum constants for non-singleton classes
+void register_class_enums(JSContext* ctx, JSValue global);
+
 // Math type constructors (Vector2, Vector3, Color, etc.)
 void register_math_type_constructors(JSContext* ctx, JSValue global);
 
@@ -253,6 +257,7 @@ void register_FoldableGroup_bindings(JSContext* ctx, JSValue global, JSValue cla
 void register_Font_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_FontFile_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_FontVariation_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_FramebufferCacheRD_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_GDScriptSyntaxHighlighter_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_GLTFAccessor_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_GLTFAnimation_bindings(JSContext* ctx, JSValue global, JSValue classes);
@@ -527,6 +532,22 @@ void register_ProgressBar_bindings(JSContext* ctx, JSValue global, JSValue class
 void register_PropertyTweener_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_QuadMesh_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_QuadOccluder3D_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDAttachmentFormat_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDFramebufferPass_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDPipelineColorBlendState_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDPipelineColorBlendStateAttachment_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDPipelineDepthStencilState_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDPipelineMultisampleState_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDPipelineRasterizationState_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDPipelineSpecializationConstant_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDSamplerState_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDShaderFile_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDShaderSPIRV_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDShaderSource_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDTextureFormat_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDTextureView_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDUniform_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RDVertexAttribute_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RandomNumberGenerator_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Range_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RayCast2D_bindings(JSContext* ctx, JSValue global, JSValue classes);
@@ -549,6 +570,7 @@ void register_RenderSceneBuffersRD_bindings(JSContext* ctx, JSValue global, JSVa
 void register_RenderSceneData_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RenderSceneDataExtension_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_RenderSceneDataRD_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_RenderingDevice_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_Resource_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_ResourceFormatLoader_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_ResourceFormatSaver_bindings(JSContext* ctx, JSValue global, JSValue classes);
@@ -690,6 +712,7 @@ void register_Tweener_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_UPNP_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_UPNPDevice_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_UndoRedo_bindings(JSContext* ctx, JSValue global, JSValue classes);
+void register_UniformSetCacheRD_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_VBoxContainer_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_VFlowContainer_bindings(JSContext* ctx, JSValue global, JSValue classes);
 void register_VScrollBar_bindings(JSContext* ctx, JSValue global, JSValue classes);

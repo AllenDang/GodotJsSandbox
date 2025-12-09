@@ -13,6 +13,7 @@
 #include <godot_cpp/variant/packed_vector3_array.hpp>
 #include <godot_cpp/variant/packed_color_array.hpp>
 #include <godot_cpp/variant/packed_vector4_array.hpp>
+#include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <cstdint>
 
@@ -31,7 +32,20 @@ enum class CollectionType {
     PACKED_VECTOR2_ARRAY,
     PACKED_VECTOR3_ARRAY,
     PACKED_COLOR_ARRAY,
-    PACKED_VECTOR4_ARRAY
+    PACKED_VECTOR4_ARRAY,
+    RID_VARIANT,  // For storing RID values (opaque, requires round-trip via Variant)
+    // Math types - stored as Variant for zero-copy architecture
+    MATH_VECTOR2,
+    MATH_VECTOR3,
+    MATH_VECTOR4,
+    MATH_COLOR,
+    MATH_QUATERNION,
+    MATH_BASIS,
+    MATH_TRANSFORM3D,
+    MATH_TRANSFORM2D,
+    MATH_PLANE,
+    MATH_AABB,
+    MATH_RECT2
 };
 
 // ArrayRegistry manages Godot Array, Dictionary, and PackedArray references for JavaScript
@@ -46,6 +60,24 @@ public:
 
     // Create a handle for a dictionary (copies the Dictionary reference, not the data)
     uint64_t create_dict_handle(const godot::Dictionary& dict);
+
+    // Create a handle for an RID (stores as Variant for proper round-trip)
+    uint64_t create_rid_handle(const godot::Variant& rid_var);
+
+    // Get RID variant from handle
+    godot::Variant get_rid_variant(uint64_t handle);
+
+    // Create a handle for math types (stores as Variant for zero-copy)
+    uint64_t create_math_handle(const godot::Variant& math_var);
+
+    // Get math variant from handle
+    godot::Variant get_math_variant(uint64_t handle);
+
+    // Get mutable pointer to math variant (for in-place modifications)
+    godot::Variant* get_math_variant_ptr(uint64_t handle);
+
+    // Check if handle is a math type
+    bool is_math_handle(uint64_t handle) const;
 
     // Create handles for packed arrays (copies reference, not data - copy-on-write)
     uint64_t create_packed_byte_array_handle(const godot::PackedByteArray& arr);
@@ -132,6 +164,8 @@ private:
         godot::PackedVector3Array packed_vector3;
         godot::PackedColorArray packed_color;
         godot::PackedVector4Array packed_vector4;
+        godot::Variant rid_variant;  // For storing RID values
+        godot::Variant math_variant; // For storing math types (Vector2, Vector3, etc.)
     };
 
     godot::HashMap<uint64_t, HandleEntry> handles_;
