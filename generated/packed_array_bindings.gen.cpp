@@ -2995,6 +2995,116 @@ static JSValue js_packed_byte_array_decode_uint32s(JSContext* ctx, JSValueConst 
 }
 
 // ============================================================================
+// PACKED BYTE ARRAY TO GODOT PACKED ARRAY CONVERSIONS
+// Convert GPU buffer data directly to Godot packed arrays (zero-copy to JS)
+// ============================================================================
+
+// Convert PackedByteArray (vec4 format, 16 bytes each) to PackedVector3Array proxy
+static JSValue js_packed_byte_array_to_packed_vector3_array(JSContext* ctx, JSValueConst this_val,
+                                                             int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_NULL;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NULL;
+
+    int64_t count;
+    if (JS_ToInt64(ctx, &count, argv[1]) != 0) return JS_NULL;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NULL;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NULL;
+
+    PackedByteArray src = registry->get_packed_byte_array(handle);
+    if (count * 16 > src.size()) return JS_NULL;
+
+    // Create PackedVector3Array and populate from byte data
+    PackedVector3Array result;
+    result.resize(count);
+    const uint8_t* data = src.ptr();
+
+    for (int64_t i = 0; i < count; i++) {
+        float x, y, z;
+        memcpy(&x, data + i * 16, 4);
+        memcpy(&y, data + i * 16 + 4, 4);
+        memcpy(&z, data + i * 16 + 8, 4);
+        result.set(i, Vector3(x, y, z));
+    }
+
+    return qjs_ctx->variant_to_js(result);
+}
+
+// Convert PackedByteArray (vec2 format, 8 bytes each) to PackedVector2Array proxy
+static JSValue js_packed_byte_array_to_packed_vector2_array(JSContext* ctx, JSValueConst this_val,
+                                                             int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_NULL;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NULL;
+
+    int64_t count;
+    if (JS_ToInt64(ctx, &count, argv[1]) != 0) return JS_NULL;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NULL;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NULL;
+
+    PackedByteArray src = registry->get_packed_byte_array(handle);
+    if (count * 8 > src.size()) return JS_NULL;
+
+    // Create PackedVector2Array and populate from byte data
+    PackedVector2Array result;
+    result.resize(count);
+    const uint8_t* data = src.ptr();
+
+    for (int64_t i = 0; i < count; i++) {
+        float x, y;
+        memcpy(&x, data + i * 8, 4);
+        memcpy(&y, data + i * 8 + 4, 4);
+        result.set(i, Vector2(x, y));
+    }
+
+    return qjs_ctx->variant_to_js(result);
+}
+
+// Convert PackedByteArray (uint32 format, 4 bytes each) to PackedInt32Array proxy
+static JSValue js_packed_byte_array_to_packed_int32_array(JSContext* ctx, JSValueConst this_val,
+                                                           int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_NULL;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_NULL;
+
+    int64_t count;
+    if (JS_ToInt64(ctx, &count, argv[1]) != 0) return JS_NULL;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_NULL;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_NULL;
+
+    PackedByteArray src = registry->get_packed_byte_array(handle);
+    if (count * 4 > src.size()) return JS_NULL;
+
+    // Create PackedInt32Array and populate from byte data
+    PackedInt32Array result;
+    result.resize(count);
+    const uint8_t* data = src.ptr();
+
+    for (int64_t i = 0; i < count; i++) {
+        int32_t val;
+        memcpy(&val, data + i * 4, 4);
+        result.set(i, val);
+    }
+
+    return qjs_ctx->variant_to_js(result);
+}
+
+// ============================================================================
 // REGISTRATION
 // ============================================================================
 
@@ -3215,6 +3325,14 @@ void register_packed_array_functions(JSContext* ctx, JSValue global) {
         JS_NewCFunction(ctx, js_packed_byte_array_to_vec2_array, "__packed_byte_array_to_vec2_array", 2));
     JS_SetPropertyStr(ctx, global, "__packed_byte_array_decode_uint32s",
         JS_NewCFunction(ctx, js_packed_byte_array_decode_uint32s, "__packed_byte_array_decode_uint32s", 3));
+
+    // PackedByteArray to Godot PackedArray conversions (returns proxy objects, not JS arrays)
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_to_packed_vector3_array",
+        JS_NewCFunction(ctx, js_packed_byte_array_to_packed_vector3_array, "__packed_byte_array_to_packed_vector3_array", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_to_packed_vector2_array",
+        JS_NewCFunction(ctx, js_packed_byte_array_to_packed_vector2_array, "__packed_byte_array_to_packed_vector2_array", 2));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_to_packed_int32_array",
+        JS_NewCFunction(ctx, js_packed_byte_array_to_packed_int32_array, "__packed_byte_array_to_packed_int32_array", 2));
 }
 
 } // namespace generated

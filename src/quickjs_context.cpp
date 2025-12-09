@@ -805,74 +805,167 @@ JSValue QuickJSContext::variant_to_js(const Variant &value) {
             return JS_NewString(ctx_, str.utf8().get_data());
         }
 
-        // Math types - use handle-based zero-copy architecture
-        case Variant::VECTOR2:
-        case Variant::VECTOR3:
-        case Variant::VECTOR4:
-        case Variant::COLOR:
-        case Variant::QUATERNION:
-        case Variant::BASIS:
-        case Variant::TRANSFORM3D:
-        case Variant::TRANSFORM2D:
-        case Variant::PLANE:
-        case Variant::AABB:
-        case Variant::RECT2: {
-            if (array_registry_) {
-                uint64_t handle = array_registry_->create_math_handle(value);
-                if (handle != 0) {
-                    // Get type name
-                    const char* type_name = nullptr;
-                    switch (value.get_type()) {
-                        case Variant::VECTOR2: type_name = "Vector2"; break;
-                        case Variant::VECTOR3: type_name = "Vector3"; break;
-                        case Variant::VECTOR4: type_name = "Vector4"; break;
-                        case Variant::COLOR: type_name = "Color"; break;
-                        case Variant::QUATERNION: type_name = "Quaternion"; break;
-                        case Variant::BASIS: type_name = "Basis"; break;
-                        case Variant::TRANSFORM3D: type_name = "Transform3D"; break;
-                        case Variant::TRANSFORM2D: type_name = "Transform2D"; break;
-                        case Variant::PLANE: type_name = "Plane"; break;
-                        case Variant::AABB: type_name = "AABB"; break;
-                        case Variant::RECT2: type_name = "Rect2"; break;
-                        default: type_name = "unknown"; break;
-                    }
-                    // Use JS wrapper function
-                    JSValue global = JS_GetGlobalObject(ctx_);
-                    JSValue wrap_fn = JS_GetPropertyStr(ctx_, global, "__wrap_math_type");
-                    if (JS_IsFunction(ctx_, wrap_fn)) {
-                        JSValue args[2] = {
-                            JS_NewInt64(ctx_, handle),
-                            JS_NewString(ctx_, type_name)
-                        };
-                        JSValue result = JS_Call(ctx_, wrap_fn, JS_UNDEFINED, 2, args);
-                        JS_FreeValue(ctx_, args[0]);
-                        JS_FreeValue(ctx_, args[1]);
-                        JS_FreeValue(ctx_, wrap_fn);
-                        JS_FreeValue(ctx_, global);
-                        return result;
-                    }
-                    JS_FreeValue(ctx_, wrap_fn);
-                    JS_FreeValue(ctx_, global);
-                }
-            }
-            // Fallback: value copy for backward compatibility (should not reach here)
+        // Math types - use direct value copy (lightweight, no handle/proxy overhead)
+        // This is more efficient for small types like Vector2/Vector3 that are frequently
+        // created (e.g., input events). Handle-based proxies would cause memory leaks
+        // since there's no GC integration for math type handles.
+        case Variant::VECTOR2: {
+            Vector2 v = value;
             JSValue obj = JS_NewObject(ctx_);
-            if (value.get_type() == Variant::VECTOR2) {
-                Vector2 v = value;
-                JS_SetPropertyStr(ctx_, obj, "x", JS_NewFloat64(ctx_, v.x));
-                JS_SetPropertyStr(ctx_, obj, "y", JS_NewFloat64(ctx_, v.y));
-            } else if (value.get_type() == Variant::VECTOR3) {
-                Vector3 v = value;
-                JS_SetPropertyStr(ctx_, obj, "x", JS_NewFloat64(ctx_, v.x));
-                JS_SetPropertyStr(ctx_, obj, "y", JS_NewFloat64(ctx_, v.y));
-                JS_SetPropertyStr(ctx_, obj, "z", JS_NewFloat64(ctx_, v.z));
-            } else if (value.get_type() == Variant::COLOR) {
-                Color c = value;
-                JS_SetPropertyStr(ctx_, obj, "r", JS_NewFloat64(ctx_, c.r));
-                JS_SetPropertyStr(ctx_, obj, "g", JS_NewFloat64(ctx_, c.g));
-                JS_SetPropertyStr(ctx_, obj, "b", JS_NewFloat64(ctx_, c.b));
-                JS_SetPropertyStr(ctx_, obj, "a", JS_NewFloat64(ctx_, c.a));
-            }
+            JS_SetPropertyStr(ctx_, obj, "x", JS_NewFloat64(ctx_, v.x));
+            JS_SetPropertyStr(ctx_, obj, "y", JS_NewFloat64(ctx_, v.y));
+            return obj;
+        }
+
+        case Variant::VECTOR3: {
+            Vector3 v = value;
+            JSValue obj = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, obj, "x", JS_NewFloat64(ctx_, v.x));
+            JS_SetPropertyStr(ctx_, obj, "y", JS_NewFloat64(ctx_, v.y));
+            JS_SetPropertyStr(ctx_, obj, "z", JS_NewFloat64(ctx_, v.z));
+            return obj;
+        }
+
+        case Variant::VECTOR4: {
+            Vector4 v = value;
+            JSValue obj = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, obj, "x", JS_NewFloat64(ctx_, v.x));
+            JS_SetPropertyStr(ctx_, obj, "y", JS_NewFloat64(ctx_, v.y));
+            JS_SetPropertyStr(ctx_, obj, "z", JS_NewFloat64(ctx_, v.z));
+            JS_SetPropertyStr(ctx_, obj, "w", JS_NewFloat64(ctx_, v.w));
+            return obj;
+        }
+
+        case Variant::COLOR: {
+            Color c = value;
+            JSValue obj = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, obj, "r", JS_NewFloat64(ctx_, c.r));
+            JS_SetPropertyStr(ctx_, obj, "g", JS_NewFloat64(ctx_, c.g));
+            JS_SetPropertyStr(ctx_, obj, "b", JS_NewFloat64(ctx_, c.b));
+            JS_SetPropertyStr(ctx_, obj, "a", JS_NewFloat64(ctx_, c.a));
+            return obj;
+        }
+
+        case Variant::QUATERNION: {
+            Quaternion q = value;
+            JSValue obj = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, obj, "x", JS_NewFloat64(ctx_, q.x));
+            JS_SetPropertyStr(ctx_, obj, "y", JS_NewFloat64(ctx_, q.y));
+            JS_SetPropertyStr(ctx_, obj, "z", JS_NewFloat64(ctx_, q.z));
+            JS_SetPropertyStr(ctx_, obj, "w", JS_NewFloat64(ctx_, q.w));
+            return obj;
+        }
+
+        case Variant::BASIS: {
+            Basis b = value;
+            JSValue obj = JS_NewObject(ctx_);
+            // Basis has 3 row vectors (x, y, z)
+            JSValue x = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, x, "x", JS_NewFloat64(ctx_, b.rows[0].x));
+            JS_SetPropertyStr(ctx_, x, "y", JS_NewFloat64(ctx_, b.rows[0].y));
+            JS_SetPropertyStr(ctx_, x, "z", JS_NewFloat64(ctx_, b.rows[0].z));
+            JSValue y = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, y, "x", JS_NewFloat64(ctx_, b.rows[1].x));
+            JS_SetPropertyStr(ctx_, y, "y", JS_NewFloat64(ctx_, b.rows[1].y));
+            JS_SetPropertyStr(ctx_, y, "z", JS_NewFloat64(ctx_, b.rows[1].z));
+            JSValue z = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, z, "x", JS_NewFloat64(ctx_, b.rows[2].x));
+            JS_SetPropertyStr(ctx_, z, "y", JS_NewFloat64(ctx_, b.rows[2].y));
+            JS_SetPropertyStr(ctx_, z, "z", JS_NewFloat64(ctx_, b.rows[2].z));
+            JS_SetPropertyStr(ctx_, obj, "x", x);
+            JS_SetPropertyStr(ctx_, obj, "y", y);
+            JS_SetPropertyStr(ctx_, obj, "z", z);
+            return obj;
+        }
+
+        case Variant::TRANSFORM3D: {
+            Transform3D t = value;
+            JSValue obj = JS_NewObject(ctx_);
+            // Origin
+            JSValue origin = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, origin, "x", JS_NewFloat64(ctx_, t.origin.x));
+            JS_SetPropertyStr(ctx_, origin, "y", JS_NewFloat64(ctx_, t.origin.y));
+            JS_SetPropertyStr(ctx_, origin, "z", JS_NewFloat64(ctx_, t.origin.z));
+            JS_SetPropertyStr(ctx_, obj, "origin", origin);
+            // Basis
+            JSValue basis = JS_NewObject(ctx_);
+            JSValue bx = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, bx, "x", JS_NewFloat64(ctx_, t.basis.rows[0].x));
+            JS_SetPropertyStr(ctx_, bx, "y", JS_NewFloat64(ctx_, t.basis.rows[0].y));
+            JS_SetPropertyStr(ctx_, bx, "z", JS_NewFloat64(ctx_, t.basis.rows[0].z));
+            JSValue by = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, by, "x", JS_NewFloat64(ctx_, t.basis.rows[1].x));
+            JS_SetPropertyStr(ctx_, by, "y", JS_NewFloat64(ctx_, t.basis.rows[1].y));
+            JS_SetPropertyStr(ctx_, by, "z", JS_NewFloat64(ctx_, t.basis.rows[1].z));
+            JSValue bz = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, bz, "x", JS_NewFloat64(ctx_, t.basis.rows[2].x));
+            JS_SetPropertyStr(ctx_, bz, "y", JS_NewFloat64(ctx_, t.basis.rows[2].y));
+            JS_SetPropertyStr(ctx_, bz, "z", JS_NewFloat64(ctx_, t.basis.rows[2].z));
+            JS_SetPropertyStr(ctx_, basis, "x", bx);
+            JS_SetPropertyStr(ctx_, basis, "y", by);
+            JS_SetPropertyStr(ctx_, basis, "z", bz);
+            JS_SetPropertyStr(ctx_, obj, "basis", basis);
+            return obj;
+        }
+
+        case Variant::TRANSFORM2D: {
+            Transform2D t = value;
+            JSValue obj = JS_NewObject(ctx_);
+            // Transform2D has x, y (column vectors) and origin
+            JSValue x = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, x, "x", JS_NewFloat64(ctx_, t.columns[0].x));
+            JS_SetPropertyStr(ctx_, x, "y", JS_NewFloat64(ctx_, t.columns[0].y));
+            JSValue y = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, y, "x", JS_NewFloat64(ctx_, t.columns[1].x));
+            JS_SetPropertyStr(ctx_, y, "y", JS_NewFloat64(ctx_, t.columns[1].y));
+            JSValue origin = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, origin, "x", JS_NewFloat64(ctx_, t.columns[2].x));
+            JS_SetPropertyStr(ctx_, origin, "y", JS_NewFloat64(ctx_, t.columns[2].y));
+            JS_SetPropertyStr(ctx_, obj, "x", x);
+            JS_SetPropertyStr(ctx_, obj, "y", y);
+            JS_SetPropertyStr(ctx_, obj, "origin", origin);
+            return obj;
+        }
+
+        case Variant::PLANE: {
+            Plane p = value;
+            JSValue obj = JS_NewObject(ctx_);
+            JSValue normal = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, normal, "x", JS_NewFloat64(ctx_, p.normal.x));
+            JS_SetPropertyStr(ctx_, normal, "y", JS_NewFloat64(ctx_, p.normal.y));
+            JS_SetPropertyStr(ctx_, normal, "z", JS_NewFloat64(ctx_, p.normal.z));
+            JS_SetPropertyStr(ctx_, obj, "normal", normal);
+            JS_SetPropertyStr(ctx_, obj, "d", JS_NewFloat64(ctx_, p.d));
+            return obj;
+        }
+
+        case Variant::AABB: {
+            AABB a = value;
+            JSValue obj = JS_NewObject(ctx_);
+            JSValue position = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, position, "x", JS_NewFloat64(ctx_, a.position.x));
+            JS_SetPropertyStr(ctx_, position, "y", JS_NewFloat64(ctx_, a.position.y));
+            JS_SetPropertyStr(ctx_, position, "z", JS_NewFloat64(ctx_, a.position.z));
+            JSValue size = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, size, "x", JS_NewFloat64(ctx_, a.size.x));
+            JS_SetPropertyStr(ctx_, size, "y", JS_NewFloat64(ctx_, a.size.y));
+            JS_SetPropertyStr(ctx_, size, "z", JS_NewFloat64(ctx_, a.size.z));
+            JS_SetPropertyStr(ctx_, obj, "position", position);
+            JS_SetPropertyStr(ctx_, obj, "size", size);
+            return obj;
+        }
+
+        case Variant::RECT2: {
+            Rect2 r = value;
+            JSValue obj = JS_NewObject(ctx_);
+            JSValue position = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, position, "x", JS_NewFloat64(ctx_, r.position.x));
+            JS_SetPropertyStr(ctx_, position, "y", JS_NewFloat64(ctx_, r.position.y));
+            JSValue size = JS_NewObject(ctx_);
+            JS_SetPropertyStr(ctx_, size, "x", JS_NewFloat64(ctx_, r.size.x));
+            JS_SetPropertyStr(ctx_, size, "y", JS_NewFloat64(ctx_, r.size.y));
+            JS_SetPropertyStr(ctx_, obj, "position", position);
+            JS_SetPropertyStr(ctx_, obj, "size", size);
             return obj;
         }
 

@@ -18,6 +18,13 @@ struct GodotObjectData {
     ObjectRegistry* registry;
 };
 
+// Data stored in GodotArray/PackedArray JS wrapper opaque pointer
+// Used by finalizer to release array handles when JS object is garbage collected
+struct GodotArrayData {
+    uint64_t handle;
+    ArrayRegistry* registry;
+};
+
 // GodotBindings sets up JavaScript bindings for Godot classes
 // This allows JS code to create Godot objects, call methods, and access properties
 class GodotBindings {
@@ -34,6 +41,9 @@ public:
     // Get class ID for GodotObject wrapper
     JSClassID get_godot_object_class_id() const { return godot_object_class_id_; }
 
+    // Get class ID for GodotArray wrapper (used for finalizer-based cleanup)
+    JSClassID get_godot_array_class_id() const { return godot_array_class_id_; }
+
     // Convert Variant to JSValue (uses context's type conversion)
     JSValue variant_to_js(const godot::Variant& value);
 
@@ -46,6 +56,7 @@ public:
 private:
     QuickJSContext* context_;
     JSClassID godot_object_class_id_ = 0;
+    JSClassID godot_array_class_id_ = 0;  // For Array/PackedArray handles with finalizer
 
     // Setup core JavaScript classes and functions
     void setup_global_functions();
@@ -91,6 +102,9 @@ private:
 
     // GodotObject class callbacks
     static void godot_object_finalizer(JSRuntime* rt, JSValueConst val);
+
+    // GodotArray class callbacks (for Array/PackedArray handles)
+    static void godot_array_finalizer(JSRuntime* rt, JSValueConst val);
 
     // NOTE: Math type constructors and packed array constructors are now generated
     // See generated/math_constructors.gen.cpp and generated/packed_array_bindings.gen.cpp

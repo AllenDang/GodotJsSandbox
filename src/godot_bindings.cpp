@@ -63,6 +63,20 @@ bool GodotBindings::initialize() {
     JSValue proto = JS_NewObject(ctx);
     JS_SetClassProto(ctx, godot_object_class_id_, proto);
 
+    // Create GodotArray class (for Array/PackedArray handles with finalizer)
+    JS_NewClassID(rt, &godot_array_class_id_);
+
+    JSClassDef array_class_def = {};
+    array_class_def.class_name = "GodotArray";
+    array_class_def.finalizer = godot_array_finalizer;
+    array_class_def.exotic = nullptr;
+
+    JS_NewClass(rt, godot_array_class_id_, &array_class_def);
+
+    // Set up array prototype
+    JSValue array_proto = JS_NewObject(ctx);
+    JS_SetClassProto(ctx, godot_array_class_id_, array_proto);
+
     // Setup bindings
     setup_global_functions();
     setup_math_types();
@@ -87,6 +101,7 @@ bool GodotBindings::initialize() {
 
 void GodotBindings::shutdown() {
     godot_object_class_id_ = 0;
+    godot_array_class_id_ = 0;
 }
 
 // Time singleton wrapper functions
@@ -251,6 +266,48 @@ static JSValue js_rendering_server_get_rendering_device(JSContext* ctx, JSValueC
     return wrapped;
 }
 
+static JSValue js_rendering_server_create_local_rendering_device(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    RenderingDevice* rd = RenderingServer::get_singleton()->create_local_rendering_device();
+    if (!rd) {
+        return JS_NULL;
+    }
+
+    // Get context and registry
+    QuickJSContext* qjs_ctx = GodotBindings::get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_NULL;
+    }
+
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_NULL;
+    }
+
+    // Create a handle for the RenderingDevice
+    int64_t handle = registry->get_or_create_handle(rd);
+
+    // Create wrapped object using JS factory
+    const char* factory_code = "globalThis.__wrap_existing_godot_object";
+    JSValue factory = JS_Eval(ctx, factory_code, strlen(factory_code), "<rendering_server>", JS_EVAL_TYPE_GLOBAL);
+    if (JS_IsException(factory)) {
+        return factory;
+    }
+
+    JSValue args[2] = {
+        JS_NewInt64(ctx, handle),
+        JS_NewString(ctx, "RenderingDevice")
+    };
+    JSValue wrapped = JS_Call(ctx, factory, JS_UNDEFINED, 2, args);
+    JS_FreeValue(ctx, factory);
+    JS_FreeValue(ctx, args[0]);
+    JS_FreeValue(ctx, args[1]);
+
+    return wrapped;
+}
+
+// Forward declaration for array handle wrapper creator (defined later with other array functions)
+static JSValue js_create_array_handle_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+
 void GodotBindings::setup_global_functions() {
     JSContext* ctx = context_->ctx();
     JSValue global = JS_GetGlobalObject(ctx);
@@ -302,6 +359,11 @@ void GodotBindings::setup_global_functions() {
         JS_NewCFunction(ctx, js_godot_array_push, "__godot_array_push", 2));
     JS_SetPropertyStr(ctx, global, "__godot_array_pop",
         JS_NewCFunction(ctx, js_godot_array_pop, "__godot_array_pop", 1));
+
+    // Array handle wrapper creator - creates JSObjectClass with finalizer
+    // Used by __wrap_godot_array and __wrap_packed_array to ensure handles are released
+    JS_SetPropertyStr(ctx, global, "__create_array_handle_wrapper",
+        JS_NewCFunction(ctx, js_create_array_handle_wrapper, "__create_array_handle_wrapper", 1));
 
     // Packed array proxy functions for zero-copy access
     JS_SetPropertyStr(ctx, global, "__packed_array_get",
@@ -367,6 +429,8 @@ void GodotBindings::setup_global_functions() {
     JSValue rendering_server_obj = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, rendering_server_obj, "get_rendering_device",
         JS_NewCFunction(ctx, js_rendering_server_get_rendering_device, "get_rendering_device", 0));
+    JS_SetPropertyStr(ctx, rendering_server_obj, "create_local_rendering_device",
+        JS_NewCFunction(ctx, js_rendering_server_create_local_rendering_device, "create_local_rendering_device", 0));
     JS_SetPropertyStr(ctx, global, "RenderingServer", rendering_server_obj);
 
     JS_FreeValue(ctx, global);
@@ -774,10 +838,11 @@ void GodotBindings::setup_godot_class_constructor() {
         };
 
         // Wrap a Godot array handle with a proxy
+        // Uses __create_array_handle_wrapper to create a proper JSObjectClass with finalizer
+        // This ensures ArrayRegistry::release_handle() is called when the proxy is garbage collected
         globalThis.__wrap_godot_array = function(handle) {
-            var target = {
-                __array_handle: handle
-            };
+            // Create wrapper with finalizer - when GC'd, this calls ArrayRegistry::release_handle()
+            var target = __create_array_handle_wrapper(handle);
             return new Proxy(target, __godot_array_proxy_handler);
         };
 
@@ -948,6 +1013,25 @@ void GodotBindings::setup_godot_class_constructor() {
                             return __packed_byte_array_decode_s64(handle, byte_offset);
                         };
                     }
+                    // Reinterpret methods - convert byte buffer to other packed array types (zero-copy)
+                    if (prop === 'as_vector3_array') {
+                        var handle = target.__packed_handle;
+                        return function(count) {
+                            return __packed_byte_array_to_packed_vector3_array(handle, count);
+                        };
+                    }
+                    if (prop === 'as_vector2_array') {
+                        var handle = target.__packed_handle;
+                        return function(count) {
+                            return __packed_byte_array_to_packed_vector2_array(handle, count);
+                        };
+                    }
+                    if (prop === 'as_int32_array') {
+                        var handle = target.__packed_handle;
+                        return function(count) {
+                            return __packed_byte_array_to_packed_int32_array(handle, count);
+                        };
+                    }
                 }
                 // Numeric index access
                 var index = parseInt(prop);
@@ -968,18 +1052,22 @@ void GodotBindings::setup_godot_class_constructor() {
                     if (prop === 'encode_float' || prop === 'encode_double' || prop === 'encode_u32' ||
                         prop === 'encode_s32' || prop === 'encode_u64' || prop === 'encode_s64' ||
                         prop === 'decode_float' || prop === 'decode_double' || prop === 'decode_u32' ||
-                        prop === 'decode_s32' || prop === 'decode_u64' || prop === 'decode_s64') return true;
+                        prop === 'decode_s32' || prop === 'decode_u64' || prop === 'decode_s64' ||
+                        prop === 'as_vector3_array' || prop === 'as_vector2_array' || prop === 'as_int32_array') return true;
                 }
                 return false;
             }
         };
 
         // Wrap a packed array handle with a proxy
+        // Uses __create_array_handle_wrapper to create a proper JSObjectClass with finalizer
+        // This ensures ArrayRegistry::release_handle() is called when the proxy is garbage collected
         globalThis.__wrap_packed_array = function(handle, type) {
-            var target = {
-                __packed_handle: handle,
-                __packed_type: type
-            };
+            // Create wrapper with finalizer - when GC'd, this calls ArrayRegistry::release_handle()
+            var target = __create_array_handle_wrapper(handle);
+            // Also set packed-specific properties for JS-side access
+            target.__packed_handle = handle;
+            target.__packed_type = type;
             return new Proxy(target, __packed_array_proxy_handler);
         };
 
@@ -1021,11 +1109,14 @@ void GodotBindings::setup_godot_class_constructor() {
         };
 
         // Wrap a math type handle with a proxy
+        // Uses __create_array_handle_wrapper to create a proper JSObjectClass with finalizer
+        // This ensures ArrayRegistry::release_handle() is called when the proxy is garbage collected
         globalThis.__wrap_math_type = function(handle, type) {
-            var target = {
-                __math_handle: handle,
-                __math_type: type
-            };
+            // Create wrapper with finalizer - when GC'd, this calls ArrayRegistry::release_handle()
+            var target = __create_array_handle_wrapper(handle);
+            // Also set math-specific properties for JS-side access
+            target.__math_handle = handle;
+            target.__math_type = type;
             return new Proxy(target, __math_type_proxy_handler);
         };
         'factory done';
@@ -1396,6 +1487,24 @@ void GodotBindings::godot_object_finalizer(JSRuntime* rt, JSValueConst val) {
     js_free_rt(rt, data);
 }
 
+// GodotArray finalizer - called when JS array proxy is garbage collected
+// Releases Array/PackedArray/RID/MathType handles from ArrayRegistry
+void GodotBindings::godot_array_finalizer(JSRuntime* rt, JSValueConst val) {
+    JSClassID class_id;
+    void* ptr = JS_GetAnyOpaque(val, &class_id);
+    if (!ptr) return;
+
+    // Opaque data contains both handle and registry pointer
+    GodotArrayData* data = static_cast<GodotArrayData*>(ptr);
+
+    if (data->registry) {
+        data->registry->release_handle(data->handle);
+    }
+
+    // Free the data struct allocated by js_malloc
+    js_free_rt(rt, data);
+}
+
 // NOTE: Math type constructors (Vector2, Vector3, Color, etc.) are now generated
 // See generated/math_constructors.gen.cpp
 
@@ -1748,6 +1857,52 @@ JSValue GodotBindings::js_godot_has_signal(JSContext* ctx, JSValueConst this_val
 }
 
 // Array proxy functions for zero-copy access to Godot arrays
+
+// __create_array_handle_wrapper(handle) - creates JSObjectClass with finalizer for array handle
+// This is the key to preventing memory leaks - the finalizer calls ArrayRegistry::release_handle()
+static JSValue js_create_array_handle_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "__create_array_handle_wrapper requires handle argument");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_ThrowTypeError(ctx, "Invalid handle");
+    }
+
+    QuickJSContext* qjs_ctx = GodotBindings::get_context(ctx);
+    if (!qjs_ctx || !qjs_ctx->get_bindings()) {
+        return JS_ThrowInternalError(ctx, "No context available");
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry) {
+        return JS_ThrowInternalError(ctx, "No array registry available");
+    }
+
+    // Create JS object with our array class (has finalizer)
+    JSClassID class_id = qjs_ctx->get_bindings()->get_godot_array_class_id();
+    JSValue wrapper = JS_NewObjectClass(ctx, class_id);
+    if (JS_IsException(wrapper)) {
+        return wrapper;
+    }
+
+    // Allocate opaque data to store handle and registry
+    GodotArrayData* data = static_cast<GodotArrayData*>(js_malloc(ctx, sizeof(GodotArrayData)));
+    if (!data) {
+        JS_FreeValue(ctx, wrapper);
+        return JS_ThrowOutOfMemory(ctx);
+    }
+    data->handle = handle;
+    data->registry = registry;
+
+    JS_SetOpaque(wrapper, data);
+
+    // Also set __array_handle property for JS-side access
+    JS_SetPropertyStr(ctx, wrapper, "__array_handle", JS_NewInt64(ctx, handle));
+
+    return wrapper;
+}
 
 // __godot_array_get(handle, index) - get element at index
 JSValue GodotBindings::js_godot_array_get(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {

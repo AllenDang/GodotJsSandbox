@@ -12,7 +12,12 @@ ExecutionLimiter::ExecutionLimiter() {
 
 void ExecutionLimiter::check_auto_reset() {
     // Auto-reset frame counters when a new frame starts
-    uint64_t current_frame = Engine::get_singleton()->get_process_frames();
+    Engine* engine = Engine::get_singleton();
+    if (!engine) {
+        // Engine not available yet - skip reset
+        return;
+    }
+    uint64_t current_frame = engine->get_process_frames();
     if (current_frame != last_frame_count_) {
         last_frame_count_ = current_frame;
         api_calls_this_frame_ = 0;
@@ -64,7 +69,11 @@ bool ExecutionLimiter::is_timeout_exceeded() const {
         return false;
     }
 
-    int64_t now = Time::get_singleton()->get_ticks_msec();
+    Time* time = Time::get_singleton();
+    if (!time) {
+        return false;
+    }
+    int64_t now = time->get_ticks_msec();
     return (now - execution_start_time_) >= timeout_ms_;
 }
 

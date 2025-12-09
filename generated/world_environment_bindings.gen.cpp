@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/world_environment.hpp>
-#include <godot_cpp/classes/compositor.hpp>
 #include <godot_cpp/classes/environment.hpp>
+#include <godot_cpp/classes/compositor.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
