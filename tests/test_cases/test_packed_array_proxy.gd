@@ -17,6 +17,17 @@ func get_tests() -> Array[String]:
 		"test_packed_color_array_basic",
 		"test_packed_byte_array_basic",
 		"test_mesh_surface_arrays",
+		# JS constructors for packed arrays (generated)
+		"test_js_packed_vector3_array_constructor",
+		"test_js_packed_vector2_array_constructor",
+		"test_js_packed_int32_array_constructor",
+		"test_js_packed_int64_array_constructor",
+		"test_js_packed_float32_array_constructor",
+		"test_js_packed_float64_array_constructor",
+		"test_js_packed_byte_array_constructor",
+		"test_js_packed_string_array_constructor",
+		"test_js_packed_color_array_constructor",
+		"test_js_packed_vector4_array_constructor",
 	]
 
 func run_test(test_name: String) -> Dictionary:
@@ -207,6 +218,100 @@ func run_test(test_name: String) -> Dictionary:
 			sandbox.eval("delete globalThis.__test_mesh;")
 
 			return assert_eq(result, "success", "Mesh surface arrays should return proper packed array proxies")
+
+		# ============ JS Constructor Tests (Generated Packed Arrays) ============
+
+		"test_js_packed_vector3_array_constructor":
+			var code = """
+				var arr = new PackedVector3Array([
+					{x: 1, y: 2, z: 3},
+					{x: 4, y: 5, z: 6}
+				]);
+				arr.length === 2 && arr[0].x === 1 && arr[1].z === 6;
+			"""
+			var result = sandbox.eval(code)
+			return assert_eq(result, true, "PackedVector3Array JS constructor should work")
+
+		"test_js_packed_vector2_array_constructor":
+			var code = """
+				var arr = new PackedVector2Array([
+					{x: 10, y: 20},
+					{x: 30, y: 40}
+				]);
+				arr.length === 2 && arr[0].x === 10 && arr[1].y === 40;
+			"""
+			var result = sandbox.eval(code)
+			return assert_eq(result, true, "PackedVector2Array JS constructor should work")
+
+		"test_js_packed_int32_array_constructor":
+			var code = """
+				var arr = new PackedInt32Array([100, 200, 300]);
+				arr.length === 3 && arr[0] === 100 && arr[2] === 300;
+			"""
+			var result = sandbox.eval(code)
+			return assert_eq(result, true, "PackedInt32Array JS constructor should work")
+
+		"test_js_packed_int64_array_constructor":
+			var code = """
+				var arr = new PackedInt64Array([1000000000, 2000000000, 3000000000]);
+				arr.length === 3 && arr[0] === 1000000000 && arr[2] === 3000000000;
+			"""
+			var result = sandbox.eval(code)
+			return assert_eq(result, true, "PackedInt64Array JS constructor should work")
+
+		"test_js_packed_float32_array_constructor":
+			var code = """
+				var arr = new PackedFloat32Array([1.5, 2.5, 3.5]);
+				arr.length === 3 && Math.abs(arr[0] - 1.5) < 0.01 && Math.abs(arr[2] - 3.5) < 0.01;
+			"""
+			var result = sandbox.eval(code)
+			return assert_eq(result, true, "PackedFloat32Array JS constructor should work")
+
+		"test_js_packed_float64_array_constructor":
+			var code = """
+				var arr = new PackedFloat64Array([1.23456789, 2.34567890, 3.45678901]);
+				arr.length === 3 && Math.abs(arr[0] - 1.23456789) < 0.0000001;
+			"""
+			var result = sandbox.eval(code)
+			return assert_eq(result, true, "PackedFloat64Array JS constructor should work")
+
+		"test_js_packed_byte_array_constructor":
+			var code = """
+				var arr = new PackedByteArray([0, 127, 255]);
+				arr.length === 3 && arr[0] === 0 && arr[1] === 127 && arr[2] === 255;
+			"""
+			var result = sandbox.eval(code)
+			return assert_eq(result, true, "PackedByteArray JS constructor should work")
+
+		"test_js_packed_string_array_constructor":
+			var code = """
+				var arr = new PackedStringArray(['hello', 'world', 'test']);
+				arr.length === 3 && arr[0] === 'hello' && arr[2] === 'test';
+			"""
+			var result = sandbox.eval(code)
+			return assert_eq(result, true, "PackedStringArray JS constructor should work")
+
+		"test_js_packed_color_array_constructor":
+			var code = """
+				var arr = new PackedColorArray([
+					{r: 1, g: 0, b: 0, a: 1},
+					{r: 0, g: 1, b: 0}  // alpha defaults to 1
+				]);
+				arr.length === 2 && arr[0].r === 1 && arr[0].g === 0 && arr[1].g === 1;
+			"""
+			var result = sandbox.eval(code)
+			return assert_eq(result, true, "PackedColorArray JS constructor should work")
+
+		"test_js_packed_vector4_array_constructor":
+			var code = """
+				var arr = new PackedVector4Array([
+					{x: 1, y: 2, z: 3, w: 4},
+					{x: 5, y: 6, z: 7, w: 8}
+				]);
+				arr.length === 2 && arr[0].x === 1 && arr[1].w === 8;
+			"""
+			var result = sandbox.eval(code)
+			return assert_eq(result, true, "PackedVector4Array JS constructor should work")
 
 		_:
 			return { "passed": false, "message": "Unknown test: " + test_name }

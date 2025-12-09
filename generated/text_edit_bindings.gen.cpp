@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/text_edit.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/syntax_highlighter.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

@@ -20,6 +20,13 @@ void register_global_enums(JSContext* ctx, JSValue global);
 // Must be called AFTER singletons are created on global
 void register_singleton_enums(JSContext* ctx, JSValue global);
 
+// Math type constructors (Vector2, Vector3, Color, etc.)
+void register_math_type_constructors(JSContext* ctx, JSValue global);
+
+// Packed array constructors and functions
+void register_packed_array_constructors(JSContext* ctx, JSValue global);
+void register_packed_array_functions(JSContext* ctx, JSValue global);
+
 // Class registration functions
 {% for class_name in classes %}
 void register_{{ class_name }}_bindings(JSContext* ctx, JSValue global, JSValue classes);

@@ -80,17 +80,15 @@ private:
     static JSValue js_packed_array_get(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
     static JSValue js_packed_array_size(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
     static JSValue js_packed_array_type(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_packed_array_push(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_packed_array_resize(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_packed_array_set(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
     // GodotObject class callbacks
     static void godot_object_finalizer(JSRuntime* rt, JSValueConst val);
 
-    // Math type constructors
-    static JSValue js_vector2_constructor(JSContext* ctx, JSValueConst new_target, int argc, JSValueConst* argv);
-    static JSValue js_vector3_constructor(JSContext* ctx, JSValueConst new_target, int argc, JSValueConst* argv);
-    static JSValue js_color_constructor(JSContext* ctx, JSValueConst new_target, int argc, JSValueConst* argv);
-    static JSValue js_quaternion_constructor(JSContext* ctx, JSValueConst new_target, int argc, JSValueConst* argv);
-    static JSValue js_basis_constructor(JSContext* ctx, JSValueConst new_target, int argc, JSValueConst* argv);
-    static JSValue js_transform3d_constructor(JSContext* ctx, JSValueConst new_target, int argc, JSValueConst* argv);
+    // NOTE: Math type constructors and packed array constructors are now generated
+    // See generated/math_constructors.gen.cpp and generated/packed_array_bindings.gen.cpp
 };
 
 } // namespace jsb

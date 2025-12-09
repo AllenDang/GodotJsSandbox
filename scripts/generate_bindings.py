@@ -1477,6 +1477,12 @@ class BindingGenerator:
         # Generate singleton class enums file
         self.generate_singleton_enums()
 
+        # Generate packed array bindings
+        self.generate_packed_array_bindings()
+
+        # Generate math type constructors
+        self.generate_math_constructors()
+
         print(f"\nGenerated bindings for {len(self.classes)} classes")
 
     def generate_global_enums(self):
@@ -1550,6 +1556,172 @@ class BindingGenerator:
             f.write(enums_content)
 
         print(f"Generated: singleton_enums.gen.cpp ({len(singletons_with_enums)} singletons, {total_enum_values} enum values)")
+
+    def generate_packed_array_bindings(self):
+        """Generate packed array bindings (constructors, get, set, push, size, resize)."""
+        # Define packed array types with their properties
+        packed_array_types = [
+            {
+                "name": "PackedByteArray",
+                "snake_name": "packed_byte_array",
+                "element_type": "uint8_t",
+                "is_struct": False,
+                "is_float": False,
+                "fields": [],
+            },
+            {
+                "name": "PackedInt32Array",
+                "snake_name": "packed_int32_array",
+                "element_type": "int32_t",
+                "is_struct": False,
+                "is_float": False,
+                "fields": [],
+            },
+            {
+                "name": "PackedInt64Array",
+                "snake_name": "packed_int64_array",
+                "element_type": "int64_t",
+                "is_struct": False,
+                "is_float": False,
+                "fields": [],
+            },
+            {
+                "name": "PackedFloat32Array",
+                "snake_name": "packed_float32_array",
+                "element_type": "float",
+                "is_struct": False,
+                "is_float": True,
+                "fields": [],
+            },
+            {
+                "name": "PackedFloat64Array",
+                "snake_name": "packed_float64_array",
+                "element_type": "double",
+                "is_struct": False,
+                "is_float": True,
+                "fields": [],
+            },
+            {
+                "name": "PackedStringArray",
+                "snake_name": "packed_string_array",
+                "element_type": "String",
+                "is_struct": False,
+                "is_float": False,
+                "fields": [],
+            },
+            {
+                "name": "PackedVector2Array",
+                "snake_name": "packed_vector2_array",
+                "element_type": "Vector2",
+                "is_struct": True,
+                "is_float": True,
+                "fields": ["x", "y"],
+            },
+            {
+                "name": "PackedVector3Array",
+                "snake_name": "packed_vector3_array",
+                "element_type": "Vector3",
+                "is_struct": True,
+                "is_float": True,
+                "fields": ["x", "y", "z"],
+            },
+            {
+                "name": "PackedVector4Array",
+                "snake_name": "packed_vector4_array",
+                "element_type": "Vector4",
+                "is_struct": True,
+                "is_float": True,
+                "fields": ["x", "y", "z", "w"],
+            },
+            {
+                "name": "PackedColorArray",
+                "snake_name": "packed_color_array",
+                "element_type": "Color",
+                "is_struct": True,
+                "is_float": True,
+                "fields": ["r", "g", "b", "a"],
+            },
+        ]
+
+        # Generate using template
+        template = self.jinja_env.get_template("packed_array_bindings.cpp.j2")
+        content = template.render(packed_array_types=packed_array_types)
+
+        with open(self.output_dir / "packed_array_bindings.gen.cpp", "w") as f:
+            f.write(content)
+
+        print(f"Generated: packed_array_bindings.gen.cpp ({len(packed_array_types)} packed array types)")
+
+    def generate_math_constructors(self):
+        """Generate math type constructors (Vector2, Vector3, Color, etc.)."""
+        # Define simple vector types that follow the same pattern
+        simple_vector_types = [
+            {
+                "name": "Vector2",
+                "snake_name": "vector2",
+                "fields": ["x", "y"],
+                "component_type": "double",
+                "is_int": False,
+            },
+            {
+                "name": "Vector2i",
+                "snake_name": "vector2i",
+                "fields": ["x", "y"],
+                "component_type": "int32_t",
+                "is_int": True,
+            },
+            {
+                "name": "Vector3",
+                "snake_name": "vector3",
+                "fields": ["x", "y", "z"],
+                "component_type": "double",
+                "is_int": False,
+            },
+            {
+                "name": "Vector3i",
+                "snake_name": "vector3i",
+                "fields": ["x", "y", "z"],
+                "component_type": "int32_t",
+                "is_int": True,
+            },
+            {
+                "name": "Vector4",
+                "snake_name": "vector4",
+                "fields": ["x", "y", "z", "w"],
+                "component_type": "double",
+                "is_int": False,
+            },
+            {
+                "name": "Vector4i",
+                "snake_name": "vector4i",
+                "fields": ["x", "y", "z", "w"],
+                "component_type": "int32_t",
+                "is_int": True,
+            },
+            {
+                "name": "Color",
+                "snake_name": "color",
+                "fields": ["r", "g", "b", "a"],
+                "component_type": "double",
+                "is_int": False,
+            },
+            {
+                "name": "Quaternion",
+                "snake_name": "quaternion",
+                "fields": ["x", "y", "z", "w"],
+                "component_type": "double",
+                "is_int": False,
+            },
+        ]
+
+        # Generate using template
+        template = self.jinja_env.get_template("math_constructors.cpp.j2")
+        content = template.render(simple_vector_types=simple_vector_types)
+
+        with open(self.output_dir / "math_constructors.gen.cpp", "w") as f:
+            f.write(content)
+
+        print(f"Generated: math_constructors.gen.cpp ({len(simple_vector_types)} simple types + complex types)")
 
 
 def main():

@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/skeleton3d.hpp>
-#include <godot_cpp/classes/skin_reference.hpp>
 #include <godot_cpp/classes/skin.hpp>
+#include <godot_cpp/classes/skin_reference.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

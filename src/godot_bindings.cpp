@@ -317,35 +317,12 @@ void GodotBindings::setup_math_types() {
     JSContext* ctx = context_->ctx();
     JSValue global = JS_GetGlobalObject(ctx);
 
-    // Vector2 constructor
-    JSValue vector2_ctor = JS_NewCFunction2(ctx, js_vector2_constructor, "Vector2", 2,
-                                            JS_CFUNC_constructor, 0);
-    JS_SetPropertyStr(ctx, global, "Vector2", vector2_ctor);
+    // Use generated math type constructors (Vector2, Vector3, Color, Quaternion, etc.)
+    generated::register_math_type_constructors(ctx, global);
 
-    // Vector3 constructor
-    JSValue vector3_ctor = JS_NewCFunction2(ctx, js_vector3_constructor, "Vector3", 3,
-                                            JS_CFUNC_constructor, 0);
-    JS_SetPropertyStr(ctx, global, "Vector3", vector3_ctor);
-
-    // Color constructor
-    JSValue color_ctor = JS_NewCFunction2(ctx, js_color_constructor, "Color", 4,
-                                          JS_CFUNC_constructor, 0);
-    JS_SetPropertyStr(ctx, global, "Color", color_ctor);
-
-    // Quaternion constructor
-    JSValue quat_ctor = JS_NewCFunction2(ctx, js_quaternion_constructor, "Quaternion", 4,
-                                         JS_CFUNC_constructor, 0);
-    JS_SetPropertyStr(ctx, global, "Quaternion", quat_ctor);
-
-    // Basis constructor
-    JSValue basis_ctor = JS_NewCFunction2(ctx, js_basis_constructor, "Basis", 0,
-                                          JS_CFUNC_constructor, 0);
-    JS_SetPropertyStr(ctx, global, "Basis", basis_ctor);
-
-    // Transform3D constructor
-    JSValue transform3d_ctor = JS_NewCFunction2(ctx, js_transform3d_constructor, "Transform3D", 0,
-                                                 JS_CFUNC_constructor, 0);
-    JS_SetPropertyStr(ctx, global, "Transform3D", transform3d_ctor);
+    // Use generated packed array constructors and functions
+    generated::register_packed_array_constructors(ctx, global);
+    generated::register_packed_array_functions(ctx, global);
 
     JS_FreeValue(ctx, global);
 }
@@ -1204,138 +1181,8 @@ void GodotBindings::godot_object_finalizer(JSRuntime* rt, JSValueConst val) {
     js_free_rt(rt, data);
 }
 
-// Vector2 constructor
-JSValue GodotBindings::js_vector2_constructor(JSContext* ctx, JSValueConst new_target,
-                                               int argc, JSValueConst* argv) {
-    double x = 0, y = 0;
-
-    if (argc >= 1) JS_ToFloat64(ctx, &x, argv[0]);
-    if (argc >= 2) JS_ToFloat64(ctx, &y, argv[1]);
-
-    JSValue obj = JS_NewObject(ctx);
-    JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, x));
-    JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, y));
-
-    return obj;
-}
-
-// Vector3 constructor
-JSValue GodotBindings::js_vector3_constructor(JSContext* ctx, JSValueConst new_target,
-                                               int argc, JSValueConst* argv) {
-    double x = 0, y = 0, z = 0;
-
-    if (argc >= 1) JS_ToFloat64(ctx, &x, argv[0]);
-    if (argc >= 2) JS_ToFloat64(ctx, &y, argv[1]);
-    if (argc >= 3) JS_ToFloat64(ctx, &z, argv[2]);
-
-    JSValue obj = JS_NewObject(ctx);
-    JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, x));
-    JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, y));
-    JS_SetPropertyStr(ctx, obj, "z", JS_NewFloat64(ctx, z));
-
-    return obj;
-}
-
-// Color constructor
-JSValue GodotBindings::js_color_constructor(JSContext* ctx, JSValueConst new_target,
-                                             int argc, JSValueConst* argv) {
-    double r = 0, g = 0, b = 0, a = 1;
-
-    if (argc >= 1) JS_ToFloat64(ctx, &r, argv[0]);
-    if (argc >= 2) JS_ToFloat64(ctx, &g, argv[1]);
-    if (argc >= 3) JS_ToFloat64(ctx, &b, argv[2]);
-    if (argc >= 4) JS_ToFloat64(ctx, &a, argv[3]);
-
-    JSValue obj = JS_NewObject(ctx);
-    JS_SetPropertyStr(ctx, obj, "r", JS_NewFloat64(ctx, r));
-    JS_SetPropertyStr(ctx, obj, "g", JS_NewFloat64(ctx, g));
-    JS_SetPropertyStr(ctx, obj, "b", JS_NewFloat64(ctx, b));
-    JS_SetPropertyStr(ctx, obj, "a", JS_NewFloat64(ctx, a));
-
-    return obj;
-}
-
-// Quaternion constructor
-JSValue GodotBindings::js_quaternion_constructor(JSContext* ctx, JSValueConst new_target,
-                                                  int argc, JSValueConst* argv) {
-    double x = 0, y = 0, z = 0, w = 1;
-
-    if (argc >= 1) JS_ToFloat64(ctx, &x, argv[0]);
-    if (argc >= 2) JS_ToFloat64(ctx, &y, argv[1]);
-    if (argc >= 3) JS_ToFloat64(ctx, &z, argv[2]);
-    if (argc >= 4) JS_ToFloat64(ctx, &w, argv[3]);
-
-    JSValue obj = JS_NewObject(ctx);
-    JS_SetPropertyStr(ctx, obj, "x", JS_NewFloat64(ctx, x));
-    JS_SetPropertyStr(ctx, obj, "y", JS_NewFloat64(ctx, y));
-    JS_SetPropertyStr(ctx, obj, "z", JS_NewFloat64(ctx, z));
-    JS_SetPropertyStr(ctx, obj, "w", JS_NewFloat64(ctx, w));
-
-    return obj;
-}
-
-// Basis constructor - creates identity basis or from 3 row vectors
-JSValue GodotBindings::js_basis_constructor(JSContext* ctx, JSValueConst new_target,
-                                             int argc, JSValueConst* argv) {
-    JSValue obj = JS_NewObject(ctx);
-    JSValue x_row = JS_NewObject(ctx);
-    JSValue y_row = JS_NewObject(ctx);
-    JSValue z_row = JS_NewObject(ctx);
-
-    // Default to identity matrix
-    JS_SetPropertyStr(ctx, x_row, "x", JS_NewFloat64(ctx, 1));
-    JS_SetPropertyStr(ctx, x_row, "y", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, x_row, "z", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, y_row, "x", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, y_row, "y", JS_NewFloat64(ctx, 1));
-    JS_SetPropertyStr(ctx, y_row, "z", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, z_row, "x", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, z_row, "y", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, z_row, "z", JS_NewFloat64(ctx, 1));
-
-    JS_SetPropertyStr(ctx, obj, "x", x_row);
-    JS_SetPropertyStr(ctx, obj, "y", y_row);
-    JS_SetPropertyStr(ctx, obj, "z", z_row);
-
-    return obj;
-}
-
-// Transform3D constructor - creates identity transform
-JSValue GodotBindings::js_transform3d_constructor(JSContext* ctx, JSValueConst new_target,
-                                                   int argc, JSValueConst* argv) {
-    JSValue obj = JS_NewObject(ctx);
-
-    // Create identity basis
-    JSValue basis = JS_NewObject(ctx);
-    JSValue bx_row = JS_NewObject(ctx);
-    JSValue by_row = JS_NewObject(ctx);
-    JSValue bz_row = JS_NewObject(ctx);
-
-    JS_SetPropertyStr(ctx, bx_row, "x", JS_NewFloat64(ctx, 1));
-    JS_SetPropertyStr(ctx, bx_row, "y", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, bx_row, "z", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, by_row, "x", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, by_row, "y", JS_NewFloat64(ctx, 1));
-    JS_SetPropertyStr(ctx, by_row, "z", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, bz_row, "x", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, bz_row, "y", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, bz_row, "z", JS_NewFloat64(ctx, 1));
-
-    JS_SetPropertyStr(ctx, basis, "x", bx_row);
-    JS_SetPropertyStr(ctx, basis, "y", by_row);
-    JS_SetPropertyStr(ctx, basis, "z", bz_row);
-
-    // Create origin at zero
-    JSValue origin = JS_NewObject(ctx);
-    JS_SetPropertyStr(ctx, origin, "x", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, origin, "y", JS_NewFloat64(ctx, 0));
-    JS_SetPropertyStr(ctx, origin, "z", JS_NewFloat64(ctx, 0));
-
-    JS_SetPropertyStr(ctx, obj, "basis", basis);
-    JS_SetPropertyStr(ctx, obj, "origin", origin);
-
-    return obj;
-}
+// NOTE: Math type constructors (Vector2, Vector3, Color, etc.) are now generated
+// See generated/math_constructors.gen.cpp
 
 JSValue GodotBindings::variant_to_js(const Variant& value) {
     return context_->variant_to_js(value);
@@ -2007,5 +1854,281 @@ JSValue GodotBindings::js_packed_array_type(JSContext* ctx, JSValueConst this_va
         default: return JS_NewString(ctx, "unknown");
     }
 }
+
+// __packed_array_push(handle, value) - push element to packed array
+JSValue GodotBindings::js_packed_array_push(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_FALSE;
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_FALSE;
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_FALSE;
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) {
+        return JS_FALSE;
+    }
+
+    CollectionType type = registry->get_handle_type(handle);
+
+    switch (type) {
+        case CollectionType::PACKED_VECTOR3_ARRAY: {
+            PackedVector3Array* arr = registry->get_packed_vector3_array_ptr(handle);
+            if (arr && JS_IsObject(argv[1])) {
+                JSValue x_val = JS_GetPropertyStr(ctx, argv[1], "x");
+                JSValue y_val = JS_GetPropertyStr(ctx, argv[1], "y");
+                JSValue z_val = JS_GetPropertyStr(ctx, argv[1], "z");
+                double x = 0, y = 0, z = 0;
+                JS_ToFloat64(ctx, &x, x_val);
+                JS_ToFloat64(ctx, &y, y_val);
+                JS_ToFloat64(ctx, &z, z_val);
+                arr->push_back(Vector3(x, y, z));
+                JS_FreeValue(ctx, x_val);
+                JS_FreeValue(ctx, y_val);
+                JS_FreeValue(ctx, z_val);
+                return JS_TRUE;
+            }
+            break;
+        }
+        case CollectionType::PACKED_INT32_ARRAY: {
+            PackedInt32Array* arr = registry->get_packed_int32_array_ptr(handle);
+            if (arr) {
+                int64_t val = 0;
+                JS_ToInt64(ctx, &val, argv[1]);
+                arr->push_back((int32_t)val);
+                return JS_TRUE;
+            }
+            break;
+        }
+        case CollectionType::PACKED_FLOAT32_ARRAY: {
+            PackedFloat32Array* arr = registry->get_packed_float32_array_ptr(handle);
+            if (arr) {
+                double val = 0;
+                JS_ToFloat64(ctx, &val, argv[1]);
+                arr->push_back((float)val);
+                return JS_TRUE;
+            }
+            break;
+        }
+        case CollectionType::PACKED_VECTOR2_ARRAY: {
+            PackedVector2Array* arr = registry->get_packed_vector2_array_ptr(handle);
+            if (arr && JS_IsObject(argv[1])) {
+                JSValue x_val = JS_GetPropertyStr(ctx, argv[1], "x");
+                JSValue y_val = JS_GetPropertyStr(ctx, argv[1], "y");
+                double x = 0, y = 0;
+                JS_ToFloat64(ctx, &x, x_val);
+                JS_ToFloat64(ctx, &y, y_val);
+                arr->push_back(Vector2(x, y));
+                JS_FreeValue(ctx, x_val);
+                JS_FreeValue(ctx, y_val);
+                return JS_TRUE;
+            }
+            break;
+        }
+        case CollectionType::PACKED_COLOR_ARRAY: {
+            PackedColorArray* arr = registry->get_packed_color_array_ptr(handle);
+            if (arr && JS_IsObject(argv[1])) {
+                JSValue r_val = JS_GetPropertyStr(ctx, argv[1], "r");
+                JSValue g_val = JS_GetPropertyStr(ctx, argv[1], "g");
+                JSValue b_val = JS_GetPropertyStr(ctx, argv[1], "b");
+                JSValue a_val = JS_GetPropertyStr(ctx, argv[1], "a");
+                double r = 0, g = 0, b = 0, a = 1;
+                JS_ToFloat64(ctx, &r, r_val);
+                JS_ToFloat64(ctx, &g, g_val);
+                JS_ToFloat64(ctx, &b, b_val);
+                if (!JS_IsUndefined(a_val)) JS_ToFloat64(ctx, &a, a_val);
+                arr->push_back(Color(r, g, b, a));
+                JS_FreeValue(ctx, r_val);
+                JS_FreeValue(ctx, g_val);
+                JS_FreeValue(ctx, b_val);
+                JS_FreeValue(ctx, a_val);
+                return JS_TRUE;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+    return JS_FALSE;
+}
+
+// __packed_array_resize(handle, size) - resize packed array
+JSValue GodotBindings::js_packed_array_resize(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_FALSE;
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_FALSE;
+    }
+
+    int64_t new_size;
+    if (JS_ToInt64(ctx, &new_size, argv[1]) != 0) {
+        return JS_FALSE;
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_FALSE;
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) {
+        return JS_FALSE;
+    }
+
+    CollectionType type = registry->get_handle_type(handle);
+
+    switch (type) {
+        case CollectionType::PACKED_VECTOR3_ARRAY: {
+            PackedVector3Array* arr = registry->get_packed_vector3_array_ptr(handle);
+            if (arr) { arr->resize(new_size); return JS_TRUE; }
+            break;
+        }
+        case CollectionType::PACKED_INT32_ARRAY: {
+            PackedInt32Array* arr = registry->get_packed_int32_array_ptr(handle);
+            if (arr) { arr->resize(new_size); return JS_TRUE; }
+            break;
+        }
+        case CollectionType::PACKED_FLOAT32_ARRAY: {
+            PackedFloat32Array* arr = registry->get_packed_float32_array_ptr(handle);
+            if (arr) { arr->resize(new_size); return JS_TRUE; }
+            break;
+        }
+        case CollectionType::PACKED_VECTOR2_ARRAY: {
+            PackedVector2Array* arr = registry->get_packed_vector2_array_ptr(handle);
+            if (arr) { arr->resize(new_size); return JS_TRUE; }
+            break;
+        }
+        case CollectionType::PACKED_COLOR_ARRAY: {
+            PackedColorArray* arr = registry->get_packed_color_array_ptr(handle);
+            if (arr) { arr->resize(new_size); return JS_TRUE; }
+            break;
+        }
+        default:
+            break;
+    }
+    return JS_FALSE;
+}
+
+// __packed_array_set(handle, index, value) - set element at index
+JSValue GodotBindings::js_packed_array_set(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 3) {
+        return JS_FALSE;
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_FALSE;
+    }
+
+    int64_t index;
+    if (JS_ToInt64(ctx, &index, argv[1]) != 0) {
+        return JS_FALSE;
+    }
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_FALSE;
+    }
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) {
+        return JS_FALSE;
+    }
+
+    CollectionType type = registry->get_handle_type(handle);
+
+    switch (type) {
+        case CollectionType::PACKED_VECTOR3_ARRAY: {
+            PackedVector3Array* arr = registry->get_packed_vector3_array_ptr(handle);
+            if (arr && index >= 0 && index < arr->size() && JS_IsObject(argv[2])) {
+                JSValue x_val = JS_GetPropertyStr(ctx, argv[2], "x");
+                JSValue y_val = JS_GetPropertyStr(ctx, argv[2], "y");
+                JSValue z_val = JS_GetPropertyStr(ctx, argv[2], "z");
+                double x = 0, y = 0, z = 0;
+                JS_ToFloat64(ctx, &x, x_val);
+                JS_ToFloat64(ctx, &y, y_val);
+                JS_ToFloat64(ctx, &z, z_val);
+                arr->set(index, Vector3(x, y, z));
+                JS_FreeValue(ctx, x_val);
+                JS_FreeValue(ctx, y_val);
+                JS_FreeValue(ctx, z_val);
+                return JS_TRUE;
+            }
+            break;
+        }
+        case CollectionType::PACKED_INT32_ARRAY: {
+            PackedInt32Array* arr = registry->get_packed_int32_array_ptr(handle);
+            if (arr && index >= 0 && index < arr->size()) {
+                int64_t val = 0;
+                JS_ToInt64(ctx, &val, argv[2]);
+                arr->set(index, (int32_t)val);
+                return JS_TRUE;
+            }
+            break;
+        }
+        case CollectionType::PACKED_FLOAT32_ARRAY: {
+            PackedFloat32Array* arr = registry->get_packed_float32_array_ptr(handle);
+            if (arr && index >= 0 && index < arr->size()) {
+                double val = 0;
+                JS_ToFloat64(ctx, &val, argv[2]);
+                arr->set(index, (float)val);
+                return JS_TRUE;
+            }
+            break;
+        }
+        case CollectionType::PACKED_VECTOR2_ARRAY: {
+            PackedVector2Array* arr = registry->get_packed_vector2_array_ptr(handle);
+            if (arr && index >= 0 && index < arr->size() && JS_IsObject(argv[2])) {
+                JSValue x_val = JS_GetPropertyStr(ctx, argv[2], "x");
+                JSValue y_val = JS_GetPropertyStr(ctx, argv[2], "y");
+                double x = 0, y = 0;
+                JS_ToFloat64(ctx, &x, x_val);
+                JS_ToFloat64(ctx, &y, y_val);
+                arr->set(index, Vector2(x, y));
+                JS_FreeValue(ctx, x_val);
+                JS_FreeValue(ctx, y_val);
+                return JS_TRUE;
+            }
+            break;
+        }
+        case CollectionType::PACKED_COLOR_ARRAY: {
+            PackedColorArray* arr = registry->get_packed_color_array_ptr(handle);
+            if (arr && index >= 0 && index < arr->size() && JS_IsObject(argv[2])) {
+                JSValue r_val = JS_GetPropertyStr(ctx, argv[2], "r");
+                JSValue g_val = JS_GetPropertyStr(ctx, argv[2], "g");
+                JSValue b_val = JS_GetPropertyStr(ctx, argv[2], "b");
+                JSValue a_val = JS_GetPropertyStr(ctx, argv[2], "a");
+                double r = 0, g = 0, b = 0, a = 1;
+                JS_ToFloat64(ctx, &r, r_val);
+                JS_ToFloat64(ctx, &g, g_val);
+                JS_ToFloat64(ctx, &b, b_val);
+                if (!JS_IsUndefined(a_val)) JS_ToFloat64(ctx, &a, a_val);
+                arr->set(index, Color(r, g, b, a));
+                JS_FreeValue(ctx, r_val);
+                JS_FreeValue(ctx, g_val);
+                JS_FreeValue(ctx, b_val);
+                JS_FreeValue(ctx, a_val);
+                return JS_TRUE;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+    return JS_FALSE;
+}
+
+// NOTE: Packed array constructors are now generated
+// See generated/packed_array_bindings.gen.cpp
 
 } // namespace jsb

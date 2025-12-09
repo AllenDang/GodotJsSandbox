@@ -291,4 +291,75 @@ int64_t ArrayRegistry::get_size(uint64_t handle) const {
     }
 }
 
+// Mutable pointer getters for push_back, resize, set operations
+PackedByteArray* ArrayRegistry::get_packed_byte_array_ptr(uint64_t handle) {
+    if (!handles_.has(handle)) return nullptr;
+    HandleEntry& entry = handles_[handle];
+    if (!entry.is_valid || entry.type != CollectionType::PACKED_BYTE_ARRAY) return nullptr;
+    return &entry.packed_byte;
+}
+
+PackedInt32Array* ArrayRegistry::get_packed_int32_array_ptr(uint64_t handle) {
+    if (!handles_.has(handle)) return nullptr;
+    HandleEntry& entry = handles_[handle];
+    if (!entry.is_valid || entry.type != CollectionType::PACKED_INT32_ARRAY) return nullptr;
+    return &entry.packed_int32;
+}
+
+PackedInt64Array* ArrayRegistry::get_packed_int64_array_ptr(uint64_t handle) {
+    if (!handles_.has(handle)) return nullptr;
+    HandleEntry& entry = handles_[handle];
+    if (!entry.is_valid || entry.type != CollectionType::PACKED_INT64_ARRAY) return nullptr;
+    return &entry.packed_int64;
+}
+
+PackedFloat32Array* ArrayRegistry::get_packed_float32_array_ptr(uint64_t handle) {
+    if (!handles_.has(handle)) return nullptr;
+    HandleEntry& entry = handles_[handle];
+    if (!entry.is_valid || entry.type != CollectionType::PACKED_FLOAT32_ARRAY) return nullptr;
+    return &entry.packed_float32;
+}
+
+PackedFloat64Array* ArrayRegistry::get_packed_float64_array_ptr(uint64_t handle) {
+    if (!handles_.has(handle)) return nullptr;
+    HandleEntry& entry = handles_[handle];
+    if (!entry.is_valid || entry.type != CollectionType::PACKED_FLOAT64_ARRAY) return nullptr;
+    return &entry.packed_float64;
+}
+
+PackedStringArray* ArrayRegistry::get_packed_string_array_ptr(uint64_t handle) {
+    if (!handles_.has(handle)) return nullptr;
+    HandleEntry& entry = handles_[handle];
+    if (!entry.is_valid || entry.type != CollectionType::PACKED_STRING_ARRAY) return nullptr;
+    return &entry.packed_string;
+}
+
+PackedVector2Array* ArrayRegistry::get_packed_vector2_array_ptr(uint64_t handle) {
+    if (!handles_.has(handle)) return nullptr;
+    HandleEntry& entry = handles_[handle];
+    if (!entry.is_valid || entry.type != CollectionType::PACKED_VECTOR2_ARRAY) return nullptr;
+    return &entry.packed_vector2;
+}
+
+PackedVector3Array* ArrayRegistry::get_packed_vector3_array_ptr(uint64_t handle) {
+    if (!handles_.has(handle)) return nullptr;
+    HandleEntry& entry = handles_[handle];
+    if (!entry.is_valid || entry.type != CollectionType::PACKED_VECTOR3_ARRAY) return nullptr;
+    return &entry.packed_vector3;
+}
+
+PackedVector4Array* ArrayRegistry::get_packed_vector4_array_ptr(uint64_t handle) {
+    if (!handles_.has(handle)) return nullptr;
+    HandleEntry& entry = handles_[handle];
+    if (!entry.is_valid || entry.type != CollectionType::PACKED_VECTOR4_ARRAY) return nullptr;
+    return &entry.packed_vector4;
+}
+
+PackedColorArray* ArrayRegistry::get_packed_color_array_ptr(uint64_t handle) {
+    if (!handles_.has(handle)) return nullptr;
+    HandleEntry& entry = handles_[handle];
+    if (!entry.is_valid || entry.type != CollectionType::PACKED_COLOR_ARRAY) return nullptr;
+    return &entry.packed_color;
+}
+
 } // namespace jsb

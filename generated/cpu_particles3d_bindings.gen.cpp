@@ -8,8 +8,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/cpu_particles3d.hpp>
-#include <godot_cpp/classes/gradient.hpp>
 #include <godot_cpp/classes/mesh.hpp>
+#include <godot_cpp/classes/gradient.hpp>
 #include <godot_cpp/classes/curve.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 

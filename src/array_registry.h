@@ -65,7 +65,7 @@ public:
     // Get dictionary from handle (returns empty dict if invalid)
     godot::Dictionary get_dictionary(uint64_t handle);
 
-    // Get packed arrays from handle
+    // Get packed arrays from handle (returns copy for read-only access)
     godot::PackedByteArray get_packed_byte_array(uint64_t handle);
     godot::PackedInt32Array get_packed_int32_array(uint64_t handle);
     godot::PackedInt64Array get_packed_int64_array(uint64_t handle);
@@ -76,6 +76,18 @@ public:
     godot::PackedVector3Array get_packed_vector3_array(uint64_t handle);
     godot::PackedColorArray get_packed_color_array(uint64_t handle);
     godot::PackedVector4Array get_packed_vector4_array(uint64_t handle);
+
+    // Get mutable references to packed arrays (for push_back, resize, set operations)
+    godot::PackedByteArray* get_packed_byte_array_ptr(uint64_t handle);
+    godot::PackedInt32Array* get_packed_int32_array_ptr(uint64_t handle);
+    godot::PackedInt64Array* get_packed_int64_array_ptr(uint64_t handle);
+    godot::PackedFloat32Array* get_packed_float32_array_ptr(uint64_t handle);
+    godot::PackedFloat64Array* get_packed_float64_array_ptr(uint64_t handle);
+    godot::PackedStringArray* get_packed_string_array_ptr(uint64_t handle);
+    godot::PackedVector2Array* get_packed_vector2_array_ptr(uint64_t handle);
+    godot::PackedVector3Array* get_packed_vector3_array_ptr(uint64_t handle);
+    godot::PackedVector4Array* get_packed_vector4_array_ptr(uint64_t handle);
+    godot::PackedColorArray* get_packed_color_array_ptr(uint64_t handle);
 
     // Get type of handle
     CollectionType get_handle_type(uint64_t handle) const;
