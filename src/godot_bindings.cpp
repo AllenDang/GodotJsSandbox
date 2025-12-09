@@ -23,6 +23,11 @@ using namespace godot;
 
 namespace jsb {
 
+// Static class IDs shared across all contexts using the same runtime.
+// These are initialized to 0 and JS_NewClassID only allocates once.
+JSClassID GodotBindings::godot_object_class_id_ = 0;
+JSClassID GodotBindings::godot_array_class_id_ = 0;
+
 // Store context pointer in JSRuntime opaque
 GodotBindings::GodotBindings(QuickJSContext* context)
     : context_(context) {
@@ -100,8 +105,10 @@ bool GodotBindings::initialize() {
 }
 
 void GodotBindings::shutdown() {
-    godot_object_class_id_ = 0;
-    godot_array_class_id_ = 0;
+    // Note: Do NOT reset static class IDs here. They are shared across all contexts
+    // using the same runtime. Resetting them would cause new contexts to register
+    // new class IDs, breaking finalizer calls for existing objects.
+    // The class IDs are valid for the lifetime of the JSRuntime.
 }
 
 // Time singleton wrapper functions

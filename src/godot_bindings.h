@@ -55,8 +55,12 @@ public:
 
 private:
     QuickJSContext* context_;
-    JSClassID godot_object_class_id_ = 0;
-    JSClassID godot_array_class_id_ = 0;  // For Array/PackedArray handles with finalizer
+
+    // Class IDs are static because they must be shared across all contexts using
+    // the same JSRuntime. JS_NewClassID() only allocates a new ID when the value is 0,
+    // so subsequent calls with the same static variable are no-ops.
+    static JSClassID godot_object_class_id_;
+    static JSClassID godot_array_class_id_;  // For Array/PackedArray handles with finalizer
 
     // Setup core JavaScript classes and functions
     void setup_global_functions();

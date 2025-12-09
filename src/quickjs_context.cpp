@@ -134,6 +134,13 @@ void QuickJSContext::shutdown() {
     bindings_.reset();
 
     if (ctx_) {
+        // Run garbage collection to trigger finalizers before freeing context
+        // This ensures ArrayRegistry::release_handle() and ObjectRegistry::release_handle()
+        // are called for all JS proxy objects, preventing memory leaks
+        if (rt_) {
+            JS_RunGC(rt_);
+        }
+
         // Use JSRuntimeManager to free context if available
         JSRuntimeManager* manager = JSRuntimeManager::get_singleton();
         if (manager && !owns_runtime_) {
