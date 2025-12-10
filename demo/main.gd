@@ -141,6 +141,13 @@ func _on_game_selected(game: Dictionary) -> void:
 
 	# Create a new sandbox for this game (per-game isolation)
 	current_sandbox = JSSandbox.new()
+
+	# Configure rate limits from manifest (or use defaults)
+	if game.has("heavy_ops_per_frame"):
+		current_sandbox.set_heavy_ops_per_frame(game["heavy_ops_per_frame"])
+	if game.has("write_ops_per_frame"):
+		current_sandbox.set_write_ops_per_frame(game["write_ops_per_frame"])
+
 	print("Created isolated sandbox for game: ", game["name"])
 
 	# Show loading UI

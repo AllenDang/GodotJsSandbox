@@ -108,6 +108,14 @@ void ObjectRegistry::release_handle(uint64_t handle) {
             }
         }
     }
+    // For non-RefCounted, non-Node, JS-created objects (like local RenderingDevice),
+    // we need to explicitly free them using memdelete()
+    else if (entry.is_js_created && !entry.is_ref_counted && !entry.is_node && entry.is_valid) {
+        Object* obj = ObjectDB::get_instance(ObjectID(entry.object_id));
+        if (obj) {
+            memdelete(obj);
+        }
+    }
 
     // Remove from reverse mapping
     object_id_to_handle_.erase(entry.object_id);
@@ -155,18 +163,22 @@ uint64_t ObjectRegistry::find_handle_by_object_id(uint64_t object_id) const {
     return 0;
 }
 
-uint64_t ObjectRegistry::get_or_create_handle(Object* obj) {
+uint64_t ObjectRegistry::get_or_create_handle(Object* obj, bool js_created) {
     if (!obj) return 0;
 
     // Check if we already have a handle for this object
     uint64_t object_id = obj->get_instance_id();
     uint64_t existing = find_handle_by_object_id(object_id);
     if (existing != 0) {
+        // If caller indicates JS-created, update the flag on existing handle
+        if (js_created && handles_.has(existing) && !handles_[existing].is_js_created) {
+            handles_[existing].is_js_created = true;
+        }
         return existing;
     }
 
-    // Create new handle (not JS-created since we're tracking an existing object)
-    return create_handle(obj, false);
+    // Create new handle with the js_created flag
+    return create_handle(obj, js_created);
 }
 
 void ObjectRegistry::clear_all() {
@@ -180,6 +192,13 @@ void ObjectRegistry::clear_all() {
                 if (ref) {
                     ref->unreference();
                 }
+            }
+        }
+        // Free non-RefCounted, non-Node, JS-created objects (like local RenderingDevice)
+        else if (entry.is_js_created && !entry.is_ref_counted && !entry.is_node && entry.is_valid) {
+            Object* obj = ObjectDB::get_instance(ObjectID(entry.object_id));
+            if (obj) {
+                memdelete(obj);
             }
         }
     }

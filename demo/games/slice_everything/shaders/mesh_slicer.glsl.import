@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://0i7e8wj3djot"
+path="res://.godot/imported/mesh_slicer.glsl-4da73c9c07bc61700747e9a402dc6aba.res"
+
+[deps]
+
+source_file="res://games/slice_everything/shaders/mesh_slicer.glsl"
+dest_files=["res://.godot/imported/mesh_slicer.glsl-4da73c9c07bc61700747e9a402dc6aba.res"]
+
+[params]
+

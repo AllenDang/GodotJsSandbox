@@ -1,0 +1,14 @@
+{
+  "name": "Slice Everything",
+  "version": "1.0.0",
+  "description": "Draw lines to slice 3D objects! Hold left mouse button and drag to cut through objects.",
+  "author": "Demo",
+  "entry_scene": "main.tscn",
+  "scene_type": "3D",
+  "heavy_ops_per_frame": 200,
+  "input_actions": {
+    "slice": {"mouse_buttons": [1]},
+    "spawn": {"keys": ["Space"]},
+    "reset_camera": {"keys": ["R"]}
+  }
+}

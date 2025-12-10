@@ -21,6 +21,7 @@ class ExecutionLimiter;
 class SafeWrapper;
 class GodotBindings;
 class SignalRegistry;
+class RidRegistry;
 
 // QuickJS context wrapper
 // Uses JSRuntimeManager for shared runtime (TDD Section 14.2)
@@ -87,6 +88,7 @@ public:
     void set_execution_limiter(ExecutionLimiter* limiter) { execution_limiter_ = limiter; }
     void set_safe_wrapper(SafeWrapper* wrapper) { safe_wrapper_ = wrapper; }
     void set_signal_registry(SignalRegistry* registry) { signal_registry_ = registry; }
+    void set_rid_registry(RidRegistry* registry) { rid_registry_ = registry; }
 
     ObjectRegistry* get_object_registry() const { return object_registry_; }
     ArrayRegistry* get_array_registry() const { return array_registry_; }
@@ -94,6 +96,7 @@ public:
     ExecutionLimiter* get_execution_limiter() const { return execution_limiter_; }
     SafeWrapper* get_safe_wrapper() const { return safe_wrapper_; }
     SignalRegistry* get_signal_registry() const { return signal_registry_; }
+    RidRegistry* get_rid_registry() const { return rid_registry_; }
     GodotBindings* get_bindings() const { return bindings_.get(); }
 
     // Error handling
@@ -127,6 +130,7 @@ private:
     ExecutionLimiter* execution_limiter_ = nullptr;
     SafeWrapper* safe_wrapper_ = nullptr;
     SignalRegistry* signal_registry_ = nullptr;
+    RidRegistry* rid_registry_ = nullptr;
 
     std::unique_ptr<GodotBindings> bindings_;
 

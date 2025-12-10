@@ -43,7 +43,8 @@ public:
     uint64_t find_handle_by_object_id(uint64_t object_id) const;
 
     // Get or create handle for an object (returns existing if already tracked)
-    uint64_t get_or_create_handle(godot::Object* obj);
+    // Set js_created=true when object was created by JS code (e.g., RenderingDevice from create_local_rendering_device)
+    uint64_t get_or_create_handle(godot::Object* obj, bool js_created = false);
 
     // Get all valid object IDs (for tracking created objects)
     godot::Vector<uint64_t> get_all_object_ids() const;

@@ -6,6 +6,9 @@
 #include "../src/object_registry.h"
 #include "../src/safe_wrapper.h"
 #include "../src/execution_limiter.h"
+{% if class_name == "RenderingDevice" %}
+#include "../src/rid_registry.h"
+{% endif %}
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/{{ header_name }}.hpp>
@@ -108,10 +111,24 @@ static JSValue js_{{ class_name }}_{{ method.name }}(JSContext* ctx, JSValueCons
 
 {% endif %}
 {% if method.return_type == "void" %}
+{% if class_name == "RenderingDevice" and method.name == "free_rid" %}
+    // Unregister RID before freeing (auto-cleanup support)
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry) {
+        rid_registry->unregister_rid(arg_rid);
+    }
+{% endif %}
     typed_obj->{{ method.cpp_name if method.cpp_name else method.name }}({{ method.call_args }});
     return JS_UNDEFINED;
 {% else %}
     {{ method.return_cpp_type }} result = typed_obj->{{ method.cpp_name if method.cpp_name else method.name }}({{ method.call_args }});
+{% if class_name == "RenderingDevice" and method.return_type == "RID" %}
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
+{% endif %}
     {{ method.return_conversion }}
 {% endif %}
 }

@@ -761,13 +761,13 @@ static JSValue js_{{ type.snake_name }}_bulk_decode(JSContext* ctx, JSValueConst
 // ============================================================================
 
 // Bulk encode vec4 array to PackedByteArray (16 bytes per element: x,y,z,w as floats)
+// Supports both JS arrays [{x,y,z},...] and PackedVector3Array proxy objects
 static JSValue js_packed_byte_array_encode_vec4_array(JSContext* ctx, JSValueConst this_val,
                                                        int argc, JSValueConst* argv) {
     if (argc < 2) return JS_FALSE;
 
     int64_t handle;
     if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
-    if (!JS_IsArray(argv[1])) return JS_FALSE;
 
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx) return JS_FALSE;
@@ -777,6 +777,36 @@ static JSValue js_packed_byte_array_encode_vec4_array(JSContext* ctx, JSValueCon
 
     PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
     if (!arr) return JS_FALSE;
+
+    // Check if input is a PackedVector3Array proxy (has __packed_handle property)
+    JSValue packed_handle_val = JS_GetPropertyStr(ctx, argv[1], "__packed_handle");
+    if (JS_IsNumber(packed_handle_val)) {
+        // It's a PackedVector3Array proxy - encode directly from C++ array
+        int64_t src_handle;
+        JS_ToInt64(ctx, &src_handle, packed_handle_val);
+        JS_FreeValue(ctx, packed_handle_val);
+
+        if (!registry->is_valid_handle(src_handle)) return JS_FALSE;
+
+        PackedVector3Array src_arr = registry->get_packed_vector3_array(src_handle);
+        int64_t length = src_arr.size();
+        int64_t required_size = length * 16;
+        if (arr->size() < required_size) arr->resize(required_size);
+
+        // Direct C++ to C++ copy - no JS round-trips
+        for (int64_t i = 0; i < length; i++) {
+            Vector3 v = src_arr[i];
+            arr->encode_float(i * 16, v.x);
+            arr->encode_float(i * 16 + 4, v.y);
+            arr->encode_float(i * 16 + 8, v.z);
+            arr->encode_float(i * 16 + 12, 1.0f);  // w component
+        }
+        return JS_TRUE;
+    }
+    JS_FreeValue(ctx, packed_handle_val);
+
+    // Fall back to JS array handling
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
 
     JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
     int64_t length = 0;
@@ -813,13 +843,13 @@ static JSValue js_packed_byte_array_encode_vec4_array(JSContext* ctx, JSValueCon
 }
 
 // Bulk encode vec2 array to PackedByteArray (8 bytes per element: x,y as floats)
+// Supports both JS arrays [{x,y},...] and PackedVector2Array proxy objects
 static JSValue js_packed_byte_array_encode_vec2_array(JSContext* ctx, JSValueConst this_val,
                                                        int argc, JSValueConst* argv) {
     if (argc < 2) return JS_FALSE;
 
     int64_t handle;
     if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
-    if (!JS_IsArray(argv[1])) return JS_FALSE;
 
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx) return JS_FALSE;
@@ -829,6 +859,34 @@ static JSValue js_packed_byte_array_encode_vec2_array(JSContext* ctx, JSValueCon
 
     PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
     if (!arr) return JS_FALSE;
+
+    // Check if input is a PackedVector2Array proxy (has __packed_handle property)
+    JSValue packed_handle_val = JS_GetPropertyStr(ctx, argv[1], "__packed_handle");
+    if (JS_IsNumber(packed_handle_val)) {
+        // It's a PackedVector2Array proxy - encode directly from C++ array
+        int64_t src_handle;
+        JS_ToInt64(ctx, &src_handle, packed_handle_val);
+        JS_FreeValue(ctx, packed_handle_val);
+
+        if (!registry->is_valid_handle(src_handle)) return JS_FALSE;
+
+        PackedVector2Array src_arr = registry->get_packed_vector2_array(src_handle);
+        int64_t length = src_arr.size();
+        int64_t required_size = length * 8;
+        if (arr->size() < required_size) arr->resize(required_size);
+
+        // Direct C++ to C++ copy - no JS round-trips
+        for (int64_t i = 0; i < length; i++) {
+            Vector2 v = src_arr[i];
+            arr->encode_float(i * 8, v.x);
+            arr->encode_float(i * 8 + 4, v.y);
+        }
+        return JS_TRUE;
+    }
+    JS_FreeValue(ctx, packed_handle_val);
+
+    // Fall back to JS array handling
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
 
     JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
     int64_t length = 0;
@@ -860,13 +918,13 @@ static JSValue js_packed_byte_array_encode_vec2_array(JSContext* ctx, JSValueCon
 }
 
 // Bulk encode uint32 array to PackedByteArray (4 bytes per element)
+// Supports both JS arrays and PackedInt32Array proxy objects
 static JSValue js_packed_byte_array_encode_uint32_array(JSContext* ctx, JSValueConst this_val,
                                                          int argc, JSValueConst* argv) {
     if (argc < 2) return JS_FALSE;
 
     int64_t handle;
     if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
-    if (!JS_IsArray(argv[1])) return JS_FALSE;
 
     QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
     if (!qjs_ctx) return JS_FALSE;
@@ -876,6 +934,32 @@ static JSValue js_packed_byte_array_encode_uint32_array(JSContext* ctx, JSValueC
 
     PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
     if (!arr) return JS_FALSE;
+
+    // Check if input is a PackedInt32Array proxy (has __packed_handle property)
+    JSValue packed_handle_val = JS_GetPropertyStr(ctx, argv[1], "__packed_handle");
+    if (JS_IsNumber(packed_handle_val)) {
+        // It's a PackedInt32Array proxy - encode directly from C++ array
+        int64_t src_handle;
+        JS_ToInt64(ctx, &src_handle, packed_handle_val);
+        JS_FreeValue(ctx, packed_handle_val);
+
+        if (!registry->is_valid_handle(src_handle)) return JS_FALSE;
+
+        PackedInt32Array src_arr = registry->get_packed_int32_array(src_handle);
+        int64_t length = src_arr.size();
+        int64_t required_size = length * 4;
+        if (arr->size() < required_size) arr->resize(required_size);
+
+        // Direct C++ to C++ copy - no JS round-trips
+        for (int64_t i = 0; i < length; i++) {
+            arr->encode_u32(i * 4, (uint32_t)src_arr[i]);
+        }
+        return JS_TRUE;
+    }
+    JS_FreeValue(ctx, packed_handle_val);
+
+    // Fall back to JS array handling
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
 
     JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
     int64_t length = 0;

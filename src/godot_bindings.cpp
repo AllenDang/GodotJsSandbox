@@ -291,7 +291,9 @@ static JSValue js_rendering_server_create_local_rendering_device(JSContext* ctx,
     }
 
     // Create a handle for the RenderingDevice
-    int64_t handle = registry->get_or_create_handle(rd);
+    // Mark as JS-created so it gets properly freed when JS GC collects it
+    // Local RenderingDevice is NOT RefCounted, so ObjectRegistry needs to memdelete() it
+    int64_t handle = registry->get_or_create_handle(rd, true /* js_created */);
 
     // Create wrapped object using JS factory
     const char* factory_code = "globalThis.__wrap_existing_godot_object";
@@ -946,6 +948,28 @@ void GodotBindings::setup_godot_class_constructor() {
                         return fn ? fn(handle, value) : false;
                     };
                 }
+                // toArray() method - converts to native JS array in one C++ call (bulk decode)
+                if (prop === 'toArray') {
+                    var handle = target.__packed_handle;
+                    var type = target.__packed_type;
+                    return function() {
+                        // Call type-specific bulk_decode function
+                        var snakeType = type.replace(/([A-Z])/g, function(m) { return '_' + m.toLowerCase(); }).replace(/^_/, '');
+                        var fn = globalThis['__' + snakeType + '_bulk_decode'];
+                        return fn ? fn(handle) : [];
+                    };
+                }
+                // append_array() method - bulk append JS array to packed array in one C++ call
+                if (prop === 'append_array') {
+                    var handle = target.__packed_handle;
+                    var type = target.__packed_type;
+                    return function(jsArray) {
+                        // Call type-specific bulk_append function
+                        var snakeType = type.replace(/([A-Z])/g, function(m) { return '_' + m.toLowerCase(); }).replace(/^_/, '');
+                        var fn = globalThis['__' + snakeType + '_bulk_append'];
+                        return fn ? fn(handle, jsArray) : false;
+                    };
+                }
                 // PackedByteArray-specific encode/decode methods
                 if (target.__packed_type === 'PackedByteArray') {
                     if (prop === 'encode_float') {
@@ -1053,7 +1077,7 @@ void GodotBindings::setup_godot_class_constructor() {
                 if (!isNaN(index) && index >= 0) {
                     return index < __packed_array_size(target.__packed_handle);
                 }
-                if (prop === 'forEach' || prop === 'map' || prop === 'filter' || prop === 'resize' || prop === 'push_back' || prop === 'push') return true;
+                if (prop === 'forEach' || prop === 'map' || prop === 'filter' || prop === 'resize' || prop === 'push_back' || prop === 'push' || prop === 'toArray' || prop === 'append_array') return true;
                 // PackedByteArray-specific methods
                 if (target.__packed_type === 'PackedByteArray') {
                     if (prop === 'encode_float' || prop === 'encode_double' || prop === 'encode_u32' ||

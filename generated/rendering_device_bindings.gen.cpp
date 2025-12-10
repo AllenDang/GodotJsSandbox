@@ -6,23 +6,24 @@
 #include "../src/object_registry.h"
 #include "../src/safe_wrapper.h"
 #include "../src/execution_limiter.h"
+#include "../src/rid_registry.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/rendering_device.hpp>
-#include <godot_cpp/classes/rd_attachment_format.hpp>
-#include <godot_cpp/classes/rd_shader_source.hpp>
-#include <godot_cpp/classes/rd_pipeline_multisample_state.hpp>
-#include <godot_cpp/classes/rd_pipeline_depth_stencil_state.hpp>
-#include <godot_cpp/classes/rd_uniform.hpp>
-#include <godot_cpp/classes/rd_shader_spirv.hpp>
-#include <godot_cpp/classes/rd_texture_view.hpp>
 #include <godot_cpp/classes/rd_framebuffer_pass.hpp>
-#include <godot_cpp/classes/rd_pipeline_rasterization_state.hpp>
-#include <godot_cpp/classes/rd_pipeline_specialization_constant.hpp>
-#include <godot_cpp/classes/rd_sampler_state.hpp>
+#include <godot_cpp/classes/rd_attachment_format.hpp>
 #include <godot_cpp/classes/rd_vertex_attribute.hpp>
 #include <godot_cpp/classes/rd_texture_format.hpp>
+#include <godot_cpp/classes/rd_pipeline_multisample_state.hpp>
+#include <godot_cpp/classes/rd_uniform.hpp>
 #include <godot_cpp/classes/rd_pipeline_color_blend_state.hpp>
+#include <godot_cpp/classes/rd_pipeline_rasterization_state.hpp>
+#include <godot_cpp/classes/rd_pipeline_depth_stencil_state.hpp>
+#include <godot_cpp/classes/rd_pipeline_specialization_constant.hpp>
+#include <godot_cpp/classes/rd_sampler_state.hpp>
+#include <godot_cpp/classes/rd_shader_spirv.hpp>
+#include <godot_cpp/classes/rd_shader_source.hpp>
+#include <godot_cpp/classes/rd_texture_view.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -126,6 +127,11 @@ static JSValue js_RenderingDevice_texture_create(JSContext* ctx, JSValueConst th
     }
 
     RID result = typed_obj->texture_create(arg_format, arg_view, arg_data);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -186,6 +192,11 @@ static JSValue js_RenderingDevice_texture_create_shared(JSContext* ctx, JSValueC
     RID arg_with_texture = qjs_ctx->js_to_variant(argv[2]);
 
     RID result = typed_obj->texture_create_shared(arg_view, arg_with_texture);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -260,6 +271,11 @@ static JSValue js_RenderingDevice_texture_create_shared_from_slice(JSContext* ct
     }
 
     RID result = typed_obj->texture_create_shared_from_slice(arg_view, arg_with_texture, arg_layer, arg_mipmap, arg_mipmaps, arg_slice_type);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -318,6 +334,11 @@ static JSValue js_RenderingDevice_texture_create_from_extension(JSContext* ctx, 
     }
 
     RID result = typed_obj->texture_create_from_extension(arg_type, arg_format, arg_samples, arg_usage_flags, arg_image, arg_width, arg_height, arg_depth, arg_layers, arg_mipmaps);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -1235,6 +1256,11 @@ static JSValue js_RenderingDevice_framebuffer_create(JSContext* ctx, JSValueCons
     }
 
     RID result = typed_obj->framebuffer_create(arg_textures, arg_validate_with_format, arg_view_count);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -1292,6 +1318,11 @@ static JSValue js_RenderingDevice_framebuffer_create_multipass(JSContext* ctx, J
     }
 
     RID result = typed_obj->framebuffer_create_multipass(arg_textures, arg_passes, arg_validate_with_format, arg_view_count);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -1348,6 +1379,11 @@ static JSValue js_RenderingDevice_framebuffer_create_empty(JSContext* ctx, JSVal
     }
 
     RID result = typed_obj->framebuffer_create_empty(arg_size, arg_samples, arg_validate_with_format);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -1495,6 +1531,11 @@ static JSValue js_RenderingDevice_sampler_create(JSContext* ctx, JSValueConst th
     }
 
     RID result = typed_obj->sampler_create(arg_state);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -1597,6 +1638,11 @@ static JSValue js_RenderingDevice_vertex_buffer_create(JSContext* ctx, JSValueCo
     }
 
     RID result = typed_obj->vertex_buffer_create(arg_size_bytes, arg_data, arg_creation_bits);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -1694,6 +1740,11 @@ static JSValue js_RenderingDevice_vertex_array_create(JSContext* ctx, JSValueCon
     }
 
     RID result = typed_obj->vertex_array_create(arg_vertex_count, arg_vertex_format, arg_src_buffers, arg_offsets);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -1758,6 +1809,11 @@ static JSValue js_RenderingDevice_index_buffer_create(JSContext* ctx, JSValueCon
     }
 
     RID result = typed_obj->index_buffer_create(arg_size_indices, arg_format, arg_data, arg_use_restart_indices, arg_creation_bits);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -1804,6 +1860,11 @@ static JSValue js_RenderingDevice_index_array_create(JSContext* ctx, JSValueCons
     int64_t arg_index_count; JS_ToInt64(ctx, &arg_index_count, argv[3]);
 
     RID result = typed_obj->index_array_create(arg_index_buffer, arg_index_offset, arg_index_count);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -2024,6 +2085,11 @@ static JSValue js_RenderingDevice_shader_create_from_spirv(JSContext* ctx, JSVal
     }
 
     RID result = typed_obj->shader_create_from_spirv(arg_spirv_data, arg_name);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -2075,6 +2141,11 @@ static JSValue js_RenderingDevice_shader_create_from_bytecode(JSContext* ctx, JS
     }
 
     RID result = typed_obj->shader_create_from_bytecode(arg_binary_data, arg_placeholder_rid);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -2111,6 +2182,11 @@ static JSValue js_RenderingDevice_shader_create_placeholder(JSContext* ctx, JSVa
     }
 
     RID result = typed_obj->shader_create_placeholder();
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -2212,6 +2288,11 @@ static JSValue js_RenderingDevice_uniform_buffer_create(JSContext* ctx, JSValueC
     }
 
     RID result = typed_obj->uniform_buffer_create(arg_size_bytes, arg_data, arg_creation_bits);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -2275,6 +2356,11 @@ static JSValue js_RenderingDevice_storage_buffer_create(JSContext* ctx, JSValueC
     }
 
     RID result = typed_obj->storage_buffer_create(arg_size_bytes, arg_data, arg_usage, arg_creation_bits);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -2327,6 +2413,11 @@ static JSValue js_RenderingDevice_texture_buffer_create(JSContext* ctx, JSValueC
     }
 
     RID result = typed_obj->texture_buffer_create(arg_size_bytes, arg_format, arg_data);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -2373,6 +2464,11 @@ static JSValue js_RenderingDevice_uniform_set_create(JSContext* ctx, JSValueCons
     int64_t arg_shader_set; JS_ToInt64(ctx, &arg_shader_set, argv[3]);
 
     RID result = typed_obj->uniform_set_create(arg_uniforms, arg_shader, arg_shader_set);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -2845,6 +2941,11 @@ static JSValue js_RenderingDevice_render_pipeline_create(JSContext* ctx, JSValue
     }
 
     RID result = typed_obj->render_pipeline_create(arg_shader, arg_framebuffer_format, arg_vertex_format, arg_primitive, arg_rasterization_state, arg_multisample_state, arg_stencil_state, arg_color_blend_state, arg_dynamic_state_flags, arg_for_render_pass, arg_specialization_constants);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -2940,6 +3041,11 @@ static JSValue js_RenderingDevice_compute_pipeline_create(JSContext* ctx, JSValu
     }
 
     RID result = typed_obj->compute_pipeline_create(arg_shader, arg_specialization_constants);
+    // Register RID for auto-cleanup on sandbox reset
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry && result.is_valid()) {
+        rid_registry->register_rid(typed_obj, result);
+    }
     return qjs_ctx->variant_to_js(Variant(result));
 }
 
@@ -4443,6 +4549,11 @@ static JSValue js_RenderingDevice_free_rid(JSContext* ctx, JSValueConst this_val
     // Convert arguments
     RID arg_rid = qjs_ctx->js_to_variant(argv[1]);
 
+    // Unregister RID before freeing (auto-cleanup support)
+    RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+    if (rid_registry) {
+        rid_registry->unregister_rid(arg_rid);
+    }
     typed_obj->free_rid(arg_rid);
     return JS_UNDEFINED;
 }

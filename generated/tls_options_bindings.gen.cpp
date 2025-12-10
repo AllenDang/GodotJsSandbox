@@ -9,9 +9,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/tls_options.hpp>
-#include <godot_cpp/classes/x509_certificate.hpp>
 #include <godot_cpp/classes/crypto_key.hpp>
 #include <godot_cpp/classes/tls_options.hpp>
+#include <godot_cpp/classes/x509_certificate.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

@@ -64,9 +64,130 @@ class ObjectRegistry {
 | Type | Example | Godot Manages Lifetime? | Registry Holds Ref? |
 |------|---------|------------------------|---------------------|
 | RefCounted | Resource, Texture, Material | Yes (ref counting) | Yes (`Ref<>`) |
-| Non-RefCounted | Node, Viewport | No (manual/tree) | No (weak reference) |
+| Non-RefCounted Node | Node, Viewport | No (manual/tree) | No (weak reference) |
+| Non-RefCounted Non-Node | RenderingDevice | No (manual) | No (weak reference) |
 
 **Important**: For Nodes, the registry should NOT prevent Godot from freeing them. If a Node is freed (e.g., `queue_free()`), the handle becomes invalid. JS code should handle this gracefully.
+
+### JS-Created Non-RefCounted Objects
+
+Some objects created by JavaScript are neither RefCounted nor Nodes. These require special handling:
+
+| Object Type | Created By | Inheritance | Cleanup Strategy |
+|-------------|------------|-------------|------------------|
+| Local RenderingDevice | `RenderingServer.create_local_rendering_device()` | Object (not RefCounted, not Node) | `memdelete()` on sandbox reset |
+
+**Implementation Details:**
+
+The `ObjectRegistry` tracks a `js_created` flag for each handle:
+
+```cpp
+struct HandleEntry {
+    Object* object;
+    uint64_t object_id;
+    bool is_ref_counted;    // True for RefCounted subclasses
+    bool is_valid;          // False when object is deleted
+    bool is_js_created;     // True if created by JS code
+    bool is_node;           // True if object is a Node
+};
+```
+
+**Cleanup Logic in `release_handle()` and `clear_all()`:**
+
+1. **RefCounted objects**: Call `unreference()` to decrement ref count
+2. **Non-RefCounted + Non-Node + JS-created**: Call `memdelete()` to free
+3. **Nodes**: Do NOT free (managed by scene tree)
+4. **Non-JS-created**: Do NOT free (not our responsibility)
+
+```cpp
+void ObjectRegistry::release_handle(uint64_t handle) {
+    // ...
+    if (entry.is_ref_counted && entry.is_valid) {
+        // Decrement reference count
+        RefCounted* ref = Object::cast_to<RefCounted>(obj);
+        if (ref) ref->unreference();
+    }
+    else if (entry.is_js_created && !entry.is_ref_counted && !entry.is_node && entry.is_valid) {
+        // Free non-RefCounted, non-Node, JS-created objects
+        memdelete(obj);
+    }
+    // ...
+}
+```
+
+**When to Mark as JS-Created:**
+
+| Creation Path | Marked js_created? | Reason |
+|---------------|-------------------|--------|
+| `new ClassName()` in JS | Yes | SafeWrapper::create_object() |
+| `RenderingServer.create_local_rendering_device()` | Yes | Manual in godot_bindings.cpp |
+| `RenderingServer.get_rendering_device()` | No | Returns singleton, not owned by JS |
+| `to_node()` methods (GLTF classes) | No | Returns Node, managed by scene tree |
+| Getters returning existing objects | No | Not created by JS |
+
+### RID Registry (GPU Resources)
+
+RIDs (Resource IDs) are opaque integer handles to GPU resources like shaders, buffers, and pipelines. Unlike regular objects, RIDs:
+- Are NOT tracked by JavaScript's garbage collector
+- Must be explicitly freed on the specific RenderingDevice that created them
+- Have dependencies (pipelines depend on shaders, etc.)
+
+**The Problem:**
+JavaScript developers expect GC to handle cleanup, but RIDs leak if not explicitly freed:
+```
+WARNING: 2 RIDs of type "Compute" were leaked.
+WARNING: 14 RIDs of type "StorageBuffer" were leaked.
+```
+
+**Solution: RidRegistry**
+
+The sandbox automatically tracks all RIDs created by JavaScript:
+
+```cpp
+class RidRegistry {
+    struct RidEntry {
+        RID rid;
+        RenderingDevice* device;       // The device that created this RID
+        uint64_t device_object_id;     // To verify device is still valid
+    };
+
+    Vector<RidEntry> rids_;
+
+    void register_rid(RenderingDevice* rd, const RID& rid);
+    void unregister_rid(const RID& rid);
+    void free_all_rids();  // Called on sandbox reset/destruction
+};
+```
+
+**How It Works:**
+
+1. **Automatic Registration**: When JS calls any RID-creating method (e.g., `rd.storage_buffer_create()`), the binding automatically registers the RID:
+   ```cpp
+   RID result = typed_obj->storage_buffer_create(...);
+   RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
+   if (rid_registry && result.is_valid()) {
+       rid_registry->register_rid(typed_obj, result);
+   }
+   ```
+
+2. **Automatic Unregistration**: When JS explicitly frees an RID via `rd.free_rid()`, it's unregistered:
+   ```cpp
+   rid_registry->unregister_rid(arg_rid);
+   typed_obj->free_rid(arg_rid);
+   ```
+
+3. **Cleanup on Sandbox Reset**: When the sandbox is destroyed or reset, all tracked RIDs are freed in reverse order (to handle dependencies):
+   ```cpp
+   void JSSandbox::reset() {
+       // Free RIDs BEFORE object registry (need RenderingDevice to still be valid)
+       if (rid_registry_) {
+           rid_registry_->free_all_rids();
+       }
+       // Then clean up objects...
+   }
+   ```
+
+**Result:** JavaScript code no longer needs manual RID cleanup. The sandbox is transparent.
 
 ---
 

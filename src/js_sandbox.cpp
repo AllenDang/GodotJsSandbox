@@ -27,6 +27,11 @@ JSSandbox::~JSSandbox() {
         signal_registry_->cleanup_all();
     }
 
+    // Free all RIDs before RenderingDevice objects are destroyed
+    if (rid_registry_) {
+        rid_registry_->free_all_rids();
+    }
+
     // Clear script references before context destruction
     attached_scripts_.clear();
 
@@ -42,6 +47,7 @@ bool JSSandbox::initialize() {
     safe_wrapper_ = std::make_unique<SafeWrapper>();
     signal_registry_ = std::make_unique<SignalRegistry>();
     deletion_tracker_ = std::make_unique<DeletionTracker>();
+    rid_registry_ = std::make_unique<RidRegistry>();
 
     // Configure SafeWrapper
     safe_wrapper_->set_object_registry(object_registry_.get());
@@ -62,6 +68,7 @@ bool JSSandbox::initialize() {
     context_->set_execution_limiter(execution_limiter_.get());
     context_->set_safe_wrapper(safe_wrapper_.get());
     context_->set_signal_registry(signal_registry_.get());
+    context_->set_rid_registry(rid_registry_.get());
 
     if (!context_->initialize()) {
         last_error_ = "Failed to initialize QuickJS context";
@@ -511,9 +518,20 @@ void JSSandbox::reset() {
         deletion_tracker_->clear();
     }
 
+    // Free all RIDs before clearing object registry
+    // (RenderingDevice objects must still be valid to free their RIDs)
+    if (rid_registry_) {
+        rid_registry_->free_all_rids();
+    }
+
     // Clean up object registry
     if (object_registry_) {
         object_registry_->clear_all();
+    }
+
+    // Clean up array registry (PackedArrays, RID handles, math type handles)
+    if (array_registry_) {
+        array_registry_->clear_all();
     }
 
     // Reset context
@@ -521,16 +539,19 @@ void JSSandbox::reset() {
     context_ = std::make_unique<QuickJSContext>();
 
     context_->set_object_registry(object_registry_.get());
+    context_->set_array_registry(array_registry_.get());
     context_->set_sandbox_config(sandbox_config_.get());
     context_->set_execution_limiter(execution_limiter_.get());
     context_->set_safe_wrapper(safe_wrapper_.get());
     context_->set_signal_registry(signal_registry_.get());
+    context_->set_rid_registry(rid_registry_.get());
 
     context_->initialize();
 
     // Re-configure SignalRegistry with new context
     if (signal_registry_) {
         signal_registry_->set_context(context_->ctx());
+        signal_registry_->set_quickjs_context(context_.get());
     }
 }
 
