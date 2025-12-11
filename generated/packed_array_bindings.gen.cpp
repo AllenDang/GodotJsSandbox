@@ -2755,6 +2755,483 @@ static JSValue js_packed_color_array_bulk_decode(JSContext* ctx, JSValueConst th
 
 
 // ============================================================================
+// BULK APPEND FUNCTIONS (append JS array to packed array - grows the array)
+// ============================================================================
+
+// PackedByteArray bulk append from JS array
+static JSValue js_packed_byte_array_bulk_append(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedByteArray* arr = registry->get_packed_byte_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    if (length == 0) return JS_TRUE;  // Nothing to append
+
+    // Get current size and resize to accommodate new elements
+    int64_t old_size = arr->size();
+    arr->resize(old_size + length);
+
+    // Append all values from JS array
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        int64_t val = 0;
+        JS_ToInt64(ctx, &val, elem);
+        arr->set(old_size + i, (uint8_t)val);
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedInt32Array bulk append from JS array
+static JSValue js_packed_int32_array_bulk_append(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedInt32Array* arr = registry->get_packed_int32_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    if (length == 0) return JS_TRUE;  // Nothing to append
+
+    // Get current size and resize to accommodate new elements
+    int64_t old_size = arr->size();
+    arr->resize(old_size + length);
+
+    // Append all values from JS array
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        int64_t val = 0;
+        JS_ToInt64(ctx, &val, elem);
+        arr->set(old_size + i, (int32_t)val);
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedInt64Array bulk append from JS array
+static JSValue js_packed_int64_array_bulk_append(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedInt64Array* arr = registry->get_packed_int64_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    if (length == 0) return JS_TRUE;  // Nothing to append
+
+    // Get current size and resize to accommodate new elements
+    int64_t old_size = arr->size();
+    arr->resize(old_size + length);
+
+    // Append all values from JS array
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        int64_t val = 0;
+        JS_ToInt64(ctx, &val, elem);
+        arr->set(old_size + i, (int64_t)val);
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedFloat32Array bulk append from JS array
+static JSValue js_packed_float32_array_bulk_append(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedFloat32Array* arr = registry->get_packed_float32_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    if (length == 0) return JS_TRUE;  // Nothing to append
+
+    // Get current size and resize to accommodate new elements
+    int64_t old_size = arr->size();
+    arr->resize(old_size + length);
+
+    // Append all values from JS array
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        double val = 0;
+        JS_ToFloat64(ctx, &val, elem);
+        arr->set(old_size + i, (float)val);
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedFloat64Array bulk append from JS array
+static JSValue js_packed_float64_array_bulk_append(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedFloat64Array* arr = registry->get_packed_float64_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    if (length == 0) return JS_TRUE;  // Nothing to append
+
+    // Get current size and resize to accommodate new elements
+    int64_t old_size = arr->size();
+    arr->resize(old_size + length);
+
+    // Append all values from JS array
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        double val = 0;
+        JS_ToFloat64(ctx, &val, elem);
+        arr->set(old_size + i, (double)val);
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedStringArray bulk append from JS array
+static JSValue js_packed_string_array_bulk_append(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedStringArray* arr = registry->get_packed_string_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    if (length == 0) return JS_TRUE;  // Nothing to append
+
+    // Get current size and resize to accommodate new elements
+    int64_t old_size = arr->size();
+    arr->resize(old_size + length);
+
+    // Append all values from JS array
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        const char* str = JS_ToCString(ctx, elem);
+        arr->set(old_size + i, str ? str : "");
+        JS_FreeCString(ctx, str);
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedVector2Array bulk append from JS array
+static JSValue js_packed_vector2_array_bulk_append(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedVector2Array* arr = registry->get_packed_vector2_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    if (length == 0) return JS_TRUE;  // Nothing to append
+
+    // Get current size and resize to accommodate new elements
+    int64_t old_size = arr->size();
+    arr->resize(old_size + length);
+
+    // Append all values from JS array
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        if (JS_IsObject(elem)) {
+            JSValue x_val = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue y_val = JS_GetPropertyStr(ctx, elem, "y");
+            double x = 0;
+            double y = 0;
+            JS_ToFloat64(ctx, &x, x_val);
+            JS_ToFloat64(ctx, &y, y_val);
+            arr->set(old_size + i, Vector2(x, y));
+            JS_FreeValue(ctx, x_val);
+            JS_FreeValue(ctx, y_val);
+        }
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedVector3Array bulk append from JS array
+static JSValue js_packed_vector3_array_bulk_append(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedVector3Array* arr = registry->get_packed_vector3_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    if (length == 0) return JS_TRUE;  // Nothing to append
+
+    // Get current size and resize to accommodate new elements
+    int64_t old_size = arr->size();
+    arr->resize(old_size + length);
+
+    // Append all values from JS array
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        if (JS_IsObject(elem)) {
+            JSValue x_val = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue y_val = JS_GetPropertyStr(ctx, elem, "y");
+            JSValue z_val = JS_GetPropertyStr(ctx, elem, "z");
+            double x = 0;
+            double y = 0;
+            double z = 0;
+            JS_ToFloat64(ctx, &x, x_val);
+            JS_ToFloat64(ctx, &y, y_val);
+            JS_ToFloat64(ctx, &z, z_val);
+            arr->set(old_size + i, Vector3(x, y, z));
+            JS_FreeValue(ctx, x_val);
+            JS_FreeValue(ctx, y_val);
+            JS_FreeValue(ctx, z_val);
+        }
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedVector4Array bulk append from JS array
+static JSValue js_packed_vector4_array_bulk_append(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedVector4Array* arr = registry->get_packed_vector4_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    if (length == 0) return JS_TRUE;  // Nothing to append
+
+    // Get current size and resize to accommodate new elements
+    int64_t old_size = arr->size();
+    arr->resize(old_size + length);
+
+    // Append all values from JS array
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        if (JS_IsObject(elem)) {
+            JSValue x_val = JS_GetPropertyStr(ctx, elem, "x");
+            JSValue y_val = JS_GetPropertyStr(ctx, elem, "y");
+            JSValue z_val = JS_GetPropertyStr(ctx, elem, "z");
+            JSValue w_val = JS_GetPropertyStr(ctx, elem, "w");
+            double x = 0;
+            double y = 0;
+            double z = 0;
+            double w = 0;
+            JS_ToFloat64(ctx, &x, x_val);
+            JS_ToFloat64(ctx, &y, y_val);
+            JS_ToFloat64(ctx, &z, z_val);
+            JS_ToFloat64(ctx, &w, w_val);
+            arr->set(old_size + i, Vector4(x, y, z, w));
+            JS_FreeValue(ctx, x_val);
+            JS_FreeValue(ctx, y_val);
+            JS_FreeValue(ctx, z_val);
+            JS_FreeValue(ctx, w_val);
+        }
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+// PackedColorArray bulk append from JS array
+static JSValue js_packed_color_array_bulk_append(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    PackedColorArray* arr = registry->get_packed_color_array_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    if (length == 0) return JS_TRUE;  // Nothing to append
+
+    // Get current size and resize to accommodate new elements
+    int64_t old_size = arr->size();
+    arr->resize(old_size + length);
+
+    // Append all values from JS array
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+        if (JS_IsObject(elem)) {
+            JSValue r_val = JS_GetPropertyStr(ctx, elem, "r");
+            JSValue g_val = JS_GetPropertyStr(ctx, elem, "g");
+            JSValue b_val = JS_GetPropertyStr(ctx, elem, "b");
+            JSValue a_val = JS_GetPropertyStr(ctx, elem, "a");
+            double r = 0;
+            double g = 0;
+            double b = 0;
+            double a = 1.0;
+            JS_ToFloat64(ctx, &r, r_val);
+            JS_ToFloat64(ctx, &g, g_val);
+            JS_ToFloat64(ctx, &b, b_val);
+            if (!JS_IsUndefined(a_val)) JS_ToFloat64(ctx, &a, a_val);
+            arr->set(old_size + i, Color(r, g, b, a));
+            JS_FreeValue(ctx, r_val);
+            JS_FreeValue(ctx, g_val);
+            JS_FreeValue(ctx, b_val);
+            JS_FreeValue(ctx, a_val);
+        }
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+
+// ============================================================================
 // PACKED BYTE ARRAY BINARY BULK OPERATIONS
 // Special functions for GPU buffer encode/decode (vec4, vec2, uint32, float32)
 // ============================================================================
@@ -3328,47 +3805,67 @@ void register_packed_array_functions(JSContext* ctx, JSValue global) {
     JS_SetPropertyStr(ctx, global, "__packed_color_array_resize",
         JS_NewCFunction(ctx, js_packed_color_array_resize, "__packed_color_array_resize", 2));
 
-    // Bulk encode/decode functions for all packed array types (zero-copy architecture)
+    // Bulk encode/decode/append functions for all packed array types (zero-copy architecture)
     JS_SetPropertyStr(ctx, global, "__packed_byte_array_bulk_encode",
         JS_NewCFunction(ctx, js_packed_byte_array_bulk_encode, "__packed_byte_array_bulk_encode", 2));
     JS_SetPropertyStr(ctx, global, "__packed_byte_array_bulk_decode",
         JS_NewCFunction(ctx, js_packed_byte_array_bulk_decode, "__packed_byte_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_byte_array_bulk_append",
+        JS_NewCFunction(ctx, js_packed_byte_array_bulk_append, "__packed_byte_array_bulk_append", 2));
     JS_SetPropertyStr(ctx, global, "__packed_int32_array_bulk_encode",
         JS_NewCFunction(ctx, js_packed_int32_array_bulk_encode, "__packed_int32_array_bulk_encode", 2));
     JS_SetPropertyStr(ctx, global, "__packed_int32_array_bulk_decode",
         JS_NewCFunction(ctx, js_packed_int32_array_bulk_decode, "__packed_int32_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_int32_array_bulk_append",
+        JS_NewCFunction(ctx, js_packed_int32_array_bulk_append, "__packed_int32_array_bulk_append", 2));
     JS_SetPropertyStr(ctx, global, "__packed_int64_array_bulk_encode",
         JS_NewCFunction(ctx, js_packed_int64_array_bulk_encode, "__packed_int64_array_bulk_encode", 2));
     JS_SetPropertyStr(ctx, global, "__packed_int64_array_bulk_decode",
         JS_NewCFunction(ctx, js_packed_int64_array_bulk_decode, "__packed_int64_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_int64_array_bulk_append",
+        JS_NewCFunction(ctx, js_packed_int64_array_bulk_append, "__packed_int64_array_bulk_append", 2));
     JS_SetPropertyStr(ctx, global, "__packed_float32_array_bulk_encode",
         JS_NewCFunction(ctx, js_packed_float32_array_bulk_encode, "__packed_float32_array_bulk_encode", 2));
     JS_SetPropertyStr(ctx, global, "__packed_float32_array_bulk_decode",
         JS_NewCFunction(ctx, js_packed_float32_array_bulk_decode, "__packed_float32_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_float32_array_bulk_append",
+        JS_NewCFunction(ctx, js_packed_float32_array_bulk_append, "__packed_float32_array_bulk_append", 2));
     JS_SetPropertyStr(ctx, global, "__packed_float64_array_bulk_encode",
         JS_NewCFunction(ctx, js_packed_float64_array_bulk_encode, "__packed_float64_array_bulk_encode", 2));
     JS_SetPropertyStr(ctx, global, "__packed_float64_array_bulk_decode",
         JS_NewCFunction(ctx, js_packed_float64_array_bulk_decode, "__packed_float64_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_float64_array_bulk_append",
+        JS_NewCFunction(ctx, js_packed_float64_array_bulk_append, "__packed_float64_array_bulk_append", 2));
     JS_SetPropertyStr(ctx, global, "__packed_string_array_bulk_encode",
         JS_NewCFunction(ctx, js_packed_string_array_bulk_encode, "__packed_string_array_bulk_encode", 2));
     JS_SetPropertyStr(ctx, global, "__packed_string_array_bulk_decode",
         JS_NewCFunction(ctx, js_packed_string_array_bulk_decode, "__packed_string_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_string_array_bulk_append",
+        JS_NewCFunction(ctx, js_packed_string_array_bulk_append, "__packed_string_array_bulk_append", 2));
     JS_SetPropertyStr(ctx, global, "__packed_vector2_array_bulk_encode",
         JS_NewCFunction(ctx, js_packed_vector2_array_bulk_encode, "__packed_vector2_array_bulk_encode", 2));
     JS_SetPropertyStr(ctx, global, "__packed_vector2_array_bulk_decode",
         JS_NewCFunction(ctx, js_packed_vector2_array_bulk_decode, "__packed_vector2_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_vector2_array_bulk_append",
+        JS_NewCFunction(ctx, js_packed_vector2_array_bulk_append, "__packed_vector2_array_bulk_append", 2));
     JS_SetPropertyStr(ctx, global, "__packed_vector3_array_bulk_encode",
         JS_NewCFunction(ctx, js_packed_vector3_array_bulk_encode, "__packed_vector3_array_bulk_encode", 2));
     JS_SetPropertyStr(ctx, global, "__packed_vector3_array_bulk_decode",
         JS_NewCFunction(ctx, js_packed_vector3_array_bulk_decode, "__packed_vector3_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_vector3_array_bulk_append",
+        JS_NewCFunction(ctx, js_packed_vector3_array_bulk_append, "__packed_vector3_array_bulk_append", 2));
     JS_SetPropertyStr(ctx, global, "__packed_vector4_array_bulk_encode",
         JS_NewCFunction(ctx, js_packed_vector4_array_bulk_encode, "__packed_vector4_array_bulk_encode", 2));
     JS_SetPropertyStr(ctx, global, "__packed_vector4_array_bulk_decode",
         JS_NewCFunction(ctx, js_packed_vector4_array_bulk_decode, "__packed_vector4_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_vector4_array_bulk_append",
+        JS_NewCFunction(ctx, js_packed_vector4_array_bulk_append, "__packed_vector4_array_bulk_append", 2));
     JS_SetPropertyStr(ctx, global, "__packed_color_array_bulk_encode",
         JS_NewCFunction(ctx, js_packed_color_array_bulk_encode, "__packed_color_array_bulk_encode", 2));
     JS_SetPropertyStr(ctx, global, "__packed_color_array_bulk_decode",
         JS_NewCFunction(ctx, js_packed_color_array_bulk_decode, "__packed_color_array_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__packed_color_array_bulk_append",
+        JS_NewCFunction(ctx, js_packed_color_array_bulk_append, "__packed_color_array_bulk_append", 2));
 
     // PackedByteArray per-element encode/decode functions for binary data manipulation
     JS_SetPropertyStr(ctx, global, "__packed_byte_array_encode_float",

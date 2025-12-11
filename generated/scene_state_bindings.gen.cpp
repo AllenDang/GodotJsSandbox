@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/scene_state.hpp>
-#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/scene_state.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

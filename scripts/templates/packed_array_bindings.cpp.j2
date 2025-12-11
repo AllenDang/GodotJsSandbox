@@ -756,6 +756,85 @@ static JSValue js_{{ type.snake_name }}_bulk_decode(JSContext* ctx, JSValueConst
 {% endfor %}
 
 // ============================================================================
+// BULK APPEND FUNCTIONS (append JS array to packed array - grows the array)
+// ============================================================================
+
+{% for type in packed_array_types %}
+// {{ type.name }} bulk append from JS array
+static JSValue js_{{ type.snake_name }}_bulk_append(JSContext* ctx, JSValueConst this_val,
+                                                     int argc, JSValueConst* argv) {
+    if (argc < 2) return JS_FALSE;
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) return JS_FALSE;
+
+    if (!JS_IsArray(argv[1])) return JS_FALSE;
+
+    QuickJSContext* qjs_ctx = get_qjs_ctx(ctx);
+    if (!qjs_ctx) return JS_FALSE;
+
+    ArrayRegistry* registry = qjs_ctx->get_array_registry();
+    if (!registry || !registry->is_valid_handle(handle)) return JS_FALSE;
+
+    {{ type.name }}* arr = registry->get_{{ type.snake_name }}_ptr(handle);
+    if (!arr) return JS_FALSE;
+
+    JSValue length_val = JS_GetPropertyStr(ctx, argv[1], "length");
+    int64_t length = 0;
+    JS_ToInt64(ctx, &length, length_val);
+    JS_FreeValue(ctx, length_val);
+
+    if (length == 0) return JS_TRUE;  // Nothing to append
+
+    // Get current size and resize to accommodate new elements
+    int64_t old_size = arr->size();
+    arr->resize(old_size + length);
+
+    // Append all values from JS array
+    for (int64_t i = 0; i < length; i++) {
+        JSValue elem = JS_GetPropertyUint32(ctx, argv[1], i);
+{% if type.is_struct %}
+        if (JS_IsObject(elem)) {
+{% for field in type.fields %}
+            JSValue {{ field }}_val = JS_GetPropertyStr(ctx, elem, "{{ field }}");
+{% endfor %}
+{% for field in type.fields %}
+            double {{ field }} = {% if field == 'a' %}1.0{% else %}0{% endif %};
+{% endfor %}
+{% for field in type.fields %}
+{% if field == 'a' %}
+            if (!JS_IsUndefined({{ field }}_val)) JS_ToFloat64(ctx, &{{ field }}, {{ field }}_val);
+{% else %}
+            JS_ToFloat64(ctx, &{{ field }}, {{ field }}_val);
+{% endif %}
+{% endfor %}
+            arr->set(old_size + i, {{ type.element_type }}({% for field in type.fields %}{{ field }}{% if not loop.last %}, {% endif %}{% endfor %}));
+{% for field in type.fields %}
+            JS_FreeValue(ctx, {{ field }}_val);
+{% endfor %}
+        }
+{% elif type.element_type == "String" %}
+        const char* str = JS_ToCString(ctx, elem);
+        arr->set(old_size + i, str ? str : "");
+        JS_FreeCString(ctx, str);
+{% elif type.is_float %}
+        double val = 0;
+        JS_ToFloat64(ctx, &val, elem);
+        arr->set(old_size + i, ({{ type.element_type }})val);
+{% else %}
+        int64_t val = 0;
+        JS_ToInt64(ctx, &val, elem);
+        arr->set(old_size + i, ({{ type.element_type }})val);
+{% endif %}
+        JS_FreeValue(ctx, elem);
+    }
+
+    return JS_TRUE;
+}
+
+{% endfor %}
+
+// ============================================================================
 // PACKED BYTE ARRAY BINARY BULK OPERATIONS
 // Special functions for GPU buffer encode/decode (vec4, vec2, uint32, float32)
 // ============================================================================
@@ -1216,12 +1295,14 @@ void register_packed_array_functions(JSContext* ctx, JSValue global) {
         JS_NewCFunction(ctx, js_{{ type.snake_name }}_resize, "__{{ type.snake_name }}_resize", 2));
 {% endfor %}
 
-    // Bulk encode/decode functions for all packed array types (zero-copy architecture)
+    // Bulk encode/decode/append functions for all packed array types (zero-copy architecture)
 {% for type in packed_array_types %}
     JS_SetPropertyStr(ctx, global, "__{{ type.snake_name }}_bulk_encode",
         JS_NewCFunction(ctx, js_{{ type.snake_name }}_bulk_encode, "__{{ type.snake_name }}_bulk_encode", 2));
     JS_SetPropertyStr(ctx, global, "__{{ type.snake_name }}_bulk_decode",
         JS_NewCFunction(ctx, js_{{ type.snake_name }}_bulk_decode, "__{{ type.snake_name }}_bulk_decode", 1));
+    JS_SetPropertyStr(ctx, global, "__{{ type.snake_name }}_bulk_append",
+        JS_NewCFunction(ctx, js_{{ type.snake_name }}_bulk_append, "__{{ type.snake_name }}_bulk_append", 2));
 {% endfor %}
 
     // PackedByteArray per-element encode/decode functions for binary data manipulation

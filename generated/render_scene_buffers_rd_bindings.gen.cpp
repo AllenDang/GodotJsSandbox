@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/render_scene_buffers_rd.hpp>
-#include <godot_cpp/classes/rd_texture_view.hpp>
 #include <godot_cpp/classes/rd_texture_format.hpp>
+#include <godot_cpp/classes/rd_texture_view.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

@@ -16,6 +16,7 @@ const TestEnumsClass = preload("res://test_cases/test_enums.gd")
 const TestArrayProxyClass = preload("res://test_cases/test_array_proxy.gd")
 const TestPackedArrayProxyClass = preload("res://test_cases/test_packed_array_proxy.gd")
 const TestBulkOperationsClass = preload("res://test_cases/test_bulk_operations.gd")
+const TestPackedArrayAppendClass = preload("res://test_cases/test_packed_array_append.gd")
 
 var sandbox: JSSandbox
 
@@ -115,16 +116,19 @@ func run_tests() -> void:
 	# Bulk operations (zero-copy bulk encode/decode for all packed array types)
 	runner.add_suite(TestBulkOperationsClass.new())
 
+	# Packed array append (as_vector3_array -> append_array -> ArrayMesh flow)
+	runner.add_suite(TestPackedArrayAppendClass.new())
+
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())
 
 	if results.failed > 0:
 		printerr("WARNING: %d tests failed!" % results.failed)
 		# Exit with error code for CI
-		# get_tree().quit(1)
+		get_tree().quit(1)
 	else:
 		print("All tests passed!")
-		# get_tree().quit(0)
+		get_tree().quit(0)
 
 func _on_error(message: String, line: int, column: int) -> void:
 	printerr("JS Error at %d:%d - %s" % [line, column, message])
