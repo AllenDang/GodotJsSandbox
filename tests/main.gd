@@ -137,8 +137,8 @@ func run_tests() -> void:
 		print("All tests passed!")
 		get_tree().quit(0)
 
-func _on_error(message: String, line: int, column: int) -> void:
-	printerr("JS Error at %d:%d - %s" % [line, column, message])
+func _on_error(type: String, message: String, file: String, line: int, column: int) -> void:
+	printerr("JS Error [%s] at %s:%d:%d - %s" % [type, file, line, column, message])
 
 func _on_console(message: String) -> void:
 	print("[JS] %s" % message)

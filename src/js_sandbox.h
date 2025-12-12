@@ -4,6 +4,7 @@
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/timer.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -22,6 +23,37 @@
 #include <memory>
 
 namespace jsb {
+
+// Execution phase for error categorization
+enum class ExecutionPhase {
+    LOAD,       // During code loading/parsing
+    INIT,       // During _ready() and initial setup
+    RUNTIME     // During gameplay/user interaction
+};
+
+// Enhanced error entry with context for AI feedback
+struct ErrorEntry {
+    godot::String id;               // Unique ID for deduplication (hash of type+message+file+line)
+    godot::String type;             // "javascript", "godot_engine", "timeout", "security", "scene", "script"
+    godot::String severity;         // "error", "warning"
+    godot::String message;          // Human-readable message
+    godot::String file;             // Source file path
+    int line = 0;                   // Line number
+    int column = 0;                 // Column number
+    godot::String stack_trace;      // Full stack trace if available
+    godot::String trigger_context;  // What triggered: "_ready", "_process", "signal:pressed", etc.
+    godot::String phase;            // "load", "init", "runtime"
+    int64_t timestamp = 0;          // When first occurred (Unix time ms)
+    int64_t last_occurrence = 0;    // When last occurred
+    int occurrence_count = 1;       // How many times this error happened
+
+    // Convert to Dictionary for GDScript access
+    godot::Dictionary to_dict() const;
+
+    // Compute unique ID for deduplication
+    static godot::String compute_id(const godot::String& type, const godot::String& message,
+                                     const godot::String& file, int line);
+};
 
 // JSSandbox is the main API for executing JavaScript code in a sandboxed environment
 class JSSandbox : public godot::RefCounted {
@@ -71,13 +103,33 @@ public:
 
     // Utility
     godot::String get_last_error() const { return last_error_; }
-    godot::Array get_all_errors() const { return errors_; }
+    godot::Array get_all_errors() const;  // Returns Array of Dictionary (deduplicated)
     void clear_errors();
     bool is_valid() const;
     void reset();
 
     // Async support - execute pending microtasks/promise callbacks
     int execute_pending_jobs();
+
+    // Enhanced error reporting for AI feedback
+    // Returns a markdown-formatted report suitable for AI consumption
+    godot::String get_error_report() const;
+
+    // Get errors as structured array (same as get_all_errors but explicit)
+    godot::Array get_errors_for_ai() const;
+
+    // Phase management - allows external control of error categorization
+    void set_phase(ExecutionPhase phase);
+    ExecutionPhase get_phase() const { return current_phase_; }
+
+    // Set execution context for better error attribution
+    // Call before executing user code to track what triggered potential errors
+    void set_execution_context(const godot::String& context);
+    void clear_execution_context();
+
+    // Start init phase timer (called after successful load)
+    // After timeout, transitions to RUNTIME phase and emits init_completed
+    void start_init_phase(float timeout_seconds = 0.5f);
 
     // Context access (for JSScriptInstance integration)
     QuickJSContext* get_context() const { return context_.get(); }
@@ -86,8 +138,14 @@ public:
     godot::Ref<godot::Script> create_script(const godot::String &source_code);
 
     // Error reporting (public for JSScriptInstance to report errors)
+    // Enhanced version with optional stack trace and severity
     void add_error(const godot::String& type, const godot::String& message,
-                   const godot::String& file = "", int line = 0, int column = 0);
+                   const godot::String& file = "", int line = 0, int column = 0,
+                   const godot::String& stack_trace = "",
+                   const godot::String& severity = "error");
+
+    // Get current execution context (for SandboxLogger)
+    godot::String get_current_context() const { return current_context_; }
 
 protected:
     static void _bind_methods();
@@ -107,12 +165,31 @@ private:
     godot::HashMap<uint64_t, godot::String> attached_scripts_;
 
     godot::String last_error_;
-    godot::Array errors_;  // Accumulated errors for AI feedback
+
+    // Enhanced error tracking with deduplication
+    godot::HashMap<godot::String, ErrorEntry> error_map_;  // Keyed by error ID
+    godot::Vector<godot::String> error_order_;  // Maintain insertion order
+
+    // Phase and context tracking
+    ExecutionPhase current_phase_ = ExecutionPhase::LOAD;
+    godot::String current_context_;  // Current execution context (e.g., "_process", "signal:clicked")
+
+    // Init phase management
+    bool init_phase_active_ = false;
+    int errors_at_init_start_ = 0;  // Error count when init phase started
+
+    // Debouncing for errors_updated signal
+    bool errors_updated_pending_ = false;
 
     bool initialize();
 
     // Helper to recursively reattach JS scripts to this sandbox
     void reattach_scripts_recursive(godot::Node* node);
+
+    // Internal helpers
+    godot::String phase_to_string(ExecutionPhase phase) const;
+    void emit_errors_updated();
+    void on_init_phase_timeout();
 };
 
 } // namespace jsb

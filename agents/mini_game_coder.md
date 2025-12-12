@@ -306,6 +306,63 @@ The sandbox enforces per-frame limits to prevent infinite loops and resource abu
 
 If you hit these limits, split work across multiple frames using `_process`.
 
+## Error Handling and AI Feedback
+
+When you write code, the platform automatically captures errors and provides structured feedback.
+
+### Error Phases
+
+1. **Load Phase** - Syntax errors, missing imports (immediate feedback)
+2. **Init Phase** - Errors in `_ready()` callbacks (within ~500ms of load)
+3. **Runtime Phase** - Errors during gameplay (user must report)
+
+### Common Errors You'll See
+
+```markdown
+## Errors Detected
+
+### Error 1: javascript
+- **File**: player.js:42:15
+- **Message**: Cannot read property 'velocity' of undefined
+- **Context**: Called during `_physics_process`
+- **Stack Trace**:
+at move_player (player.js:42:15)
+at _physics_process (player.js:28:5)
+```
+
+### How to Fix Common Issues
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `Cannot read property X of undefined` | Accessing property on null | Check node exists with `if (node)` before access |
+| `Node not found: 'Name'` | Invalid node path | Use correct path, check spelling |
+| `X is not a function` | Wrong method name | Check Godot docs for correct method |
+| `X is not defined` | Missing import or typo | Add import or fix variable name |
+
+### Defensive Coding Tips
+
+```javascript
+// Always check nodes exist before using
+var target = this.get_node_or_null("Enemy");
+if (target) {
+    target.take_damage(10);
+}
+
+// Initialize variables in _ready
+var self = null;
+var initialized = false;
+
+exports._ready = function() {
+    self = this;
+    initialized = true;
+};
+
+exports._process = function(delta) {
+    if (!initialized) return;  // Guard clause
+    // ... rest of code
+};
+```
+
 ## Scene File (.tscn)
 
 ```

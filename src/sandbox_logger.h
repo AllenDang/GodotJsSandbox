@@ -54,6 +54,7 @@ private:
     // Error entry for thread-safe queueing
     struct ErrorEntry {
         godot::String type;
+        godot::String severity;  // "error" or "warning"
         godot::String message;
         godot::String file;
         int line;

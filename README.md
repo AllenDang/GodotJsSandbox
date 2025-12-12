@@ -166,28 +166,121 @@ func _on_loading_failed(error: String) -> void:
 
 ### Capturing Error Logs
 
-The sandbox provides multiple ways to capture JavaScript errors and console output:
+The sandbox provides comprehensive error capture for both JavaScript and Godot engine errors, designed for AI-assisted development workflows.
 
-#### Using Signals (Recommended)
+#### Phase-Based Error Handling (Recommended for AI Workflows)
 
 ```gdscript
 var sandbox = JSSandbox.new()
 
 func _ready() -> void:
-    # Connect to error and console signals
-    sandbox.error_occurred.connect(_on_js_error)
+    # Phase completion signals - for auto-fix loops
+    sandbox.load_completed.connect(_on_load_completed)
+    sandbox.init_completed.connect(_on_init_completed)
+
+    # Runtime error signals - for user-triggered errors
+    sandbox.runtime_error.connect(_on_runtime_error)
     sandbox.console_output.connect(_on_js_console)
 
-func _on_js_error(message: String, line: int, column: int) -> void:
-    print("JS Error at line %d, col %d: %s" % [line, column, message])
+func load_ai_code(code: String) -> void:
+    sandbox.clear_errors()
+    sandbox.eval_module(code, "game.js")
+    # load_completed signal emitted automatically
+
+func _on_load_completed(success: bool, errors: Array) -> void:
+    if not success:
+        # Auto-fix loop: send errors back to AI
+        var report = sandbox.get_error_report()
+        print(report)  # Markdown-formatted for AI
+        # ai_agent.fix_code(report)
+    else:
+        # Start init phase to catch _ready() errors
+        sandbox.start_init_phase(0.5)
+
+func _on_init_completed(success: bool, errors: Array) -> void:
+    if not success:
+        var report = sandbox.get_error_report()
+        # ai_agent.fix_code(report)
+    else:
+        print("Ready to play!")
+
+func _on_runtime_error(error: Dictionary) -> void:
+    # Show in dev panel - user can click "Ask AI to fix"
+    print("Runtime error: %s at %s:%d" % [error.message, error.file, error.line])
 
 func _on_js_console(message: String) -> void:
     print("JS Console: ", message)
 ```
 
-#### Polling Errors
+#### Error Dictionary Structure
+
+Each error is a Dictionary with these fields:
 
 ```gdscript
+{
+    "id": "unique_error_id",           # For deduplication
+    "type": "javascript",              # javascript, godot_engine, security, scene, script
+    "severity": "error",               # error, warning
+    "message": "Cannot read property...",
+    "file": "player.js",
+    "line": 42,
+    "column": 15,
+    "stack_trace": "at move_player...",
+    "trigger_context": "_physics_process",  # What was running when error occurred
+    "phase": "runtime",                # load, init, runtime
+    "timestamp": 1702400000000,
+    "last_occurrence": 1702400001000,
+    "occurrence_count": 3              # Deduplication count
+}
+```
+
+#### AI-Friendly Error Report
+
+```gdscript
+# Get markdown-formatted report for AI consumption
+var report = sandbox.get_error_report()
+```
+
+Example output:
+```markdown
+## Errors Detected
+
+### Error 1: javascript
+- **Severity**: error
+- **File**: player.js:42:15
+- **Message**: Cannot read property 'velocity' of undefined
+- **Context**: Called during `_physics_process`
+- **Phase**: runtime
+- **Occurrences**: 3 times
+- **Stack Trace**:
+` ` `
+at move_player (player.js:42:15)
+at _physics_process (player.js:28:5)
+` ` `
+
+---
+**Summary**: 1 unique issues (1 errors), 3 total occurrences
+```
+
+#### Execution Context Tracking
+
+For better error attribution, set the execution context before running user code:
+
+```gdscript
+# In your game loop
+func _process(delta: float) -> void:
+    sandbox.set_execution_context("_process")
+    sandbox.execute_pending_jobs()
+    sandbox.clear_execution_context()
+```
+
+#### Legacy API (Still Supported)
+
+```gdscript
+# Simple signal (backward compatible)
+sandbox.error_occurred.connect(func(type, message, file, line, column):
+    print("Error: %s" % message))
+
 # Get the most recent error
 var last_error = sandbox.get_last_error()
 
@@ -475,10 +568,16 @@ sandbox.load_blocklist("res://config/blocklist.json")
 | `get_created_nodes() -> Array` | Get all nodes created by the sandbox |
 | `load_blocklist(path: String) -> Error` | Load custom blocklist configuration |
 | `get_last_error() -> String` | Get the last error message |
-| `get_all_errors() -> Array` | Get all errors as array of dictionaries |
+| `get_all_errors() -> Array` | Get all errors as array of dictionaries (deduplicated) |
 | `clear_errors()` | Clear the error history |
 | `is_valid() -> bool` | Check if sandbox is initialized |
 | `reset()` | Reset the sandbox to initial state |
+| `execute_pending_jobs() -> int` | Execute pending JS microtasks/promises |
+| `get_error_report() -> String` | Get markdown-formatted error report for AI |
+| `get_errors_for_ai() -> Array` | Get all errors as structured array for AI |
+| `set_execution_context(context: String)` | Set current execution context for error attribution |
+| `clear_execution_context()` | Clear the execution context |
+| `start_init_phase(timeout: float)` | Start init phase timer (default: 0.5s) |
 
 ### AsyncSceneLoader
 
@@ -494,9 +593,14 @@ sandbox.load_blocklist("res://config/blocklist.json")
 
 | Signal | Description |
 |--------|-------------|
-| `error_occurred(message: String, line: int, column: int)` | Emitted on JS error |
+| `load_completed(success: bool, errors: Array)` | Emitted after eval/eval_module/eval_file completes |
+| `init_completed(success: bool, errors: Array)` | Emitted after init phase timeout (catches _ready errors) |
+| `runtime_error(error: Dictionary)` | Emitted for each new unique runtime error |
+| `errors_updated(all_errors: Array)` | Emitted when error list changes (batched/debounced) |
+| `error_occurred(type, message, file, line, column)` | Legacy signal for backward compatibility |
 | `console_output(message: String)` | Emitted on console.log output |
 | `level_saved(path: String)` | Emitted when level is saved |
+| `level_loaded(directory: String, script_count: int)` | Emitted when level is loaded |
 
 ## License
 

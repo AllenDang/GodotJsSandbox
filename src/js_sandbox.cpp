@@ -10,12 +10,42 @@
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/object_id.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
 
 namespace jsb {
+
+// ErrorEntry implementation
+Dictionary ErrorEntry::to_dict() const {
+    Dictionary d;
+    d["id"] = id;
+    d["type"] = type;
+    d["severity"] = severity;
+    d["message"] = message;
+    d["file"] = file;
+    d["line"] = line;
+    d["column"] = column;
+    d["stack_trace"] = stack_trace;
+    d["trigger_context"] = trigger_context;
+    d["phase"] = phase;
+    d["timestamp"] = timestamp;
+    d["last_occurrence"] = last_occurrence;
+    d["occurrence_count"] = occurrence_count;
+    return d;
+}
+
+String ErrorEntry::compute_id(const String& type, const String& message,
+                               const String& file, int line) {
+    // Create a unique ID by combining key fields
+    // Normalize message to first 100 chars to group similar errors
+    String normalized_msg = message.length() > 100 ? message.substr(0, 100) : message;
+    String sep = "|";
+    return type + sep + normalized_msg + sep + file + sep + String::num_int64(line);
+}
 
 JSSandbox::JSSandbox() {
     initialize();
@@ -145,6 +175,10 @@ Variant JSSandbox::eval(const String &code) {
         return Variant();
     }
 
+    // Track errors before load
+    int errors_before = error_order_.size();
+    current_phase_ = ExecutionPhase::LOAD;
+
     if (execution_limiter_) {
         execution_limiter_->begin_execution();
     }
@@ -161,13 +195,26 @@ Variant JSSandbox::eval(const String &code) {
     if (!success) {
         // Get structured error info from QuickJS
         auto info = context_->get_exception_info();
-        add_error("javascript", error, info.file.is_empty() ? "<eval>" : info.file, info.line, info.column);
+        add_error("javascript", error, info.file.is_empty() ? "<eval>" : info.file,
+                  info.line, info.column, info.stack);
     }
 
     // Flush any Godot errors that occurred during execution
     if (logger_.is_valid()) {
         logger_->flush_errors();
     }
+
+    // Collect errors that occurred during load
+    Array load_errors;
+    for (int i = errors_before; i < error_order_.size(); i++) {
+        const String& error_id = error_order_[i];
+        if (error_map_.has(error_id)) {
+            load_errors.push_back(error_map_[error_id].to_dict());
+        }
+    }
+
+    // Emit load_completed signal
+    emit_signal("load_completed", load_errors.is_empty(), load_errors);
 
     if (!success) {
         return Variant();
@@ -181,6 +228,10 @@ Variant JSSandbox::eval_module(const String &code, const String &filename) {
         add_error("sandbox", "Sandbox not initialized", filename);
         return Variant();
     }
+
+    // Track errors before load
+    int errors_before = error_order_.size();
+    current_phase_ = ExecutionPhase::LOAD;
 
     // Validate filename for module resolution
     String module_path = filename;
@@ -204,13 +255,26 @@ Variant JSSandbox::eval_module(const String &code, const String &filename) {
 
     if (!success) {
         auto info = context_->get_exception_info();
-        add_error("javascript", error, info.file.is_empty() ? module_path : info.file, info.line, info.column);
+        add_error("javascript", error, info.file.is_empty() ? module_path : info.file,
+                  info.line, info.column, info.stack);
     }
 
     // Flush any Godot errors that occurred during execution
     if (logger_.is_valid()) {
         logger_->flush_errors();
     }
+
+    // Collect errors that occurred during load
+    Array load_errors;
+    for (int i = errors_before; i < error_order_.size(); i++) {
+        const String& error_id = error_order_[i];
+        if (error_map_.has(error_id)) {
+            load_errors.push_back(error_map_[error_id].to_dict());
+        }
+    }
+
+    // Emit load_completed signal
+    emit_signal("load_completed", load_errors.is_empty(), load_errors);
 
     if (!success) {
         return Variant();
@@ -231,6 +295,10 @@ Variant JSSandbox::eval_file(const String &path) {
         return Variant();
     }
 
+    // Track errors before load
+    int errors_before = error_order_.size();
+    current_phase_ = ExecutionPhase::LOAD;
+
     if (execution_limiter_) {
         execution_limiter_->begin_execution();
     }
@@ -246,13 +314,26 @@ Variant JSSandbox::eval_file(const String &path) {
 
     if (!success) {
         auto info = context_->get_exception_info();
-        add_error("javascript", error, info.file.is_empty() ? path : info.file, info.line, info.column);
+        add_error("javascript", error, info.file.is_empty() ? path : info.file,
+                  info.line, info.column, info.stack);
     }
 
     // Flush any Godot errors that occurred during execution
     if (logger_.is_valid()) {
         logger_->flush_errors();
     }
+
+    // Collect errors that occurred during load
+    Array load_errors;
+    for (int i = errors_before; i < error_order_.size(); i++) {
+        const String& error_id = error_order_[i];
+        if (error_map_.has(error_id)) {
+            load_errors.push_back(error_map_[error_id].to_dict());
+        }
+    }
+
+    // Emit load_completed signal
+    emit_signal("load_completed", load_errors.is_empty(), load_errors);
 
     if (!success) {
         return Variant();
@@ -523,27 +604,67 @@ void JSSandbox::reattach_scripts_recursive(Node* node) {
 }
 
 void JSSandbox::add_error(const String& type, const String& message,
-                          const String& file, int line, int column) {
-    Dictionary error;
-    error["type"] = type;
-    error["message"] = message;
-    error["file"] = file;
-    error["line"] = line;
-    error["column"] = column;
-    errors_.push_back(error);
+                          const String& file, int line, int column,
+                          const String& stack_trace, const String& severity) {
+    // Compute unique ID for deduplication
+    String error_id = ErrorEntry::compute_id(type, message, file, line);
+    int64_t now = Time::get_singleton()->get_unix_time_from_system() * 1000;
+
+    // Check if this error already exists
+    if (error_map_.has(error_id)) {
+        // Update existing error
+        ErrorEntry& existing = error_map_[error_id];
+        existing.occurrence_count++;
+        existing.last_occurrence = now;
+        // Don't emit runtime_error again for duplicates, but schedule batch update
+        errors_updated_pending_ = true;
+    } else {
+        // Create new error entry
+        ErrorEntry entry;
+        entry.id = error_id;
+        entry.type = type;
+        entry.severity = severity;
+        entry.message = message;
+        entry.file = file;
+        entry.line = line;
+        entry.column = column;
+        entry.stack_trace = stack_trace;
+        entry.trigger_context = current_context_;
+        entry.phase = phase_to_string(current_phase_);
+        entry.timestamp = now;
+        entry.last_occurrence = now;
+        entry.occurrence_count = 1;
+
+        error_map_[error_id] = entry;
+        error_order_.push_back(error_id);
+
+        // Emit runtime_error signal for new errors (with full context)
+        emit_signal("runtime_error", entry.to_dict());
+        errors_updated_pending_ = true;
+    }
+
     last_error_ = message;
-    emit_signal("error_occurred", message, line, column);
+
+    // Legacy signal for backward compatibility
+    emit_signal("error_occurred", type, message, file, line, column);
 }
 
 void JSSandbox::clear_errors() {
-    errors_.clear();
+    error_map_.clear();
+    error_order_.clear();
     last_error_ = "";
+    errors_updated_pending_ = false;
 }
 
 void JSSandbox::reset() {
     attached_scripts_.clear();
     last_error_ = "";
-    errors_.clear();
+    error_map_.clear();
+    error_order_.clear();
+    current_phase_ = ExecutionPhase::LOAD;
+    current_context_ = "";
+    init_phase_active_ = false;
+    errors_updated_pending_ = false;
 
     // Clean up signal connections first
     if (signal_registry_) {
@@ -616,7 +737,172 @@ int JSSandbox::execute_pending_jobs() {
         logger_->flush_errors();
     }
 
+    // Emit batched errors_updated signal if pending
+    if (errors_updated_pending_) {
+        emit_errors_updated();
+    }
+
     return executed;
+}
+
+// Phase management
+void JSSandbox::set_phase(ExecutionPhase phase) {
+    current_phase_ = phase;
+}
+
+String JSSandbox::phase_to_string(ExecutionPhase phase) const {
+    switch (phase) {
+        case ExecutionPhase::LOAD: return "load";
+        case ExecutionPhase::INIT: return "init";
+        case ExecutionPhase::RUNTIME: return "runtime";
+        default: return "unknown";
+    }
+}
+
+// Execution context tracking
+void JSSandbox::set_execution_context(const String& context) {
+    current_context_ = context;
+}
+
+void JSSandbox::clear_execution_context() {
+    current_context_ = "";
+}
+
+// Init phase management
+void JSSandbox::start_init_phase(float timeout_seconds) {
+    current_phase_ = ExecutionPhase::INIT;
+    init_phase_active_ = true;
+    errors_at_init_start_ = error_order_.size();
+
+    // Note: In a real implementation, you'd use a Timer node or SceneTree timer
+    // For now, the caller is responsible for calling on_init_phase_timeout()
+    // after the timeout, or the phase can be manually advanced with set_phase()
+}
+
+void JSSandbox::on_init_phase_timeout() {
+    if (!init_phase_active_) {
+        return;
+    }
+
+    init_phase_active_ = false;
+
+    // Collect errors that occurred during init phase
+    Array init_errors;
+    for (int i = errors_at_init_start_; i < error_order_.size(); i++) {
+        const String& error_id = error_order_[i];
+        if (error_map_.has(error_id)) {
+            init_errors.push_back(error_map_[error_id].to_dict());
+        }
+    }
+
+    // Transition to runtime phase
+    current_phase_ = ExecutionPhase::RUNTIME;
+
+    // Emit init_completed signal
+    bool success = init_errors.is_empty();
+    emit_signal("init_completed", success, init_errors);
+}
+
+// Get all errors as array (for GDScript)
+Array JSSandbox::get_all_errors() const {
+    Array result;
+    for (int i = 0; i < error_order_.size(); i++) {
+        const String& error_id = error_order_[i];
+        if (error_map_.has(error_id)) {
+            result.push_back(error_map_[error_id].to_dict());
+        }
+    }
+    return result;
+}
+
+Array JSSandbox::get_errors_for_ai() const {
+    return get_all_errors();
+}
+
+// Emit batched errors_updated signal
+void JSSandbox::emit_errors_updated() {
+    if (!errors_updated_pending_) {
+        return;
+    }
+    errors_updated_pending_ = false;
+    emit_signal("errors_updated", get_all_errors());
+}
+
+// Generate markdown-formatted error report for AI consumption
+String JSSandbox::get_error_report() const {
+    if (error_order_.is_empty()) {
+        return "No errors detected.";
+    }
+
+    String report = "## Errors Detected\n\n";
+
+    int error_num = 1;
+    for (int i = 0; i < error_order_.size(); i++) {
+        const String& error_id = error_order_[i];
+        if (!error_map_.has(error_id)) {
+            continue;
+        }
+
+        const ErrorEntry& entry = error_map_[error_id];
+
+        report += "### Error " + String::num_int64(error_num++) + ": " + entry.type + "\n";
+        report += "- **Severity**: " + entry.severity + "\n";
+        report += "- **File**: " + entry.file;
+        if (entry.line > 0) {
+            report += ":" + String::num_int64(entry.line);
+            if (entry.column > 0) {
+                report += ":" + String::num_int64(entry.column);
+            }
+        }
+        report += "\n";
+        report += "- **Message**: " + entry.message + "\n";
+
+        if (!entry.trigger_context.is_empty()) {
+            report += "- **Context**: Called during `" + entry.trigger_context + "`\n";
+        }
+
+        report += "- **Phase**: " + entry.phase + "\n";
+
+        if (entry.occurrence_count > 1) {
+            report += "- **Occurrences**: " + String::num_int64(entry.occurrence_count) + " times\n";
+        }
+
+        if (!entry.stack_trace.is_empty()) {
+            report += "- **Stack Trace**:\n```\n" + entry.stack_trace + "\n```\n";
+        }
+
+        report += "\n";
+    }
+
+    // Add summary
+    int total_occurrences = 0;
+    int error_count = 0;
+    int warning_count = 0;
+
+    for (const KeyValue<String, ErrorEntry>& E : error_map_) {
+        total_occurrences += E.value.occurrence_count;
+        if (E.value.severity == "error") {
+            error_count++;
+        } else if (E.value.severity == "warning") {
+            warning_count++;
+        }
+    }
+
+    report += "---\n";
+    report += "**Summary**: " + String::num_int64(error_order_.size()) + " unique issues";
+    if (error_count > 0) {
+        report += " (" + String::num_int64(error_count) + " errors";
+        if (warning_count > 0) {
+            report += ", " + String::num_int64(warning_count) + " warnings";
+        }
+        report += ")";
+    }
+    if (total_occurrences > error_order_.size()) {
+        report += ", " + String::num_int64(total_occurrences) + " total occurrences";
+    }
+    report += "\n";
+
+    return report;
 }
 
 void JSSandbox::_bind_methods() {
@@ -662,12 +948,42 @@ void JSSandbox::_bind_methods() {
     // Async support
     ClassDB::bind_method(D_METHOD("execute_pending_jobs"), &JSSandbox::execute_pending_jobs);
 
-    // Signals
+    // Enhanced error reporting for AI feedback
+    ClassDB::bind_method(D_METHOD("get_error_report"), &JSSandbox::get_error_report);
+    ClassDB::bind_method(D_METHOD("get_errors_for_ai"), &JSSandbox::get_errors_for_ai);
+
+    // Phase and context management
+    ClassDB::bind_method(D_METHOD("set_execution_context", "context"), &JSSandbox::set_execution_context);
+    ClassDB::bind_method(D_METHOD("clear_execution_context"), &JSSandbox::clear_execution_context);
+    ClassDB::bind_method(D_METHOD("start_init_phase", "timeout_seconds"), &JSSandbox::start_init_phase);
+
+    // Signals - Legacy (backward compatible)
     ADD_SIGNAL(MethodInfo("error_occurred",
+        PropertyInfo(Variant::STRING, "type"),
         PropertyInfo(Variant::STRING, "message"),
+        PropertyInfo(Variant::STRING, "file"),
         PropertyInfo(Variant::INT, "line"),
         PropertyInfo(Variant::INT, "column")));
 
+    // Signals - Enhanced for AI feedback
+    // Emitted for each new unique error (with full context)
+    ADD_SIGNAL(MethodInfo("runtime_error",
+        PropertyInfo(Variant::DICTIONARY, "error")));
+
+    // Emitted as a batch after errors settle (debounced)
+    ADD_SIGNAL(MethodInfo("errors_updated",
+        PropertyInfo(Variant::ARRAY, "all_errors")));
+
+    // Phase completion signals for auto-fix loop
+    ADD_SIGNAL(MethodInfo("load_completed",
+        PropertyInfo(Variant::BOOL, "success"),
+        PropertyInfo(Variant::ARRAY, "errors")));
+
+    ADD_SIGNAL(MethodInfo("init_completed",
+        PropertyInfo(Variant::BOOL, "success"),
+        PropertyInfo(Variant::ARRAY, "errors")));
+
+    // Other signals
     ADD_SIGNAL(MethodInfo("console_output",
         PropertyInfo(Variant::STRING, "message")));
 

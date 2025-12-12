@@ -79,6 +79,8 @@ void SandboxLogger::_log_error(const String &p_function, const String &p_file,
     // Queue the error for processing on main thread
     ErrorEntry entry;
     entry.type = get_error_type_name(p_error_type);
+    // Determine severity based on error type
+    entry.severity = (p_error_type == Logger::ERROR_TYPE_WARNING) ? "warning" : "error";
     entry.message = message;
     entry.file = p_file;
     entry.line = p_line;
@@ -106,6 +108,7 @@ void SandboxLogger::_log_message(const String &p_message, bool p_error) {
 
     ErrorEntry entry;
     entry.type = "message";
+    entry.severity = "error";  // _log_message with p_error=true is an error
     entry.message = p_message;
     entry.file = "";
     entry.line = 0;
@@ -135,7 +138,8 @@ void SandboxLogger::flush_errors() {
     if (sandbox_) {
         for (int i = 0; i < errors_to_process.size(); i++) {
             const ErrorEntry& entry = errors_to_process[i];
-            sandbox_->add_error(entry.type, entry.message, entry.file, entry.line, entry.column);
+            sandbox_->add_error(entry.type, entry.message, entry.file, entry.line, entry.column,
+                                "", entry.severity);  // No stack trace from Godot errors
         }
     }
 
