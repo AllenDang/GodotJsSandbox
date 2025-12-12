@@ -16,6 +16,11 @@ let self = null;
 // Loaded GLB scene and material
 let loaded_glb_scene = null;
 let original_material = null;
+let wireframe_material = null;
+let wireframe_mode = false;
+
+// Store original materials by node path (JS proxy objects don't persist custom properties)
+const original_materials_map = {};
 
 // Stats
 let slice_count = 0;
@@ -37,8 +42,19 @@ export function _ready() {
     console.log("=== SLICE EVERYTHING ===");
     console.log("Hold left mouse and drag to slice!");
     console.log("Press SPACE to spawn objects");
+    console.log("Press E to toggle wireframe mode");
     console.log("Right-click drag to orbit camera");
     console.log("Mouse wheel to zoom");
+
+    // Load debug shader for mesh visualization (colors based on normals)
+    const debug_shader = load("user://games/slice_everything/shaders/wireframe.gdshader");
+    if (debug_shader) {
+        wireframe_material = new ShaderMaterial();
+        wireframe_material.shader = debug_shader;
+        console.log("Debug shader loaded - press W to toggle normal-colored view");
+    } else {
+        console.log("WARNING: Could not load debug shader");
+    }
 
     // Get containers
     sliceable_container = this.get_node("SliceableObjects");
@@ -138,8 +154,63 @@ export function _process(delta) {
         console.log("Spawned new object!");
     }
 
+    // Toggle wireframe mode with E key (action)
+    if (Input.is_action_just_pressed("action")) {
+        wireframe_mode = !wireframe_mode;
+        console.log("Wireframe mode: " + (wireframe_mode ? "ON" : "OFF"));
+        apply_wireframe_to_all_pieces(wireframe_mode);
+    }
+
     // Clean up pieces that fell too far
     cleanup_fallen_pieces();
+}
+
+function apply_wireframe_to_all_pieces(enable) {
+    if (!wireframe_material) return;
+
+    // Apply to sliceable objects
+    const children = sliceable_container.get_children();
+    for (let i = 0; i < children.length; i++) {
+        apply_material_to_object(children[i], enable);
+    }
+
+    // Apply to sliced pieces
+    const pieces = sliced_pieces_container.get_children();
+    for (let j = 0; j < pieces.length; j++) {
+        apply_material_to_object(pieces[j], enable);
+    }
+}
+
+function apply_material_to_object(obj, use_wireframe) {
+    // Only apply wireframe to cap meshes (the "CapMesh" child)
+    // Use has_node first to avoid error when node doesn't exist
+    if (!obj.has_node("CapMesh")) return;
+
+    const cap_mesh_instance = obj.get_node("CapMesh");
+
+    if (cap_mesh_instance) {
+        // Use node path as stable key (JS proxy objects don't persist custom properties)
+        const node_path = cap_mesh_instance.get_path().toString();
+
+        if (use_wireframe) {
+            // Store original material in map before overriding
+            if (original_materials_map[node_path] === undefined) {
+                original_materials_map[node_path] = cap_mesh_instance.get_surface_override_material(0);
+                console.log("[WIREFRAME] Stored material for: " + node_path);
+            }
+            cap_mesh_instance.set_surface_override_material(0, wireframe_material);
+        } else {
+            // Restore original material from map
+            if (original_materials_map[node_path] !== undefined) {
+                cap_mesh_instance.set_surface_override_material(0, original_materials_map[node_path]);
+                console.log("[WIREFRAME] Restored material for: " + node_path);
+                // Clean up the map entry
+                delete original_materials_map[node_path];
+            } else {
+                console.log("[WIREFRAME] No stored material for: " + node_path);
+            }
+        }
+    }
 }
 
 function spawn_object(position) {
@@ -364,12 +435,8 @@ function try_slice_object(obj, plane_normal, plane_point, slice_direction) {
         return false;
     }
 
-    // Generate caps for the cut surfaces
-    add_cap_to_mesh(slice_result.front, plane_normal, -1);  // Front mesh: cap faces backward
-    add_cap_to_mesh(slice_result.back, plane_normal, 1);    // Back mesh: cap faces forward
-
-    perf.add_caps = Time.get_ticks_usec() - t0;
-    t0 = Time.get_ticks_usec();
+    // Cap generation is now done on the GPU in compute_slicer.js
+    // The slice_result already contains capped meshes
 
     // Get current object properties
     let current_color = null;
@@ -391,8 +458,9 @@ function try_slice_object(obj, plane_normal, plane_point, slice_direction) {
     };
 
     // Pass material from mesh_data to preserve original textures
-    create_sliced_piece(slice_result.front, front_pos, obj.rotation, scale, current_color, plane_normal, 1, mesh_data.material);
-    create_sliced_piece(slice_result.back, back_pos, obj.rotation, scale, current_color, plane_normal, -1, mesh_data.material);
+    // Also pass cap mesh data separately for debug visualization
+    create_sliced_piece(slice_result.front, slice_result.front_cap, front_pos, obj.rotation, scale, current_color, plane_normal, 1, mesh_data.material);
+    create_sliced_piece(slice_result.back, slice_result.back_cap, back_pos, obj.rotation, scale, current_color, plane_normal, -1, mesh_data.material);
 
     perf.create_pieces = Time.get_ticks_usec() - t0;
 
@@ -404,7 +472,6 @@ function try_slice_object(obj, plane_normal, plane_point, slice_direction) {
     console.log("[PERF] try_slice_object breakdown (ms): setup=" + (perf.setup/1000).toFixed(2) +
         " extract=" + (perf.extract/1000).toFixed(2) +
         " gpu_slice=" + (perf.gpu_slice/1000).toFixed(2) +
-        " add_caps=" + (perf.add_caps/1000).toFixed(2) +
         " create_pieces=" + (perf.create_pieces/1000).toFixed(2));
 
     return true;
@@ -657,11 +724,11 @@ function extract_mesh_data(mesh, mesh_instance) {
     return { vertices, indices, uvs, normals, material, is_packed: true };
 }
 
-function create_sliced_piece(mesh_data, position, rotation, scale, color, slice_dir, side, source_material) {
+function create_sliced_piece(mesh_data, cap_mesh_data, position, rotation, scale, color, slice_dir, side, source_material) {
     // Create new RigidBody3D
     const piece = new RigidBody3D();
 
-    // Create MeshInstance3D with generated mesh
+    // Create MeshInstance3D with generated mesh (sliced body, no cap)
     const mesh_instance = new MeshInstance3D();
     mesh_instance.name = "Mesh";
     const new_mesh = create_array_mesh(mesh_data);
@@ -673,10 +740,9 @@ function create_sliced_piece(mesh_data, position, rotation, scale, color, slice_
     if (source_material) {
         // Duplicate the original material to preserve textures
         material = source_material.duplicate();
-        // Make it double-sided for sliced pieces
-        if (material.cull_mode !== undefined) {
-            material.cull_mode = 0; // CULL_DISABLED
-        }
+        material.cull_mode = 0; // CULL_DISABLED = 0
+        material.transparency = 0;  // TRANSPARENCY_DISABLED
+        material.alpha_scissor_threshold = 0;
     } else {
         // Fallback to colored material
         material = new StandardMaterial3D();
@@ -687,14 +753,40 @@ function create_sliced_piece(mesh_data, position, rotation, scale, color, slice_
             color_index++;
             material.albedo_color = new Color(c.r, c.g, c.b, 1.0);
         }
-        // Make material double-sided to see mesh even if normals are wrong
         material.cull_mode = 0; // CULL_DISABLED
     }
     mesh_instance.set_surface_override_material(0, material);
 
     piece.add_child(mesh_instance);
 
-    // Create collision shape (use convex hull)
+    // Create separate MeshInstance for cap faces (for debug visualization)
+    if (cap_mesh_data && cap_mesh_data.vertices && cap_mesh_data.vertices.length > 0) {
+        const cap_mesh_instance = new MeshInstance3D();
+        cap_mesh_instance.name = "CapMesh";
+        const cap_mesh = create_array_mesh(cap_mesh_data);
+        cap_mesh_instance.mesh = cap_mesh;
+
+        // Create cap material using same shader as wireframe but with different color
+        // This ensures it renders the same way (unshaded, cull_disabled)
+        const cap_shader_code = `
+shader_type spatial;
+render_mode unshaded, cull_disabled;
+
+void fragment() {
+    ALBEDO = vec3(1.0, 0.2, 0.2);
+}
+`;
+        const cap_shader = new Shader();
+        cap_shader.code = cap_shader_code;
+        const cap_material = new ShaderMaterial();
+        cap_material.shader = cap_shader;
+        cap_mesh_instance.set_surface_override_material(0, cap_material);
+
+        piece.add_child(cap_mesh_instance);
+        console.log("[CAP-MESH] Created cap mesh with " + cap_mesh_data.vertices.length + " verts");
+    }
+
+    // Create collision shape (use convex hull from main mesh)
     const collision = new CollisionShape3D();
     const shape = new_mesh.create_convex_shape();
     if (shape) {

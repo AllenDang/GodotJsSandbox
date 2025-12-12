@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bme0yjjaxqpbq"
+path="res://.godot/imported/cap_generator.glsl-5a6acf48aa8e5f7686194577fe337982.res"
+
+[deps]
+
+source_file="res://games/slice_everything/shaders/cap_generator.glsl"
+dest_files=["res://.godot/imported/cap_generator.glsl-5a6acf48aa8e5f7686194577fe337982.res"]
+
+[params]
+

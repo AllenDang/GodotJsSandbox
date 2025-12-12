@@ -32,6 +32,26 @@ func _ready() -> void:
 
 	scan_games()
 
+	# Check for --main-scene argument to auto-launch a game
+	var args := OS.get_cmdline_args()
+	var user_args := OS.get_cmdline_user_args()
+	# Check both regular and user args
+	var all_args := args + user_args
+	for i in range(all_args.size()):
+		if all_args[i] == "--main-scene" and i + 1 < all_args.size():
+			var scene_arg := all_args[i + 1]
+			# Extract game folder from scene path (e.g. "user://games/slice_everything/main.tscn")
+			if scene_arg.begins_with("user://games/"):
+				var parts := scene_arg.replace("user://games/", "").split("/")
+				if parts.size() >= 1:
+					var game_folder := parts[0]
+					# Find and launch that game
+					for game in games:
+						if game.get("folder", "") == game_folder:
+							print("Auto-launching game: ", game["name"])
+							call_deferred("_on_game_selected", game)
+							return
+
 
 func _input(event: InputEvent) -> void:
 	# ESC to go back to launcher while in game or during loading

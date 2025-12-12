@@ -78,6 +78,18 @@ layout(set = 0, binding = 14, std430) restrict buffer AtomicCounters {
     uint back_vert_count;
     uint front_idx_count;
     uint back_idx_count;
+    uint front_boundary_count;
+    uint back_boundary_count;
+};
+
+// Boundary edge buffers for cap generation
+// Each edge stores two intersection points (start and end of cut edge)
+layout(set = 0, binding = 15, std430) restrict writeonly buffer FrontBoundaryEdges {
+    vec4 front_boundary[];  // pairs: [edge0_start, edge0_end, edge1_start, edge1_end, ...]
+};
+
+layout(set = 0, binding = 16, std430) restrict writeonly buffer BackBoundaryEdges {
+    vec4 back_boundary[];  // pairs: [edge0_start, edge0_end, edge1_start, edge1_end, ...]
 };
 
 const float EPSILON = 0.001;
@@ -246,7 +258,17 @@ void main() {
     vec3 intB_norm = normalize(mix(nLone, nB, tB));
     vec2 intB_uv = mix(uvLone, uvB, tB);
 
-    // Create triangles (no caps - caps are generated in JS using all intersection points)
+    // Record boundary edge for cap generation
+    // Both front and back meshes share the same cut edge (just with opposite normals)
+    uint front_edge_idx = atomicAdd(front_boundary_count, 1);
+    front_boundary[front_edge_idx * 2] = vec4(intA_pos, 1.0);
+    front_boundary[front_edge_idx * 2 + 1] = vec4(intB_pos, 1.0);
+
+    uint back_edge_idx = atomicAdd(back_boundary_count, 1);
+    back_boundary[back_edge_idx * 2] = vec4(intA_pos, 1.0);
+    back_boundary[back_edge_idx * 2 + 1] = vec4(intB_pos, 1.0);
+
+    // Create triangles
     if (lone_side > 0) {
         // Lone vertex is on front: 1 front triangle, 2 back triangles
         uint f_lone = add_front_vertex(vLone, nLone, uvLone);
