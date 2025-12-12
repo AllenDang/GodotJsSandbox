@@ -215,25 +215,143 @@ var instance = scene.instantiate()
 add_child(instance)
 ```
 
+## JavaScript API
+
+### Creating Godot Class Instances
+
+```javascript
+// Vector and math types
+var v2 = new Vector2(10, 20);
+var v3 = new Vector3(1, 2, 3);
+var color = new Color(1, 0, 0, 1);
+var quat = new Quaternion(0, 0, 0, 1);
+var basis = new Basis();
+var transform = new Transform3D();
+
+// Node creation
+var timer = new Timer();
+var mesh = new MeshInstance3D();
+parent.add_child(timer);
+```
+
+### Godot Singletons
+
+```javascript
+// Input
+Input.is_action_pressed("move_forward")
+Input.is_action_just_pressed("jump")
+Input.get_vector("left", "right", "up", "down")
+
+// Time
+Time.get_ticks_msec()
+Time.get_unix_time_from_system()
+
+// Engine
+Engine.get_frames_per_second()
+```
+
+### Constants and Enums
+
+Access via enum class name (not bare globals):
+
+```javascript
+// Key constants
+if (event.keycode === Key.KEY_ESCAPE) { }
+if (event.keycode === Key.KEY_SPACE) { }
+
+// Mouse buttons
+MouseButton.MOUSE_BUTTON_LEFT
+```
+
+### ES6 Modules
+
+**utils.js:**
+```javascript
+export function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+export const GRAVITY = 9.8;
+```
+
+**player.js:**
+```javascript
+import { clamp, GRAVITY } from "./utils.js";
+
+exports._physics_process = function(delta) {
+    var vel = this.velocity;
+    vel.y -= GRAVITY * delta;
+    this.velocity = vel;
+    this.move_and_slide();
+};
+```
+
+Import path rules:
+- Relative: `./module.js`, `../shared/utils.js`
+- Absolute: `user://games/mygame/utils.js`
+
+### PackedArray Bulk Functions
+
+For high-performance array operations:
+
+```javascript
+// Create packed array and get handle
+var arr = new PackedVector3Array([]);
+var handle = arr.__packed_handle;
+
+// Bulk encode - set many values at once
+var vertices = [{x: 0, y: 0, z: 0}, {x: 1, y: 0, z: 0}];
+__packed_vector3_array_bulk_encode(handle, vertices);
+
+// Bulk decode - get all values
+var decoded = __packed_vector3_array_bulk_decode(handle);
+```
+
+Available for: `PackedByteArray`, `PackedInt32Array`, `PackedInt64Array`, `PackedFloat32Array`, `PackedFloat64Array`, `PackedStringArray`, `PackedVector2Array`, `PackedVector3Array`, `PackedVector4Array`, `PackedColorArray`
+
 ## Security Model
 
-### Blacklisted Classes
+### Blocked Classes
 
 The following classes are blocked from JS access:
 
 - **System**: `OS`, `FileAccess`, `DirAccess`
 - **Threading**: `Thread`, `Mutex`, `Semaphore`, `WorkerThreadPool`
-- **Network**: `TCPServer`, `HTTPClient`, `HTTPRequest`, `WebSocketPeer`
-- **Script Execution**: `Expression`, `GDScript`, `CSharpScript`
+- **Network**: `HTTPClient`, `HTTPRequest`, `TCPServer`, `UDPServer`, `WebSocketPeer`, `ENetConnection`, `MultiplayerPeer`, `IP`
+- **Script Execution**: `Expression`, `GDScript`, `CSharpScript`, `JavaScriptBridge`
+- **Resources**: `ResourceLoader`, `ResourceSaver`
 - **Extensions**: `NativeExtension`, `GDExtensionManager`
+- **Editor**: `ProjectSettings`, `EditorInterface`, `EditorPlugin`, `EditorScript`
 
 ### Blocked Methods
 
 - `Object.call`, `Object.callv`, `Object.set_script`
 - `ClassDB.instantiate`, `Engine.get_singleton`
 
-### Rate Limiting
+### Execution Limits
 
+Configure sandbox limits from GDScript:
+
+```gdscript
+var sandbox = JSSandbox.new()
+
+# Timeout for single execution (default: 1000ms)
+sandbox.set_timeout_ms(2000)
+
+# Memory limit (default: 64MB)
+sandbox.set_memory_limit_mb(128)
+
+# Write operations per frame (default: 500)
+sandbox.set_write_ops_per_frame(1000)
+
+# Heavy operations per frame - instantiate, queue_free (default: 50)
+sandbox.set_heavy_ops_per_frame(100)
+
+# Reset frame counters manually if needed
+sandbox.reset_frame_counters()
+```
+
+Default rate limits:
+- Read operations: unlimited
 - Write operations: 500/frame
 - Heavy operations (instantiate, queue_free): 50/frame
 
@@ -289,8 +407,11 @@ sandbox.load_blocklist("res://config/blocklist.json")
 | `eval_file(path: String) -> Variant` | Execute JavaScript from a file |
 | `set_global(name: String, value: Variant)` | Set a global variable in JS |
 | `get_global(name: String) -> Variant` | Get a global variable from JS |
-| `set_timeout_ms(ms: int)` | Set execution timeout in milliseconds |
-| `set_memory_limit_mb(mb: int)` | Set memory limit in megabytes |
+| `set_timeout_ms(ms: int)` | Set execution timeout in milliseconds (default: 1000) |
+| `set_memory_limit_mb(mb: int)` | Set memory limit in megabytes (default: 64) |
+| `set_write_ops_per_frame(count: int)` | Set write operations limit per frame (default: 500) |
+| `set_heavy_ops_per_frame(count: int)` | Set heavy operations limit per frame (default: 50) |
+| `reset_frame_counters()` | Reset per-frame operation counters |
 | `load_scene(path: String) -> Node` | Load a scene synchronously with JS scripts |
 | `load_scene_async(path: String) -> AsyncSceneLoader` | Load a scene asynchronously |
 | `save_level(root: Node, directory: String) -> Error` | Save node tree with JS scripts to directory |
