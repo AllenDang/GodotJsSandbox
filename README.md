@@ -263,6 +263,28 @@ if (event.keycode === Key.KEY_SPACE) { }
 MouseButton.MOUSE_BUTTON_LEFT
 ```
 
+### Loading Resources
+
+Use the global `load()` function to load resources at runtime:
+
+```javascript
+// Load and instantiate a scene
+var scene = load("user://games/my_game/enemy.tscn");
+var enemy = scene.instantiate();
+this.add_child(enemy);
+
+// Load a shader
+var shader = load("user://games/my_game/shaders/effect.gdshader");
+var material = new ShaderMaterial();
+material.shader = shader;
+
+// Load a texture
+var texture = load("user://games/my_game/assets/icon.png");
+
+// Load a 3D model (GLB/GLTF)
+var model = load("user://games/my_game/models/character.glb");
+```
+
 ### ES6 Modules
 
 **utils.js:**

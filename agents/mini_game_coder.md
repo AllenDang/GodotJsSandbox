@@ -113,10 +113,35 @@ Time.get_unix_time_from_system()
 
 // Engine
 Engine.get_frames_per_second()
-
-// OS
-OS.get_name()
 ```
+
+## Loading Resources
+
+Use the global `load()` function to load resources:
+
+```javascript
+// Load a scene and instantiate it
+var scene = load("user://games/my_game/enemy.tscn");
+var enemy = scene.instantiate();
+this.add_child(enemy);
+
+// Load a shader
+var shader = load("user://games/my_game/shaders/effect.gdshader");
+var material = new ShaderMaterial();
+material.shader = shader;
+
+// Load a texture
+var texture = load("user://games/my_game/assets/icon.png");
+
+// Load a 3D model (GLB/GLTF)
+var model = load("user://games/my_game/models/character.glb");
+var instance = model.instantiate();
+this.add_child(instance);
+```
+
+Path rules:
+- Use `user://` for game assets
+- Use `res://` for built-in resources
 
 ## Constants and Enums
 
