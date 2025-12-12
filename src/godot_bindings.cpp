@@ -17,6 +17,7 @@
 #include <godot_cpp/classes/method_tweener.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/rendering_device.hpp>
+#include <godot_cpp/classes/rd_shader_spirv.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -314,6 +315,86 @@ static JSValue js_rendering_server_create_local_rendering_device(JSContext* ctx,
     return wrapped;
 }
 
+// __get_shader_compile_errors(spirv_handle) - Extract shader compilation errors from RDShaderSPIRV
+// Returns an object with stage-specific errors, useful for AI feedback on shader compilation failures
+// Returns: { vertex: "", fragment: "", compute: "", tessellation_control: "", tessellation_evaluation: "" }
+// Empty strings indicate no error for that stage
+static JSValue js_get_shader_compile_errors(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "__get_shader_compile_errors requires 1 argument: spirv_handle");
+    }
+
+    // Get object handle
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_ThrowTypeError(ctx, "First argument must be an object handle");
+    }
+
+    QuickJSContext* qjs_ctx = GodotBindings::get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_ThrowInternalError(ctx, "Context not initialized");
+    }
+
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_ThrowInternalError(ctx, "ObjectRegistry not initialized");
+    }
+
+    Object* obj = registry->get_object(handle);
+    if (!obj) {
+        return JS_ThrowTypeError(ctx, "Invalid object handle");
+    }
+
+    // Cast to RDShaderSPIRV
+    RDShaderSPIRV* spirv = Object::cast_to<RDShaderSPIRV>(obj);
+    if (!spirv) {
+        return JS_ThrowTypeError(ctx, "Object is not an RDShaderSPIRV");
+    }
+
+    // Create result object with errors from all shader stages
+    JSValue result = JS_NewObject(ctx);
+
+    // Get error for each shader stage
+    String vertex_error = spirv->get_stage_compile_error(RenderingDevice::SHADER_STAGE_VERTEX);
+    String fragment_error = spirv->get_stage_compile_error(RenderingDevice::SHADER_STAGE_FRAGMENT);
+    String compute_error = spirv->get_stage_compile_error(RenderingDevice::SHADER_STAGE_COMPUTE);
+    String tess_control_error = spirv->get_stage_compile_error(RenderingDevice::SHADER_STAGE_TESSELATION_CONTROL);
+    String tess_eval_error = spirv->get_stage_compile_error(RenderingDevice::SHADER_STAGE_TESSELATION_EVALUATION);
+
+    JS_SetPropertyStr(ctx, result, "vertex", JS_NewString(ctx, vertex_error.utf8().get_data()));
+    JS_SetPropertyStr(ctx, result, "fragment", JS_NewString(ctx, fragment_error.utf8().get_data()));
+    JS_SetPropertyStr(ctx, result, "compute", JS_NewString(ctx, compute_error.utf8().get_data()));
+    JS_SetPropertyStr(ctx, result, "tessellation_control", JS_NewString(ctx, tess_control_error.utf8().get_data()));
+    JS_SetPropertyStr(ctx, result, "tessellation_evaluation", JS_NewString(ctx, tess_eval_error.utf8().get_data()));
+
+    // Also add a combined "hasErrors" flag and "all" string for convenience
+    bool has_errors = !vertex_error.is_empty() || !fragment_error.is_empty() ||
+                      !compute_error.is_empty() || !tess_control_error.is_empty() ||
+                      !tess_eval_error.is_empty();
+    JS_SetPropertyStr(ctx, result, "hasErrors", JS_NewBool(ctx, has_errors));
+
+    // Combine all non-empty errors into one string
+    String all_errors;
+    if (!vertex_error.is_empty()) {
+        all_errors += "[VERTEX] " + vertex_error + "\n";
+    }
+    if (!fragment_error.is_empty()) {
+        all_errors += "[FRAGMENT] " + fragment_error + "\n";
+    }
+    if (!compute_error.is_empty()) {
+        all_errors += "[COMPUTE] " + compute_error + "\n";
+    }
+    if (!tess_control_error.is_empty()) {
+        all_errors += "[TESS_CONTROL] " + tess_control_error + "\n";
+    }
+    if (!tess_eval_error.is_empty()) {
+        all_errors += "[TESS_EVAL] " + tess_eval_error + "\n";
+    }
+    JS_SetPropertyStr(ctx, result, "all", JS_NewString(ctx, all_errors.utf8().get_data()));
+
+    return result;
+}
+
 // Forward declaration for array handle wrapper creator (defined later with other array functions)
 static JSValue js_create_array_handle_wrapper(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
@@ -441,6 +522,12 @@ void GodotBindings::setup_global_functions() {
     JS_SetPropertyStr(ctx, rendering_server_obj, "create_local_rendering_device",
         JS_NewCFunction(ctx, js_rendering_server_create_local_rendering_device, "create_local_rendering_device", 0));
     JS_SetPropertyStr(ctx, global, "RenderingServer", rendering_server_obj);
+
+    // __get_shader_compile_errors(spirv_handle) - extract shader compilation errors from RDShaderSPIRV
+    // Returns: { vertex, fragment, compute, tessellation_control, tessellation_evaluation, hasErrors, all }
+    // Useful for AI feedback on shader compilation failures
+    JS_SetPropertyStr(ctx, global, "__get_shader_compile_errors",
+        JS_NewCFunction(ctx, js_get_shader_compile_errors, "__get_shader_compile_errors", 1));
 
     JS_FreeValue(ctx, global);
 }
@@ -1373,21 +1460,50 @@ JSValue GodotBindings::js_godot_emit_signal(JSContext* ctx, JSValueConst this_va
         return JS_ThrowTypeError(ctx, "Invalid object handle");
     }
 
-    // Convert additional arguments to Godot Variants
-    // Build args array with signal name first (for callv)
+    // Convert additional arguments to Godot Variants for emit_signal call
     // Note: The blocklist only affects JS->Godot calls through SafeWrapper.
-    // C++ code here is trusted and can use callv directly.
-    Array call_args;
-    call_args.append(StringName(signal_name));
+    // C++ code here is trusted and can call emit_signal directly.
+    Vector<Variant> args_storage;
+    args_storage.push_back(StringName(signal_name));
     for (int i = 2; i < argc; i++) {
-        call_args.append(qjs_ctx->js_to_variant(argv[i]));
+        args_storage.push_back(qjs_ctx->js_to_variant(argv[i]));
     }
 
-    // Use callv to emit signal - supports unlimited arguments
-    target->callv(StringName("emit_signal"), call_args);
+    // Build args pointer array
+    Vector<const Variant*> args_ptrs;
+    for (int i = 0; i < args_storage.size(); i++) {
+        args_ptrs.push_back(&args_storage[i]);
+    }
 
-    // callv returns Variant, emit_signal returns Error
-    // If signal doesn't exist or other issues, Godot prints warnings internally
+    // Use Variant::callp to emit signal with error capture
+    Variant target_variant = target;
+    Variant result;
+    GDExtensionCallError call_error;
+    const Variant** args_ptr = const_cast<const Variant**>(args_ptrs.ptr());
+    target_variant.callp(StringName("emit_signal"), args_ptr, args_ptrs.size(), result, call_error);
+
+    // Check for errors and throw JS exception if needed
+    if (call_error.error != GDEXTENSION_CALL_OK) {
+        String error_msg;
+        switch (call_error.error) {
+            case GDEXTENSION_CALL_ERROR_INVALID_METHOD:
+                error_msg = "emit_signal: invalid method";
+                break;
+            case GDEXTENSION_CALL_ERROR_INVALID_ARGUMENT:
+                error_msg = "emit_signal: invalid argument at index " + String::num_int64(call_error.argument);
+                break;
+            case GDEXTENSION_CALL_ERROR_TOO_MANY_ARGUMENTS:
+                error_msg = "emit_signal '" + signal_name + "': too many arguments";
+                break;
+            case GDEXTENSION_CALL_ERROR_TOO_FEW_ARGUMENTS:
+                error_msg = "emit_signal '" + signal_name + "': too few arguments";
+                break;
+            default:
+                error_msg = "emit_signal '" + signal_name + "': unknown error";
+                break;
+        }
+        return JS_ThrowTypeError(ctx, "%s", error_msg.utf8().get_data());
+    }
 
     return JS_UNDEFINED;
 }

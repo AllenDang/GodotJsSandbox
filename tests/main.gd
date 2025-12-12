@@ -40,6 +40,13 @@ func _ready() -> void:
 	# Run all tests
 	await run_tests()
 
+	# Clean up sandbox to free all JS-created objects and RIDs
+	sandbox.reset()
+
+	# Wait for deferred deletions to process (need multiple frames for queue_free)
+	for i in range(5):
+		await get_tree().process_frame
+
 	print("\n=== Test Suite Complete ===")
 
 func run_tests() -> void:

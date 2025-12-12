@@ -9,6 +9,7 @@
 #include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
+#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/core/object_id.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -21,6 +22,13 @@ JSSandbox::JSSandbox() {
 }
 
 JSSandbox::~JSSandbox() {
+    // Unregister logger from OS before destruction
+    if (logger_.is_valid()) {
+        logger_->set_sandbox(nullptr);
+        OS::get_singleton()->remove_logger(logger_);
+        logger_.unref();
+    }
+
     // Explicit cleanup order to ensure JS resources are freed before context
     // SignalRegistry must cleanup while JSContext is still valid
     if (signal_registry_) {
@@ -79,6 +87,11 @@ bool JSSandbox::initialize() {
     signal_registry_->set_context(context_->ctx());
     signal_registry_->set_quickjs_context(context_.get());
     signal_registry_->set_object_registry(object_registry_.get());
+
+    // Create and register logger to capture Godot engine errors
+    logger_.instantiate();
+    logger_->set_sandbox(this);
+    OS::get_singleton()->add_logger(logger_);
 
     return true;
 }
@@ -149,6 +162,14 @@ Variant JSSandbox::eval(const String &code) {
         // Get structured error info from QuickJS
         auto info = context_->get_exception_info();
         add_error("javascript", error, info.file.is_empty() ? "<eval>" : info.file, info.line, info.column);
+    }
+
+    // Flush any Godot errors that occurred during execution
+    if (logger_.is_valid()) {
+        logger_->flush_errors();
+    }
+
+    if (!success) {
         return Variant();
     }
 
@@ -184,6 +205,14 @@ Variant JSSandbox::eval_module(const String &code, const String &filename) {
     if (!success) {
         auto info = context_->get_exception_info();
         add_error("javascript", error, info.file.is_empty() ? module_path : info.file, info.line, info.column);
+    }
+
+    // Flush any Godot errors that occurred during execution
+    if (logger_.is_valid()) {
+        logger_->flush_errors();
+    }
+
+    if (!success) {
         return Variant();
     }
 
@@ -218,6 +247,14 @@ Variant JSSandbox::eval_file(const String &path) {
     if (!success) {
         auto info = context_->get_exception_info();
         add_error("javascript", error, info.file.is_empty() ? path : info.file, info.line, info.column);
+    }
+
+    // Flush any Godot errors that occurred during execution
+    if (logger_.is_valid()) {
+        logger_->flush_errors();
+    }
+
+    if (!success) {
         return Variant();
     }
 
@@ -572,6 +609,11 @@ int JSSandbox::execute_pending_jobs() {
             break;
         }
         executed++;
+    }
+
+    // Flush any errors captured by the logger
+    if (logger_.is_valid()) {
+        logger_->flush_errors();
     }
 
     return executed;

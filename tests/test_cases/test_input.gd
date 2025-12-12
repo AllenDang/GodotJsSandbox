@@ -4,6 +4,9 @@ extends TestBase
 ## Tests for input callbacks (_input, _unhandled_input, etc.)
 ## Reference: JSScriptInstance input handling
 
+# Track nodes created in tests for cleanup
+var _test_nodes: Array[Node] = []
+
 func get_suite_name() -> String:
 	return "Input"
 
@@ -23,11 +26,16 @@ func get_tests() -> Array[String]:
 func _create_js_script(source: String) -> Script:
 	return sandbox.create_script(source)
 
+func _create_test_node() -> Node2D:
+	var node = Node2D.new()
+	_test_nodes.append(node)
+	return node
+
 func run_test(test_name: String) -> Dictionary:
 	match test_name:
 		"test_input_method_registered":
 			# Test that _input method is recognized
-			var node = Node2D.new()
+			var node = _create_test_node()
 			node.name = "InputTestNode"
 
 			var script = _create_js_script("""
@@ -46,7 +54,7 @@ function _input(event) {
 		"test_input_receives_key_event":
 			# Test that _input receives InputEventKey properties
 			var unique_id = str(randi())
-			var node = Node2D.new()
+			var node = _create_test_node()
 			node.name = "KeyInputTest"
 
 			var script = _create_js_script("""
@@ -99,7 +107,7 @@ function _input(event) {
 		"test_input_receives_mouse_button_event":
 			# Test that _input receives InputEventMouseButton properties
 			var unique_id = str(randi())
-			var node = Node2D.new()
+			var node = _create_test_node()
 			node.name = "MouseButtonTest"
 
 			var script = _create_js_script("""
@@ -152,7 +160,7 @@ function _input(event) {
 		"test_input_receives_mouse_motion_event":
 			# Test that _input receives InputEventMouseMotion properties
 			var unique_id = str(randi())
-			var node = Node2D.new()
+			var node = _create_test_node()
 			node.name = "MouseMotionTest"
 
 			var script = _create_js_script("""
@@ -201,7 +209,7 @@ function _input(event) {
 		"test_input_this_binding":
 			# Test that 'this' in _input refers to owner node
 			var unique_id = str(randi())
-			var node = Node2D.new()
+			var node = _create_test_node()
 			node.name = "InputThisTest"
 
 			var script = _create_js_script("""
@@ -231,7 +239,7 @@ function _input(event) {
 
 		"test_unhandled_input_registered":
 			# Test that _unhandled_input method is recognized
-			var node = Node2D.new()
+			var node = _create_test_node()
 			node.name = "UnhandledInputNode"
 
 			var script = _create_js_script("""
@@ -250,7 +258,7 @@ function _unhandled_input(event) {
 		"test_unhandled_input_receives_event":
 			# Test that _unhandled_input receives events
 			var unique_id = str(randi())
-			var node = Node2D.new()
+			var node = _create_test_node()
 			node.name = "UnhandledTest"
 
 			var script = _create_js_script("""
@@ -294,4 +302,10 @@ func teardown() -> void:
 			}
 		}
 	""")
+	# Explicitly free all test nodes before super.teardown()
+	for node in _test_nodes:
+		if is_instance_valid(node):
+			node.set_script(null)  # Clear script first to avoid any issues
+			node.queue_free()
+	_test_nodes.clear()
 	super.teardown()

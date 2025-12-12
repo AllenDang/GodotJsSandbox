@@ -30,19 +30,25 @@ func run_test(test_name: String) -> Dictionary:
 		"test_node_create":
 			var code = """
 				var node = new Node();
-				node !== null && typeof node.__handle === 'number';
+				var result = node !== null && typeof node.__handle === 'number';
+				node.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_node2d_create":
 			var code = """
 				var node = new Node2D();
-				node !== null && typeof node.__handle === 'number';
+				var result = node !== null && typeof node.__handle === 'number';
+				node.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_node3d_create":
 			var code = """
 				var node = new Node3D();
-				node !== null && typeof node.__handle === 'number';
+				var result = node !== null && typeof node.__handle === 'number';
+				node.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_node3d_position":
@@ -50,7 +56,9 @@ func run_test(test_name: String) -> Dictionary:
 				var node = new Node3D();
 				node.position = {x: 1, y: 2, z: 3};
 				var pos = node.position;
-				pos.x === 1 && pos.y === 2 && pos.z === 3;
+				var result = pos.x === 1 && pos.y === 2 && pos.z === 3;
+				node.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_node2d_position":
@@ -58,14 +66,18 @@ func run_test(test_name: String) -> Dictionary:
 				var node = new Node2D();
 				node.position = {x: 100, y: 200};
 				var pos = node.position;
-				pos.x === 100 && pos.y === 200;
+				var result = pos.x === 100 && pos.y === 200;
+				node.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_node2d_rotation":
 			var code = """
 				var node = new Node2D();
 				node.rotation = 1.5;
-				Math.abs(node.rotation - 1.5) < 0.001;
+				var result = Math.abs(node.rotation - 1.5) < 0.001;
+				node.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_sprite2d_properties":
@@ -73,14 +85,18 @@ func run_test(test_name: String) -> Dictionary:
 				var sprite = new Sprite2D();
 				sprite.centered = false;
 				sprite.flip_h = true;
-				!sprite.centered && sprite.flip_h;
+				var result = !sprite.centered && sprite.flip_h;
+				sprite.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_label_text":
 			var code = """
 				var label = new Label();
 				label.text = 'Hello World';
-				label.text === 'Hello World';
+				var result = label.text === 'Hello World';
+				label.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_timer_properties":
@@ -88,7 +104,9 @@ func run_test(test_name: String) -> Dictionary:
 				var timer = new Timer();
 				timer.wait_time = 2.5;
 				timer.one_shot = true;
-				timer.wait_time === 2.5 && timer.one_shot === true;
+				var result = timer.wait_time === 2.5 && timer.one_shot === true;
+				timer.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_control_properties":
@@ -96,7 +114,9 @@ func run_test(test_name: String) -> Dictionary:
 				var ctrl = new Control();
 				ctrl.custom_minimum_size = {x: 100, y: 50};
 				var size = ctrl.custom_minimum_size;
-				size.x === 100 && size.y === 50;
+				var result = size.x === 100 && size.y === 50;
+				ctrl.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_method_add_child":
@@ -104,7 +124,9 @@ func run_test(test_name: String) -> Dictionary:
 				var parent = new Node();
 				var child = new Node();
 				parent.add_child(child);
-				parent.get_child_count() === 1;
+				var result = parent.get_child_count() === 1;
+				parent.queue_free();  // Also frees children
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_method_get_child":
@@ -115,7 +137,9 @@ func run_test(test_name: String) -> Dictionary:
 				child.name = 'TestChild';
 				parent.add_child(child);
 				var retrieved = parent.get_child(0);
-				retrieved.name === 'TestChild';
+				var result = retrieved.name === 'TestChild';
+				parent.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_method_get_child_count":
@@ -124,7 +148,9 @@ func run_test(test_name: String) -> Dictionary:
 				parent.add_child(new Node());
 				parent.add_child(new Node());
 				parent.add_child(new Node());
-				parent.get_child_count() === 3;
+				var result = parent.get_child_count() === 3;
+				parent.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_method_get_parent":
@@ -135,7 +161,9 @@ func run_test(test_name: String) -> Dictionary:
 				var child = new Node();
 				parent.add_child(child);
 				var p = child.get_parent();
-				p.name === 'ParentNode';
+				var result = p.name === 'ParentNode';
+				parent.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_method_get_node":
@@ -146,14 +174,18 @@ func run_test(test_name: String) -> Dictionary:
 				child.name = 'MyChild';
 				parent.add_child(child);
 				var found = parent.get_node('MyChild');
-				found !== null && found.name === 'MyChild';
+				var result = found !== null && found.name === 'MyChild';
+				parent.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_method_set_name":
 			var code = """
 				var node = new Node();
 				node.name = 'TestName';
-				node.name === 'TestName';
+				var result = node.name === 'TestName';
+				node.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		"test_method_get_name":
@@ -161,7 +193,9 @@ func run_test(test_name: String) -> Dictionary:
 			var code = """
 				var node = new Node();
 				node.name = 'GetNameTest';
-				node.get_name() === 'GetNameTest';
+				var result = node.get_name() === 'GetNameTest';
+				node.queue_free();
+				result;
 			"""
 			return assert_eval(code, true)
 		_:

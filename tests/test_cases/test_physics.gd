@@ -36,7 +36,9 @@ func run_test(test_name: String) -> Dictionary:
 			var result = sandbox.eval("""
 				var body = new CharacterBody2D();
 				body.name = 'TestPlayer';
-				body.name;
+				var result = body.name;
+				body.queue_free();
+				result;
 			""")
 			return assert_eq(result, "TestPlayer")
 
@@ -45,7 +47,9 @@ func run_test(test_name: String) -> Dictionary:
 				var body = new CharacterBody2D();
 				body.velocity = { x: 100, y: -50 };
 				var vel = body.velocity;
-				vel.x + ',' + vel.y;
+				var result = vel.x + ',' + vel.y;
+				body.queue_free();
+				result;
 			""")
 			return assert_eq(result, "100,-50")
 
@@ -53,7 +57,9 @@ func run_test(test_name: String) -> Dictionary:
 			# Test that move_and_slide method exists and can be called
 			var result = sandbox.eval("""
 				var body = new CharacterBody2D();
-				typeof body.move_and_slide;
+				var result = typeof body.move_and_slide;
+				body.queue_free();
+				result;
 			""")
 			return assert_eq(result, "function")
 
@@ -66,7 +72,9 @@ func run_test(test_name: String) -> Dictionary:
 					typeof body.is_on_wall,
 					typeof body.is_on_ceiling
 				];
-				methods.join(',');
+				var result = methods.join(',');
+				body.queue_free();
+				result;
 			""")
 			return assert_eq(result, "function,function,function")
 
@@ -82,7 +90,9 @@ func run_test(test_name: String) -> Dictionary:
 				results.push(Math.abs(body.floor_max_angle - 0.8) < 0.01);
 				results.push(Math.abs(body.floor_snap_length - 5.0) < 0.01);
 				results.push(body.max_slides === 6);
-				results.every(function(r) { return r; });
+				var result = results.every(function(r) { return r; });
+				body.queue_free();
+				result;
 			""")
 			return assert_eq(result, true)
 
@@ -91,7 +101,9 @@ func run_test(test_name: String) -> Dictionary:
 			var result = sandbox.eval("""
 				var body = new CharacterBody3D();
 				body.name = 'Player3D';
-				body.name;
+				var result = body.name;
+				body.queue_free();
+				result;
 			""")
 			return assert_eq(result, "Player3D")
 
@@ -100,7 +112,9 @@ func run_test(test_name: String) -> Dictionary:
 				var body = new CharacterBody3D();
 				body.velocity = { x: 10, y: 5, z: -3 };
 				var vel = body.velocity;
-				vel.x + ',' + vel.y + ',' + vel.z;
+				var result = vel.x + ',' + vel.y + ',' + vel.z;
+				body.queue_free();
+				result;
 			""")
 			return assert_eq(result, "10,5,-3")
 
@@ -113,7 +127,9 @@ func run_test(test_name: String) -> Dictionary:
 					typeof body.is_on_ceiling,
 					typeof body.move_and_slide
 				];
-				methods.join(',');
+				var result = methods.join(',');
+				body.queue_free();
+				result;
 			""")
 			return assert_eq(result, "function,function,function,function")
 
@@ -122,7 +138,9 @@ func run_test(test_name: String) -> Dictionary:
 			var result = sandbox.eval("""
 				var body = new RigidBody2D();
 				body.name = 'PhysicsBox';
-				body.name;
+				var result = body.name;
+				body.queue_free();
+				result;
 			""")
 			return assert_eq(result, "PhysicsBox")
 
@@ -130,7 +148,9 @@ func run_test(test_name: String) -> Dictionary:
 			var result = sandbox.eval("""
 				var body = new RigidBody2D();
 				body.mass = 5.0;
-				body.mass;
+				var result = body.mass;
+				body.queue_free();
+				result;
 			""")
 			if typeof(result) == TYPE_FLOAT or typeof(result) == TYPE_INT:
 				return assert_eq(abs(result - 5.0) < 0.01, true, "Mass should be ~5.0")
@@ -146,7 +166,9 @@ func run_test(test_name: String) -> Dictionary:
 					typeof body.apply_central_impulse,
 					typeof body.apply_impulse
 				];
-				methods.join(',');
+				var result = methods.join(',');
+				body.queue_free();
+				result;
 			""")
 			return assert_eq(result, "function,function,function,function")
 
@@ -155,7 +177,9 @@ func run_test(test_name: String) -> Dictionary:
 				var body = new RigidBody2D();
 				body.linear_velocity = { x: 50, y: 100 };
 				var vel = body.linear_velocity;
-				vel.x + ',' + vel.y;
+				var result = vel.x + ',' + vel.y;
+				body.queue_free();
+				result;
 			""")
 			return assert_eq(result, "50,100")
 
@@ -164,7 +188,9 @@ func run_test(test_name: String) -> Dictionary:
 			var result = sandbox.eval("""
 				var body = new RigidBody3D();
 				body.name = 'PhysicsCube';
-				body.name;
+				var result = body.name;
+				body.queue_free();
+				result;
 			""")
 			return assert_eq(result, "PhysicsCube")
 
@@ -172,7 +198,9 @@ func run_test(test_name: String) -> Dictionary:
 			var result = sandbox.eval("""
 				var body = new RigidBody3D();
 				body.mass = 10.0;
-				body.mass;
+				var result = body.mass;
+				body.queue_free();
+				result;
 			""")
 			if typeof(result) == TYPE_FLOAT or typeof(result) == TYPE_INT:
 				return assert_eq(abs(result - 10.0) < 0.01, true, "Mass should be ~10.0")
@@ -183,7 +211,9 @@ func run_test(test_name: String) -> Dictionary:
 				var body = new RigidBody3D();
 				body.linear_velocity = { x: 1, y: 2, z: 3 };
 				var vel = body.linear_velocity;
-				vel.x + ',' + vel.y + ',' + vel.z;
+				var result = vel.x + ',' + vel.y + ',' + vel.z;
+				body.queue_free();
+				result;
 			""")
 			return assert_eq(result, "1,2,3")
 

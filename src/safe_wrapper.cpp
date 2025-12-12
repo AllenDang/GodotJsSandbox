@@ -206,14 +206,45 @@ Variant SafeWrapper::call_method(uint64_t handle, const StringName& method,
         return Variant();
     }
 
-    // Call the method using GDExtension API
-    // Convert arguments to Array for call()
-    Array args_array;
-    for (int i = 0; i < argc; i++) {
-        args_array.push_back(*args[i]);
-    }
+    // Call the method using Variant::callp which provides error information
+    // This allows us to capture runtime errors for AI feedback
+    Variant obj_variant = obj;
+    Variant result;
+    GDExtensionCallError call_error;
 
-    Variant result = obj->callv(method, args_array);
+    obj_variant.callp(method, args, argc, result, call_error);
+
+    // Check for call errors and convert to error string
+    if (call_error.error != GDEXTENSION_CALL_OK) {
+        switch (call_error.error) {
+            case GDEXTENSION_CALL_ERROR_INVALID_METHOD:
+                error = "Invalid method: " + String(class_name) + "." + String(method);
+                break;
+            case GDEXTENSION_CALL_ERROR_INVALID_ARGUMENT:
+                error = "Invalid argument at index " + String::num_int64(call_error.argument) +
+                        " for method " + String(class_name) + "." + String(method) +
+                        " (expected type " + String::num_int64(call_error.expected) + ")";
+                break;
+            case GDEXTENSION_CALL_ERROR_TOO_MANY_ARGUMENTS:
+                error = "Too many arguments for method " + String(class_name) + "." + String(method) +
+                        " (got " + String::num_int64(argc) + ", expected " + String::num_int64(call_error.expected) + ")";
+                break;
+            case GDEXTENSION_CALL_ERROR_TOO_FEW_ARGUMENTS:
+                error = "Too few arguments for method " + String(class_name) + "." + String(method) +
+                        " (got " + String::num_int64(argc) + ", expected " + String::num_int64(call_error.expected) + ")";
+                break;
+            case GDEXTENSION_CALL_ERROR_INSTANCE_IS_NULL:
+                error = "Instance is null when calling " + String(class_name) + "." + String(method);
+                break;
+            case GDEXTENSION_CALL_ERROR_METHOD_NOT_CONST:
+                error = "Method " + String(class_name) + "." + String(method) + " is not const";
+                break;
+            default:
+                error = "Unknown error calling " + String(class_name) + "." + String(method);
+                break;
+        }
+        return Variant();
+    }
 
     return result;
 }
@@ -237,8 +268,15 @@ Variant SafeWrapper::get_property(uint64_t handle, const StringName& property, S
         return Variant();
     }
 
-    // Get the property using GDExtension API
-    Variant result = obj->get(property);
+    // Get the property using Variant API with validation for error capture
+    Variant obj_variant = obj;
+    bool valid = false;
+    Variant result = obj_variant.get_named(property, valid);
+
+    if (!valid) {
+        error = "Property not found or not accessible: " + String(class_name) + "." + String(property);
+        return Variant();
+    }
 
     return result;
 }
@@ -265,8 +303,15 @@ bool SafeWrapper::set_property(uint64_t handle, const StringName& property,
         return false;
     }
 
-    // Set the property using GDExtension API
-    obj->set(property, value);
+    // Set the property using Variant API with validation for error capture
+    Variant obj_variant = obj;
+    bool valid = false;
+    obj_variant.set_named(property, value, valid);
+
+    if (!valid) {
+        error = "Property not found or cannot be set: " + String(class_name) + "." + String(property);
+        return false;
+    }
 
     return true;
 }

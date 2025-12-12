@@ -104,7 +104,11 @@ void ObjectRegistry::release_handle(uint64_t handle) {
         if (obj) {
             RefCounted* ref = Object::cast_to<RefCounted>(obj);
             if (ref) {
-                ref->unreference();
+                // unreference() returns true when refcount goes to 0
+                // In that case, we need to delete the object
+                if (ref->unreference()) {
+                    memdelete(ref);
+                }
             }
         }
     }
@@ -190,7 +194,11 @@ void ObjectRegistry::clear_all() {
             if (obj) {
                 RefCounted* ref = Object::cast_to<RefCounted>(obj);
                 if (ref) {
-                    ref->unreference();
+                    // unreference() returns true when refcount goes to 0
+                    // In that case, we need to delete the object
+                    if (ref->unreference()) {
+                        memdelete(ref);
+                    }
                 }
             }
         }

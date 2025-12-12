@@ -15,6 +15,7 @@
 #include "js_runtime_manager.h"
 #include "deletion_tracker.h"
 #include "async_scene_loader.h"
+#include "sandbox_logger.h"
 
 using namespace godot;
 
@@ -38,6 +39,7 @@ void initialize_godot_js_runtime_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<jsb::JSResourceSaver>();
     ClassDB::register_class<jsb::DeletionCallback>();
     ClassDB::register_class<jsb::AsyncSceneLoader>();
+    ClassDB::register_class<jsb::SandboxLogger>();
 
     // Create and register script language
     script_language = memnew(jsb::JSScriptLanguage);

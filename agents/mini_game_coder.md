@@ -250,6 +250,43 @@ var decoded = __packed_vector3_array_bulk_decode(handle);
 // __packed_color_array_bulk_encode/decode
 ```
 
+## Compute Shaders (RenderingDevice)
+
+For GPU-accelerated operations, use a local RenderingDevice:
+
+```javascript
+// Create local rendering device
+var rd = RenderingServer.create_local_rendering_device();
+
+// Load and compile shader
+var shader_file = load("user://games/my_game/shaders/compute.glsl");
+var spirv = shader_file.get_spirv();
+var shader = rd.shader_create_from_spirv(spirv);
+
+// Create pipeline
+var pipeline = rd.compute_pipeline_create(shader);
+
+// Create buffers, uniform sets, dispatch compute work...
+// (see slice_everything demo for full example)
+
+// CRITICAL: Clean up RIDs in correct order before freeing RenderingDevice
+// Free dependents first: uniform_sets -> pipelines -> shaders -> buffers
+if (uniform_set && uniform_set.is_valid()) rd.free_rid(uniform_set);
+if (pipeline && pipeline.is_valid()) rd.free_rid(pipeline);
+if (shader && shader.is_valid()) rd.free_rid(shader);
+if (buffer && buffer.is_valid()) rd.free_rid(buffer);
+
+// Finally free the RenderingDevice itself
+rd.free();
+```
+
+**Important RID cleanup rules:**
+- Always use `rd.free_rid()` to free shader, pipeline, buffer, and uniform_set RIDs
+- Free in dependency order: uniform_sets → pipelines → shaders → buffers
+- Check `is_valid()` before freeing
+- Free all RIDs **before** calling `rd.free()` on the RenderingDevice
+- Failure to free RIDs causes memory leaks
+
 ## Restrictions
 
 - NO `eval()`, `Function()`, `require()`

@@ -330,6 +330,40 @@ var decoded = __packed_vector3_array_bulk_decode(handle);
 
 Available for: `PackedByteArray`, `PackedInt32Array`, `PackedInt64Array`, `PackedFloat32Array`, `PackedFloat64Array`, `PackedStringArray`, `PackedVector2Array`, `PackedVector3Array`, `PackedVector4Array`, `PackedColorArray`
 
+### Compute Shaders (RenderingDevice)
+
+For GPU-accelerated operations, use a local RenderingDevice:
+
+```javascript
+// Create local rendering device
+var rd = RenderingServer.create_local_rendering_device();
+
+// Load and compile shader
+var shader_file = load("user://games/my_game/shaders/compute.glsl");
+var spirv = shader_file.get_spirv();
+var shader = rd.shader_create_from_spirv(spirv);
+
+// Create pipeline, buffers, dispatch compute work...
+
+// CRITICAL: Clean up RIDs before freeing RenderingDevice
+// Order: uniform_sets -> pipelines -> shaders -> buffers
+if (uniform_set && uniform_set.is_valid()) rd.free_rid(uniform_set);
+if (pipeline && pipeline.is_valid()) rd.free_rid(pipeline);
+if (shader && shader.is_valid()) rd.free_rid(shader);
+if (buffer && buffer.is_valid()) rd.free_rid(buffer);
+
+// Finally free the RenderingDevice
+rd.free();
+```
+
+**RID Cleanup Rules:**
+- Use `rd.free_rid()` to free shader, pipeline, buffer, and uniform_set RIDs
+- Free in dependency order: uniform_sets → pipelines → shaders → buffers
+- Check `is_valid()` before freeing
+- Free all RIDs **before** calling `rd.free()` on the RenderingDevice
+
+See `demo/games/slice_everything/scripts/compute_slicer.js` for a complete example.
+
 ## Security Model
 
 ### Blocked Classes

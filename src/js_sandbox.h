@@ -17,6 +17,7 @@
 #include "deletion_tracker.h"
 #include "async_scene_loader.h"
 #include "rid_registry.h"
+#include "sandbox_logger.h"
 
 #include <memory>
 
@@ -101,6 +102,7 @@ private:
     std::unique_ptr<SignalRegistry> signal_registry_;
     std::unique_ptr<DeletionTracker> deletion_tracker_;
     std::unique_ptr<RidRegistry> rid_registry_;
+    godot::Ref<SandboxLogger> logger_;
 
     godot::HashMap<uint64_t, godot::String> attached_scripts_;
 
