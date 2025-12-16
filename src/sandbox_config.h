@@ -20,23 +20,18 @@ public:
 
     // Class blocklist
     void block_class(const godot::String& class_name);
-    void unblock_class(const godot::String& class_name);
-    bool is_class_blocked(const godot::String& class_name) const;
 
     // Inheritance-aware class check (checks class and all parent classes)
     bool is_class_or_parent_blocked(const godot::StringName& class_name) const;
 
     // Method blocklist (format: "ClassName.method_name")
     void block_method(const godot::String& class_name, const godot::String& method_name);
-    void unblock_method(const godot::String& class_name, const godot::String& method_name);
-    bool is_method_blocked(const godot::String& class_name, const godot::String& method_name) const;
 
     // Inheritance-aware method check (checks class and all parent classes)
     bool is_method_blocked_with_inheritance(const godot::StringName& class_name, const godot::String& method_name) const;
 
     // Property blocklist
     void block_property(const godot::String& class_name, const godot::String& property_name);
-    bool is_property_blocked(const godot::String& class_name, const godot::String& property_name) const;
 
     // Inheritance-aware property check (checks class and all parent classes)
     bool is_property_blocked_with_inheritance(const godot::StringName& class_name, const godot::String& property_name) const;

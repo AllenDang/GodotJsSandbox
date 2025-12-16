@@ -124,7 +124,7 @@ bool QuickJSContext::initialize() {
 
 void QuickJSContext::shutdown() {
     // Free all script instances first (before freeing context)
-    for (auto& pair : script_instances_) {
+    for (const auto& pair : script_instances_) {
         if (pair.value.valid && ctx_) {
             JS_FreeValue(ctx_, pair.value.js_object);
         }
@@ -1866,11 +1866,11 @@ bool QuickJSContext::call_instance_method(int64_t instance_id, const StringName 
     }
 
     // Convert arguments to JS
-    JSValue* js_args = nullptr;
+    Vector<JSValue> js_args;
     if (argc > 0) {
-        js_args = (JSValue*)alloca(sizeof(JSValue) * argc);
+        js_args.resize(argc);
         for (int i = 0; i < argc; i++) {
-            js_args[i] = variant_to_js(*args[i]);
+            js_args.write[i] = variant_to_js(*args[i]);
         }
     }
 
@@ -1882,7 +1882,7 @@ bool QuickJSContext::call_instance_method(int64_t instance_id, const StringName 
     }
 
     // Call the method
-    JSValue call_result = JS_Call(ctx_, method_fn, data.js_object, argc, js_args);
+    JSValue call_result = JS_Call(ctx_, method_fn, data.js_object, argc, argc > 0 ? js_args.ptrw() : nullptr);
 
     deadline_ = 0;
 

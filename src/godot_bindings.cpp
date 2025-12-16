@@ -1867,7 +1867,7 @@ JSValue GodotBindings::js_godot_has_script_method(JSContext* ctx, JSValueConst t
         return JS_FALSE;
     }
 
-    JSScript* js_script = Object::cast_to<JSScript>(script.ptr());
+    const JSScript* js_script = Object::cast_to<JSScript>(script.ptr());
     if (!js_script) {
         return JS_FALSE;
     }

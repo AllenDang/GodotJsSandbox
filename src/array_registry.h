@@ -58,9 +58,6 @@ public:
     // Create a handle for an array (copies the Array reference, not the data)
     uint64_t create_array_handle(const godot::Array& arr);
 
-    // Create a handle for a dictionary (copies the Dictionary reference, not the data)
-    uint64_t create_dict_handle(const godot::Dictionary& dict);
-
     // Create a handle for an RID (stores as Variant for proper round-trip)
     uint64_t create_rid_handle(const godot::Variant& rid_var);
 
@@ -94,9 +91,6 @@ public:
     // Get array from handle (returns empty array if invalid)
     godot::Array get_array(uint64_t handle);
 
-    // Get dictionary from handle (returns empty dict if invalid)
-    godot::Dictionary get_dictionary(uint64_t handle);
-
     // Get packed arrays from handle (returns copy for read-only access)
     godot::PackedByteArray get_packed_byte_array(uint64_t handle);
     godot::PackedInt32Array get_packed_int32_array(uint64_t handle);
@@ -126,12 +120,6 @@ public:
 
     // Check if handle is valid
     bool is_valid_handle(uint64_t handle) const;
-
-    // Check if handle is a valid array
-    bool is_valid_array(uint64_t handle) const;
-
-    // Check if handle is a valid dictionary
-    bool is_valid_dict(uint64_t handle) const;
 
     // Release a handle (called when JS object is garbage collected)
     void release_handle(uint64_t handle);

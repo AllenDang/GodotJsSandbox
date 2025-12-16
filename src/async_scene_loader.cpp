@@ -172,7 +172,7 @@ void AsyncSceneLoader::collect_script_paths(Node* node) {
     // Check if this node has a JSScript
     Ref<Script> script = node->get_script();
     if (script.is_valid()) {
-        JSScript* js_script = Object::cast_to<JSScript>(script.ptr());
+        const JSScript* js_script = Object::cast_to<JSScript>(script.ptr());
         if (js_script) {
             String path = js_script->get_path();
             if (!path.is_empty() && script_paths_.find(path) < 0) {
@@ -197,7 +197,7 @@ void AsyncSceneLoader::reattach_scripts_with_content(Node* node) {
     // Check if this node has a JSScript
     Ref<Script> current_script = node->get_script();
     if (current_script.is_valid()) {
-        JSScript* js_script = Object::cast_to<JSScript>(current_script.ptr());
+        const JSScript* js_script = Object::cast_to<JSScript>(current_script.ptr());
         if (js_script) {
             String script_path = js_script->get_path();
 

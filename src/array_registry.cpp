@@ -21,16 +21,6 @@ uint64_t ArrayRegistry::create_array_handle(const Array& arr) {
     return handle;
 }
 
-uint64_t ArrayRegistry::create_dict_handle(const Dictionary& dict) {
-    uint64_t handle = next_handle_++;
-    HandleEntry entry;
-    entry.type = CollectionType::DICTIONARY;
-    entry.dictionary = dict;  // Copy the Dictionary reference (copy-on-write, cheap)
-    entry.is_valid = true;
-    handles_[handle] = entry;
-    return handle;
-}
-
 uint64_t ArrayRegistry::create_rid_handle(const Variant& rid_var) {
     uint64_t handle = next_handle_++;
     HandleEntry entry;
@@ -163,17 +153,6 @@ Array ArrayRegistry::get_array(uint64_t handle) {
     return entry.array;
 }
 
-Dictionary ArrayRegistry::get_dictionary(uint64_t handle) {
-    if (!handles_.has(handle)) {
-        return Dictionary();
-    }
-    const HandleEntry& entry = handles_[handle];
-    if (!entry.is_valid || entry.type != CollectionType::DICTIONARY) {
-        return Dictionary();
-    }
-    return entry.dictionary;
-}
-
 PackedByteArray ArrayRegistry::get_packed_byte_array(uint64_t handle) {
     if (!handles_.has(handle)) return PackedByteArray();
     const HandleEntry& entry = handles_[handle];
@@ -256,22 +235,6 @@ bool ArrayRegistry::is_valid_handle(uint64_t handle) const {
         return false;
     }
     return handles_[handle].is_valid;
-}
-
-bool ArrayRegistry::is_valid_array(uint64_t handle) const {
-    if (!handles_.has(handle)) {
-        return false;
-    }
-    const HandleEntry& entry = handles_[handle];
-    return entry.is_valid && entry.type == CollectionType::ARRAY;
-}
-
-bool ArrayRegistry::is_valid_dict(uint64_t handle) const {
-    if (!handles_.has(handle)) {
-        return false;
-    }
-    const HandleEntry& entry = handles_[handle];
-    return entry.is_valid && entry.type == CollectionType::DICTIONARY;
 }
 
 void ArrayRegistry::release_handle(uint64_t handle) {

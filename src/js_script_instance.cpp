@@ -352,19 +352,19 @@ GDExtensionBool JSScriptInstance::_set(GDExtensionScriptInstanceDataPtr p_instan
 GDExtensionBool JSScriptInstance::_get(GDExtensionScriptInstanceDataPtr p_instance,
                                         GDExtensionConstStringNamePtr p_name,
                                         GDExtensionVariantPtr r_ret) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
-    return self->get(*(const StringName*)p_name, *(Variant*)r_ret);
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
+    return self->get(*reinterpret_cast<const StringName*>(p_name), *reinterpret_cast<Variant*>(r_ret));
 }
 
 const GDExtensionPropertyInfo* JSScriptInstance::_get_property_list(GDExtensionScriptInstanceDataPtr p_instance,
                                                                      uint32_t *r_count) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
     return self->get_property_list(r_count);
 }
 
 void JSScriptInstance::_free_property_list(GDExtensionScriptInstanceDataPtr p_instance,
                                             const GDExtensionPropertyInfo *p_list, uint32_t p_count) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
     self->free_property_list(p_list, p_count);
 }
 
@@ -375,15 +375,15 @@ GDExtensionBool JSScriptInstance::_get_class_category(GDExtensionScriptInstanceD
 
 GDExtensionBool JSScriptInstance::_property_can_revert(GDExtensionScriptInstanceDataPtr p_instance,
                                                         GDExtensionConstStringNamePtr p_name) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
-    return self->property_can_revert(*(const StringName*)p_name);
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
+    return self->property_can_revert(*reinterpret_cast<const StringName*>(p_name));
 }
 
 GDExtensionBool JSScriptInstance::_property_get_revert(GDExtensionScriptInstanceDataPtr p_instance,
                                                         GDExtensionConstStringNamePtr p_name,
                                                         GDExtensionVariantPtr r_ret) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
-    return self->property_get_revert(*(const StringName*)p_name, *(Variant*)r_ret);
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
+    return self->property_get_revert(*reinterpret_cast<const StringName*>(p_name), *reinterpret_cast<Variant*>(r_ret));
 }
 
 GDExtensionObjectPtr JSScriptInstance::_get_owner(GDExtensionScriptInstanceDataPtr p_instance) {
@@ -394,50 +394,50 @@ GDExtensionObjectPtr JSScriptInstance::_get_owner(GDExtensionScriptInstanceDataP
 void JSScriptInstance::_get_property_state(GDExtensionScriptInstanceDataPtr p_instance,
                                             GDExtensionScriptInstancePropertyStateAdd p_add_func,
                                             void *p_userdata) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
     self->get_property_state(p_add_func, p_userdata);
 }
 
 const GDExtensionMethodInfo* JSScriptInstance::_get_method_list(GDExtensionScriptInstanceDataPtr p_instance,
                                                                  uint32_t *r_count) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
     return self->get_method_list(r_count);
 }
 
 void JSScriptInstance::_free_method_list(GDExtensionScriptInstanceDataPtr p_instance,
                                           const GDExtensionMethodInfo *p_list, uint32_t p_count) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
     self->free_method_list(p_list, p_count);
 }
 
 GDExtensionVariantType JSScriptInstance::_get_property_type(GDExtensionScriptInstanceDataPtr p_instance,
                                                              GDExtensionConstStringNamePtr p_name,
                                                              GDExtensionBool *r_is_valid) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
     bool is_valid;
-    auto result = self->get_property_type(*(const StringName*)p_name, &is_valid);
+    auto result = self->get_property_type(*reinterpret_cast<const StringName*>(p_name), &is_valid);
     *r_is_valid = is_valid;
     return result;
 }
 
 GDExtensionBool JSScriptInstance::_validate_property(GDExtensionScriptInstanceDataPtr p_instance,
                                                       GDExtensionPropertyInfo *p_property) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
     return self->validate_property(p_property);
 }
 
 GDExtensionBool JSScriptInstance::_has_method(GDExtensionScriptInstanceDataPtr p_instance,
                                                GDExtensionConstStringNamePtr p_name) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
-    return self->has_method(*(const StringName*)p_name);
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
+    return self->has_method(*reinterpret_cast<const StringName*>(p_name));
 }
 
 GDExtensionInt JSScriptInstance::_get_method_argument_count(GDExtensionScriptInstanceDataPtr p_instance,
                                                              GDExtensionConstStringNamePtr p_name,
                                                              GDExtensionBool *r_is_valid) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
     bool is_valid;
-    int result = self->get_method_argument_count(*(const StringName*)p_name, &is_valid);
+    int result = self->get_method_argument_count(*reinterpret_cast<const StringName*>(p_name), &is_valid);
     *r_is_valid = is_valid;
     return result;
 }
@@ -460,7 +460,7 @@ void JSScriptInstance::_notification(GDExtensionScriptInstanceDataPtr p_instance
 
 void JSScriptInstance::_to_string(GDExtensionScriptInstanceDataPtr p_instance,
                                    GDExtensionBool *r_is_valid, GDExtensionStringPtr r_out) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
     bool is_valid;
     String out;
     self->to_string(&is_valid, &out);
@@ -487,7 +487,7 @@ GDExtensionObjectPtr JSScriptInstance::_get_script(GDExtensionScriptInstanceData
 }
 
 GDExtensionBool JSScriptInstance::_is_placeholder(GDExtensionScriptInstanceDataPtr p_instance) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
     return self->is_placeholder();
 }
 
@@ -501,8 +501,8 @@ GDExtensionBool JSScriptInstance::_set_fallback(GDExtensionScriptInstanceDataPtr
 GDExtensionBool JSScriptInstance::_get_fallback(GDExtensionScriptInstanceDataPtr p_instance,
                                                  GDExtensionConstStringNamePtr p_name,
                                                  GDExtensionVariantPtr r_ret) {
-    JSScriptInstance* self = (JSScriptInstance*)p_instance;
-    return self->get_fallback(*(const StringName*)p_name, *(Variant*)r_ret);
+    const JSScriptInstance* self = static_cast<const JSScriptInstance*>(p_instance);
+    return self->get_fallback(*reinterpret_cast<const StringName*>(p_name), *reinterpret_cast<Variant*>(r_ret));
 }
 
 GDExtensionScriptLanguagePtr JSScriptInstance::_get_language(GDExtensionScriptInstanceDataPtr p_instance) {

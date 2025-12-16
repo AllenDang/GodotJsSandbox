@@ -495,10 +495,9 @@ Node* JSSandbox::load_scene(const String &scene_path) {
     }
 
     // Validate external resource references before loading
-    int line_num = 0;
     PackedStringArray lines = scene_content.split("\n");
     for (int i = 0; i < lines.size(); i++) {
-        line_num = i + 1;
+        int line_num = i + 1;
         String line = lines[i].strip_edges();
 
         // Check for ext_resource paths
@@ -553,7 +552,7 @@ void JSSandbox::reattach_scripts_recursive(Node* node) {
     Ref<Script> current_script = node->get_script();
     if (current_script.is_valid()) {
         // Check if it's a JSScript
-        JSScript* js_script = Object::cast_to<JSScript>(current_script.ptr());
+        const JSScript* js_script = Object::cast_to<JSScript>(current_script.ptr());
         if (js_script) {
             String script_path = js_script->get_path();
             String source_code = js_script->_get_source_code();

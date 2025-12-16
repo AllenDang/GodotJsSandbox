@@ -6,8 +6,94 @@
 # JSCFunction expects: JSValue (*)(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv)
 # JSClassFinalizer expects: void (*)(JSRuntime *rt, JSValue val)
 
-constParameterCallback:src/quickjs_context.cpp:15
-constParameterCallback:src/quickjs_context.cpp:29
-constParameterCallback:src/quickjs_context.cpp:43
-constParameterCallback:src/quickjs_context.cpp:127
-constParameterCallback:src/quickjs_context.cpp:138
+# Suppress all constParameterCallback warnings for QuickJS callbacks
+# These are API-required signatures that cannot be changed
+constParameterCallback
+
+# Suppress warnings from QuickJS header (external library)
+cstyleCast:quickjs/quickjs.h
+shiftNegativeLHS:quickjs/quickjs.h
+
+# Suppress missing include for generated files
+missingInclude:src/godot_bindings.cpp
+
+# Suppress branch limit info messages
+normalCheckLevelMaxBranches
+
+# GDExtension API callbacks require C-style casts for opaque pointer types
+# These casts are necessary because GDExtension uses void* for type-erased callbacks
+cstyleCast:src/js_script_instance.cpp
+
+# GDExtension API callbacks require C-style casts in quickjs_context.cpp for module handling
+cstyleCast:src/quickjs_context.cpp
+
+# constParameterPointer warnings for QuickJS callback lambdas that can't be changed
+constParameterPointer:src/quickjs_context.cpp
+
+# knownConditionTrueFalse for set() which always returns true by design
+knownConditionTrueFalse:src/js_script_instance.cpp
+
+# constParameterReference warnings for methods that match GDExtension API signatures
+constParameterReference:src/js_script_instance.cpp
+
+# constParameterPointer warnings for methods matching GDExtension API signatures
+constParameterPointer:src/js_script_instance.cpp
+constParameterPointer:src/godot_bindings.cpp
+
+# These const warnings depend on whether underlying methods are const-qualified
+# The methods called (get_sandbox, get_singleton, get_context, get_array_registry, variant_to_js)
+# are not const-qualified in their class definitions
+constVariablePointer:src/js_script_instance.cpp:73
+constVariablePointer:src/js_script_instance.cpp:79
+constVariablePointer:src/godot_bindings.cpp
+
+# HashMap::operator[] returns non-const reference, so these cannot be const
+constVariableReference:src/quickjs_context.cpp
+
+# GodotObjectData pointer from opaque void* - depends on QuickJS JS_GetOpaque which returns non-const
+constVariablePointer:src/quickjs_context.cpp:1158
+
+# variableScope false positive - line_num is already inside loop scope
+variableScope:src/js_sandbox.cpp
+
+# ============================================================================
+# INTENTIONALLY KEPT UNUSED FUNCTIONS
+# These are not "superseded" - they're debug APIs, planned features, or
+# incomplete implementations kept for future development.
+# ============================================================================
+
+# Debug/introspection APIs for ExecutionLimiter
+# Useful for debugging and monitoring execution limits
+unusedFunction:src/execution_limiter.cpp
+unusedFunction:src/execution_limiter.h
+
+# Planned feature: JSSandbox phase management
+# Phase-based lifecycle for sandbox initialization
+unusedFunction:src/js_sandbox.cpp:748   # set_phase
+unusedFunction:src/js_sandbox.cpp:781   # on_init_phase_timeout
+unusedFunction:src/js_sandbox.h:123     # get_phase
+unusedFunction:src/js_sandbox.h:148     # get_current_context
+
+# Incomplete feature: JS packed array mutation (push/resize/set)
+# Written but not yet wired up to JS_NewCFunction
+unusedFunction:src/godot_bindings.cpp:2376  # js_packed_array_push
+unusedFunction:src/godot_bindings.cpp:2480  # js_packed_array_resize
+unusedFunction:src/godot_bindings.cpp:2540  # js_packed_array_set
+
+# Incomplete feature: DeletionTracker
+# Node tracking for cleanup, partially implemented
+unusedFunction:src/deletion_tracker.cpp
+unusedFunction:src/deletion_tracker.h
+
+# Debug APIs for various registries and managers
+unusedFunction:src/js_runtime_manager.cpp:104  # set_total_memory_limit
+unusedFunction:src/js_runtime_manager.cpp:121  # register_runtime_bindings
+unusedFunction:src/js_runtime_manager.h:48     # get_context_count
+unusedFunction:src/object_registry.cpp:223     # get_all_object_ids
+unusedFunction:src/quickjs_context.cpp:639     # get_wrapped_source
+unusedFunction:src/quickjs_context.cpp:2001    # has_script_instance
+unusedFunction:src/quickjs_context.h:95        # get_sandbox_config
+unusedFunction:src/rid_registry.cpp:76         # get_rid_count
+
+# Functions called by Godot's runtime binding system (not visible to static analysis)
+unusedFunction:src/async_scene_loader.cpp:251  # _bind_methods - called by Godot ClassDB

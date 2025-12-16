@@ -179,14 +179,6 @@ void SandboxConfig::block_class(const String& class_name) {
     blocked_classes_.insert(class_name);
 }
 
-void SandboxConfig::unblock_class(const String& class_name) {
-    blocked_classes_.erase(class_name);
-}
-
-bool SandboxConfig::is_class_blocked(const String& class_name) const {
-    return blocked_classes_.has(class_name);
-}
-
 bool SandboxConfig::is_class_or_parent_blocked(const StringName& class_name) const {
     // Walk up the inheritance chain to check if any parent class is blocked
     StringName current = class_name;
@@ -206,14 +198,6 @@ void SandboxConfig::block_method(const String& class_name, const String& method_
     blocked_methods_.insert(class_name + String(".") + method_name);
 }
 
-void SandboxConfig::unblock_method(const String& class_name, const String& method_name) {
-    blocked_methods_.erase(class_name + String(".") + method_name);
-}
-
-bool SandboxConfig::is_method_blocked(const String& class_name, const String& method_name) const {
-    return blocked_methods_.has(class_name + String(".") + method_name);
-}
-
 bool SandboxConfig::is_method_blocked_with_inheritance(const StringName& class_name, const String& method_name) const {
     // Walk up the inheritance chain to check if any parent class has this method blocked
     StringName current = class_name;
@@ -231,10 +215,6 @@ bool SandboxConfig::is_method_blocked_with_inheritance(const StringName& class_n
 
 void SandboxConfig::block_property(const String& class_name, const String& property_name) {
     blocked_properties_.insert(class_name + String(".") + property_name);
-}
-
-bool SandboxConfig::is_property_blocked(const String& class_name, const String& property_name) const {
-    return blocked_properties_.has(class_name + String(".") + property_name);
 }
 
 bool SandboxConfig::is_property_blocked_with_inheritance(const StringName& class_name, const String& property_name) const {

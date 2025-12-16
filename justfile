@@ -14,3 +14,12 @@ build_ios:
 
 test:
   /Applications/Godot.app/Contents/MacOS/Godot --headless --path tests
+
+lint:
+  #!/bin/bash
+  set -e
+  echo "=== Running cppcheck ==="
+  cppcheck --enable=all --suppress=missingIncludeSystem --suppress=unusedFunction --suppress=unmatchedSuppression --suppressions-list=src/cppcheck_suppressions.txt --template=gcc --error-exitcode=1 -I src/ src/
+  echo ""
+  echo "=== Analyzing unused functions ==="
+  ./scripts/analyze_unused.sh

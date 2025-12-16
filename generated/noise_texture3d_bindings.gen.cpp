@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/noise_texture3d.hpp>
-#include <godot_cpp/classes/gradient.hpp>
 #include <godot_cpp/classes/noise.hpp>
+#include <godot_cpp/classes/gradient.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;

@@ -119,7 +119,7 @@ uint64_t SafeWrapper::create_object(const StringName& class_name, String& error)
     if (!object_registry_) {
         error = "Object registry not initialized";
         // Clean up the created object
-        RefCounted* ref = Object::cast_to<RefCounted>(obj);
+        const RefCounted* ref = Object::cast_to<RefCounted>(obj);
         if (!ref) {
             memdelete(obj);
         }
@@ -189,7 +189,7 @@ Variant SafeWrapper::call_method(uint64_t handle, const StringName& method,
         }
 
         // Verify it's a JSScript - block GDScript, CSharpScript, etc.
-        JSScript* js_script = Object::cast_to<JSScript>(script_obj);
+        const JSScript* js_script = Object::cast_to<JSScript>(script_obj);
         if (!js_script) {
             error = "Only JSScript can be attached via set_script (GDScript/CSharpScript not allowed)";
             return Variant();

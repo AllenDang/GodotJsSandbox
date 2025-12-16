@@ -116,7 +116,7 @@ void SceneSaver::collect_js_scripts_recursive(Node* node, Dictionary& scripts, P
     // Check for JS script on this node
     Ref<Script> script = node->get_script();
     if (script.is_valid()) {
-        JSScript* js_script = Object::cast_to<JSScript>(script.ptr());
+        const JSScript* js_script = Object::cast_to<JSScript>(script.ptr());
         if (js_script) {
             String source = js_script->_get_source_code();
             if (!source.is_empty()) {

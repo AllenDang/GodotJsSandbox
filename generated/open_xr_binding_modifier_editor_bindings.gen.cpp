@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/open_xr_binding_modifier_editor.hpp>
-#include <godot_cpp/classes/open_xr_action_map.hpp>
 #include <godot_cpp/classes/open_xr_binding_modifier.hpp>
+#include <godot_cpp/classes/open_xr_action_map.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
