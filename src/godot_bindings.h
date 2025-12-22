@@ -84,6 +84,12 @@ private:
     static JSValue js_godot_has_script_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
     static JSValue js_godot_has_signal(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
+    // Generic property/method access (for objects without pre-generated bindings, like GDScript)
+    static JSValue js_godot_get(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_godot_set(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_godot_call(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+    static JSValue js_godot_has_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+
     // Array proxy functions
     static JSValue js_godot_array_get(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
     static JSValue js_godot_array_set(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);

@@ -100,6 +100,10 @@ void JSScriptLanguage::initialize_runtime() {
     signal_registry_->set_object_registry(object_registry_.get());
 
     initialized_ = true;
+
+    // Apply any global constants that were added before initialization
+    apply_global_constants();
+
     UtilityFunctions::print("JavaScript runtime initialized");
 }
 
@@ -259,6 +263,38 @@ Dictionary JSScriptLanguage::_get_global_class_name(const String &p_path) const 
 
 void JSScriptLanguage::_reload_all_scripts() {
     // For now, do nothing - could be expanded to reload all loaded JS scripts
+}
+
+void JSScriptLanguage::_add_global_constant(const StringName &p_name, const Variant &p_value) {
+    global_constants_[p_name] = p_value;
+    if (initialized_ && context_) {
+        context_->set_global(String(p_name), p_value);
+    }
+}
+
+void JSScriptLanguage::_add_named_global_constant(const StringName &p_name, const Variant &p_value) {
+    named_global_constants_[p_name] = p_value;
+    if (initialized_ && context_) {
+        context_->set_global(String(p_name), p_value);
+    }
+}
+
+void JSScriptLanguage::_remove_named_global_constant(const StringName &p_name) {
+    named_global_constants_.erase(p_name);
+    if (initialized_ && context_) {
+        context_->set_global(String(p_name), Variant());
+    }
+}
+
+void JSScriptLanguage::apply_global_constants() {
+    if (!context_) return;
+
+    for (const KeyValue<StringName, Variant> &kv : global_constants_) {
+        context_->set_global(String(kv.key), kv.value);
+    }
+    for (const KeyValue<StringName, Variant> &kv : named_global_constants_) {
+        context_->set_global(String(kv.key), kv.value);
+    }
 }
 
 } // namespace jsb

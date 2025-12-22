@@ -1,5 +1,6 @@
 #include "js_sandbox.h"
 #include "js_script.h"
+#include "js_script_language.h"
 #include "scene_saver.h"
 #include "scene_loader.h"
 
@@ -117,6 +118,17 @@ bool JSSandbox::initialize() {
     signal_registry_->set_context(context_->ctx());
     signal_registry_->set_quickjs_context(context_.get());
     signal_registry_->set_object_registry(object_registry_.get());
+
+    // Apply global constants from JSScriptLanguage (autoloads, singletons)
+    JSScriptLanguage* language = JSScriptLanguage::get_singleton();
+    if (language) {
+        for (const KeyValue<StringName, Variant>& kv : language->get_global_constants()) {
+            context_->set_global(String(kv.key), kv.value);
+        }
+        for (const KeyValue<StringName, Variant>& kv : language->get_named_global_constants()) {
+            context_->set_global(String(kv.key), kv.value);
+        }
+    }
 
     // Create and register logger to capture Godot engine errors
     logger_.instantiate();

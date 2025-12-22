@@ -17,6 +17,7 @@ const TestArrayProxyClass = preload("res://test_cases/test_array_proxy.gd")
 const TestPackedArrayProxyClass = preload("res://test_cases/test_packed_array_proxy.gd")
 const TestBulkOperationsClass = preload("res://test_cases/test_bulk_operations.gd")
 const TestPackedArrayAppendClass = preload("res://test_cases/test_packed_array_append.gd")
+const TestGlobalConstantsClass = preload("res://test_cases/test_global_constants.gd")
 
 var sandbox: JSSandbox
 
@@ -125,6 +126,9 @@ func run_tests() -> void:
 
 	# Packed array append (as_vector3_array -> append_array -> ArrayMesh flow)
 	runner.add_suite(TestPackedArrayAppendClass.new())
+
+	# Global constants (autoloads accessible from JavaScript)
+	runner.add_suite(TestGlobalConstantsClass.new())
 
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())

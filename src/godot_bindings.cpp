@@ -438,6 +438,16 @@ void GodotBindings::setup_global_functions() {
     JS_SetPropertyStr(ctx, global, "__godot_has_signal",
         JS_NewCFunction(ctx, js_godot_has_signal, "__godot_has_signal", 2));
 
+    // Generic property/method access for objects without pre-generated bindings (e.g., GDScript autoloads)
+    JS_SetPropertyStr(ctx, global, "__godot_get",
+        JS_NewCFunction(ctx, js_godot_get, "__godot_get", 2));
+    JS_SetPropertyStr(ctx, global, "__godot_set",
+        JS_NewCFunction(ctx, js_godot_set, "__godot_set", 3));
+    JS_SetPropertyStr(ctx, global, "__godot_call",
+        JS_NewCFunction(ctx, js_godot_call, "__godot_call", 2));
+    JS_SetPropertyStr(ctx, global, "__godot_has_method",
+        JS_NewCFunction(ctx, js_godot_has_method, "__godot_has_method", 2));
+
     // Array proxy functions for zero-copy access to Godot arrays
     JS_SetPropertyStr(ctx, global, "__godot_array_get",
         JS_NewCFunction(ctx, js_godot_array_get, "__godot_array_get", 2));
@@ -741,7 +751,7 @@ void GodotBindings::setup_godot_class_constructor() {
                     return propBinding.get(target.__handle);
                 }
 
-                // Check if this is a JS script method
+                // Check if this is a JS script method first (has priority)
                 if (__godot_has_script_method(target.__handle, prop)) {
                     var handle = target.__handle;
                     return function() {
@@ -758,7 +768,28 @@ void GodotBindings::setup_godot_class_constructor() {
                     };
                 }
 
-                return undefined;
+                // Fallback: use generic runtime property/method access for unbound objects (e.g., GDScript classes)
+                // This allows accessing properties and methods on GDScript autoloads and custom classes
+                var handle = target.__handle;
+
+                // Check if it's a method first
+                if (__godot_has_method(handle, prop)) {
+                    return function() {
+                        var args = [handle, prop];
+                        for (var i = 0; i < arguments.length; i++) {
+                            var arg = arguments[i];
+                            if (arg && typeof arg === 'object' && arg.__handle !== undefined) {
+                                args.push(arg.__handle);
+                            } else {
+                                args.push(arg);
+                            }
+                        }
+                        return __godot_call.apply(null, args);
+                    };
+                }
+
+                // Otherwise, get it as a property
+                return __godot_get(handle, prop);
             },
             set: function(target, prop, value, receiver) {
                 if (prop === '__handle' || prop === '__class') {
@@ -776,6 +807,12 @@ void GodotBindings::setup_godot_class_constructor() {
                     return true;
                 }
 
+                // Fallback: use generic runtime property setter for unbound objects
+                var unwrapped = value;
+                if (value && typeof value === 'object' && value.__handle !== undefined) {
+                    unwrapped = value.__handle;
+                }
+                __godot_set(target.__handle, prop, unwrapped);
                 return true;
             },
             has: function(target, prop) {
@@ -2001,6 +2038,163 @@ JSValue GodotBindings::js_godot_has_signal(JSContext* ctx, JSValueConst this_val
 
     // Check if the object has this signal (works for both built-in and custom signals)
     return JS_NewBool(ctx, target->has_signal(StringName(signal_name)));
+}
+
+// Generic property getter for objects without pre-generated bindings (e.g., GDScript classes)
+JSValue GodotBindings::js_godot_get(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "__godot_get requires handle and property name");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_ThrowTypeError(ctx, "Invalid handle");
+    }
+
+    const char* prop_name_cstr = JS_ToCString(ctx, argv[1]);
+    if (!prop_name_cstr) {
+        return JS_ThrowTypeError(ctx, "Invalid property name");
+    }
+    String prop_name = prop_name_cstr;
+    JS_FreeCString(ctx, prop_name_cstr);
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_ThrowInternalError(ctx, "No context available");
+    }
+
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_ThrowInternalError(ctx, "No object registry available");
+    }
+
+    Object* target = registry->get_object(handle);
+    if (!target) {
+        return JS_ThrowReferenceError(ctx, "Object no longer exists");
+    }
+
+    // Use Godot's generic property getter
+    Variant value = target->get(StringName(prop_name));
+    return qjs_ctx->variant_to_js(value);
+}
+
+// Generic property setter for objects without pre-generated bindings
+JSValue GodotBindings::js_godot_set(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 3) {
+        return JS_ThrowTypeError(ctx, "__godot_set requires handle, property name, and value");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_ThrowTypeError(ctx, "Invalid handle");
+    }
+
+    const char* prop_name_cstr = JS_ToCString(ctx, argv[1]);
+    if (!prop_name_cstr) {
+        return JS_ThrowTypeError(ctx, "Invalid property name");
+    }
+    String prop_name = prop_name_cstr;
+    JS_FreeCString(ctx, prop_name_cstr);
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_ThrowInternalError(ctx, "No context available");
+    }
+
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_ThrowInternalError(ctx, "No object registry available");
+    }
+
+    Object* target = registry->get_object(handle);
+    if (!target) {
+        return JS_ThrowReferenceError(ctx, "Object no longer exists");
+    }
+
+    // Convert JS value to Variant and set
+    Variant value = qjs_ctx->js_to_variant(argv[2]);
+    target->set(StringName(prop_name), value);
+    return JS_UNDEFINED;
+}
+
+// Generic method caller for objects without pre-generated bindings
+JSValue GodotBindings::js_godot_call(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "__godot_call requires handle and method name");
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_ThrowTypeError(ctx, "Invalid handle");
+    }
+
+    const char* method_name_cstr = JS_ToCString(ctx, argv[1]);
+    if (!method_name_cstr) {
+        return JS_ThrowTypeError(ctx, "Invalid method name");
+    }
+    String method_name = method_name_cstr;
+    JS_FreeCString(ctx, method_name_cstr);
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_ThrowInternalError(ctx, "No context available");
+    }
+
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_ThrowInternalError(ctx, "No object registry available");
+    }
+
+    Object* target = registry->get_object(handle);
+    if (!target) {
+        return JS_ThrowReferenceError(ctx, "Object no longer exists");
+    }
+
+    // Convert arguments (skip handle and method name)
+    Array godot_args;
+    for (int i = 2; i < argc; i++) {
+        godot_args.append(qjs_ctx->js_to_variant(argv[i]));
+    }
+
+    // Call the method using callv
+    Variant result = target->callv(StringName(method_name), godot_args);
+    return qjs_ctx->variant_to_js(result);
+}
+
+// Check if an object has a method with the given name
+JSValue GodotBindings::js_godot_has_method(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
+    if (argc < 2) {
+        return JS_FALSE;
+    }
+
+    int64_t handle;
+    if (JS_ToInt64(ctx, &handle, argv[0]) != 0) {
+        return JS_FALSE;
+    }
+
+    const char* method_name_cstr = JS_ToCString(ctx, argv[1]);
+    if (!method_name_cstr) {
+        return JS_FALSE;
+    }
+    String method_name = method_name_cstr;
+    JS_FreeCString(ctx, method_name_cstr);
+
+    QuickJSContext* qjs_ctx = get_context(ctx);
+    if (!qjs_ctx) {
+        return JS_FALSE;
+    }
+
+    ObjectRegistry* registry = qjs_ctx->get_object_registry();
+    if (!registry) {
+        return JS_FALSE;
+    }
+
+    Object* target = registry->get_object(handle);
+    if (!target) {
+        return JS_FALSE;
+    }
+
+    return JS_NewBool(ctx, target->has_method(StringName(method_name)));
 }
 
 // Array proxy functions for zero-copy access to Godot arrays

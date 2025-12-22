@@ -73,6 +73,15 @@ public:
     // Script management
     virtual void _reload_all_scripts() override;
 
+    // Global constants
+    virtual void _add_global_constant(const godot::StringName &p_name, const godot::Variant &p_value) override;
+    virtual void _add_named_global_constant(const godot::StringName &p_name, const godot::Variant &p_value) override;
+    virtual void _remove_named_global_constant(const godot::StringName &p_name) override;
+
+    // Access global constants (for sandboxes to query)
+    const godot::HashMap<godot::StringName, godot::Variant>& get_global_constants() const { return global_constants_; }
+    const godot::HashMap<godot::StringName, godot::Variant>& get_named_global_constants() const { return named_global_constants_; }
+
     // Templates (not needed for runtime)
     virtual bool _has_named_classes() const override;
 
@@ -96,10 +105,15 @@ private:
     std::unique_ptr<SignalRegistry> signal_registry_;
     std::unique_ptr<DeletionTracker> deletion_tracker_;
 
+    // Global constants storage (for constants added before context is ready)
+    godot::HashMap<godot::StringName, godot::Variant> global_constants_;
+    godot::HashMap<godot::StringName, godot::Variant> named_global_constants_;
+
     bool initialized_ = false;
 
     void initialize_runtime();
     void shutdown_runtime();
+    void apply_global_constants();
 };
 
 } // namespace jsb
