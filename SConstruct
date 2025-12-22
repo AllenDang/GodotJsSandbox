@@ -39,13 +39,14 @@ generated_sources = Glob("generated/*.gen.cpp")
 
 # Build QuickJS as C
 env_quickjs = env.Clone()
-if env["platform"] == "windows":
+is_msvc = env["platform"] == "windows" and not env.get("use_mingw", False)
+if is_msvc:
     # MSVC flags for QuickJS
     if "/fp:strict" in env_quickjs["CCFLAGS"]:
         env_quickjs["CCFLAGS"].remove("/fp:strict")
     env_quickjs.Append(CCFLAGS=["/fp:precise"])
 else:
-    # GCC/Clang flags
+    # GCC/Clang/MinGW flags
     env_quickjs.Append(CFLAGS=["-std=c11", "-Wno-sign-compare", "-Wno-unused-parameter", "-Wno-implicit-fallthrough"])
 
 quickjs_objects = [env_quickjs.SharedObject(src) for src in quickjs_sources]
