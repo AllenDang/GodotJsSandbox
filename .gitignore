@@ -1,6 +1,6 @@
 ref
 .DS_Store
-bin/macos
+bin/
 demo/.godot
 demo/bin
 
