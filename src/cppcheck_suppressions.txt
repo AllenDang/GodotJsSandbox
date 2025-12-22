@@ -20,6 +20,9 @@ missingInclude:src/godot_bindings.cpp
 # Suppress branch limit info messages
 normalCheckLevelMaxBranches
 
+# Suppress active checkers report info message
+checkersReport
+
 # GDExtension API callbacks require C-style casts for opaque pointer types
 # These casts are necessary because GDExtension uses void* for type-erased callbacks
 cstyleCast:src/js_script_instance.cpp

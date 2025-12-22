@@ -36,13 +36,13 @@ public:
     bool initialize();
 
     // Cleanup bindings
-    void shutdown();
+    static void shutdown();
 
     // Get class ID for GodotObject wrapper
-    JSClassID get_godot_object_class_id() const { return godot_object_class_id_; }
+    static JSClassID get_godot_object_class_id() { return godot_object_class_id_; }
 
     // Get class ID for GodotArray wrapper (used for finalizer-based cleanup)
-    JSClassID get_godot_array_class_id() const { return godot_array_class_id_; }
+    static JSClassID get_godot_array_class_id() { return godot_array_class_id_; }
 
     // Convert Variant to JSValue (uses context's type conversion)
     JSValue variant_to_js(const godot::Variant& value);
@@ -66,7 +66,7 @@ private:
     void setup_global_functions();
     void setup_math_types();
     void setup_godot_class_constructor();
-    void setup_proxy_handler();
+    static void setup_proxy_handler();
 
     // Register common Godot classes
     void register_node_classes();

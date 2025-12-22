@@ -72,7 +72,7 @@ private:
     bool check_rate_limit(ApiCategory category, godot::String& error);
 
     // Get the class name of an object (handles inheritance)
-    godot::StringName get_object_class(godot::Object* obj) const;
+    static godot::StringName get_object_class(godot::Object* obj);
 };
 
 } // namespace jsb

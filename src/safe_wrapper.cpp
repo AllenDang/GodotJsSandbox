@@ -56,7 +56,7 @@ bool SafeWrapper::check_rate_limit(ApiCategory category, String& error) {
     return true;
 }
 
-StringName SafeWrapper::get_object_class(Object* obj) const {
+StringName SafeWrapper::get_object_class(Object* obj) {
     if (!obj) return StringName();
     return obj->get_class();
 }

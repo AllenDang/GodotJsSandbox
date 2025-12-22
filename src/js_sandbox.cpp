@@ -120,7 +120,7 @@ bool JSSandbox::initialize() {
     signal_registry_->set_object_registry(object_registry_.get());
 
     // Apply global constants from JSScriptLanguage (autoloads, singletons)
-    JSScriptLanguage* language = JSScriptLanguage::get_singleton();
+    const JSScriptLanguage* language = JSScriptLanguage::get_singleton();
     if (language) {
         for (const KeyValue<StringName, Variant>& kv : language->get_global_constants()) {
             context_->set_global(String(kv.key), kv.value);

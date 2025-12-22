@@ -36,23 +36,23 @@ public:
     bool get(const godot::StringName &p_name, godot::Variant &r_ret) const;
 
     const GDExtensionPropertyInfo* get_property_list(uint32_t *r_count) const;
-    void free_property_list(const GDExtensionPropertyInfo *p_list, uint32_t p_count) const;
+    static void free_property_list(const GDExtensionPropertyInfo *p_list, uint32_t p_count);
 
     GDExtensionVariantType get_property_type(const godot::StringName &p_name, bool *r_is_valid) const;
-    bool validate_property(GDExtensionPropertyInfo *p_property) const;
+    static bool validate_property(GDExtensionPropertyInfo *p_property);
 
-    bool property_can_revert(const godot::StringName &p_name) const;
-    bool property_get_revert(const godot::StringName &p_name, godot::Variant &r_ret) const;
+    static bool property_can_revert(const godot::StringName &p_name);
+    static bool property_get_revert(const godot::StringName &p_name, godot::Variant &r_ret);
 
     void get_property_state(GDExtensionScriptInstancePropertyStateAdd p_add_func, void *p_userdata) const;
 
     // Method access
-    const GDExtensionMethodInfo* get_method_list(uint32_t *r_count) const;
+    static const GDExtensionMethodInfo* get_method_list(uint32_t *r_count);
 
     // Public method to call a JS script method from other JS code
     bool call_method(const godot::StringName &p_method, const godot::Variant** p_args,
                      int p_argcount, godot::Variant &r_result, godot::String& r_error);
-    void free_method_list(const GDExtensionMethodInfo *p_list, uint32_t p_count) const;
+    static void free_method_list(const GDExtensionMethodInfo *p_list, uint32_t p_count);
 
     bool has_method(const godot::StringName &p_method) const;
     int get_method_argument_count(const godot::StringName &p_method, bool *r_is_valid) const;
@@ -62,21 +62,21 @@ public:
               GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error);
 
     // Notification handling
-    void notification(int32_t p_what, bool p_reversed);
+    static void notification(int32_t p_what, bool p_reversed);
 
     // String conversion
-    void to_string(bool *r_is_valid, godot::String *r_out) const;
+    static void to_string(bool *r_is_valid, godot::String *r_out);
 
     // Reference counting (for RefCounted owners)
-    void refcount_incremented();
-    bool refcount_decremented();
+    static void refcount_incremented();
+    static bool refcount_decremented();
 
     // Placeholder support
-    bool is_placeholder() const { return false; }
+    static bool is_placeholder() { return false; }
 
     // Fallback property access (for placeholder)
-    bool set_fallback(const godot::StringName &p_name, const godot::Variant &p_value);
-    bool get_fallback(const godot::StringName &p_name, godot::Variant &r_ret) const;
+    static bool set_fallback(const godot::StringName &p_name, const godot::Variant &p_value);
+    static bool get_fallback(const godot::StringName &p_name, godot::Variant &r_ret);
 
     // Create the GDExtension script instance
     static GDExtensionScriptInstancePtr create_instance(JSScriptInstance* p_instance);
