@@ -265,6 +265,14 @@ void JSScriptLanguage::_reload_all_scripts() {
     // For now, do nothing - could be expanded to reload all loaded JS scripts
 }
 
+void JSScriptLanguage::_reload_scripts(const Array &p_scripts, bool p_soft_reload) {
+    // For now, do nothing - runtime doesn't support hot reload
+}
+
+void JSScriptLanguage::_reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
+    // For now, do nothing - runtime doesn't support hot reload
+}
+
 void JSScriptLanguage::_add_global_constant(const StringName &p_name, const Variant &p_value) {
     global_constants_[p_name] = p_value;
     if (initialized_ && context_) {

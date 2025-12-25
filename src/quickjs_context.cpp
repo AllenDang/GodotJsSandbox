@@ -34,7 +34,7 @@ static JSValue js_console_log(JSContext* ctx, JSValueConst this_val, int argc, J
         if (i > 0) output += " ";
         const char* str = JS_ToCString(ctx, argv[i]);
         if (str) {
-            output += str;
+            output += String::utf8(str);
             JS_FreeCString(ctx, str);
         }
     }
@@ -48,7 +48,7 @@ static JSValue js_console_warn(JSContext* ctx, JSValueConst this_val, int argc, 
         if (i > 0) output += " ";
         const char* str = JS_ToCString(ctx, argv[i]);
         if (str) {
-            output += str;
+            output += String::utf8(str);
             JS_FreeCString(ctx, str);
         }
     }
@@ -62,7 +62,7 @@ static JSValue js_console_error(JSContext* ctx, JSValueConst this_val, int argc,
         if (i > 0) output += " ";
         const char* str = JS_ToCString(ctx, argv[i]);
         if (str) {
-            output += str;
+            output += String::utf8(str);
             JS_FreeCString(ctx, str);
         }
     }
@@ -501,7 +501,7 @@ QuickJSContext::ExceptionInfo QuickJSContext::get_exception_info() {
     if (!JS_IsNull(exception) && !JS_IsUndefined(exception)) {
         const char* str = JS_ToCString(ctx_, exception);
         if (str) {
-            info.message = str;
+            info.message = String::utf8(str);
             JS_FreeCString(ctx_, str);
         }
 
@@ -527,7 +527,7 @@ QuickJSContext::ExceptionInfo QuickJSContext::get_exception_info() {
         if (JS_IsString(file_val)) {
             const char* file_str = JS_ToCString(ctx_, file_val);
             if (file_str) {
-                info.file = file_str;
+                info.file = String::utf8(file_str);
                 JS_FreeCString(ctx_, file_str);
             }
         }
@@ -538,7 +538,7 @@ QuickJSContext::ExceptionInfo QuickJSContext::get_exception_info() {
         if (!JS_IsUndefined(stack)) {
             const char* stack_str = JS_ToCString(ctx_, stack);
             if (stack_str) {
-                info.stack = stack_str;
+                info.stack = String::utf8(stack_str);
                 JS_FreeCString(ctx_, stack_str);
 
                 // Always try to parse from first stack line if no line info yet
@@ -1129,7 +1129,7 @@ Variant QuickJSContext::js_to_variant(JSValue value) {
 
     if (JS_IsString(value)) {
         const char* str = JS_ToCString(ctx_, value);
-        String result = str ? str : "";
+        String result = str ? String::utf8(str) : "";
         JS_FreeCString(ctx_, str);
         return result;
     }
@@ -1643,7 +1643,7 @@ int64_t QuickJSContext::create_script_instance(const String &source, const Strin
                     const char* sig_name = JS_ToCString(ctx_, sig);
                     if (sig_name) {
                         // Register the signal with Godot
-                        owner->add_user_signal(String(sig_name));
+                        owner->add_user_signal(String::utf8(sig_name));
                         JS_FreeCString(ctx_, sig_name);
                     }
                     JS_FreeValue(ctx_, sig);
@@ -1821,7 +1821,7 @@ globalThis.)") + instance_key + String(R"( = __instance;
                     JSValue sig = JS_GetPropertyUint32(ctx_, signals_val, i);
                     const char* sig_name = JS_ToCString(ctx_, sig);
                     if (sig_name) {
-                        owner->add_user_signal(String(sig_name));
+                        owner->add_user_signal(String::utf8(sig_name));
                         JS_FreeCString(ctx_, sig_name);
                     }
                     JS_FreeValue(ctx_, sig);

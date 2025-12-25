@@ -1,5 +1,6 @@
 extends Node3D
 
+const TestUtf8EncodingClass = preload("res://test_cases/test_utf8_encoding.gd")
 const TestRefCountedTypesClass = preload("res://test_cases/test_refcounted_types.gd")
 const TestCustomSignalsClass = preload("res://test_cases/test_custom_signals.gd")
 const TestLevelPersistenceClass = preload("res://test_cases/test_level_persistence.gd")
@@ -56,6 +57,7 @@ func run_tests() -> void:
 	# Add all test suites (organized by category)
 	# Core functionality
 	runner.add_suite(TestBasicEval.new())
+	runner.add_suite(TestUtf8EncodingClass.new())
 	runner.add_suite(TestBindings.new())
 	runner.add_suite(TestNodeOps.new())
 	runner.add_suite(TestSingletons.new())

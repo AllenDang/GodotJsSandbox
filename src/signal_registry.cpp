@@ -286,7 +286,7 @@ void SignalRegistry::invoke_callback(uint64_t connection_id, const Variant** arg
         // Get exception message
         const char* msg = JS_ToCString(ctx_, exception);
         if (msg) {
-            error_message += msg;
+            error_message += String::utf8(msg);
             JS_FreeCString(ctx_, msg);
         }
 
@@ -296,7 +296,7 @@ void SignalRegistry::invoke_callback(uint64_t connection_id, const Variant** arg
             const char* stack_str = JS_ToCString(ctx_, stack);
             if (stack_str) {
                 error_message += "\nStack trace:\n";
-                error_message += stack_str;
+                error_message += String::utf8(stack_str);
                 JS_FreeCString(ctx_, stack_str);
             }
         }

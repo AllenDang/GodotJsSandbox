@@ -72,6 +72,8 @@ public:
 
     // Script management
     virtual void _reload_all_scripts() override;
+    virtual void _reload_scripts(const godot::Array &p_scripts, bool p_soft_reload) override;
+    virtual void _reload_tool_script(const godot::Ref<godot::Script> &p_script, bool p_soft_reload) override;
 
     // Global constants
     virtual void _add_global_constant(const godot::StringName &p_name, const godot::Variant &p_value) override;
