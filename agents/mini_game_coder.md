@@ -75,6 +75,44 @@ exports.take_damage = function(amount) {
 | `is_instance_of(node, T)` | `node.__class === "ClassName"` |
 | `setTimeout()` | Use `this.get_tree().create_timer(1.0)` |
 
+## Property Access - Same as GDScript
+
+Property access syntax is **identical** to GDScript. Don't overthink it:
+
+```javascript
+// These work exactly like GDScript:
+var pos = this.global_position;           // Works
+var transform = this.global_transform;    // Works
+var basis = this.global_transform.basis;  // Works
+var forward = this.global_transform.basis.z;  // Works - returns {x, y, z}
+var origin = this.global_transform.origin;    // Works - returns {x, y, z}
+
+// Nested access works:
+var z_forward = this.global_transform.basis.z.z;  // Works
+
+// Setting properties:
+this.global_position = {x: 1, y: 2, z: 3};  // Works
+this.rotation = {x: 0, y: Math.PI, z: 0};   // Works
+```
+
+**What's different:** Math types from properties are plain JS objects, not wrapped Godot types. You can READ all data, but can't call Godot methods on them:
+
+```javascript
+// This works - reading data:
+var basis = this.global_transform.basis;
+var forward = basis.z;  // {x: 0, y: 0, z: -1}
+
+// This does NOT work - no Godot methods on plain objects:
+// basis.rotated(axis, angle)  // ERROR - basis is a plain JS object
+
+// For vector math, do it manually:
+var neg_forward = {x: -forward.x, y: -forward.y, z: -forward.z};
+
+// Or create a new Godot type if you need methods:
+var v = new Vector3(forward.x, forward.y, forward.z);
+// Now v has Vector3 methods (if any are bound)
+```
+
 ## Creating Godot Class Instances
 
 ```javascript
