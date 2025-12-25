@@ -33,6 +33,12 @@ func get_tests() -> Array[String]:
 		"test_timeout_configurable",
 		"test_memory_limit_configurable",
 		"test_heavy_ops_limit_configurable",
+		# Exact limit boundary tests
+		"test_heavy_ops_exact_limit_boundary",
+		"test_write_ops_exact_limit_boundary",
+		"test_error_message_shows_configured_limit",
+		# Runtime scene instantiation limits
+		"test_runtime_instantiated_scene_uses_sandbox_limits",
 	]
 
 func run_test(test_name: String) -> Dictionary:
@@ -281,6 +287,246 @@ func run_test(test_name: String) -> Dictionary:
 			if result == 60:
 				return { "passed": true, "message": "Heavy ops limit is configurable" }
 			return { "passed": false, "message": "Failed with limit=100: " + str(result) }
+
+		"test_heavy_ops_exact_limit_boundary":
+			# Verify that set_heavy_ops_per_frame(200) allows exactly 200 operations
+			sandbox.set_heavy_ops_per_frame(200)
+			sandbox.reset_frame_counters()
+
+			# Create exactly 200 nodes - should succeed
+			var code_at_limit = """
+				var nodes = [];
+				var error = null;
+				try {
+					for (var i = 0; i < 200; i++) {
+						nodes.push(new Node());
+					}
+				} catch (e) {
+					error = e.toString();
+				}
+				({ count: nodes.length, error: error });
+			"""
+			var result_at_limit = sandbox.eval(code_at_limit)
+			sandbox.set_heavy_ops_per_frame(50)  # Reset
+
+			if not (result_at_limit is Dictionary):
+				return { "passed": false, "message": "Unexpected result type: " + str(result_at_limit) }
+
+			if result_at_limit["error"] != null:
+				return { "passed": false, "message": "Failed before reaching limit of 200: " + str(result_at_limit) }
+
+			if result_at_limit["count"] != 200:
+				return { "passed": false, "message": "Expected 200 nodes, got " + str(result_at_limit["count"]) }
+
+			# Now test that 201 fails
+			sandbox.set_heavy_ops_per_frame(200)
+			sandbox.reset_frame_counters()
+
+			var code_over_limit = """
+				var nodes = [];
+				var error = null;
+				try {
+					for (var i = 0; i < 201; i++) {
+						nodes.push(new Node());
+					}
+				} catch (e) {
+					error = e.toString();
+				}
+				({ count: nodes.length, error: error });
+			"""
+			var result_over_limit = sandbox.eval(code_over_limit)
+			sandbox.set_heavy_ops_per_frame(50)  # Reset
+
+			if not (result_over_limit is Dictionary):
+				return { "passed": false, "message": "Unexpected result type for over-limit test" }
+
+			if result_over_limit["error"] == null:
+				return { "passed": false, "message": "Should have failed at 201, but created " + str(result_over_limit["count"]) + " nodes" }
+
+			if result_over_limit["count"] != 200:
+				return { "passed": false, "message": "Expected to stop at exactly 200, got " + str(result_over_limit["count"]) }
+
+			return { "passed": true, "message": "Heavy ops limit of 200 is exactly enforced" }
+
+		"test_write_ops_exact_limit_boundary":
+			# Verify that set_write_ops_per_frame(400) allows exactly 400 operations
+			# Note: Heavy operations (like new Node()) also count as write ops,
+			# so we set limit to 401 to account for the node creation
+			sandbox.set_write_ops_per_frame(401)
+			sandbox.reset_frame_counters()
+
+			# Do exactly 400 write operations after creating 1 node (which is 1 heavy + 1 write)
+			# Total: 1 (node creation) + 400 (property sets) = 401 write ops
+			var code_at_limit = """
+				var node = new Node();  // 1 heavy op + 1 write op
+				var error = null;
+				var count = 0;
+				try {
+					for (var i = 0; i < 400; i++) {
+						node.name = 'Test' + i;
+						count++;
+					}
+				} catch (e) {
+					error = e.toString();
+				}
+				({ count: count, error: error });
+			"""
+			var result_at_limit = sandbox.eval(code_at_limit)
+			sandbox.set_write_ops_per_frame(500)  # Reset
+
+			if not (result_at_limit is Dictionary):
+				return { "passed": false, "message": "Unexpected result type: " + str(result_at_limit) }
+
+			if result_at_limit["error"] != null:
+				return { "passed": false, "message": "Failed before reaching limit of 400: " + str(result_at_limit) }
+
+			if result_at_limit["count"] != 400:
+				return { "passed": false, "message": "Expected 400 writes, got " + str(result_at_limit["count"]) }
+
+			# Now test that 401 writes fail (402 total with node creation)
+			sandbox.set_write_ops_per_frame(401)
+			sandbox.reset_frame_counters()
+
+			var code_over_limit = """
+				var node = new Node();  // 1 heavy op + 1 write op
+				var error = null;
+				var count = 0;
+				try {
+					for (var i = 0; i < 401; i++) {
+						node.name = 'Test' + i;
+						count++;
+					}
+				} catch (e) {
+					error = e.toString();
+				}
+				({ count: count, error: error });
+			"""
+			var result_over_limit = sandbox.eval(code_over_limit)
+			sandbox.set_write_ops_per_frame(500)  # Reset
+
+			if not (result_over_limit is Dictionary):
+				return { "passed": false, "message": "Unexpected result type for over-limit test" }
+
+			if result_over_limit["error"] == null:
+				return { "passed": false, "message": "Should have failed at 401, but completed " + str(result_over_limit["count"]) + " writes" }
+
+			if result_over_limit["count"] != 400:
+				return { "passed": false, "message": "Expected to stop at exactly 400, got " + str(result_over_limit["count"]) }
+
+			return { "passed": true, "message": "Write ops limit is correctly enforced (heavy ops also count as write ops)" }
+
+		"test_error_message_shows_configured_limit":
+			# Verify the error message shows the actual configured limit, not hardcoded values
+			sandbox.set_heavy_ops_per_frame(200)
+			sandbox.reset_frame_counters()
+
+			var code = """
+				var error_msg = '';
+				try {
+					for (var i = 0; i < 250; i++) {
+						new Node();
+					}
+				} catch (e) {
+					error_msg = e.toString();
+				}
+				error_msg;
+			"""
+			var error_msg = sandbox.eval(code)
+			sandbox.set_heavy_ops_per_frame(50)  # Reset
+
+			if not (error_msg is String) or error_msg == "":
+				return { "passed": false, "message": "No error message captured" }
+
+			# The error message should contain "200" (the configured limit), not "50" (the default)
+			if "200" in error_msg:
+				return { "passed": true, "message": "Error message correctly shows configured limit: " + error_msg }
+
+			if "50" in error_msg:
+				return { "passed": false, "message": "Error message shows hardcoded default (50) instead of configured limit (200): " + error_msg }
+
+			return { "passed": false, "message": "Error message doesn't contain expected limit value: " + error_msg }
+
+		"test_runtime_instantiated_scene_uses_sandbox_limits":
+			# Verify that JS scripts INSIDE scenes loaded via sandbox.load_scene()
+			# use the sandbox's configured limits, not the global default limits.
+			#
+			# Test approach:
+			# 1. Set sandbox heavy ops limit to 100 (clearly different from default 50)
+			# 2. Load a scene via sandbox.load_scene() - this properly attaches scripts
+			# 3. The scene's script sets up a global function in _ready()
+			# 4. Call that function to create 60 nodes
+			# 5. If fix works: script uses sandbox limit (100), so 60 nodes succeed
+			# 6. If fix broken: script uses default limit (50), so it fails around 50
+			sandbox.set_heavy_ops_per_frame(100)  # Set higher than default 50
+			sandbox.reset_frame_counters()
+
+			# Load scene via sandbox.load_scene() - this ensures scripts are attached to sandbox
+			var instance = sandbox.load_scene("res://fixtures/test_runtime_limits.tscn")
+			if not instance:
+				sandbox.set_heavy_ops_per_frame(50)  # Reset
+				return { "passed": false, "message": "Failed to load test scene via sandbox.load_scene()" }
+
+			# Add to tree so _ready() runs
+			test_root.add_child(instance)
+
+			# Give a frame for _ready to run
+			await scene_tree.process_frame
+
+			# Now test that the global function set up by the scene's script
+			# uses the sandbox's configured limits
+			var code = """
+				if (!globalThis.__runtime_test_ready) {
+					({ success: false, stage: 'ready', error: 'Scene script _ready did not run' });
+				} else if (!globalThis.__runtime_test_create_nodes) {
+					({ success: false, stage: 'setup', error: 'Global function not set up' });
+				} else {
+					// Call the function defined by the scene's script
+					// This is the KEY TEST: does this function use sandbox limits?
+					// Try to create 60 nodes - should succeed if limit is 100,
+					// but fail if limit is default 50
+					var result = globalThis.__runtime_test_create_nodes(60);
+					result.success = true;
+					result.stage = 'test';
+					result;
+				}
+			"""
+			var result = sandbox.eval(code)
+
+			# Cleanup
+			instance.queue_free()
+			sandbox.set_heavy_ops_per_frame(50)  # Reset
+
+			if result == null:
+				var error = sandbox.get_last_error()
+				return { "passed": false, "message": "Eval returned null. Last error: " + error }
+
+			if not (result is Dictionary):
+				return { "passed": false, "message": "Unexpected result type: " + str(result) }
+
+			if result.get("success") == false:
+				return { "passed": false, "message": "Failed at stage '" + str(result.get("stage", "?")) + "': " + str(result.get("error", "unknown")) }
+
+			var created = result.get("created", 0)
+			var error_msg = str(result.get("error", ""))
+
+			# If we created 60 nodes without error, the sandbox limit (100) was used
+			if created == 60 and error_msg == "null":
+				return { "passed": true, "message": "Scene script uses sandbox limit - created all 60 nodes (limit 100)" }
+
+			# If we got an error mentioning 50, the DEFAULT limit was used (BUG!)
+			if "50" in error_msg:
+				return { "passed": false, "message": "BUG: Scene script used DEFAULT limit (50) instead of sandbox limit (100). Created: " + str(created) + ", Error: " + error_msg }
+
+			# If we got an error mentioning 100, sandbox limit was used but we hit it
+			# (This shouldn't happen since we're only creating 60 with limit 100)
+			if "100" in error_msg:
+				return { "passed": false, "message": "Unexpected: Hit sandbox limit of 100 when creating only 60 nodes. Created: " + str(created) }
+
+			# If created < 60 with some other error, something else is wrong
+			if created < 60:
+				return { "passed": false, "message": "Only created " + str(created) + " nodes (expected 60). Error: " + error_msg }
+
+			return { "passed": true, "message": "Scene script correctly uses sandbox limits (created " + str(created) + " nodes)" }
 
 		_:
 			return { "passed": false, "message": "Unknown test: " + test_name }

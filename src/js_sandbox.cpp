@@ -108,6 +108,7 @@ bool JSSandbox::initialize() {
     context_->set_safe_wrapper(safe_wrapper_.get());
     context_->set_signal_registry(signal_registry_.get());
     context_->set_rid_registry(rid_registry_.get());
+    context_->set_sandbox(this);
 
     if (!context_->initialize()) {
         last_error_ = "Failed to initialize QuickJS context";
@@ -714,6 +715,7 @@ void JSSandbox::reset() {
     context_->set_safe_wrapper(safe_wrapper_.get());
     context_->set_signal_registry(signal_registry_.get());
     context_->set_rid_registry(rid_registry_.get());
+    context_->set_sandbox(this);
 
     context_->initialize();
 

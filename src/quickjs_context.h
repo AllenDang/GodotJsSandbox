@@ -22,6 +22,7 @@ class SafeWrapper;
 class GodotBindings;
 class SignalRegistry;
 class RidRegistry;
+class JSSandbox;
 
 // QuickJS context wrapper
 // Uses JSRuntimeManager for shared runtime (TDD Section 14.2)
@@ -89,6 +90,7 @@ public:
     void set_safe_wrapper(SafeWrapper* wrapper) { safe_wrapper_ = wrapper; }
     void set_signal_registry(SignalRegistry* registry) { signal_registry_ = registry; }
     void set_rid_registry(RidRegistry* registry) { rid_registry_ = registry; }
+    void set_sandbox(JSSandbox* sandbox) { sandbox_ = sandbox; }
 
     ObjectRegistry* get_object_registry() const { return object_registry_; }
     ArrayRegistry* get_array_registry() const { return array_registry_; }
@@ -97,6 +99,7 @@ public:
     SafeWrapper* get_safe_wrapper() const { return safe_wrapper_; }
     SignalRegistry* get_signal_registry() const { return signal_registry_; }
     RidRegistry* get_rid_registry() const { return rid_registry_; }
+    JSSandbox* get_sandbox() const { return sandbox_; }
     GodotBindings* get_bindings() const { return bindings_.get(); }
 
     // Error handling
@@ -131,6 +134,7 @@ private:
     SafeWrapper* safe_wrapper_ = nullptr;
     SignalRegistry* signal_registry_ = nullptr;
     RidRegistry* rid_registry_ = nullptr;
+    JSSandbox* sandbox_ = nullptr;
 
     std::unique_ptr<GodotBindings> bindings_;
 

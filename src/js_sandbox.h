@@ -147,6 +147,10 @@ public:
     // Get current execution context (for SandboxLogger)
     godot::String get_current_context() const { return current_context_; }
 
+    // Reattach JS scripts recursively to use this sandbox's context
+    // Called after PackedScene.instantiate() to ensure scripts use sandbox limits
+    void reattach_scripts_recursive(godot::Node* node);
+
 protected:
     static void _bind_methods();
 
@@ -182,9 +186,6 @@ private:
     bool errors_updated_pending_ = false;
 
     bool initialize();
-
-    // Helper to recursively reattach JS scripts to this sandbox
-    void reattach_scripts_recursive(godot::Node* node);
 
     // Internal helpers
     godot::String phase_to_string(ExecutionPhase phase) const;

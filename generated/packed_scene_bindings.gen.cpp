@@ -6,6 +6,7 @@
 #include "../src/object_registry.h"
 #include "../src/safe_wrapper.h"
 #include "../src/execution_limiter.h"
+#include "../src/js_sandbox.h"
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/packed_scene.hpp>
@@ -139,6 +140,13 @@ static JSValue js_PackedScene_instantiate(JSContext* ctx, JSValueConst this_val,
     }
 
     Node* result = typed_obj->instantiate(arg_edit_state);
+    // Reattach JS scripts to use this sandbox's context (PRD requirement)
+    // Without this, scripts in runtime-instantiated scenes use global context
+    // with default rate limits instead of the sandbox's configured limits
+    JSSandbox* sandbox = qjs_ctx->get_sandbox();
+    if (sandbox && result) {
+        sandbox->reattach_scripts_recursive(result);
+    }
     if (!result) return JS_NULL;
     Object* ret_obj_ptr = reinterpret_cast<Object*>(result);
     int64_t ret_handle = qjs_ctx->get_object_registry()->get_or_create_handle(ret_obj_ptr);

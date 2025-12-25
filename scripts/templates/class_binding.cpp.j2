@@ -9,6 +9,9 @@
 {% if class_name == "RenderingDevice" %}
 #include "../src/rid_registry.h"
 {% endif %}
+{% if class_name == "PackedScene" %}
+#include "../src/js_sandbox.h"
+{% endif %}
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/{{ header_name }}.hpp>
@@ -127,6 +130,15 @@ static JSValue js_{{ class_name }}_{{ method.name }}(JSContext* ctx, JSValueCons
     RidRegistry* rid_registry = qjs_ctx->get_rid_registry();
     if (rid_registry && result.is_valid()) {
         rid_registry->register_rid(typed_obj, result);
+    }
+{% endif %}
+{% if class_name == "PackedScene" and method.name == "instantiate" %}
+    // Reattach JS scripts to use this sandbox's context (PRD requirement)
+    // Without this, scripts in runtime-instantiated scenes use global context
+    // with default rate limits instead of the sandbox's configured limits
+    JSSandbox* sandbox = qjs_ctx->get_sandbox();
+    if (sandbox && result) {
+        sandbox->reattach_scripts_recursive(result);
     }
 {% endif %}
     {{ method.return_conversion }}

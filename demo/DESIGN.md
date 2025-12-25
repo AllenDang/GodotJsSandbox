@@ -41,7 +41,7 @@ user://games/my_game/
 - Godot's native format for scene graphs
 - Can be created by AI or tools
 - Contains node hierarchy, transforms, resource references
-- The launcher loads these directly with `load()`
+- The launcher loads entry scenes, JS scripts use `sandbox.load_scene()` for runtime loading
 
 ### Why Not Just JavaScript?
 - JavaScript alone cannot define:
@@ -72,8 +72,9 @@ Input.get_axis("negative", "positive")
 Input.get_vector("left", "right", "up", "down")
 Input.get_last_mouse_velocity()
 
-// Resource loading
-load("res://path/to/resource.tscn")  // Returns PackedScene, Texture, etc.
+// Resource loading (non-scene resources only)
+load("res://path/to/resource.png")   // Returns Texture, Mesh, Shader, etc.
+// For scenes, use sandbox.load_scene() - see Section 4.13
 ```
 
 ### 4.2 Math Type Constructors
@@ -311,7 +312,7 @@ event.axis_value   // -1.0 to 1.0
 | `@onready var x` | Use `exports` pattern: `exports._ready = function() { ... }` |
 | `signal my_signal` | Not directly declared, just emit |
 | `emit_signal("name")` | `this.emit_signal("name", args...)` |
-| `preload("res://")` | `load("res://")` (runtime only) |
+| `preload("res://")` | `load("res://")` (non-scenes) or `sandbox.load_scene()` |
 | `extends Node3D` | Script attaches to Node3D in scene (.tscn) |
 | `class_name X` | Use `exports = new ClassName()` pattern |
 | `@export var` | Not supported (use game.json manifest) |
@@ -370,6 +371,7 @@ The following are **blocked** for sandbox security:
 - File system access - no direct file I/O
 - Network access - no fetch/XMLHttpRequest
 - `setTimeout`/`setInterval` - use Godot Timers instead
+- `load()` for scenes (.tscn/.scn) - use `sandbox.load_scene()` instead
 
 **Safe alternatives:**
 ```javascript
@@ -387,6 +389,38 @@ timer.start();
 var sceneTimer = this.get_tree().create_timer(1.0);
 await sceneTimer.await_signal("timeout");
 ```
+
+### 4.13 Scene Loading
+
+Scenes (.tscn/.scn) cannot be loaded with `load()` because scripts inside scenes need to be associated with the sandbox's execution limits. Use the sandbox's dedicated scene loading methods:
+
+```javascript
+// Synchronous scene loading (blocks until loaded)
+var enemy = sandbox.load_scene("user://games/my_game/enemy.tscn");
+this.add_child(enemy);
+
+// Async scene loading (non-blocking, use for large scenes)
+var self = this;
+var loader = sandbox.load_scene_async("user://games/my_game/level.tscn");
+loader.completed.connect(function(scene) {
+    self.add_child(scene);
+});
+loader.failed.connect(function(error) {
+    console.log("Failed to load: " + error);
+});
+
+// Poll the loader each frame until done
+exports._process = function(delta) {
+    if (loader && !loader.is_completed() && !loader.is_failed()) {
+        loader.poll();
+    }
+};
+```
+
+**Why this matters:**
+- Scripts inside scenes need sandbox rate limits enforced
+- Using `load()` for scenes would bypass sandbox security
+- `sandbox.load_scene()` properly associates all scripts with the sandbox
 
 ## 5. Game Manifest (game.json)
 
@@ -682,7 +716,8 @@ game_name/
 - `Time.get_ticks_msec()`, `Time.get_ticks_usec()`, `Time.get_unix_time_from_system()`
 - `Input.is_action_pressed(name)`, `Input.is_action_just_pressed(name)`, `Input.is_key_pressed(keycode)`
 - `Input.get_vector(neg_x, pos_x, neg_y, pos_y)`, `Input.get_axis(negative, positive)`
-- `load("res://path")` - loads PackedScene, Texture2D, etc.
+- `load("res://path")` - loads Texture2D, Mesh, Shader, etc. (NOT scenes)
+- `sandbox.load_scene("path")` - loads scenes with proper sandbox association
 - `console.log()`, `console.warn()`, `console.error()`
 
 **Math constructors:**
@@ -737,6 +772,7 @@ this.add_child(timer);
 - `setTimeout`, `setInterval` - use Timer nodes
 - Browser APIs (fetch, XMLHttpRequest, DOM)
 - File I/O, network access
+- `load()` for scenes - use `sandbox.load_scene()` instead
 
 ### Scene File Format (.tscn)
 ```

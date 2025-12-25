@@ -42,10 +42,12 @@ bool SafeWrapper::check_rate_limit(ApiCategory category, String& error) {
     if (execution_limiter_ && !execution_limiter_->check_api_rate_limit(category)) {
         switch (category) {
             case ApiCategory::WRITE:
-                error = "Write operation rate limit exceeded (max 500/frame)";
+                error = "Write operation rate limit exceeded (max " +
+                        String::num_int64(execution_limiter_->get_max_write_ops_per_frame()) + "/frame)";
                 break;
             case ApiCategory::HEAVY:
-                error = "Heavy operation rate limit exceeded (max 50/frame)";
+                error = "Heavy operation rate limit exceeded (max " +
+                        String::num_int64(execution_limiter_->get_max_heavy_ops_per_frame()) + "/frame)";
                 break;
             default:
                 error = "API rate limit exceeded";

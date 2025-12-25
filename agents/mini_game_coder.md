@@ -71,7 +71,7 @@ exports.take_damage = function(amount) {
 | `$Child` | `this.get_node("Child")` |
 | `func _ready():` | `exports._ready = function() {}` |
 | `self` | `this` (store as `var self = this` for callbacks) |
-| `preload()` | `load()` |
+| `preload()` | `load()` (non-scenes) or `sandbox.load_scene()` |
 | `is_instance_of(node, T)` | `node.__class === "ClassName"` |
 | `setTimeout()` | Use `this.get_tree().create_timer(1.0)` |
 
@@ -117,14 +117,9 @@ Engine.get_frames_per_second()
 
 ## Loading Resources
 
-Use the global `load()` function to load resources:
+Use the global `load()` function to load non-scene resources:
 
 ```javascript
-// Load a scene and instantiate it
-var scene = load("user://games/my_game/enemy.tscn");
-var enemy = scene.instantiate();
-this.add_child(enemy);
-
 // Load a shader
 var shader = load("user://games/my_game/shaders/effect.gdshader");
 var material = new ShaderMaterial();
@@ -142,6 +137,36 @@ this.add_child(instance);
 Path rules:
 - Use `user://` for game assets
 - Use `res://` for built-in resources
+
+## Loading Scenes
+
+**Important:** Scenes (.tscn/.scn) cannot be loaded with `load()`. Use `sandbox.load_scene()` or `sandbox.load_scene_async()` instead. This ensures all JavaScript scripts inside the scene use the correct sandbox limits.
+
+```javascript
+// Synchronous scene loading (blocks until loaded)
+var enemy = sandbox.load_scene("user://games/my_game/enemy.tscn");
+this.add_child(enemy);
+
+// Async scene loading (non-blocking, use for large scenes)
+var loader = sandbox.load_scene_async("user://games/my_game/level.tscn");
+loader.completed.connect(function(scene) {
+    self.add_child(scene);
+});
+loader.failed.connect(function(error) {
+    console.log("Failed to load: " + error);
+});
+// Poll each frame until done
+exports._process = function(delta) {
+    if (loader && !loader.is_completed() && !loader.is_failed()) {
+        loader.poll();
+    }
+};
+```
+
+Why this matters:
+- Scripts inside scenes need sandbox rate limits enforced
+- Using `load()` for scenes would bypass sandbox security
+- `sandbox.load_scene()` properly associates all scripts with the sandbox
 
 ## Constants and Enums
 
@@ -293,6 +318,7 @@ rd.free();
 - NO `setTimeout`/`setInterval` - use Timer
 - NO browser/Node.js APIs
 - NO path traversal (`..`) outside game folder
+- NO `load()` for scenes - use `sandbox.load_scene()` or `sandbox.load_scene_async()`
 
 ## Execution Limits
 

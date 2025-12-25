@@ -48,6 +48,8 @@ public:
     int get_api_calls_this_frame() const { return api_calls_this_frame_; }
     int get_write_ops_this_frame() const { return write_ops_this_frame_; }
     int get_heavy_ops_this_frame() const { return heavy_ops_this_frame_; }
+    int get_max_write_ops_per_frame() const { return max_write_ops_per_frame_; }
+    int get_max_heavy_ops_per_frame() const { return max_heavy_ops_per_frame_; }
 
     // Memory tracking
     void set_current_memory_usage(size_t bytes);

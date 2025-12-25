@@ -9,10 +9,10 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/window.hpp>
-#include <godot_cpp/classes/theme.hpp>
 #include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/theme.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
