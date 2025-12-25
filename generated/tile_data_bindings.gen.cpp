@@ -1428,7 +1428,7 @@ static JSValue js_TileData_set_custom_data(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_layer_name = JS_ToCString(ctx, argv[1]); String arg_layer_name = cstr_layer_name ? cstr_layer_name : ""; JS_FreeCString(ctx, cstr_layer_name);
+    const char* cstr_layer_name = JS_ToCString(ctx, argv[1]); String arg_layer_name = cstr_layer_name ? String::utf8(cstr_layer_name) : ""; JS_FreeCString(ctx, cstr_layer_name);
     Variant arg_value = qjs_ctx->js_to_variant(argv[2]);
 
     typed_obj->set_custom_data(arg_layer_name, arg_value);
@@ -1468,7 +1468,7 @@ static JSValue js_TileData_get_custom_data(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_layer_name = JS_ToCString(ctx, argv[1]); String arg_layer_name = cstr_layer_name ? cstr_layer_name : ""; JS_FreeCString(ctx, cstr_layer_name);
+    const char* cstr_layer_name = JS_ToCString(ctx, argv[1]); String arg_layer_name = cstr_layer_name ? String::utf8(cstr_layer_name) : ""; JS_FreeCString(ctx, cstr_layer_name);
 
     Variant result = typed_obj->get_custom_data(arg_layer_name);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -1507,7 +1507,7 @@ static JSValue js_TileData_has_custom_data(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_layer_name = JS_ToCString(ctx, argv[1]); String arg_layer_name = cstr_layer_name ? cstr_layer_name : ""; JS_FreeCString(ctx, cstr_layer_name);
+    const char* cstr_layer_name = JS_ToCString(ctx, argv[1]); String arg_layer_name = cstr_layer_name ? String::utf8(cstr_layer_name) : ""; JS_FreeCString(ctx, cstr_layer_name);
 
     bool result = typed_obj->has_custom_data(arg_layer_name);
     return JS_NewBool(ctx, result);

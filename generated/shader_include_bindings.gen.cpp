@@ -95,7 +95,7 @@ static JSValue js_ShaderInclude_set_code(JSContext* ctx, JSValueConst this_val, 
         return JS_ThrowTypeError(ctx, "ShaderInclude.code setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_code(value);
     return JS_UNDEFINED;
 }

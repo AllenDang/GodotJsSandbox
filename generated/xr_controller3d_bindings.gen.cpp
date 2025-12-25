@@ -66,7 +66,7 @@ static JSValue js_XRController3D_is_button_pressed(JSContext* ctx, JSValueConst 
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->is_button_pressed(arg_name);
     return JS_NewBool(ctx, result);
@@ -105,7 +105,7 @@ static JSValue js_XRController3D_get_input(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Variant result = typed_obj->get_input(arg_name);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -144,7 +144,7 @@ static JSValue js_XRController3D_get_float(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     double result = typed_obj->get_float(arg_name);
     return JS_NewFloat64(ctx, result);
@@ -183,7 +183,7 @@ static JSValue js_XRController3D_get_vector2(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Vector2 result = typed_obj->get_vector2(arg_name);
     JSValue ret_obj = JS_NewObject(ctx);

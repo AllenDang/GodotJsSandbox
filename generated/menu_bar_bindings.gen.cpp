@@ -178,7 +178,7 @@ static JSValue js_MenuBar_set_menu_title(JSContext* ctx, JSValueConst this_val, 
 
     // Convert arguments
     int64_t arg_menu; JS_ToInt64(ctx, &arg_menu, argv[1]);
-    const char* cstr_title = JS_ToCString(ctx, argv[2]); String arg_title = cstr_title ? cstr_title : ""; JS_FreeCString(ctx, cstr_title);
+    const char* cstr_title = JS_ToCString(ctx, argv[2]); String arg_title = cstr_title ? String::utf8(cstr_title) : ""; JS_FreeCString(ctx, cstr_title);
 
     typed_obj->set_menu_title(arg_menu, arg_title);
     return JS_UNDEFINED;
@@ -262,7 +262,7 @@ static JSValue js_MenuBar_set_menu_tooltip(JSContext* ctx, JSValueConst this_val
 
     // Convert arguments
     int64_t arg_menu; JS_ToInt64(ctx, &arg_menu, argv[1]);
-    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? cstr_tooltip : ""; JS_FreeCString(ctx, cstr_tooltip);
+    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? String::utf8(cstr_tooltip) : ""; JS_FreeCString(ctx, cstr_tooltip);
 
     typed_obj->set_menu_tooltip(arg_menu, arg_tooltip);
     return JS_UNDEFINED;
@@ -936,7 +936,7 @@ static JSValue js_MenuBar_set_language(JSContext* ctx, JSValueConst this_val, in
         return JS_ThrowTypeError(ctx, "MenuBar.language setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_language(value);
     return JS_UNDEFINED;
 }

@@ -200,7 +200,7 @@ static JSValue js_StreamPeerTLS_connect_to_stream(JSContext* ctx, JSValueConst t
         }
         JS_FreeValue(ctx, jh_stream);
     }
-    const char* cstr_common_name = JS_ToCString(ctx, argv[2]); String arg_common_name = cstr_common_name ? cstr_common_name : ""; JS_FreeCString(ctx, cstr_common_name);
+    const char* cstr_common_name = JS_ToCString(ctx, argv[2]); String arg_common_name = cstr_common_name ? String::utf8(cstr_common_name) : ""; JS_FreeCString(ctx, cstr_common_name);
     // Optional argument: client_options (default: nullptr)
     Ref<TLSOptions> arg_client_options = nullptr;
     if (argc > 3) {

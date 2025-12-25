@@ -102,7 +102,7 @@ static JSValue js_ShaderIncludeDB_has_built_in_include_file(JSContext* ctx, JSVa
     }
 
     // Convert arguments
-    const char* cstr_filename = JS_ToCString(ctx, argv[1]); String arg_filename = cstr_filename ? cstr_filename : ""; JS_FreeCString(ctx, cstr_filename);
+    const char* cstr_filename = JS_ToCString(ctx, argv[1]); String arg_filename = cstr_filename ? String::utf8(cstr_filename) : ""; JS_FreeCString(ctx, cstr_filename);
 
     bool result = typed_obj->has_built_in_include_file(arg_filename);
     return JS_NewBool(ctx, result);
@@ -141,7 +141,7 @@ static JSValue js_ShaderIncludeDB_get_built_in_include_file(JSContext* ctx, JSVa
     }
 
     // Convert arguments
-    const char* cstr_filename = JS_ToCString(ctx, argv[1]); String arg_filename = cstr_filename ? cstr_filename : ""; JS_FreeCString(ctx, cstr_filename);
+    const char* cstr_filename = JS_ToCString(ctx, argv[1]); String arg_filename = cstr_filename ? String::utf8(cstr_filename) : ""; JS_FreeCString(ctx, cstr_filename);
 
     String result = typed_obj->get_built_in_include_file(arg_filename);
     return JS_NewString(ctx, result.utf8().get_data());

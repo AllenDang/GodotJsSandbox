@@ -107,7 +107,7 @@ static JSValue js_FileDialog_add_filter(JSContext* ctx, JSValueConst this_val, i
     }
 
     // Convert arguments
-    const char* cstr_filter = JS_ToCString(ctx, argv[1]); String arg_filter = cstr_filter ? cstr_filter : ""; JS_FreeCString(ctx, cstr_filter);
+    const char* cstr_filter = JS_ToCString(ctx, argv[1]); String arg_filter = cstr_filter ? String::utf8(cstr_filter) : ""; JS_FreeCString(ctx, cstr_filter);
     // Optional argument: description (default: String())
     String arg_description = String();
     if (argc > 2) {
@@ -311,7 +311,7 @@ static JSValue js_FileDialog_set_option_name(JSContext* ctx, JSValueConst this_v
 
     // Convert arguments
     int64_t arg_option; JS_ToInt64(ctx, &arg_option, argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->set_option_name(arg_option, arg_name);
     return JS_UNDEFINED;
@@ -445,7 +445,7 @@ static JSValue js_FileDialog_add_option(JSContext* ctx, JSValueConst this_val, i
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     PackedStringArray arg_values = qjs_ctx->js_to_variant(argv[2]);
     int64_t arg_default_value_index; JS_ToInt64(ctx, &arg_default_value_index, argv[3]);
 
@@ -998,7 +998,7 @@ static JSValue js_FileDialog_set_root_subfolder(JSContext* ctx, JSValueConst thi
         return JS_ThrowTypeError(ctx, "FileDialog.root_subfolder setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_root_subfolder(value);
     return JS_UNDEFINED;
 }
@@ -1132,7 +1132,7 @@ static JSValue js_FileDialog_set_filename_filter(JSContext* ctx, JSValueConst th
         return JS_ThrowTypeError(ctx, "FileDialog.filename_filter setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_filename_filter(value);
     return JS_UNDEFINED;
 }
@@ -1400,7 +1400,7 @@ static JSValue js_FileDialog_set_current_dir(JSContext* ctx, JSValueConst this_v
         return JS_ThrowTypeError(ctx, "FileDialog.current_dir setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_current_dir(value);
     return JS_UNDEFINED;
 }
@@ -1467,7 +1467,7 @@ static JSValue js_FileDialog_set_current_file(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "FileDialog.current_file setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_current_file(value);
     return JS_UNDEFINED;
 }
@@ -1534,7 +1534,7 @@ static JSValue js_FileDialog_set_current_path(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "FileDialog.current_path setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_current_path(value);
     return JS_UNDEFINED;
 }

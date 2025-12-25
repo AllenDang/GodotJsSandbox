@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/reg_ex.hpp>
-#include <godot_cpp/classes/reg_ex_match.hpp>
 #include <godot_cpp/classes/reg_ex.hpp>
+#include <godot_cpp/classes/reg_ex_match.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -73,7 +73,7 @@ static JSValue js_RegEx_create_from_string(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_pattern = JS_ToCString(ctx, argv[1]); String arg_pattern = cstr_pattern ? cstr_pattern : ""; JS_FreeCString(ctx, cstr_pattern);
+    const char* cstr_pattern = JS_ToCString(ctx, argv[1]); String arg_pattern = cstr_pattern ? String::utf8(cstr_pattern) : ""; JS_FreeCString(ctx, cstr_pattern);
     // Optional argument: show_error (default: true)
     bool arg_show_error = true;
     if (argc > 2) {
@@ -184,7 +184,7 @@ static JSValue js_RegEx_compile(JSContext* ctx, JSValueConst this_val, int argc,
     }
 
     // Convert arguments
-    const char* cstr_pattern = JS_ToCString(ctx, argv[1]); String arg_pattern = cstr_pattern ? cstr_pattern : ""; JS_FreeCString(ctx, cstr_pattern);
+    const char* cstr_pattern = JS_ToCString(ctx, argv[1]); String arg_pattern = cstr_pattern ? String::utf8(cstr_pattern) : ""; JS_FreeCString(ctx, cstr_pattern);
     // Optional argument: show_error (default: true)
     bool arg_show_error = true;
     if (argc > 2) {
@@ -234,7 +234,7 @@ static JSValue js_RegEx_search(JSContext* ctx, JSValueConst this_val, int argc, 
     }
 
     // Convert arguments
-    const char* cstr_subject = JS_ToCString(ctx, argv[1]); String arg_subject = cstr_subject ? cstr_subject : ""; JS_FreeCString(ctx, cstr_subject);
+    const char* cstr_subject = JS_ToCString(ctx, argv[1]); String arg_subject = cstr_subject ? String::utf8(cstr_subject) : ""; JS_FreeCString(ctx, cstr_subject);
     // Optional argument: offset (default: 0)
     int64_t arg_offset = 0;
     if (argc > 2) {
@@ -315,7 +315,7 @@ static JSValue js_RegEx_search_all(JSContext* ctx, JSValueConst this_val, int ar
     }
 
     // Convert arguments
-    const char* cstr_subject = JS_ToCString(ctx, argv[1]); String arg_subject = cstr_subject ? cstr_subject : ""; JS_FreeCString(ctx, cstr_subject);
+    const char* cstr_subject = JS_ToCString(ctx, argv[1]); String arg_subject = cstr_subject ? String::utf8(cstr_subject) : ""; JS_FreeCString(ctx, cstr_subject);
     // Optional argument: offset (default: 0)
     int64_t arg_offset = 0;
     if (argc > 2) {
@@ -371,8 +371,8 @@ static JSValue js_RegEx_sub(JSContext* ctx, JSValueConst this_val, int argc, JSV
     }
 
     // Convert arguments
-    const char* cstr_subject = JS_ToCString(ctx, argv[1]); String arg_subject = cstr_subject ? cstr_subject : ""; JS_FreeCString(ctx, cstr_subject);
-    const char* cstr_replacement = JS_ToCString(ctx, argv[2]); String arg_replacement = cstr_replacement ? cstr_replacement : ""; JS_FreeCString(ctx, cstr_replacement);
+    const char* cstr_subject = JS_ToCString(ctx, argv[1]); String arg_subject = cstr_subject ? String::utf8(cstr_subject) : ""; JS_FreeCString(ctx, cstr_subject);
+    const char* cstr_replacement = JS_ToCString(ctx, argv[2]); String arg_replacement = cstr_replacement ? String::utf8(cstr_replacement) : ""; JS_FreeCString(ctx, cstr_replacement);
     // Optional argument: all (default: false)
     bool arg_all = false;
     if (argc > 3) {

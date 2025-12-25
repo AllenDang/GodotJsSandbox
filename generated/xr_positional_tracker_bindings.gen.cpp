@@ -67,7 +67,7 @@ static JSValue js_XRPositionalTracker_has_pose(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->has_pose(arg_name);
     return JS_NewBool(ctx, result);
@@ -106,7 +106,7 @@ static JSValue js_XRPositionalTracker_get_pose(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Ref<XRPose> result = typed_obj->get_pose(arg_name);
     if (result.is_null()) return JS_NULL;
@@ -175,7 +175,7 @@ static JSValue js_XRPositionalTracker_invalidate_pose(JSContext* ctx, JSValueCon
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->invalidate_pose(arg_name);
     return JS_UNDEFINED;
@@ -219,7 +219,7 @@ static JSValue js_XRPositionalTracker_set_pose(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Transform3D arg_transform;
     JSValue jbasis_transform = JS_GetPropertyStr(ctx, argv[2], "basis");
     JSValue jorigin_transform = JS_GetPropertyStr(ctx, argv[2], "origin");
@@ -316,7 +316,7 @@ static JSValue js_XRPositionalTracker_get_input(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Variant result = typed_obj->get_input(arg_name);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -360,7 +360,7 @@ static JSValue js_XRPositionalTracker_set_input(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Variant arg_value = qjs_ctx->js_to_variant(argv[2]);
 
     typed_obj->set_input(arg_name, arg_value);
@@ -429,7 +429,7 @@ static JSValue js_XRPositionalTracker_set_profile(JSContext* ctx, JSValueConst t
         return JS_ThrowTypeError(ctx, "XRPositionalTracker.profile setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_tracker_profile(value);
     return JS_UNDEFINED;
 }

@@ -9,9 +9,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/surface_tool.hpp>
+#include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/classes/array_mesh.hpp>
-#include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -1519,7 +1519,7 @@ static JSValue js_SurfaceTool_create_from_blend_shape(JSContext* ctx, JSValueCon
         JS_FreeValue(ctx, jh_existing);
     }
     int64_t arg_surface; JS_ToInt64(ctx, &arg_surface, argv[2]);
-    const char* cstr_blend_shape = JS_ToCString(ctx, argv[3]); String arg_blend_shape = cstr_blend_shape ? cstr_blend_shape : ""; JS_FreeCString(ctx, cstr_blend_shape);
+    const char* cstr_blend_shape = JS_ToCString(ctx, argv[3]); String arg_blend_shape = cstr_blend_shape ? String::utf8(cstr_blend_shape) : ""; JS_FreeCString(ctx, cstr_blend_shape);
 
     typed_obj->create_from_blend_shape(arg_existing, arg_surface, arg_blend_shape);
     return JS_UNDEFINED;

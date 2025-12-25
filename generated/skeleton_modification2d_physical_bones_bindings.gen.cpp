@@ -72,7 +72,7 @@ static JSValue js_SkeletonModification2DPhysicalBones_set_physical_bone_node(JSC
 
     // Convert arguments
     int64_t arg_joint_idx; JS_ToInt64(ctx, &arg_joint_idx, argv[1]);
-    const char* cstr_physicalbone2d_node = JS_ToCString(ctx, argv[2]); NodePath arg_physicalbone2d_node = cstr_physicalbone2d_node ? NodePath(cstr_physicalbone2d_node) : NodePath(); JS_FreeCString(ctx, cstr_physicalbone2d_node);
+    const char* cstr_physicalbone2d_node = JS_ToCString(ctx, argv[2]); NodePath arg_physicalbone2d_node = cstr_physicalbone2d_node ? NodePath(String::utf8(cstr_physicalbone2d_node)) : NodePath(); JS_FreeCString(ctx, cstr_physicalbone2d_node);
 
     typed_obj->set_physical_bone_node(arg_joint_idx, arg_physicalbone2d_node);
     return JS_UNDEFINED;

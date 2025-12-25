@@ -99,7 +99,7 @@ static JSValue js_OpenXRActionMap_find_action_set(JSContext* ctx, JSValueConst t
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Ref<OpenXRActionSet> result = typed_obj->find_action_set(arg_name);
     if (result.is_null()) return JS_NULL;
@@ -376,7 +376,7 @@ static JSValue js_OpenXRActionMap_find_interaction_profile(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Ref<OpenXRInteractionProfile> result = typed_obj->find_interaction_profile(arg_name);
     if (result.is_null()) return JS_NULL;

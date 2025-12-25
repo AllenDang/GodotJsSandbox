@@ -383,7 +383,7 @@ static JSValue js_TabContainer_set_tab_title(JSContext* ctx, JSValueConst this_v
 
     // Convert arguments
     int64_t arg_tab_idx; JS_ToInt64(ctx, &arg_tab_idx, argv[1]);
-    const char* cstr_title = JS_ToCString(ctx, argv[2]); String arg_title = cstr_title ? cstr_title : ""; JS_FreeCString(ctx, cstr_title);
+    const char* cstr_title = JS_ToCString(ctx, argv[2]); String arg_title = cstr_title ? String::utf8(cstr_title) : ""; JS_FreeCString(ctx, cstr_title);
 
     typed_obj->set_tab_title(arg_tab_idx, arg_title);
     return JS_UNDEFINED;
@@ -467,7 +467,7 @@ static JSValue js_TabContainer_set_tab_tooltip(JSContext* ctx, JSValueConst this
 
     // Convert arguments
     int64_t arg_tab_idx; JS_ToInt64(ctx, &arg_tab_idx, argv[1]);
-    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? cstr_tooltip : ""; JS_FreeCString(ctx, cstr_tooltip);
+    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? String::utf8(cstr_tooltip) : ""; JS_FreeCString(ctx, cstr_tooltip);
 
     typed_obj->set_tab_tooltip(arg_tab_idx, arg_tooltip);
     return JS_UNDEFINED;

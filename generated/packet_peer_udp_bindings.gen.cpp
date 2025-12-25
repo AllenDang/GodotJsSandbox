@@ -230,7 +230,7 @@ static JSValue js_PacketPeerUDP_connect_to_host(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_host = JS_ToCString(ctx, argv[1]); String arg_host = cstr_host ? cstr_host : ""; JS_FreeCString(ctx, cstr_host);
+    const char* cstr_host = JS_ToCString(ctx, argv[1]); String arg_host = cstr_host ? String::utf8(cstr_host) : ""; JS_FreeCString(ctx, cstr_host);
     int64_t arg_port; JS_ToInt64(ctx, &arg_port, argv[2]);
 
     Error result = typed_obj->connect_to_host(arg_host, arg_port);
@@ -399,7 +399,7 @@ static JSValue js_PacketPeerUDP_set_dest_address(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_host = JS_ToCString(ctx, argv[1]); String arg_host = cstr_host ? cstr_host : ""; JS_FreeCString(ctx, cstr_host);
+    const char* cstr_host = JS_ToCString(ctx, argv[1]); String arg_host = cstr_host ? String::utf8(cstr_host) : ""; JS_FreeCString(ctx, cstr_host);
     int64_t arg_port; JS_ToInt64(ctx, &arg_port, argv[2]);
 
     Error result = typed_obj->set_dest_address(arg_host, arg_port);
@@ -488,8 +488,8 @@ static JSValue js_PacketPeerUDP_join_multicast_group(JSContext* ctx, JSValueCons
     }
 
     // Convert arguments
-    const char* cstr_multicast_address = JS_ToCString(ctx, argv[1]); String arg_multicast_address = cstr_multicast_address ? cstr_multicast_address : ""; JS_FreeCString(ctx, cstr_multicast_address);
-    const char* cstr_interface_name = JS_ToCString(ctx, argv[2]); String arg_interface_name = cstr_interface_name ? cstr_interface_name : ""; JS_FreeCString(ctx, cstr_interface_name);
+    const char* cstr_multicast_address = JS_ToCString(ctx, argv[1]); String arg_multicast_address = cstr_multicast_address ? String::utf8(cstr_multicast_address) : ""; JS_FreeCString(ctx, cstr_multicast_address);
+    const char* cstr_interface_name = JS_ToCString(ctx, argv[2]); String arg_interface_name = cstr_interface_name ? String::utf8(cstr_interface_name) : ""; JS_FreeCString(ctx, cstr_interface_name);
 
     Error result = typed_obj->join_multicast_group(arg_multicast_address, arg_interface_name);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -533,8 +533,8 @@ static JSValue js_PacketPeerUDP_leave_multicast_group(JSContext* ctx, JSValueCon
     }
 
     // Convert arguments
-    const char* cstr_multicast_address = JS_ToCString(ctx, argv[1]); String arg_multicast_address = cstr_multicast_address ? cstr_multicast_address : ""; JS_FreeCString(ctx, cstr_multicast_address);
-    const char* cstr_interface_name = JS_ToCString(ctx, argv[2]); String arg_interface_name = cstr_interface_name ? cstr_interface_name : ""; JS_FreeCString(ctx, cstr_interface_name);
+    const char* cstr_multicast_address = JS_ToCString(ctx, argv[1]); String arg_multicast_address = cstr_multicast_address ? String::utf8(cstr_multicast_address) : ""; JS_FreeCString(ctx, cstr_multicast_address);
+    const char* cstr_interface_name = JS_ToCString(ctx, argv[2]); String arg_interface_name = cstr_interface_name ? String::utf8(cstr_interface_name) : ""; JS_FreeCString(ctx, cstr_interface_name);
 
     Error result = typed_obj->leave_multicast_group(arg_multicast_address, arg_interface_name);
     return qjs_ctx->variant_to_js(Variant(result));

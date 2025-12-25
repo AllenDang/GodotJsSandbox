@@ -72,7 +72,7 @@ static JSValue js_AnimationNodeBlendTree_add_node(JSContext* ctx, JSValueConst t
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Ref<AnimationNode> arg_node;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -141,7 +141,7 @@ static JSValue js_AnimationNodeBlendTree_get_node(JSContext* ctx, JSValueConst t
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Ref<AnimationNode> result = typed_obj->get_node(arg_name);
     if (result.is_null()) return JS_NULL;
@@ -210,7 +210,7 @@ static JSValue js_AnimationNodeBlendTree_remove_node(JSContext* ctx, JSValueCons
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->remove_node(arg_name);
     return JS_UNDEFINED;
@@ -254,8 +254,8 @@ static JSValue js_AnimationNodeBlendTree_rename_node(JSContext* ctx, JSValueCons
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_new_name = JS_ToCString(ctx, argv[2]); StringName arg_new_name = cstr_new_name ? cstr_new_name : ""; JS_FreeCString(ctx, cstr_new_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_new_name = JS_ToCString(ctx, argv[2]); StringName arg_new_name = cstr_new_name ? String::utf8(cstr_new_name) : ""; JS_FreeCString(ctx, cstr_new_name);
 
     typed_obj->rename_node(arg_name, arg_new_name);
     return JS_UNDEFINED;
@@ -294,7 +294,7 @@ static JSValue js_AnimationNodeBlendTree_has_node(JSContext* ctx, JSValueConst t
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->has_node(arg_name);
     return JS_NewBool(ctx, result);
@@ -338,9 +338,9 @@ static JSValue js_AnimationNodeBlendTree_connect_node(JSContext* ctx, JSValueCon
     }
 
     // Convert arguments
-    const char* cstr_input_node = JS_ToCString(ctx, argv[1]); StringName arg_input_node = cstr_input_node ? cstr_input_node : ""; JS_FreeCString(ctx, cstr_input_node);
+    const char* cstr_input_node = JS_ToCString(ctx, argv[1]); StringName arg_input_node = cstr_input_node ? String::utf8(cstr_input_node) : ""; JS_FreeCString(ctx, cstr_input_node);
     int64_t arg_input_index; JS_ToInt64(ctx, &arg_input_index, argv[2]);
-    const char* cstr_output_node = JS_ToCString(ctx, argv[3]); StringName arg_output_node = cstr_output_node ? cstr_output_node : ""; JS_FreeCString(ctx, cstr_output_node);
+    const char* cstr_output_node = JS_ToCString(ctx, argv[3]); StringName arg_output_node = cstr_output_node ? String::utf8(cstr_output_node) : ""; JS_FreeCString(ctx, cstr_output_node);
 
     typed_obj->connect_node(arg_input_node, arg_input_index, arg_output_node);
     return JS_UNDEFINED;
@@ -384,7 +384,7 @@ static JSValue js_AnimationNodeBlendTree_disconnect_node(JSContext* ctx, JSValue
     }
 
     // Convert arguments
-    const char* cstr_input_node = JS_ToCString(ctx, argv[1]); StringName arg_input_node = cstr_input_node ? cstr_input_node : ""; JS_FreeCString(ctx, cstr_input_node);
+    const char* cstr_input_node = JS_ToCString(ctx, argv[1]); StringName arg_input_node = cstr_input_node ? String::utf8(cstr_input_node) : ""; JS_FreeCString(ctx, cstr_input_node);
     int64_t arg_input_index; JS_ToInt64(ctx, &arg_input_index, argv[2]);
 
     typed_obj->disconnect_node(arg_input_node, arg_input_index);
@@ -460,7 +460,7 @@ static JSValue js_AnimationNodeBlendTree_set_node_position(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     double tmp_x_position, tmp_y_position;
     JSValue jx_position = JS_GetPropertyStr(ctx, argv[2], "x");
     JSValue jy_position = JS_GetPropertyStr(ctx, argv[2], "y");
@@ -507,7 +507,7 @@ static JSValue js_AnimationNodeBlendTree_get_node_position(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Vector2 result = typed_obj->get_node_position(arg_name);
     JSValue ret_obj = JS_NewObject(ctx);

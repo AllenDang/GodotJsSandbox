@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/animation_mixer.hpp>
-#include <godot_cpp/classes/animation.hpp>
 #include <godot_cpp/classes/animation_library.hpp>
+#include <godot_cpp/classes/animation.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -73,7 +73,7 @@ static JSValue js_AnimationMixer_add_animation_library(JSContext* ctx, JSValueCo
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Ref<AnimationLibrary> arg_library;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -133,7 +133,7 @@ static JSValue js_AnimationMixer_remove_animation_library(JSContext* ctx, JSValu
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->remove_animation_library(arg_name);
     return JS_UNDEFINED;
@@ -177,8 +177,8 @@ static JSValue js_AnimationMixer_rename_animation_library(JSContext* ctx, JSValu
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_newname = JS_ToCString(ctx, argv[2]); StringName arg_newname = cstr_newname ? cstr_newname : ""; JS_FreeCString(ctx, cstr_newname);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_newname = JS_ToCString(ctx, argv[2]); StringName arg_newname = cstr_newname ? String::utf8(cstr_newname) : ""; JS_FreeCString(ctx, cstr_newname);
 
     typed_obj->rename_animation_library(arg_name, arg_newname);
     return JS_UNDEFINED;
@@ -217,7 +217,7 @@ static JSValue js_AnimationMixer_has_animation_library(JSContext* ctx, JSValueCo
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->has_animation_library(arg_name);
     return JS_NewBool(ctx, result);
@@ -256,7 +256,7 @@ static JSValue js_AnimationMixer_get_animation_library(JSContext* ctx, JSValueCo
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Ref<AnimationLibrary> result = typed_obj->get_animation_library(arg_name);
     if (result.is_null()) return JS_NULL;
@@ -351,7 +351,7 @@ static JSValue js_AnimationMixer_has_animation(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->has_animation(arg_name);
     return JS_NewBool(ctx, result);
@@ -390,7 +390,7 @@ static JSValue js_AnimationMixer_get_animation(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Ref<Animation> result = typed_obj->get_animation(arg_name);
     if (result.is_null()) return JS_NULL;
@@ -782,7 +782,7 @@ static JSValue js_AnimationMixer_capture(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     double arg_duration; JS_ToFloat64(ctx, &arg_duration, argv[2]);
     // Optional argument: trans_type (default: (Tween::TransitionType)0)
     Tween::TransitionType arg_trans_type = (Tween::TransitionType)0;
@@ -1172,7 +1172,7 @@ static JSValue js_AnimationMixer_set_root_node(JSContext* ctx, JSValueConst this
         return JS_ThrowTypeError(ctx, "AnimationMixer.root_node setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_root_node(value);
     return JS_UNDEFINED;
 }
@@ -1239,7 +1239,7 @@ static JSValue js_AnimationMixer_set_root_motion_track(JSContext* ctx, JSValueCo
         return JS_ThrowTypeError(ctx, "AnimationMixer.root_motion_track setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_root_motion_track(value);
     return JS_UNDEFINED;
 }

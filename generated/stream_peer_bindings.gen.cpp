@@ -752,7 +752,7 @@ static JSValue js_StreamPeer_put_string(JSContext* ctx, JSValueConst this_val, i
     }
 
     // Convert arguments
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String arg_value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String arg_value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
 
     typed_obj->put_string(arg_value);
     return JS_UNDEFINED;
@@ -796,7 +796,7 @@ static JSValue js_StreamPeer_put_utf8_string(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String arg_value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String arg_value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
 
     typed_obj->put_utf8_string(arg_value);
     return JS_UNDEFINED;

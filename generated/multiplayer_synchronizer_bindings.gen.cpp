@@ -317,7 +317,7 @@ static JSValue js_MultiplayerSynchronizer_set_root_path(JSContext* ctx, JSValueC
         return JS_ThrowTypeError(ctx, "MultiplayerSynchronizer.root_path setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_root_path(value);
     return JS_UNDEFINED;
 }

@@ -537,7 +537,7 @@ static JSValue js_SkeletonModification2DLookAt_set_bone2d_node(JSContext* ctx, J
         return JS_ThrowTypeError(ctx, "SkeletonModification2DLookAt.bone2d_node setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_bone2d_node(value);
     return JS_UNDEFINED;
 }
@@ -604,7 +604,7 @@ static JSValue js_SkeletonModification2DLookAt_set_target_nodepath(JSContext* ct
         return JS_ThrowTypeError(ctx, "SkeletonModification2DLookAt.target_nodepath setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_target_node(value);
     return JS_UNDEFINED;
 }

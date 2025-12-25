@@ -176,7 +176,7 @@ static JSValue js_TabBar_set_tab_title(JSContext* ctx, JSValueConst this_val, in
 
     // Convert arguments
     int64_t arg_tab_idx; JS_ToInt64(ctx, &arg_tab_idx, argv[1]);
-    const char* cstr_title = JS_ToCString(ctx, argv[2]); String arg_title = cstr_title ? cstr_title : ""; JS_FreeCString(ctx, cstr_title);
+    const char* cstr_title = JS_ToCString(ctx, argv[2]); String arg_title = cstr_title ? String::utf8(cstr_title) : ""; JS_FreeCString(ctx, cstr_title);
 
     typed_obj->set_tab_title(arg_tab_idx, arg_title);
     return JS_UNDEFINED;
@@ -260,7 +260,7 @@ static JSValue js_TabBar_set_tab_tooltip(JSContext* ctx, JSValueConst this_val, 
 
     // Convert arguments
     int64_t arg_tab_idx; JS_ToInt64(ctx, &arg_tab_idx, argv[1]);
-    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? cstr_tooltip : ""; JS_FreeCString(ctx, cstr_tooltip);
+    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? String::utf8(cstr_tooltip) : ""; JS_FreeCString(ctx, cstr_tooltip);
 
     typed_obj->set_tab_tooltip(arg_tab_idx, arg_tooltip);
     return JS_UNDEFINED;
@@ -428,7 +428,7 @@ static JSValue js_TabBar_set_tab_language(JSContext* ctx, JSValueConst this_val,
 
     // Convert arguments
     int64_t arg_tab_idx; JS_ToInt64(ctx, &arg_tab_idx, argv[1]);
-    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? cstr_language : ""; JS_FreeCString(ctx, cstr_language);
+    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? String::utf8(cstr_language) : ""; JS_FreeCString(ctx, cstr_language);
 
     typed_obj->set_tab_language(arg_tab_idx, arg_language);
     return JS_UNDEFINED;

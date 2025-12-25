@@ -73,7 +73,7 @@ static JSValue js_AnimationNodeStateMachine_add_node(JSContext* ctx, JSValueCons
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Ref<AnimationNode> arg_node;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -147,7 +147,7 @@ static JSValue js_AnimationNodeStateMachine_replace_node(JSContext* ctx, JSValue
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Ref<AnimationNode> arg_node;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -202,7 +202,7 @@ static JSValue js_AnimationNodeStateMachine_get_node(JSContext* ctx, JSValueCons
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Ref<AnimationNode> result = typed_obj->get_node(arg_name);
     if (result.is_null()) return JS_NULL;
@@ -271,7 +271,7 @@ static JSValue js_AnimationNodeStateMachine_remove_node(JSContext* ctx, JSValueC
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->remove_node(arg_name);
     return JS_UNDEFINED;
@@ -315,8 +315,8 @@ static JSValue js_AnimationNodeStateMachine_rename_node(JSContext* ctx, JSValueC
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_new_name = JS_ToCString(ctx, argv[2]); StringName arg_new_name = cstr_new_name ? cstr_new_name : ""; JS_FreeCString(ctx, cstr_new_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_new_name = JS_ToCString(ctx, argv[2]); StringName arg_new_name = cstr_new_name ? String::utf8(cstr_new_name) : ""; JS_FreeCString(ctx, cstr_new_name);
 
     typed_obj->rename_node(arg_name, arg_new_name);
     return JS_UNDEFINED;
@@ -355,7 +355,7 @@ static JSValue js_AnimationNodeStateMachine_has_node(JSContext* ctx, JSValueCons
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->has_node(arg_name);
     return JS_NewBool(ctx, result);
@@ -484,7 +484,7 @@ static JSValue js_AnimationNodeStateMachine_set_node_position(JSContext* ctx, JS
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     double tmp_x_position, tmp_y_position;
     JSValue jx_position = JS_GetPropertyStr(ctx, argv[2], "x");
     JSValue jy_position = JS_GetPropertyStr(ctx, argv[2], "y");
@@ -531,7 +531,7 @@ static JSValue js_AnimationNodeStateMachine_get_node_position(JSContext* ctx, JS
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Vector2 result = typed_obj->get_node_position(arg_name);
     JSValue ret_obj = JS_NewObject(ctx);
@@ -573,8 +573,8 @@ static JSValue js_AnimationNodeStateMachine_has_transition(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_from = JS_ToCString(ctx, argv[1]); StringName arg_from = cstr_from ? cstr_from : ""; JS_FreeCString(ctx, cstr_from);
-    const char* cstr_to = JS_ToCString(ctx, argv[2]); StringName arg_to = cstr_to ? cstr_to : ""; JS_FreeCString(ctx, cstr_to);
+    const char* cstr_from = JS_ToCString(ctx, argv[1]); StringName arg_from = cstr_from ? String::utf8(cstr_from) : ""; JS_FreeCString(ctx, cstr_from);
+    const char* cstr_to = JS_ToCString(ctx, argv[2]); StringName arg_to = cstr_to ? String::utf8(cstr_to) : ""; JS_FreeCString(ctx, cstr_to);
 
     bool result = typed_obj->has_transition(arg_from, arg_to);
     return JS_NewBool(ctx, result);
@@ -618,8 +618,8 @@ static JSValue js_AnimationNodeStateMachine_add_transition(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_from = JS_ToCString(ctx, argv[1]); StringName arg_from = cstr_from ? cstr_from : ""; JS_FreeCString(ctx, cstr_from);
-    const char* cstr_to = JS_ToCString(ctx, argv[2]); StringName arg_to = cstr_to ? cstr_to : ""; JS_FreeCString(ctx, cstr_to);
+    const char* cstr_from = JS_ToCString(ctx, argv[1]); StringName arg_from = cstr_from ? String::utf8(cstr_from) : ""; JS_FreeCString(ctx, cstr_from);
+    const char* cstr_to = JS_ToCString(ctx, argv[2]); StringName arg_to = cstr_to ? String::utf8(cstr_to) : ""; JS_FreeCString(ctx, cstr_to);
     Ref<AnimationNodeStateMachineTransition> arg_transition;
     if (JS_IsNumber(argv[3])) {
         // Direct handle (unwrapped by JS proxy)
@@ -896,8 +896,8 @@ static JSValue js_AnimationNodeStateMachine_remove_transition(JSContext* ctx, JS
     }
 
     // Convert arguments
-    const char* cstr_from = JS_ToCString(ctx, argv[1]); StringName arg_from = cstr_from ? cstr_from : ""; JS_FreeCString(ctx, cstr_from);
-    const char* cstr_to = JS_ToCString(ctx, argv[2]); StringName arg_to = cstr_to ? cstr_to : ""; JS_FreeCString(ctx, cstr_to);
+    const char* cstr_from = JS_ToCString(ctx, argv[1]); StringName arg_from = cstr_from ? String::utf8(cstr_from) : ""; JS_FreeCString(ctx, cstr_from);
+    const char* cstr_to = JS_ToCString(ctx, argv[2]); StringName arg_to = cstr_to ? String::utf8(cstr_to) : ""; JS_FreeCString(ctx, cstr_to);
 
     typed_obj->remove_transition(arg_from, arg_to);
     return JS_UNDEFINED;

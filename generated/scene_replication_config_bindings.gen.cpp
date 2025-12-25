@@ -102,7 +102,7 @@ static JSValue js_SceneReplicationConfig_add_property(JSContext* ctx, JSValueCon
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
     // Optional argument: index (default: -1)
     int64_t arg_index = -1;
     if (argc > 2) {
@@ -147,7 +147,7 @@ static JSValue js_SceneReplicationConfig_has_property(JSContext* ctx, JSValueCon
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     bool result = typed_obj->has_property(arg_path);
     return JS_NewBool(ctx, result);
@@ -191,7 +191,7 @@ static JSValue js_SceneReplicationConfig_remove_property(JSContext* ctx, JSValue
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     typed_obj->remove_property(arg_path);
     return JS_UNDEFINED;
@@ -235,7 +235,7 @@ static JSValue js_SceneReplicationConfig_property_get_index(JSContext* ctx, JSVa
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     int64_t result = typed_obj->property_get_index(arg_path);
     return JS_NewInt64(ctx, result);
@@ -279,7 +279,7 @@ static JSValue js_SceneReplicationConfig_property_get_spawn(JSContext* ctx, JSVa
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     bool result = typed_obj->property_get_spawn(arg_path);
     return JS_NewBool(ctx, result);
@@ -323,7 +323,7 @@ static JSValue js_SceneReplicationConfig_property_set_spawn(JSContext* ctx, JSVa
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
     bool arg_enabled = JS_ToBool(ctx, argv[2]);
 
     typed_obj->property_set_spawn(arg_path, arg_enabled);
@@ -368,7 +368,7 @@ static JSValue js_SceneReplicationConfig_property_get_replication_mode(JSContext
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     SceneReplicationConfig::ReplicationMode result = typed_obj->property_get_replication_mode(arg_path);
     return JS_NewInt64(ctx, (int64_t)result);
@@ -412,7 +412,7 @@ static JSValue js_SceneReplicationConfig_property_set_replication_mode(JSContext
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
     int64_t tmp_mode; JS_ToInt64(ctx, &tmp_mode, argv[2]); SceneReplicationConfig::ReplicationMode arg_mode = (SceneReplicationConfig::ReplicationMode)tmp_mode;
 
     typed_obj->property_set_replication_mode(arg_path, arg_mode);
@@ -457,7 +457,7 @@ static JSValue js_SceneReplicationConfig_property_get_sync(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     bool result = typed_obj->property_get_sync(arg_path);
     return JS_NewBool(ctx, result);
@@ -501,7 +501,7 @@ static JSValue js_SceneReplicationConfig_property_set_sync(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
     bool arg_enabled = JS_ToBool(ctx, argv[2]);
 
     typed_obj->property_set_sync(arg_path, arg_enabled);
@@ -546,7 +546,7 @@ static JSValue js_SceneReplicationConfig_property_get_watch(JSContext* ctx, JSVa
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     bool result = typed_obj->property_get_watch(arg_path);
     return JS_NewBool(ctx, result);
@@ -590,7 +590,7 @@ static JSValue js_SceneReplicationConfig_property_set_watch(JSContext* ctx, JSVa
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
     bool arg_enabled = JS_ToBool(ctx, argv[2]);
 
     typed_obj->property_set_watch(arg_path, arg_enabled);

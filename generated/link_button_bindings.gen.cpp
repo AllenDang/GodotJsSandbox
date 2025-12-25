@@ -95,7 +95,7 @@ static JSValue js_LinkButton_set_text(JSContext* ctx, JSValueConst this_val, int
         return JS_ThrowTypeError(ctx, "LinkButton.text setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_text(value);
     return JS_UNDEFINED;
 }
@@ -229,7 +229,7 @@ static JSValue js_LinkButton_set_uri(JSContext* ctx, JSValueConst this_val, int 
         return JS_ThrowTypeError(ctx, "LinkButton.uri setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_uri(value);
     return JS_UNDEFINED;
 }
@@ -363,7 +363,7 @@ static JSValue js_LinkButton_set_language(JSContext* ctx, JSValueConst this_val,
         return JS_ThrowTypeError(ctx, "LinkButton.language setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_language(value);
     return JS_UNDEFINED;
 }

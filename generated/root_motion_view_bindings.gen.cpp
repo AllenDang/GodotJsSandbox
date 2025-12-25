@@ -95,7 +95,7 @@ static JSValue js_RootMotionView_set_animation_path(JSContext* ctx, JSValueConst
         return JS_ThrowTypeError(ctx, "RootMotionView.animation_path setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_animation_path(value);
     return JS_UNDEFINED;
 }

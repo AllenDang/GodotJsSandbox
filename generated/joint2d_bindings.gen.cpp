@@ -126,7 +126,7 @@ static JSValue js_Joint2D_set_node_a(JSContext* ctx, JSValueConst this_val, int 
         return JS_ThrowTypeError(ctx, "Joint2D.node_a setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_node_a(value);
     return JS_UNDEFINED;
 }
@@ -193,7 +193,7 @@ static JSValue js_Joint2D_set_node_b(JSContext* ctx, JSValueConst this_val, int 
         return JS_ThrowTypeError(ctx, "Joint2D.node_b setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_node_b(value);
     return JS_UNDEFINED;
 }

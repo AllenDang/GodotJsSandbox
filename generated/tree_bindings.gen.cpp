@@ -1385,7 +1385,7 @@ static JSValue js_Tree_set_column_title(JSContext* ctx, JSValueConst this_val, i
 
     // Convert arguments
     int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[1]);
-    const char* cstr_title = JS_ToCString(ctx, argv[2]); String arg_title = cstr_title ? cstr_title : ""; JS_FreeCString(ctx, cstr_title);
+    const char* cstr_title = JS_ToCString(ctx, argv[2]); String arg_title = cstr_title ? String::utf8(cstr_title) : ""; JS_FreeCString(ctx, cstr_title);
 
     typed_obj->set_column_title(arg_column, arg_title);
     return JS_UNDEFINED;
@@ -1637,7 +1637,7 @@ static JSValue js_Tree_set_column_title_language(JSContext* ctx, JSValueConst th
 
     // Convert arguments
     int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[1]);
-    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? cstr_language : ""; JS_FreeCString(ctx, cstr_language);
+    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? String::utf8(cstr_language) : ""; JS_FreeCString(ctx, cstr_language);
 
     typed_obj->set_column_title_language(arg_column, arg_language);
     return JS_UNDEFINED;

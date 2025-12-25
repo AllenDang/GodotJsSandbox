@@ -335,7 +335,7 @@ static JSValue js_XMLParser_has_attribute(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->has_attribute(arg_name);
     return JS_NewBool(ctx, result);
@@ -374,7 +374,7 @@ static JSValue js_XMLParser_get_named_attribute_value(JSContext* ctx, JSValueCon
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     String result = typed_obj->get_named_attribute_value(arg_name);
     return JS_NewString(ctx, result.utf8().get_data());
@@ -413,7 +413,7 @@ static JSValue js_XMLParser_get_named_attribute_value_safe(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     String result = typed_obj->get_named_attribute_value_safe(arg_name);
     return JS_NewString(ctx, result.utf8().get_data());
@@ -599,7 +599,7 @@ static JSValue js_XMLParser_open(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_file = JS_ToCString(ctx, argv[1]); String arg_file = cstr_file ? cstr_file : ""; JS_FreeCString(ctx, cstr_file);
+    const char* cstr_file = JS_ToCString(ctx, argv[1]); String arg_file = cstr_file ? String::utf8(cstr_file) : ""; JS_FreeCString(ctx, cstr_file);
 
     Error result = typed_obj->open(arg_file);
     return qjs_ctx->variant_to_js(Variant(result));

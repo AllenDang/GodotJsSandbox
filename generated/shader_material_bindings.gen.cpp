@@ -72,7 +72,7 @@ static JSValue js_ShaderMaterial_set_shader_parameter(JSContext* ctx, JSValueCon
     }
 
     // Convert arguments
-    const char* cstr_param = JS_ToCString(ctx, argv[1]); StringName arg_param = cstr_param ? cstr_param : ""; JS_FreeCString(ctx, cstr_param);
+    const char* cstr_param = JS_ToCString(ctx, argv[1]); StringName arg_param = cstr_param ? String::utf8(cstr_param) : ""; JS_FreeCString(ctx, cstr_param);
     Variant arg_value = qjs_ctx->js_to_variant(argv[2]);
 
     typed_obj->set_shader_parameter(arg_param, arg_value);
@@ -112,7 +112,7 @@ static JSValue js_ShaderMaterial_get_shader_parameter(JSContext* ctx, JSValueCon
     }
 
     // Convert arguments
-    const char* cstr_param = JS_ToCString(ctx, argv[1]); StringName arg_param = cstr_param ? cstr_param : ""; JS_FreeCString(ctx, cstr_param);
+    const char* cstr_param = JS_ToCString(ctx, argv[1]); StringName arg_param = cstr_param ? String::utf8(cstr_param) : ""; JS_FreeCString(ctx, cstr_param);
 
     Variant result = typed_obj->get_shader_parameter(arg_param);
     return qjs_ctx->variant_to_js(Variant(result));

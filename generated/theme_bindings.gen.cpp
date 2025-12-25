@@ -9,10 +9,10 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/theme.hpp>
-#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/classes/font.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/style_box.hpp>
 #include <godot_cpp/classes/theme.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -75,8 +75,8 @@ static JSValue js_Theme_set_icon(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
     Ref<Texture2D> arg_texture;
     if (JS_IsNumber(argv[3])) {
         // Direct handle (unwrapped by JS proxy)
@@ -131,8 +131,8 @@ static JSValue js_Theme_get_icon(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     Ref<Texture2D> result = typed_obj->get_icon(arg_name, arg_theme_type);
     if (result.is_null()) return JS_NULL;
@@ -196,8 +196,8 @@ static JSValue js_Theme_has_icon(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     bool result = typed_obj->has_icon(arg_name, arg_theme_type);
     return JS_NewBool(ctx, result);
@@ -241,9 +241,9 @@ static JSValue js_Theme_rename_icon(JSContext* ctx, JSValueConst this_val, int a
     }
 
     // Convert arguments
-    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); StringName arg_old_name = cstr_old_name ? cstr_old_name : ""; JS_FreeCString(ctx, cstr_old_name);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); StringName arg_old_name = cstr_old_name ? String::utf8(cstr_old_name) : ""; JS_FreeCString(ctx, cstr_old_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->rename_icon(arg_old_name, arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -287,8 +287,8 @@ static JSValue js_Theme_clear_icon(JSContext* ctx, JSValueConst this_val, int ar
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->clear_icon(arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -327,7 +327,7 @@ static JSValue js_Theme_get_icon_list(JSContext* ctx, JSValueConst this_val, int
     }
 
     // Convert arguments
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     PackedStringArray result = typed_obj->get_icon_list(arg_theme_type);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -402,8 +402,8 @@ static JSValue js_Theme_set_stylebox(JSContext* ctx, JSValueConst this_val, int 
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
     Ref<StyleBox> arg_texture;
     if (JS_IsNumber(argv[3])) {
         // Direct handle (unwrapped by JS proxy)
@@ -458,8 +458,8 @@ static JSValue js_Theme_get_stylebox(JSContext* ctx, JSValueConst this_val, int 
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     Ref<StyleBox> result = typed_obj->get_stylebox(arg_name, arg_theme_type);
     if (result.is_null()) return JS_NULL;
@@ -523,8 +523,8 @@ static JSValue js_Theme_has_stylebox(JSContext* ctx, JSValueConst this_val, int 
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     bool result = typed_obj->has_stylebox(arg_name, arg_theme_type);
     return JS_NewBool(ctx, result);
@@ -568,9 +568,9 @@ static JSValue js_Theme_rename_stylebox(JSContext* ctx, JSValueConst this_val, i
     }
 
     // Convert arguments
-    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); StringName arg_old_name = cstr_old_name ? cstr_old_name : ""; JS_FreeCString(ctx, cstr_old_name);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); StringName arg_old_name = cstr_old_name ? String::utf8(cstr_old_name) : ""; JS_FreeCString(ctx, cstr_old_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->rename_stylebox(arg_old_name, arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -614,8 +614,8 @@ static JSValue js_Theme_clear_stylebox(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->clear_stylebox(arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -654,7 +654,7 @@ static JSValue js_Theme_get_stylebox_list(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     PackedStringArray result = typed_obj->get_stylebox_list(arg_theme_type);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -729,8 +729,8 @@ static JSValue js_Theme_set_font(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
     Ref<Font> arg_font;
     if (JS_IsNumber(argv[3])) {
         // Direct handle (unwrapped by JS proxy)
@@ -785,8 +785,8 @@ static JSValue js_Theme_get_font(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     Ref<Font> result = typed_obj->get_font(arg_name, arg_theme_type);
     if (result.is_null()) return JS_NULL;
@@ -850,8 +850,8 @@ static JSValue js_Theme_has_font(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     bool result = typed_obj->has_font(arg_name, arg_theme_type);
     return JS_NewBool(ctx, result);
@@ -895,9 +895,9 @@ static JSValue js_Theme_rename_font(JSContext* ctx, JSValueConst this_val, int a
     }
 
     // Convert arguments
-    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); StringName arg_old_name = cstr_old_name ? cstr_old_name : ""; JS_FreeCString(ctx, cstr_old_name);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); StringName arg_old_name = cstr_old_name ? String::utf8(cstr_old_name) : ""; JS_FreeCString(ctx, cstr_old_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->rename_font(arg_old_name, arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -941,8 +941,8 @@ static JSValue js_Theme_clear_font(JSContext* ctx, JSValueConst this_val, int ar
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->clear_font(arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -981,7 +981,7 @@ static JSValue js_Theme_get_font_list(JSContext* ctx, JSValueConst this_val, int
     }
 
     // Convert arguments
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     PackedStringArray result = typed_obj->get_font_list(arg_theme_type);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -1056,8 +1056,8 @@ static JSValue js_Theme_set_font_size(JSContext* ctx, JSValueConst this_val, int
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
     int64_t arg_font_size; JS_ToInt64(ctx, &arg_font_size, argv[3]);
 
     typed_obj->set_font_size(arg_name, arg_theme_type, arg_font_size);
@@ -1097,8 +1097,8 @@ static JSValue js_Theme_get_font_size(JSContext* ctx, JSValueConst this_val, int
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     int64_t result = typed_obj->get_font_size(arg_name, arg_theme_type);
     return JS_NewInt64(ctx, result);
@@ -1137,8 +1137,8 @@ static JSValue js_Theme_has_font_size(JSContext* ctx, JSValueConst this_val, int
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     bool result = typed_obj->has_font_size(arg_name, arg_theme_type);
     return JS_NewBool(ctx, result);
@@ -1182,9 +1182,9 @@ static JSValue js_Theme_rename_font_size(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); StringName arg_old_name = cstr_old_name ? cstr_old_name : ""; JS_FreeCString(ctx, cstr_old_name);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); StringName arg_old_name = cstr_old_name ? String::utf8(cstr_old_name) : ""; JS_FreeCString(ctx, cstr_old_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->rename_font_size(arg_old_name, arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -1228,8 +1228,8 @@ static JSValue js_Theme_clear_font_size(JSContext* ctx, JSValueConst this_val, i
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->clear_font_size(arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -1268,7 +1268,7 @@ static JSValue js_Theme_get_font_size_list(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     PackedStringArray result = typed_obj->get_font_size_list(arg_theme_type);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -1343,8 +1343,8 @@ static JSValue js_Theme_set_color(JSContext* ctx, JSValueConst this_val, int arg
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
     double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
     JSValue jr_color = JS_GetPropertyStr(ctx, argv[3], "r");
     JSValue jg_color = JS_GetPropertyStr(ctx, argv[3], "g");
@@ -1397,8 +1397,8 @@ static JSValue js_Theme_get_color(JSContext* ctx, JSValueConst this_val, int arg
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     Color result = typed_obj->get_color(arg_name, arg_theme_type);
     JSValue ret_obj = JS_NewObject(ctx);
@@ -1442,8 +1442,8 @@ static JSValue js_Theme_has_color(JSContext* ctx, JSValueConst this_val, int arg
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     bool result = typed_obj->has_color(arg_name, arg_theme_type);
     return JS_NewBool(ctx, result);
@@ -1487,9 +1487,9 @@ static JSValue js_Theme_rename_color(JSContext* ctx, JSValueConst this_val, int 
     }
 
     // Convert arguments
-    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); StringName arg_old_name = cstr_old_name ? cstr_old_name : ""; JS_FreeCString(ctx, cstr_old_name);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); StringName arg_old_name = cstr_old_name ? String::utf8(cstr_old_name) : ""; JS_FreeCString(ctx, cstr_old_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->rename_color(arg_old_name, arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -1533,8 +1533,8 @@ static JSValue js_Theme_clear_color(JSContext* ctx, JSValueConst this_val, int a
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->clear_color(arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -1573,7 +1573,7 @@ static JSValue js_Theme_get_color_list(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     PackedStringArray result = typed_obj->get_color_list(arg_theme_type);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -1648,8 +1648,8 @@ static JSValue js_Theme_set_constant(JSContext* ctx, JSValueConst this_val, int 
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
     int64_t arg_constant; JS_ToInt64(ctx, &arg_constant, argv[3]);
 
     typed_obj->set_constant(arg_name, arg_theme_type, arg_constant);
@@ -1689,8 +1689,8 @@ static JSValue js_Theme_get_constant(JSContext* ctx, JSValueConst this_val, int 
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     int64_t result = typed_obj->get_constant(arg_name, arg_theme_type);
     return JS_NewInt64(ctx, result);
@@ -1729,8 +1729,8 @@ static JSValue js_Theme_has_constant(JSContext* ctx, JSValueConst this_val, int 
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     bool result = typed_obj->has_constant(arg_name, arg_theme_type);
     return JS_NewBool(ctx, result);
@@ -1774,9 +1774,9 @@ static JSValue js_Theme_rename_constant(JSContext* ctx, JSValueConst this_val, i
     }
 
     // Convert arguments
-    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); StringName arg_old_name = cstr_old_name ? cstr_old_name : ""; JS_FreeCString(ctx, cstr_old_name);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); StringName arg_old_name = cstr_old_name ? String::utf8(cstr_old_name) : ""; JS_FreeCString(ctx, cstr_old_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->rename_constant(arg_old_name, arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -1820,8 +1820,8 @@ static JSValue js_Theme_clear_constant(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->clear_constant(arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -1860,7 +1860,7 @@ static JSValue js_Theme_get_constant_list(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); String arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     PackedStringArray result = typed_obj->get_constant_list(arg_theme_type);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -2029,8 +2029,8 @@ static JSValue js_Theme_set_theme_item(JSContext* ctx, JSValueConst this_val, in
 
     // Convert arguments
     int64_t tmp_data_type; JS_ToInt64(ctx, &tmp_data_type, argv[1]); Theme::DataType arg_data_type = (Theme::DataType)tmp_data_type;
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
     Variant arg_value = qjs_ctx->js_to_variant(argv[4]);
 
     typed_obj->set_theme_item(arg_data_type, arg_name, arg_theme_type, arg_value);
@@ -2071,8 +2071,8 @@ static JSValue js_Theme_get_theme_item(JSContext* ctx, JSValueConst this_val, in
 
     // Convert arguments
     int64_t tmp_data_type; JS_ToInt64(ctx, &tmp_data_type, argv[1]); Theme::DataType arg_data_type = (Theme::DataType)tmp_data_type;
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     Variant result = typed_obj->get_theme_item(arg_data_type, arg_name, arg_theme_type);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -2112,8 +2112,8 @@ static JSValue js_Theme_has_theme_item(JSContext* ctx, JSValueConst this_val, in
 
     // Convert arguments
     int64_t tmp_data_type; JS_ToInt64(ctx, &tmp_data_type, argv[1]); Theme::DataType arg_data_type = (Theme::DataType)tmp_data_type;
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     bool result = typed_obj->has_theme_item(arg_data_type, arg_name, arg_theme_type);
     return JS_NewBool(ctx, result);
@@ -2158,9 +2158,9 @@ static JSValue js_Theme_rename_theme_item(JSContext* ctx, JSValueConst this_val,
 
     // Convert arguments
     int64_t tmp_data_type; JS_ToInt64(ctx, &tmp_data_type, argv[1]); Theme::DataType arg_data_type = (Theme::DataType)tmp_data_type;
-    const char* cstr_old_name = JS_ToCString(ctx, argv[2]); StringName arg_old_name = cstr_old_name ? cstr_old_name : ""; JS_FreeCString(ctx, cstr_old_name);
-    const char* cstr_name = JS_ToCString(ctx, argv[3]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[4]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_old_name = JS_ToCString(ctx, argv[2]); StringName arg_old_name = cstr_old_name ? String::utf8(cstr_old_name) : ""; JS_FreeCString(ctx, cstr_old_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[3]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[4]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->rename_theme_item(arg_data_type, arg_old_name, arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -2205,8 +2205,8 @@ static JSValue js_Theme_clear_theme_item(JSContext* ctx, JSValueConst this_val, 
 
     // Convert arguments
     int64_t tmp_data_type; JS_ToInt64(ctx, &tmp_data_type, argv[1]); Theme::DataType arg_data_type = (Theme::DataType)tmp_data_type;
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[3]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->clear_theme_item(arg_data_type, arg_name, arg_theme_type);
     return JS_UNDEFINED;
@@ -2246,7 +2246,7 @@ static JSValue js_Theme_get_theme_item_list(JSContext* ctx, JSValueConst this_va
 
     // Convert arguments
     int64_t tmp_data_type; JS_ToInt64(ctx, &tmp_data_type, argv[1]); Theme::DataType arg_data_type = (Theme::DataType)tmp_data_type;
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); String arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); String arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     PackedStringArray result = typed_obj->get_theme_item_list(arg_data_type, arg_theme_type);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -2329,8 +2329,8 @@ static JSValue js_Theme_set_type_variation(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
-    const char* cstr_base_type = JS_ToCString(ctx, argv[2]); StringName arg_base_type = cstr_base_type ? cstr_base_type : ""; JS_FreeCString(ctx, cstr_base_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_base_type = JS_ToCString(ctx, argv[2]); StringName arg_base_type = cstr_base_type ? String::utf8(cstr_base_type) : ""; JS_FreeCString(ctx, cstr_base_type);
 
     typed_obj->set_type_variation(arg_theme_type, arg_base_type);
     return JS_UNDEFINED;
@@ -2369,8 +2369,8 @@ static JSValue js_Theme_is_type_variation(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
-    const char* cstr_base_type = JS_ToCString(ctx, argv[2]); StringName arg_base_type = cstr_base_type ? cstr_base_type : ""; JS_FreeCString(ctx, cstr_base_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_base_type = JS_ToCString(ctx, argv[2]); StringName arg_base_type = cstr_base_type ? String::utf8(cstr_base_type) : ""; JS_FreeCString(ctx, cstr_base_type);
 
     bool result = typed_obj->is_type_variation(arg_theme_type, arg_base_type);
     return JS_NewBool(ctx, result);
@@ -2414,7 +2414,7 @@ static JSValue js_Theme_clear_type_variation(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->clear_type_variation(arg_theme_type);
     return JS_UNDEFINED;
@@ -2453,7 +2453,7 @@ static JSValue js_Theme_get_type_variation_base(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     StringName result = typed_obj->get_type_variation_base(arg_theme_type);
     return JS_NewString(ctx, String(result).utf8().get_data());
@@ -2492,7 +2492,7 @@ static JSValue js_Theme_get_type_variation_list(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_base_type = JS_ToCString(ctx, argv[1]); StringName arg_base_type = cstr_base_type ? cstr_base_type : ""; JS_FreeCString(ctx, cstr_base_type);
+    const char* cstr_base_type = JS_ToCString(ctx, argv[1]); StringName arg_base_type = cstr_base_type ? String::utf8(cstr_base_type) : ""; JS_FreeCString(ctx, cstr_base_type);
 
     PackedStringArray result = typed_obj->get_type_variation_list(arg_base_type);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -2536,7 +2536,7 @@ static JSValue js_Theme_add_type(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->add_type(arg_theme_type);
     return JS_UNDEFINED;
@@ -2580,7 +2580,7 @@ static JSValue js_Theme_remove_type(JSContext* ctx, JSValueConst this_val, int a
     }
 
     // Convert arguments
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->remove_type(arg_theme_type);
     return JS_UNDEFINED;
@@ -2624,8 +2624,8 @@ static JSValue js_Theme_rename_type(JSContext* ctx, JSValueConst this_val, int a
     }
 
     // Convert arguments
-    const char* cstr_old_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_old_theme_type = cstr_old_theme_type ? cstr_old_theme_type : ""; JS_FreeCString(ctx, cstr_old_theme_type);
-    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? cstr_theme_type : ""; JS_FreeCString(ctx, cstr_theme_type);
+    const char* cstr_old_theme_type = JS_ToCString(ctx, argv[1]); StringName arg_old_theme_type = cstr_old_theme_type ? String::utf8(cstr_old_theme_type) : ""; JS_FreeCString(ctx, cstr_old_theme_type);
+    const char* cstr_theme_type = JS_ToCString(ctx, argv[2]); StringName arg_theme_type = cstr_theme_type ? String::utf8(cstr_theme_type) : ""; JS_FreeCString(ctx, cstr_theme_type);
 
     typed_obj->rename_type(arg_old_theme_type, arg_theme_type);
     return JS_UNDEFINED;

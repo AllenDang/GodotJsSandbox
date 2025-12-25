@@ -9,12 +9,12 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/mesh_instance3d.hpp>
+#include <godot_cpp/classes/material.hpp>
+#include <godot_cpp/classes/skin_reference.hpp>
 #include <godot_cpp/classes/mesh_convex_decomposition_settings.hpp>
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/skin.hpp>
-#include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/classes/array_mesh.hpp>
-#include <godot_cpp/classes/skin_reference.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -534,7 +534,7 @@ static JSValue js_MeshInstance3D_find_blend_shape_by_name(JSContext* ctx, JSValu
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     int64_t result = typed_obj->find_blend_shape_by_name(arg_name);
     return JS_NewInt64(ctx, result);
@@ -1116,7 +1116,7 @@ static JSValue js_MeshInstance3D_set_skeleton(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "MeshInstance3D.skeleton setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_skeleton_path(value);
     return JS_UNDEFINED;
 }

@@ -388,7 +388,7 @@ static JSValue js_BoneAttachment3D_set_external_skeleton(JSContext* ctx, JSValue
         return JS_ThrowTypeError(ctx, "BoneAttachment3D.external_skeleton setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_external_skeleton(value);
     return JS_UNDEFINED;
 }

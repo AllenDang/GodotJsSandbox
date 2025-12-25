@@ -95,7 +95,7 @@ static JSValue js_OpenXRAction_set_localized_name(JSContext* ctx, JSValueConst t
         return JS_ThrowTypeError(ctx, "OpenXRAction.localized_name setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_localized_name(value);
     return JS_UNDEFINED;
 }

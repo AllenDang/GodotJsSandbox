@@ -72,7 +72,7 @@ static JSValue js_SpriteFrames_add_animation(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
 
     typed_obj->add_animation(arg_anim);
     return JS_UNDEFINED;
@@ -111,7 +111,7 @@ static JSValue js_SpriteFrames_has_animation(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
 
     bool result = typed_obj->has_animation(arg_anim);
     return JS_NewBool(ctx, result);
@@ -155,8 +155,8 @@ static JSValue js_SpriteFrames_duplicate_animation(JSContext* ctx, JSValueConst 
     }
 
     // Convert arguments
-    const char* cstr_anim_from = JS_ToCString(ctx, argv[1]); StringName arg_anim_from = cstr_anim_from ? cstr_anim_from : ""; JS_FreeCString(ctx, cstr_anim_from);
-    const char* cstr_anim_to = JS_ToCString(ctx, argv[2]); StringName arg_anim_to = cstr_anim_to ? cstr_anim_to : ""; JS_FreeCString(ctx, cstr_anim_to);
+    const char* cstr_anim_from = JS_ToCString(ctx, argv[1]); StringName arg_anim_from = cstr_anim_from ? String::utf8(cstr_anim_from) : ""; JS_FreeCString(ctx, cstr_anim_from);
+    const char* cstr_anim_to = JS_ToCString(ctx, argv[2]); StringName arg_anim_to = cstr_anim_to ? String::utf8(cstr_anim_to) : ""; JS_FreeCString(ctx, cstr_anim_to);
 
     typed_obj->duplicate_animation(arg_anim_from, arg_anim_to);
     return JS_UNDEFINED;
@@ -200,7 +200,7 @@ static JSValue js_SpriteFrames_remove_animation(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
 
     typed_obj->remove_animation(arg_anim);
     return JS_UNDEFINED;
@@ -244,8 +244,8 @@ static JSValue js_SpriteFrames_rename_animation(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
-    const char* cstr_newname = JS_ToCString(ctx, argv[2]); StringName arg_newname = cstr_newname ? cstr_newname : ""; JS_FreeCString(ctx, cstr_newname);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_newname = JS_ToCString(ctx, argv[2]); StringName arg_newname = cstr_newname ? String::utf8(cstr_newname) : ""; JS_FreeCString(ctx, cstr_newname);
 
     typed_obj->rename_animation(arg_anim, arg_newname);
     return JS_UNDEFINED;
@@ -320,7 +320,7 @@ static JSValue js_SpriteFrames_set_animation_speed(JSContext* ctx, JSValueConst 
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
     double arg_fps; JS_ToFloat64(ctx, &arg_fps, argv[2]);
 
     typed_obj->set_animation_speed(arg_anim, arg_fps);
@@ -360,7 +360,7 @@ static JSValue js_SpriteFrames_get_animation_speed(JSContext* ctx, JSValueConst 
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
 
     double result = typed_obj->get_animation_speed(arg_anim);
     return JS_NewFloat64(ctx, result);
@@ -404,7 +404,7 @@ static JSValue js_SpriteFrames_set_animation_loop(JSContext* ctx, JSValueConst t
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
     bool arg_loop = JS_ToBool(ctx, argv[2]);
 
     typed_obj->set_animation_loop(arg_anim, arg_loop);
@@ -444,7 +444,7 @@ static JSValue js_SpriteFrames_get_animation_loop(JSContext* ctx, JSValueConst t
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
 
     bool result = typed_obj->get_animation_loop(arg_anim);
     return JS_NewBool(ctx, result);
@@ -488,7 +488,7 @@ static JSValue js_SpriteFrames_add_frame(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
     Ref<Texture2D> arg_texture;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -560,7 +560,7 @@ static JSValue js_SpriteFrames_set_frame(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
     int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[2]);
     Ref<Texture2D> arg_texture;
     if (JS_IsNumber(argv[3])) {
@@ -627,7 +627,7 @@ static JSValue js_SpriteFrames_remove_frame(JSContext* ctx, JSValueConst this_va
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
     int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[2]);
 
     typed_obj->remove_frame(arg_anim, arg_idx);
@@ -667,7 +667,7 @@ static JSValue js_SpriteFrames_get_frame_count(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
 
     int64_t result = typed_obj->get_frame_count(arg_anim);
     return JS_NewInt64(ctx, result);
@@ -706,7 +706,7 @@ static JSValue js_SpriteFrames_get_frame_texture(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
     int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[2]);
 
     Ref<Texture2D> result = typed_obj->get_frame_texture(arg_anim, arg_idx);
@@ -771,7 +771,7 @@ static JSValue js_SpriteFrames_get_frame_duration(JSContext* ctx, JSValueConst t
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
     int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[2]);
 
     double result = typed_obj->get_frame_duration(arg_anim, arg_idx);
@@ -816,7 +816,7 @@ static JSValue js_SpriteFrames_clear(JSContext* ctx, JSValueConst this_val, int 
     }
 
     // Convert arguments
-    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? cstr_anim : ""; JS_FreeCString(ctx, cstr_anim);
+    const char* cstr_anim = JS_ToCString(ctx, argv[1]); StringName arg_anim = cstr_anim ? String::utf8(cstr_anim) : ""; JS_FreeCString(ctx, cstr_anim);
 
     typed_obj->clear(arg_anim);
     return JS_UNDEFINED;

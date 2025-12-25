@@ -162,7 +162,7 @@ static JSValue js_VisibleOnScreenEnabler2D_set_enable_node_path(JSContext* ctx, 
         return JS_ThrowTypeError(ctx, "VisibleOnScreenEnabler2D.enable_node_path setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_enable_node_path(value);
     return JS_UNDEFINED;
 }

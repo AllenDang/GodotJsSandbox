@@ -95,7 +95,7 @@ static JSValue js_CompressedTexture2D_set_load_path(JSContext* ctx, JSValueConst
         return JS_ThrowTypeError(ctx, "CompressedTexture2D.load_path setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->load(value);
     return JS_UNDEFINED;
 }

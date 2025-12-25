@@ -72,7 +72,7 @@ static JSValue js_DPITexture_create_from_string(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_source = JS_ToCString(ctx, argv[1]); String arg_source = cstr_source ? cstr_source : ""; JS_FreeCString(ctx, cstr_source);
+    const char* cstr_source = JS_ToCString(ctx, argv[1]); String arg_source = cstr_source ? String::utf8(cstr_source) : ""; JS_FreeCString(ctx, cstr_source);
     // Optional argument: scale (default: 1.0)
     double arg_scale = 1.0;
     if (argc > 2) {
@@ -160,7 +160,7 @@ static JSValue js_DPITexture_set_source(JSContext* ctx, JSValueConst this_val, i
     }
 
     // Convert arguments
-    const char* cstr_source = JS_ToCString(ctx, argv[1]); String arg_source = cstr_source ? cstr_source : ""; JS_FreeCString(ctx, cstr_source);
+    const char* cstr_source = JS_ToCString(ctx, argv[1]); String arg_source = cstr_source ? String::utf8(cstr_source) : ""; JS_FreeCString(ctx, cstr_source);
 
     typed_obj->set_source(arg_source);
     return JS_UNDEFINED;

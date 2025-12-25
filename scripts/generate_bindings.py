@@ -79,11 +79,11 @@ JS_CONVERSION_TEMPLATES = {
     },
     "String": {
         "to_js": "return JS_NewString(ctx, value.utf8().get_data());",
-        "from_js": 'const char* str = JS_ToCString(ctx, argv[1]); String value = str ? str : ""; JS_FreeCString(ctx, str);',
+        "from_js": 'const char* str = JS_ToCString(ctx, argv[1]); String value = str ? String::utf8(str) : ""; JS_FreeCString(ctx, str);',
     },
     "StringName": {
         "to_js": "return JS_NewString(ctx, String(value).utf8().get_data());",
-        "from_js": 'const char* str = JS_ToCString(ctx, argv[1]); StringName value = str ? str : ""; JS_FreeCString(ctx, str);',
+        "from_js": 'const char* str = JS_ToCString(ctx, argv[1]); StringName value = str ? String::utf8(str) : ""; JS_FreeCString(ctx, str);',
     },
     "Vector2": {
         "to_js": """JSValue obj = JS_NewObject(ctx);
@@ -530,11 +530,11 @@ class BindingGenerator:
         if cpp_type == "double":
             return f"double arg_{arg_name}; JS_ToFloat64(ctx, &arg_{arg_name}, argv[{arg_index}]);"
         if cpp_type == "String":
-            return f'const char* cstr_{arg_name} = JS_ToCString(ctx, argv[{arg_index}]); String arg_{arg_name} = cstr_{arg_name} ? cstr_{arg_name} : ""; JS_FreeCString(ctx, cstr_{arg_name});'
+            return f'const char* cstr_{arg_name} = JS_ToCString(ctx, argv[{arg_index}]); String arg_{arg_name} = cstr_{arg_name} ? String::utf8(cstr_{arg_name}) : ""; JS_FreeCString(ctx, cstr_{arg_name});'
         if cpp_type == "StringName":
-            return f'const char* cstr_{arg_name} = JS_ToCString(ctx, argv[{arg_index}]); StringName arg_{arg_name} = cstr_{arg_name} ? cstr_{arg_name} : ""; JS_FreeCString(ctx, cstr_{arg_name});'
+            return f'const char* cstr_{arg_name} = JS_ToCString(ctx, argv[{arg_index}]); StringName arg_{arg_name} = cstr_{arg_name} ? String::utf8(cstr_{arg_name}) : ""; JS_FreeCString(ctx, cstr_{arg_name});'
         if cpp_type == "NodePath":
-            return f'const char* cstr_{arg_name} = JS_ToCString(ctx, argv[{arg_index}]); NodePath arg_{arg_name} = cstr_{arg_name} ? NodePath(cstr_{arg_name}) : NodePath(); JS_FreeCString(ctx, cstr_{arg_name});'
+            return f'const char* cstr_{arg_name} = JS_ToCString(ctx, argv[{arg_index}]); NodePath arg_{arg_name} = cstr_{arg_name} ? NodePath(String::utf8(cstr_{arg_name})) : NodePath(); JS_FreeCString(ctx, cstr_{arg_name});'
         if cpp_type == "Vector2":
             return f"""double tmp_x_{arg_name}, tmp_y_{arg_name};
     JSValue jx_{arg_name} = JS_GetPropertyStr(ctx, argv[{arg_index}], "x");

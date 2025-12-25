@@ -9,12 +9,12 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/tween.hpp>
-#include <godot_cpp/classes/subtween_tweener.hpp>
-#include <godot_cpp/classes/tween.hpp>
 #include <godot_cpp/classes/interval_tweener.hpp>
+#include <godot_cpp/classes/tween.hpp>
+#include <godot_cpp/classes/method_tweener.hpp>
 #include <godot_cpp/classes/callback_tweener.hpp>
 #include <godot_cpp/classes/property_tweener.hpp>
-#include <godot_cpp/classes/method_tweener.hpp>
+#include <godot_cpp/classes/subtween_tweener.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -93,7 +93,7 @@ static JSValue js_Tween_tween_property(JSContext* ctx, JSValueConst this_val, in
         }
         JS_FreeValue(ctx, jh_object);
     }
-    const char* cstr_property = JS_ToCString(ctx, argv[2]); NodePath arg_property = cstr_property ? NodePath(cstr_property) : NodePath(); JS_FreeCString(ctx, cstr_property);
+    const char* cstr_property = JS_ToCString(ctx, argv[2]); NodePath arg_property = cstr_property ? NodePath(String::utf8(cstr_property)) : NodePath(); JS_FreeCString(ctx, cstr_property);
     Variant arg_final_val = qjs_ctx->js_to_variant(argv[3]);
     double arg_duration; JS_ToFloat64(ctx, &arg_duration, argv[4]);
 

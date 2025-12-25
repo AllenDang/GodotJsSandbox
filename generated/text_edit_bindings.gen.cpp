@@ -394,7 +394,7 @@ static JSValue js_TextEdit_set_line(JSContext* ctx, JSValueConst this_val, int a
 
     // Convert arguments
     int64_t arg_line; JS_ToInt64(ctx, &arg_line, argv[1]);
-    const char* cstr_new_text = JS_ToCString(ctx, argv[2]); String arg_new_text = cstr_new_text ? cstr_new_text : ""; JS_FreeCString(ctx, cstr_new_text);
+    const char* cstr_new_text = JS_ToCString(ctx, argv[2]); String arg_new_text = cstr_new_text ? String::utf8(cstr_new_text) : ""; JS_FreeCString(ctx, cstr_new_text);
 
     typed_obj->set_line(arg_line, arg_new_text);
     return JS_UNDEFINED;
@@ -716,7 +716,7 @@ static JSValue js_TextEdit_insert_line_at(JSContext* ctx, JSValueConst this_val,
 
     // Convert arguments
     int64_t arg_line; JS_ToInt64(ctx, &arg_line, argv[1]);
-    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
 
     typed_obj->insert_line_at(arg_line, arg_text);
     return JS_UNDEFINED;
@@ -810,7 +810,7 @@ static JSValue js_TextEdit_insert_text_at_caret(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     // Optional argument: caret_index (default: -1)
     int64_t arg_caret_index = -1;
     if (argc > 2) {
@@ -860,7 +860,7 @@ static JSValue js_TextEdit_insert_text(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     int64_t arg_line; JS_ToInt64(ctx, &arg_line, argv[2]);
     int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[3]);
     // Optional argument: before_selection_begin (default: true)
@@ -1742,7 +1742,7 @@ static JSValue js_TextEdit_set_search_text(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_search_text = JS_ToCString(ctx, argv[1]); String arg_search_text = cstr_search_text ? cstr_search_text : ""; JS_FreeCString(ctx, cstr_search_text);
+    const char* cstr_search_text = JS_ToCString(ctx, argv[1]); String arg_search_text = cstr_search_text ? String::utf8(cstr_search_text) : ""; JS_FreeCString(ctx, cstr_search_text);
 
     typed_obj->set_search_text(arg_search_text);
     return JS_UNDEFINED;
@@ -1830,7 +1830,7 @@ static JSValue js_TextEdit_search(JSContext* ctx, JSValueConst this_val, int arg
     }
 
     // Convert arguments
-    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     int64_t arg_flags; JS_ToInt64(ctx, &arg_flags, argv[2]);
     int64_t arg_from_line; JS_ToInt64(ctx, &arg_from_line, argv[3]);
     int64_t arg_from_column; JS_ToInt64(ctx, &arg_from_column, argv[4]);
@@ -5104,7 +5104,7 @@ static JSValue js_TextEdit_set_gutter_name(JSContext* ctx, JSValueConst this_val
 
     // Convert arguments
     int64_t arg_gutter; JS_ToInt64(ctx, &arg_gutter, argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->set_gutter_name(arg_gutter, arg_name);
     return JS_UNDEFINED;
@@ -5816,7 +5816,7 @@ static JSValue js_TextEdit_set_line_gutter_text(JSContext* ctx, JSValueConst thi
     // Convert arguments
     int64_t arg_line; JS_ToInt64(ctx, &arg_line, argv[1]);
     int64_t arg_gutter; JS_ToInt64(ctx, &arg_gutter, argv[2]);
-    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
 
     typed_obj->set_line_gutter_text(arg_line, arg_gutter, arg_text);
     return JS_UNDEFINED;
@@ -6640,7 +6640,7 @@ static JSValue js_TextEdit_set_text(JSContext* ctx, JSValueConst this_val, int a
         return JS_ThrowTypeError(ctx, "TextEdit.text setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_text(value);
     return JS_UNDEFINED;
 }
@@ -6707,7 +6707,7 @@ static JSValue js_TextEdit_set_placeholder_text(JSContext* ctx, JSValueConst thi
         return JS_ThrowTypeError(ctx, "TextEdit.placeholder_text setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_placeholder(value);
     return JS_UNDEFINED;
 }
@@ -9052,7 +9052,7 @@ static JSValue js_TextEdit_set_custom_word_separators(JSContext* ctx, JSValueCon
         return JS_ThrowTypeError(ctx, "TextEdit.custom_word_separators setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_custom_word_separators(value);
     return JS_UNDEFINED;
 }
@@ -9628,7 +9628,7 @@ static JSValue js_TextEdit_set_language(JSContext* ctx, JSValueConst this_val, i
         return JS_ThrowTypeError(ctx, "TextEdit.language setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_language(value);
     return JS_UNDEFINED;
 }

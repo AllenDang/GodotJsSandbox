@@ -71,8 +71,8 @@ static JSValue js_ConfigFile_set_value(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? cstr_section : ""; JS_FreeCString(ctx, cstr_section);
-    const char* cstr_key = JS_ToCString(ctx, argv[2]); String arg_key = cstr_key ? cstr_key : ""; JS_FreeCString(ctx, cstr_key);
+    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? String::utf8(cstr_section) : ""; JS_FreeCString(ctx, cstr_section);
+    const char* cstr_key = JS_ToCString(ctx, argv[2]); String arg_key = cstr_key ? String::utf8(cstr_key) : ""; JS_FreeCString(ctx, cstr_key);
     Variant arg_value = qjs_ctx->js_to_variant(argv[3]);
 
     typed_obj->set_value(arg_section, arg_key, arg_value);
@@ -112,8 +112,8 @@ static JSValue js_ConfigFile_get_value(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? cstr_section : ""; JS_FreeCString(ctx, cstr_section);
-    const char* cstr_key = JS_ToCString(ctx, argv[2]); String arg_key = cstr_key ? cstr_key : ""; JS_FreeCString(ctx, cstr_key);
+    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? String::utf8(cstr_section) : ""; JS_FreeCString(ctx, cstr_section);
+    const char* cstr_key = JS_ToCString(ctx, argv[2]); String arg_key = cstr_key ? String::utf8(cstr_key) : ""; JS_FreeCString(ctx, cstr_key);
     // Optional argument: default (default: nullptr)
     Variant arg_default = nullptr;
     if (argc > 3) {
@@ -159,7 +159,7 @@ static JSValue js_ConfigFile_has_section(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? cstr_section : ""; JS_FreeCString(ctx, cstr_section);
+    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? String::utf8(cstr_section) : ""; JS_FreeCString(ctx, cstr_section);
 
     bool result = typed_obj->has_section(arg_section);
     return JS_NewBool(ctx, result);
@@ -198,8 +198,8 @@ static JSValue js_ConfigFile_has_section_key(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? cstr_section : ""; JS_FreeCString(ctx, cstr_section);
-    const char* cstr_key = JS_ToCString(ctx, argv[2]); String arg_key = cstr_key ? cstr_key : ""; JS_FreeCString(ctx, cstr_key);
+    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? String::utf8(cstr_section) : ""; JS_FreeCString(ctx, cstr_section);
+    const char* cstr_key = JS_ToCString(ctx, argv[2]); String arg_key = cstr_key ? String::utf8(cstr_key) : ""; JS_FreeCString(ctx, cstr_key);
 
     bool result = typed_obj->has_section_key(arg_section, arg_key);
     return JS_NewBool(ctx, result);
@@ -269,7 +269,7 @@ static JSValue js_ConfigFile_get_section_keys(JSContext* ctx, JSValueConst this_
     }
 
     // Convert arguments
-    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? cstr_section : ""; JS_FreeCString(ctx, cstr_section);
+    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? String::utf8(cstr_section) : ""; JS_FreeCString(ctx, cstr_section);
 
     PackedStringArray result = typed_obj->get_section_keys(arg_section);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -313,7 +313,7 @@ static JSValue js_ConfigFile_erase_section(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? cstr_section : ""; JS_FreeCString(ctx, cstr_section);
+    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? String::utf8(cstr_section) : ""; JS_FreeCString(ctx, cstr_section);
 
     typed_obj->erase_section(arg_section);
     return JS_UNDEFINED;
@@ -357,8 +357,8 @@ static JSValue js_ConfigFile_erase_section_key(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? cstr_section : ""; JS_FreeCString(ctx, cstr_section);
-    const char* cstr_key = JS_ToCString(ctx, argv[2]); String arg_key = cstr_key ? cstr_key : ""; JS_FreeCString(ctx, cstr_key);
+    const char* cstr_section = JS_ToCString(ctx, argv[1]); String arg_section = cstr_section ? String::utf8(cstr_section) : ""; JS_FreeCString(ctx, cstr_section);
+    const char* cstr_key = JS_ToCString(ctx, argv[2]); String arg_key = cstr_key ? String::utf8(cstr_key) : ""; JS_FreeCString(ctx, cstr_key);
 
     typed_obj->erase_section_key(arg_section, arg_key);
     return JS_UNDEFINED;
@@ -402,7 +402,7 @@ static JSValue js_ConfigFile_load(JSContext* ctx, JSValueConst this_val, int arg
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Error result = typed_obj->load(arg_path);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -446,7 +446,7 @@ static JSValue js_ConfigFile_parse(JSContext* ctx, JSValueConst this_val, int ar
     }
 
     // Convert arguments
-    const char* cstr_data = JS_ToCString(ctx, argv[1]); String arg_data = cstr_data ? cstr_data : ""; JS_FreeCString(ctx, cstr_data);
+    const char* cstr_data = JS_ToCString(ctx, argv[1]); String arg_data = cstr_data ? String::utf8(cstr_data) : ""; JS_FreeCString(ctx, cstr_data);
 
     Error result = typed_obj->parse(arg_data);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -490,7 +490,7 @@ static JSValue js_ConfigFile_save(JSContext* ctx, JSValueConst this_val, int arg
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Error result = typed_obj->save(arg_path);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -570,7 +570,7 @@ static JSValue js_ConfigFile_load_encrypted(JSContext* ctx, JSValueConst this_va
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
     PackedByteArray arg_key = qjs_ctx->js_to_variant(argv[2]);
 
     Error result = typed_obj->load_encrypted(arg_path, arg_key);
@@ -615,8 +615,8 @@ static JSValue js_ConfigFile_load_encrypted_pass(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
-    const char* cstr_password = JS_ToCString(ctx, argv[2]); String arg_password = cstr_password ? cstr_password : ""; JS_FreeCString(ctx, cstr_password);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_password = JS_ToCString(ctx, argv[2]); String arg_password = cstr_password ? String::utf8(cstr_password) : ""; JS_FreeCString(ctx, cstr_password);
 
     Error result = typed_obj->load_encrypted_pass(arg_path, arg_password);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -660,7 +660,7 @@ static JSValue js_ConfigFile_save_encrypted(JSContext* ctx, JSValueConst this_va
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
     PackedByteArray arg_key = qjs_ctx->js_to_variant(argv[2]);
 
     Error result = typed_obj->save_encrypted(arg_path, arg_key);
@@ -705,8 +705,8 @@ static JSValue js_ConfigFile_save_encrypted_pass(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
-    const char* cstr_password = JS_ToCString(ctx, argv[2]); String arg_password = cstr_password ? cstr_password : ""; JS_FreeCString(ctx, cstr_password);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_password = JS_ToCString(ctx, argv[2]); String arg_password = cstr_password ? String::utf8(cstr_password) : ""; JS_FreeCString(ctx, cstr_password);
 
     Error result = typed_obj->save_encrypted_pass(arg_path, arg_password);
     return qjs_ctx->variant_to_js(Variant(result));

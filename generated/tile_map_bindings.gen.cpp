@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/tile_map.hpp>
-#include <godot_cpp/classes/tile_map_pattern.hpp>
 #include <godot_cpp/classes/tile_set.hpp>
+#include <godot_cpp/classes/tile_map_pattern.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -371,7 +371,7 @@ static JSValue js_TileMap_set_layer_name(JSContext* ctx, JSValueConst this_val, 
 
     // Convert arguments
     int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->set_layer_name(arg_layer, arg_name);
     return JS_UNDEFINED;

@@ -9,10 +9,10 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/viewport.hpp>
-#include <godot_cpp/classes/world3d.hpp>
-#include <godot_cpp/classes/input_event.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/viewport_texture.hpp>
+#include <godot_cpp/classes/input_event.hpp>
+#include <godot_cpp/classes/world3d.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/world2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -392,7 +392,7 @@ static JSValue js_Viewport_push_text_input(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
 
     typed_obj->push_text_input(arg_text);
     return JS_UNDEFINED;
@@ -867,7 +867,7 @@ static JSValue js_Viewport_gui_set_drag_description(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_description = JS_ToCString(ctx, argv[1]); String arg_description = cstr_description ? cstr_description : ""; JS_FreeCString(ctx, cstr_description);
+    const char* cstr_description = JS_ToCString(ctx, argv[1]); String arg_description = cstr_description ? String::utf8(cstr_description) : ""; JS_FreeCString(ctx, cstr_description);
 
     typed_obj->gui_set_drag_description(arg_description);
     return JS_UNDEFINED;

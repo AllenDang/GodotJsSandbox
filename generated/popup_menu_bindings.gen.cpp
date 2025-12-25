@@ -170,7 +170,7 @@ static JSValue js_PopupMenu_add_item(JSContext* ctx, JSValueConst this_val, int 
     }
 
     // Convert arguments
-    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? cstr_label : ""; JS_FreeCString(ctx, cstr_label);
+    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? String::utf8(cstr_label) : ""; JS_FreeCString(ctx, cstr_label);
     // Optional argument: id (default: -1)
     int64_t arg_id = -1;
     if (argc > 2) {
@@ -243,7 +243,7 @@ static JSValue js_PopupMenu_add_icon_item(JSContext* ctx, JSValueConst this_val,
         }
         JS_FreeValue(ctx, jh_texture);
     }
-    const char* cstr_label = JS_ToCString(ctx, argv[2]); String arg_label = cstr_label ? cstr_label : ""; JS_FreeCString(ctx, cstr_label);
+    const char* cstr_label = JS_ToCString(ctx, argv[2]); String arg_label = cstr_label ? String::utf8(cstr_label) : ""; JS_FreeCString(ctx, cstr_label);
     // Optional argument: id (default: -1)
     int64_t arg_id = -1;
     if (argc > 3) {
@@ -300,7 +300,7 @@ static JSValue js_PopupMenu_add_check_item(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? cstr_label : ""; JS_FreeCString(ctx, cstr_label);
+    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? String::utf8(cstr_label) : ""; JS_FreeCString(ctx, cstr_label);
     // Optional argument: id (default: -1)
     int64_t arg_id = -1;
     if (argc > 2) {
@@ -373,7 +373,7 @@ static JSValue js_PopupMenu_add_icon_check_item(JSContext* ctx, JSValueConst thi
         }
         JS_FreeValue(ctx, jh_texture);
     }
-    const char* cstr_label = JS_ToCString(ctx, argv[2]); String arg_label = cstr_label ? cstr_label : ""; JS_FreeCString(ctx, cstr_label);
+    const char* cstr_label = JS_ToCString(ctx, argv[2]); String arg_label = cstr_label ? String::utf8(cstr_label) : ""; JS_FreeCString(ctx, cstr_label);
     // Optional argument: id (default: -1)
     int64_t arg_id = -1;
     if (argc > 3) {
@@ -430,7 +430,7 @@ static JSValue js_PopupMenu_add_radio_check_item(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? cstr_label : ""; JS_FreeCString(ctx, cstr_label);
+    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? String::utf8(cstr_label) : ""; JS_FreeCString(ctx, cstr_label);
     // Optional argument: id (default: -1)
     int64_t arg_id = -1;
     if (argc > 2) {
@@ -503,7 +503,7 @@ static JSValue js_PopupMenu_add_icon_radio_check_item(JSContext* ctx, JSValueCon
         }
         JS_FreeValue(ctx, jh_texture);
     }
-    const char* cstr_label = JS_ToCString(ctx, argv[2]); String arg_label = cstr_label ? cstr_label : ""; JS_FreeCString(ctx, cstr_label);
+    const char* cstr_label = JS_ToCString(ctx, argv[2]); String arg_label = cstr_label ? String::utf8(cstr_label) : ""; JS_FreeCString(ctx, cstr_label);
     // Optional argument: id (default: -1)
     int64_t arg_id = -1;
     if (argc > 3) {
@@ -560,7 +560,7 @@ static JSValue js_PopupMenu_add_multistate_item(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? cstr_label : ""; JS_FreeCString(ctx, cstr_label);
+    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? String::utf8(cstr_label) : ""; JS_FreeCString(ctx, cstr_label);
     int64_t arg_max_states; JS_ToInt64(ctx, &arg_max_states, argv[2]);
     // Optional argument: default_state (default: 0)
     int64_t arg_default_state = 0;
@@ -1110,8 +1110,8 @@ static JSValue js_PopupMenu_add_submenu_item(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? cstr_label : ""; JS_FreeCString(ctx, cstr_label);
-    const char* cstr_submenu = JS_ToCString(ctx, argv[2]); String arg_submenu = cstr_submenu ? cstr_submenu : ""; JS_FreeCString(ctx, cstr_submenu);
+    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? String::utf8(cstr_label) : ""; JS_FreeCString(ctx, cstr_label);
+    const char* cstr_submenu = JS_ToCString(ctx, argv[2]); String arg_submenu = cstr_submenu ? String::utf8(cstr_submenu) : ""; JS_FreeCString(ctx, cstr_submenu);
     // Optional argument: id (default: -1)
     int64_t arg_id = -1;
     if (argc > 3) {
@@ -1161,7 +1161,7 @@ static JSValue js_PopupMenu_add_submenu_node_item(JSContext* ctx, JSValueConst t
     }
 
     // Convert arguments
-    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? cstr_label : ""; JS_FreeCString(ctx, cstr_label);
+    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? String::utf8(cstr_label) : ""; JS_FreeCString(ctx, cstr_label);
     PopupMenu* arg_submenu = nullptr;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -1228,7 +1228,7 @@ static JSValue js_PopupMenu_set_item_text(JSContext* ctx, JSValueConst this_val,
 
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
-    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
 
     typed_obj->set_item_text(arg_index, arg_text);
     return JS_UNDEFINED;
@@ -1318,7 +1318,7 @@ static JSValue js_PopupMenu_set_item_language(JSContext* ctx, JSValueConst this_
 
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
-    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? cstr_language : ""; JS_FreeCString(ctx, cstr_language);
+    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? String::utf8(cstr_language) : ""; JS_FreeCString(ctx, cstr_language);
 
     typed_obj->set_item_language(arg_index, arg_language);
     return JS_UNDEFINED;
@@ -1796,7 +1796,7 @@ static JSValue js_PopupMenu_set_item_submenu(JSContext* ctx, JSValueConst this_v
 
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
-    const char* cstr_submenu = JS_ToCString(ctx, argv[2]); String arg_submenu = cstr_submenu ? cstr_submenu : ""; JS_FreeCString(ctx, cstr_submenu);
+    const char* cstr_submenu = JS_ToCString(ctx, argv[2]); String arg_submenu = cstr_submenu ? String::utf8(cstr_submenu) : ""; JS_FreeCString(ctx, cstr_submenu);
 
     typed_obj->set_item_submenu(arg_index, arg_submenu);
     return JS_UNDEFINED;
@@ -2036,7 +2036,7 @@ static JSValue js_PopupMenu_set_item_tooltip(JSContext* ctx, JSValueConst this_v
 
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
-    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? cstr_tooltip : ""; JS_FreeCString(ctx, cstr_tooltip);
+    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? String::utf8(cstr_tooltip) : ""; JS_FreeCString(ctx, cstr_tooltip);
 
     typed_obj->set_item_tooltip(arg_index, arg_tooltip);
     return JS_UNDEFINED;

@@ -67,7 +67,7 @@ static JSValue js_InputEvent_is_action(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_action = JS_ToCString(ctx, argv[1]); StringName arg_action = cstr_action ? cstr_action : ""; JS_FreeCString(ctx, cstr_action);
+    const char* cstr_action = JS_ToCString(ctx, argv[1]); StringName arg_action = cstr_action ? String::utf8(cstr_action) : ""; JS_FreeCString(ctx, cstr_action);
     // Optional argument: exact_match (default: false)
     bool arg_exact_match = false;
     if (argc > 2) {
@@ -112,7 +112,7 @@ static JSValue js_InputEvent_is_action_pressed(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    const char* cstr_action = JS_ToCString(ctx, argv[1]); StringName arg_action = cstr_action ? cstr_action : ""; JS_FreeCString(ctx, cstr_action);
+    const char* cstr_action = JS_ToCString(ctx, argv[1]); StringName arg_action = cstr_action ? String::utf8(cstr_action) : ""; JS_FreeCString(ctx, cstr_action);
     // Optional argument: allow_echo (default: false)
     bool arg_allow_echo = false;
     if (argc > 2) {
@@ -163,7 +163,7 @@ static JSValue js_InputEvent_is_action_released(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_action = JS_ToCString(ctx, argv[1]); StringName arg_action = cstr_action ? cstr_action : ""; JS_FreeCString(ctx, cstr_action);
+    const char* cstr_action = JS_ToCString(ctx, argv[1]); StringName arg_action = cstr_action ? String::utf8(cstr_action) : ""; JS_FreeCString(ctx, cstr_action);
     // Optional argument: exact_match (default: false)
     bool arg_exact_match = false;
     if (argc > 2) {
@@ -208,7 +208,7 @@ static JSValue js_InputEvent_get_action_strength(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_action = JS_ToCString(ctx, argv[1]); StringName arg_action = cstr_action ? cstr_action : ""; JS_FreeCString(ctx, cstr_action);
+    const char* cstr_action = JS_ToCString(ctx, argv[1]); StringName arg_action = cstr_action ? String::utf8(cstr_action) : ""; JS_FreeCString(ctx, cstr_action);
     // Optional argument: exact_match (default: false)
     bool arg_exact_match = false;
     if (argc > 2) {

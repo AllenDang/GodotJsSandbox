@@ -72,7 +72,7 @@ static JSValue js_AnimationLibrary_add_animation(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Ref<Animation> arg_animation;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -132,7 +132,7 @@ static JSValue js_AnimationLibrary_remove_animation(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->remove_animation(arg_name);
     return JS_UNDEFINED;
@@ -176,8 +176,8 @@ static JSValue js_AnimationLibrary_rename_animation(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_newname = JS_ToCString(ctx, argv[2]); StringName arg_newname = cstr_newname ? cstr_newname : ""; JS_FreeCString(ctx, cstr_newname);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_newname = JS_ToCString(ctx, argv[2]); StringName arg_newname = cstr_newname ? String::utf8(cstr_newname) : ""; JS_FreeCString(ctx, cstr_newname);
 
     typed_obj->rename_animation(arg_name, arg_newname);
     return JS_UNDEFINED;
@@ -216,7 +216,7 @@ static JSValue js_AnimationLibrary_has_animation(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->has_animation(arg_name);
     return JS_NewBool(ctx, result);
@@ -255,7 +255,7 @@ static JSValue js_AnimationLibrary_get_animation(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Ref<Animation> result = typed_obj->get_animation(arg_name);
     if (result.is_null()) return JS_NULL;

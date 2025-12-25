@@ -71,8 +71,8 @@ static JSValue js_OpenXRInteractionProfileMetadata_register_profile_rename(JSCon
     }
 
     // Convert arguments
-    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); String arg_old_name = cstr_old_name ? cstr_old_name : ""; JS_FreeCString(ctx, cstr_old_name);
-    const char* cstr_new_name = JS_ToCString(ctx, argv[2]); String arg_new_name = cstr_new_name ? cstr_new_name : ""; JS_FreeCString(ctx, cstr_new_name);
+    const char* cstr_old_name = JS_ToCString(ctx, argv[1]); String arg_old_name = cstr_old_name ? String::utf8(cstr_old_name) : ""; JS_FreeCString(ctx, cstr_old_name);
+    const char* cstr_new_name = JS_ToCString(ctx, argv[2]); String arg_new_name = cstr_new_name ? String::utf8(cstr_new_name) : ""; JS_FreeCString(ctx, cstr_new_name);
 
     typed_obj->register_profile_rename(arg_old_name, arg_new_name);
     return JS_UNDEFINED;
@@ -116,9 +116,9 @@ static JSValue js_OpenXRInteractionProfileMetadata_register_top_level_path(JSCon
     }
 
     // Convert arguments
-    const char* cstr_display_name = JS_ToCString(ctx, argv[1]); String arg_display_name = cstr_display_name ? cstr_display_name : ""; JS_FreeCString(ctx, cstr_display_name);
-    const char* cstr_openxr_path = JS_ToCString(ctx, argv[2]); String arg_openxr_path = cstr_openxr_path ? cstr_openxr_path : ""; JS_FreeCString(ctx, cstr_openxr_path);
-    const char* cstr_openxr_extension_name = JS_ToCString(ctx, argv[3]); String arg_openxr_extension_name = cstr_openxr_extension_name ? cstr_openxr_extension_name : ""; JS_FreeCString(ctx, cstr_openxr_extension_name);
+    const char* cstr_display_name = JS_ToCString(ctx, argv[1]); String arg_display_name = cstr_display_name ? String::utf8(cstr_display_name) : ""; JS_FreeCString(ctx, cstr_display_name);
+    const char* cstr_openxr_path = JS_ToCString(ctx, argv[2]); String arg_openxr_path = cstr_openxr_path ? String::utf8(cstr_openxr_path) : ""; JS_FreeCString(ctx, cstr_openxr_path);
+    const char* cstr_openxr_extension_name = JS_ToCString(ctx, argv[3]); String arg_openxr_extension_name = cstr_openxr_extension_name ? String::utf8(cstr_openxr_extension_name) : ""; JS_FreeCString(ctx, cstr_openxr_extension_name);
 
     typed_obj->register_top_level_path(arg_display_name, arg_openxr_path, arg_openxr_extension_name);
     return JS_UNDEFINED;
@@ -162,9 +162,9 @@ static JSValue js_OpenXRInteractionProfileMetadata_register_interaction_profile(
     }
 
     // Convert arguments
-    const char* cstr_display_name = JS_ToCString(ctx, argv[1]); String arg_display_name = cstr_display_name ? cstr_display_name : ""; JS_FreeCString(ctx, cstr_display_name);
-    const char* cstr_openxr_path = JS_ToCString(ctx, argv[2]); String arg_openxr_path = cstr_openxr_path ? cstr_openxr_path : ""; JS_FreeCString(ctx, cstr_openxr_path);
-    const char* cstr_openxr_extension_name = JS_ToCString(ctx, argv[3]); String arg_openxr_extension_name = cstr_openxr_extension_name ? cstr_openxr_extension_name : ""; JS_FreeCString(ctx, cstr_openxr_extension_name);
+    const char* cstr_display_name = JS_ToCString(ctx, argv[1]); String arg_display_name = cstr_display_name ? String::utf8(cstr_display_name) : ""; JS_FreeCString(ctx, cstr_display_name);
+    const char* cstr_openxr_path = JS_ToCString(ctx, argv[2]); String arg_openxr_path = cstr_openxr_path ? String::utf8(cstr_openxr_path) : ""; JS_FreeCString(ctx, cstr_openxr_path);
+    const char* cstr_openxr_extension_name = JS_ToCString(ctx, argv[3]); String arg_openxr_extension_name = cstr_openxr_extension_name ? String::utf8(cstr_openxr_extension_name) : ""; JS_FreeCString(ctx, cstr_openxr_extension_name);
 
     typed_obj->register_interaction_profile(arg_display_name, arg_openxr_path, arg_openxr_extension_name);
     return JS_UNDEFINED;
@@ -208,11 +208,11 @@ static JSValue js_OpenXRInteractionProfileMetadata_register_io_path(JSContext* c
     }
 
     // Convert arguments
-    const char* cstr_interaction_profile = JS_ToCString(ctx, argv[1]); String arg_interaction_profile = cstr_interaction_profile ? cstr_interaction_profile : ""; JS_FreeCString(ctx, cstr_interaction_profile);
-    const char* cstr_display_name = JS_ToCString(ctx, argv[2]); String arg_display_name = cstr_display_name ? cstr_display_name : ""; JS_FreeCString(ctx, cstr_display_name);
-    const char* cstr_toplevel_path = JS_ToCString(ctx, argv[3]); String arg_toplevel_path = cstr_toplevel_path ? cstr_toplevel_path : ""; JS_FreeCString(ctx, cstr_toplevel_path);
-    const char* cstr_openxr_path = JS_ToCString(ctx, argv[4]); String arg_openxr_path = cstr_openxr_path ? cstr_openxr_path : ""; JS_FreeCString(ctx, cstr_openxr_path);
-    const char* cstr_openxr_extension_name = JS_ToCString(ctx, argv[5]); String arg_openxr_extension_name = cstr_openxr_extension_name ? cstr_openxr_extension_name : ""; JS_FreeCString(ctx, cstr_openxr_extension_name);
+    const char* cstr_interaction_profile = JS_ToCString(ctx, argv[1]); String arg_interaction_profile = cstr_interaction_profile ? String::utf8(cstr_interaction_profile) : ""; JS_FreeCString(ctx, cstr_interaction_profile);
+    const char* cstr_display_name = JS_ToCString(ctx, argv[2]); String arg_display_name = cstr_display_name ? String::utf8(cstr_display_name) : ""; JS_FreeCString(ctx, cstr_display_name);
+    const char* cstr_toplevel_path = JS_ToCString(ctx, argv[3]); String arg_toplevel_path = cstr_toplevel_path ? String::utf8(cstr_toplevel_path) : ""; JS_FreeCString(ctx, cstr_toplevel_path);
+    const char* cstr_openxr_path = JS_ToCString(ctx, argv[4]); String arg_openxr_path = cstr_openxr_path ? String::utf8(cstr_openxr_path) : ""; JS_FreeCString(ctx, cstr_openxr_path);
+    const char* cstr_openxr_extension_name = JS_ToCString(ctx, argv[5]); String arg_openxr_extension_name = cstr_openxr_extension_name ? String::utf8(cstr_openxr_extension_name) : ""; JS_FreeCString(ctx, cstr_openxr_extension_name);
     int64_t tmp_action_type; JS_ToInt64(ctx, &tmp_action_type, argv[6]); OpenXRAction::ActionType arg_action_type = (OpenXRAction::ActionType)tmp_action_type;
 
     typed_obj->register_io_path(arg_interaction_profile, arg_display_name, arg_toplevel_path, arg_openxr_path, arg_openxr_extension_name, arg_action_type);

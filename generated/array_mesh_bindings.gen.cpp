@@ -72,7 +72,7 @@ static JSValue js_ArrayMesh_add_blend_shape(JSContext* ctx, JSValueConst this_va
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->add_blend_shape(arg_name);
     return JS_UNDEFINED;
@@ -187,7 +187,7 @@ static JSValue js_ArrayMesh_set_blend_shape_name(JSContext* ctx, JSValueConst th
 
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->set_blend_shape_name(arg_index, arg_name);
     return JS_UNDEFINED;
@@ -726,7 +726,7 @@ static JSValue js_ArrayMesh_surface_find_by_name(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     int64_t result = typed_obj->surface_find_by_name(arg_name);
     return JS_NewInt64(ctx, result);
@@ -771,7 +771,7 @@ static JSValue js_ArrayMesh_surface_set_name(JSContext* ctx, JSValueConst this_v
 
     // Convert arguments
     int64_t arg_surf_idx; JS_ToInt64(ctx, &arg_surf_idx, argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->surface_set_name(arg_surf_idx, arg_name);
     return JS_UNDEFINED;

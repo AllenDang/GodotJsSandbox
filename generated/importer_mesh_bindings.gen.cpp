@@ -73,7 +73,7 @@ static JSValue js_ImporterMesh_add_blend_shape(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->add_blend_shape(arg_name);
     return JS_UNDEFINED;
@@ -766,7 +766,7 @@ static JSValue js_ImporterMesh_set_surface_name(JSContext* ctx, JSValueConst thi
 
     // Convert arguments
     int64_t arg_surface_idx; JS_ToInt64(ctx, &arg_surface_idx, argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->set_surface_name(arg_surface_idx, arg_name);
     return JS_UNDEFINED;

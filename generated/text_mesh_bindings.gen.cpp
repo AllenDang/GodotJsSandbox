@@ -96,7 +96,7 @@ static JSValue js_TextMesh_set_text(JSContext* ctx, JSValueConst this_val, int a
         return JS_ThrowTypeError(ctx, "TextMesh.text setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_text(value);
     return JS_UNDEFINED;
 }
@@ -1151,7 +1151,7 @@ static JSValue js_TextMesh_set_language(JSContext* ctx, JSValueConst this_val, i
         return JS_ThrowTypeError(ctx, "TextMesh.language setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_language(value);
     return JS_UNDEFINED;
 }

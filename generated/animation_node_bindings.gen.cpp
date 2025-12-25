@@ -72,7 +72,7 @@ static JSValue js_AnimationNode_add_input(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->add_input(arg_name);
     return JS_NewBool(ctx, result);
@@ -161,7 +161,7 @@ static JSValue js_AnimationNode_set_input_name(JSContext* ctx, JSValueConst this
 
     // Convert arguments
     int64_t arg_input; JS_ToInt64(ctx, &arg_input, argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->set_input_name(arg_input, arg_name);
     return JS_NewBool(ctx, result);
@@ -270,7 +270,7 @@ static JSValue js_AnimationNode_find_input(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     int64_t result = typed_obj->find_input(arg_name);
     return JS_NewInt64(ctx, result);
@@ -314,7 +314,7 @@ static JSValue js_AnimationNode_set_filter_path(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
     bool arg_enable = JS_ToBool(ctx, argv[2]);
 
     typed_obj->set_filter_path(arg_path, arg_enable);
@@ -354,7 +354,7 @@ static JSValue js_AnimationNode_is_path_filtered(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     bool result = typed_obj->is_path_filtered(arg_path);
     return JS_NewBool(ctx, result);
@@ -460,7 +460,7 @@ static JSValue js_AnimationNode_blend_animation(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_animation = JS_ToCString(ctx, argv[1]); StringName arg_animation = cstr_animation ? cstr_animation : ""; JS_FreeCString(ctx, cstr_animation);
+    const char* cstr_animation = JS_ToCString(ctx, argv[1]); StringName arg_animation = cstr_animation ? String::utf8(cstr_animation) : ""; JS_FreeCString(ctx, cstr_animation);
     double arg_time; JS_ToFloat64(ctx, &arg_time, argv[2]);
     double arg_delta; JS_ToFloat64(ctx, &arg_delta, argv[3]);
     bool arg_seeked = JS_ToBool(ctx, argv[4]);
@@ -515,7 +515,7 @@ static JSValue js_AnimationNode_blend_node(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Ref<AnimationNode> arg_node;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -663,7 +663,7 @@ static JSValue js_AnimationNode_set_parameter(JSContext* ctx, JSValueConst this_
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Variant arg_value = qjs_ctx->js_to_variant(argv[2]);
 
     typed_obj->set_parameter(arg_name, arg_value);
@@ -703,7 +703,7 @@ static JSValue js_AnimationNode_get_parameter(JSContext* ctx, JSValueConst this_
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Variant result = typed_obj->get_parameter(arg_name);
     return qjs_ctx->variant_to_js(Variant(result));

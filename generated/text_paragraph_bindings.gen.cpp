@@ -183,7 +183,7 @@ static JSValue js_TextParagraph_set_dropcap(JSContext* ctx, JSValueConst this_va
     }
 
     // Convert arguments
-    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     Ref<Font> arg_font;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -307,7 +307,7 @@ static JSValue js_TextParagraph_add_string(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     Ref<Font> arg_font;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -1902,7 +1902,7 @@ static JSValue js_TextParagraph_set_custom_punctuation(JSContext* ctx, JSValueCo
         return JS_ThrowTypeError(ctx, "TextParagraph.custom_punctuation setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_custom_punctuation(value);
     return JS_UNDEFINED;
 }
@@ -2438,7 +2438,7 @@ static JSValue js_TextParagraph_set_ellipsis_char(JSContext* ctx, JSValueConst t
         return JS_ThrowTypeError(ctx, "TextParagraph.ellipsis_char setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_ellipsis_char(value);
     return JS_UNDEFINED;
 }

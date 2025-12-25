@@ -225,7 +225,7 @@ static JSValue js_Skin_add_named_bind(JSContext* ctx, JSValueConst this_val, int
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Transform3D arg_pose;
     JSValue jbasis_pose = JS_GetPropertyStr(ctx, argv[2], "basis");
     JSValue jorigin_pose = JS_GetPropertyStr(ctx, argv[2], "origin");
@@ -446,7 +446,7 @@ static JSValue js_Skin_set_bind_name(JSContext* ctx, JSValueConst this_val, int 
 
     // Convert arguments
     int64_t arg_bind_index; JS_ToInt64(ctx, &arg_bind_index, argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->set_bind_name(arg_bind_index, arg_name);
     return JS_UNDEFINED;

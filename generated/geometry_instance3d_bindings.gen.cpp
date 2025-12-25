@@ -71,7 +71,7 @@ static JSValue js_GeometryInstance3D_set_instance_shader_parameter(JSContext* ct
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Variant arg_value = qjs_ctx->js_to_variant(argv[2]);
 
     typed_obj->set_instance_shader_parameter(arg_name, arg_value);
@@ -111,7 +111,7 @@ static JSValue js_GeometryInstance3D_get_instance_shader_parameter(JSContext* ct
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Variant result = typed_obj->get_instance_shader_parameter(arg_name);
     return qjs_ctx->variant_to_js(Variant(result));

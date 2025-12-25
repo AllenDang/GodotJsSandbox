@@ -72,7 +72,7 @@ static JSValue js_GLTFState_add_used_extension(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    const char* cstr_extension_name = JS_ToCString(ctx, argv[1]); String arg_extension_name = cstr_extension_name ? cstr_extension_name : ""; JS_FreeCString(ctx, cstr_extension_name);
+    const char* cstr_extension_name = JS_ToCString(ctx, argv[1]); String arg_extension_name = cstr_extension_name ? String::utf8(cstr_extension_name) : ""; JS_FreeCString(ctx, cstr_extension_name);
     bool arg_required = JS_ToBool(ctx, argv[2]);
 
     typed_obj->add_used_extension(arg_extension_name, arg_required);
@@ -454,7 +454,7 @@ static JSValue js_GLTFState_get_additional_data(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_extension_name = JS_ToCString(ctx, argv[1]); StringName arg_extension_name = cstr_extension_name ? cstr_extension_name : ""; JS_FreeCString(ctx, cstr_extension_name);
+    const char* cstr_extension_name = JS_ToCString(ctx, argv[1]); StringName arg_extension_name = cstr_extension_name ? String::utf8(cstr_extension_name) : ""; JS_FreeCString(ctx, cstr_extension_name);
 
     Variant result = typed_obj->get_additional_data(arg_extension_name);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -498,7 +498,7 @@ static JSValue js_GLTFState_set_additional_data(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_extension_name = JS_ToCString(ctx, argv[1]); StringName arg_extension_name = cstr_extension_name ? cstr_extension_name : ""; JS_FreeCString(ctx, cstr_extension_name);
+    const char* cstr_extension_name = JS_ToCString(ctx, argv[1]); StringName arg_extension_name = cstr_extension_name ? String::utf8(cstr_extension_name) : ""; JS_FreeCString(ctx, cstr_extension_name);
     Variant arg_additional_data = qjs_ctx->js_to_variant(argv[2]);
 
     typed_obj->set_additional_data(arg_extension_name, arg_additional_data);
@@ -768,7 +768,7 @@ static JSValue js_GLTFState_set_copyright(JSContext* ctx, JSValueConst this_val,
         return JS_ThrowTypeError(ctx, "GLTFState.copyright setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_copyright(value);
     return JS_UNDEFINED;
 }
@@ -969,7 +969,7 @@ static JSValue js_GLTFState_set_scene_name(JSContext* ctx, JSValueConst this_val
         return JS_ThrowTypeError(ctx, "GLTFState.scene_name setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_scene_name(value);
     return JS_UNDEFINED;
 }
@@ -1036,7 +1036,7 @@ static JSValue js_GLTFState_set_base_path(JSContext* ctx, JSValueConst this_val,
         return JS_ThrowTypeError(ctx, "GLTFState.base_path setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_base_path(value);
     return JS_UNDEFINED;
 }
@@ -1103,7 +1103,7 @@ static JSValue js_GLTFState_set_filename(JSContext* ctx, JSValueConst this_val, 
         return JS_ThrowTypeError(ctx, "GLTFState.filename setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_filename(value);
     return JS_UNDEFINED;
 }

@@ -9,9 +9,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/mesh_library.hpp>
-#include <godot_cpp/classes/navigation_mesh.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/mesh.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/navigation_mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -119,7 +119,7 @@ static JSValue js_MeshLibrary_set_item_name(JSContext* ctx, JSValueConst this_va
 
     // Convert arguments
     int64_t arg_id; JS_ToInt64(ctx, &arg_id, argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->set_item_name(arg_id, arg_name);
     return JS_UNDEFINED;
@@ -1147,7 +1147,7 @@ static JSValue js_MeshLibrary_find_item_by_name(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     int64_t result = typed_obj->find_item_by_name(arg_name);
     return JS_NewInt64(ctx, result);

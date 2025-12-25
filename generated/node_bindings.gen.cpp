@@ -553,7 +553,7 @@ static JSValue js_Node_has_node(JSContext* ctx, JSValueConst this_val, int argc,
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     bool result = typed_obj->has_node(arg_path);
     return JS_NewBool(ctx, result);
@@ -592,7 +592,7 @@ static JSValue js_Node_get_node(JSContext* ctx, JSValueConst this_val, int argc,
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     Node* result = typed_obj->get_node_internal(arg_path);
     if (!result) return JS_NULL;
@@ -656,7 +656,7 @@ static JSValue js_Node_get_node_or_null(JSContext* ctx, JSValueConst this_val, i
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     Node* result = typed_obj->get_node_or_null(arg_path);
     if (!result) return JS_NULL;
@@ -776,7 +776,7 @@ static JSValue js_Node_find_child(JSContext* ctx, JSValueConst this_val, int arg
     }
 
     // Convert arguments
-    const char* cstr_pattern = JS_ToCString(ctx, argv[1]); String arg_pattern = cstr_pattern ? cstr_pattern : ""; JS_FreeCString(ctx, cstr_pattern);
+    const char* cstr_pattern = JS_ToCString(ctx, argv[1]); String arg_pattern = cstr_pattern ? String::utf8(cstr_pattern) : ""; JS_FreeCString(ctx, cstr_pattern);
     // Optional argument: recursive (default: true)
     bool arg_recursive = true;
     if (argc > 2) {
@@ -852,7 +852,7 @@ static JSValue js_Node_find_children(JSContext* ctx, JSValueConst this_val, int 
     }
 
     // Convert arguments
-    const char* cstr_pattern = JS_ToCString(ctx, argv[1]); String arg_pattern = cstr_pattern ? cstr_pattern : ""; JS_FreeCString(ctx, cstr_pattern);
+    const char* cstr_pattern = JS_ToCString(ctx, argv[1]); String arg_pattern = cstr_pattern ? String::utf8(cstr_pattern) : ""; JS_FreeCString(ctx, cstr_pattern);
     // Optional argument: type (default: String())
     String arg_type = String();
     if (argc > 2) {
@@ -909,7 +909,7 @@ static JSValue js_Node_find_parent(JSContext* ctx, JSValueConst this_val, int ar
     }
 
     // Convert arguments
-    const char* cstr_pattern = JS_ToCString(ctx, argv[1]); String arg_pattern = cstr_pattern ? cstr_pattern : ""; JS_FreeCString(ctx, cstr_pattern);
+    const char* cstr_pattern = JS_ToCString(ctx, argv[1]); String arg_pattern = cstr_pattern ? String::utf8(cstr_pattern) : ""; JS_FreeCString(ctx, cstr_pattern);
 
     Node* result = typed_obj->find_parent(arg_pattern);
     if (!result) return JS_NULL;
@@ -973,7 +973,7 @@ static JSValue js_Node_has_node_and_resource(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     bool result = typed_obj->has_node_and_resource(arg_path);
     return JS_NewBool(ctx, result);
@@ -1012,7 +1012,7 @@ static JSValue js_Node_get_node_and_resource(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     Array result = typed_obj->get_node_and_resource(arg_path);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -1317,7 +1317,7 @@ static JSValue js_Node_add_to_group(JSContext* ctx, JSValueConst this_val, int a
     }
 
     // Convert arguments
-    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? cstr_group : ""; JS_FreeCString(ctx, cstr_group);
+    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? String::utf8(cstr_group) : ""; JS_FreeCString(ctx, cstr_group);
     // Optional argument: persistent (default: false)
     bool arg_persistent = false;
     if (argc > 2) {
@@ -1367,7 +1367,7 @@ static JSValue js_Node_remove_from_group(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? cstr_group : ""; JS_FreeCString(ctx, cstr_group);
+    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? String::utf8(cstr_group) : ""; JS_FreeCString(ctx, cstr_group);
 
     typed_obj->remove_from_group(arg_group);
     return JS_UNDEFINED;
@@ -1406,7 +1406,7 @@ static JSValue js_Node_is_in_group(JSContext* ctx, JSValueConst this_val, int ar
     }
 
     // Convert arguments
-    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? cstr_group : ""; JS_FreeCString(ctx, cstr_group);
+    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? String::utf8(cstr_group) : ""; JS_FreeCString(ctx, cstr_group);
 
     bool result = typed_obj->is_in_group(arg_group);
     return JS_NewBool(ctx, result);
@@ -3591,7 +3591,7 @@ static JSValue js_Node_rpc_config(JSContext* ctx, JSValueConst this_val, int arg
     }
 
     // Convert arguments
-    const char* cstr_method = JS_ToCString(ctx, argv[1]); StringName arg_method = cstr_method ? cstr_method : ""; JS_FreeCString(ctx, cstr_method);
+    const char* cstr_method = JS_ToCString(ctx, argv[1]); StringName arg_method = cstr_method ? String::utf8(cstr_method) : ""; JS_FreeCString(ctx, cstr_method);
     Variant arg_config = qjs_ctx->js_to_variant(argv[2]);
 
     typed_obj->rpc_config(arg_method, arg_config);
@@ -3667,7 +3667,7 @@ static JSValue js_Node_atr(JSContext* ctx, JSValueConst this_val, int argc, JSVa
     }
 
     // Convert arguments
-    const char* cstr_message = JS_ToCString(ctx, argv[1]); String arg_message = cstr_message ? cstr_message : ""; JS_FreeCString(ctx, cstr_message);
+    const char* cstr_message = JS_ToCString(ctx, argv[1]); String arg_message = cstr_message ? String::utf8(cstr_message) : ""; JS_FreeCString(ctx, cstr_message);
     // Optional argument: context (default: StringName(""""))
     StringName arg_context = StringName("""");
     if (argc > 2) {
@@ -3717,8 +3717,8 @@ static JSValue js_Node_atr_n(JSContext* ctx, JSValueConst this_val, int argc, JS
     }
 
     // Convert arguments
-    const char* cstr_message = JS_ToCString(ctx, argv[1]); String arg_message = cstr_message ? cstr_message : ""; JS_FreeCString(ctx, cstr_message);
-    const char* cstr_plural_message = JS_ToCString(ctx, argv[2]); StringName arg_plural_message = cstr_plural_message ? cstr_plural_message : ""; JS_FreeCString(ctx, cstr_plural_message);
+    const char* cstr_message = JS_ToCString(ctx, argv[1]); String arg_message = cstr_message ? String::utf8(cstr_message) : ""; JS_FreeCString(ctx, cstr_message);
+    const char* cstr_plural_message = JS_ToCString(ctx, argv[2]); StringName arg_plural_message = cstr_plural_message ? String::utf8(cstr_plural_message) : ""; JS_FreeCString(ctx, cstr_plural_message);
     int64_t arg_n; JS_ToInt64(ctx, &arg_n, argv[3]);
     // Optional argument: context (default: StringName(""""))
     StringName arg_context = StringName("""");
@@ -3805,7 +3805,7 @@ static JSValue js_Node_set_deferred_thread_group(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_property = JS_ToCString(ctx, argv[1]); StringName arg_property = cstr_property ? cstr_property : ""; JS_FreeCString(ctx, cstr_property);
+    const char* cstr_property = JS_ToCString(ctx, argv[1]); StringName arg_property = cstr_property ? String::utf8(cstr_property) : ""; JS_FreeCString(ctx, cstr_property);
     Variant arg_value = qjs_ctx->js_to_variant(argv[2]);
 
     typed_obj->set_deferred_thread_group(arg_property, arg_value);
@@ -3894,7 +3894,7 @@ static JSValue js_Node_set_thread_safe(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_property = JS_ToCString(ctx, argv[1]); StringName arg_property = cstr_property ? cstr_property : ""; JS_FreeCString(ctx, cstr_property);
+    const char* cstr_property = JS_ToCString(ctx, argv[1]); StringName arg_property = cstr_property ? String::utf8(cstr_property) : ""; JS_FreeCString(ctx, cstr_property);
     Variant arg_value = qjs_ctx->js_to_variant(argv[2]);
 
     typed_obj->set_thread_safe(arg_property, arg_value);
@@ -4007,7 +4007,7 @@ static JSValue js_Node_set_name(JSContext* ctx, JSValueConst this_val, int argc,
         return JS_ThrowTypeError(ctx, "Node.name setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_name(value);
     return JS_UNDEFINED;
 }
@@ -4141,7 +4141,7 @@ static JSValue js_Node_set_scene_file_path(JSContext* ctx, JSValueConst this_val
         return JS_ThrowTypeError(ctx, "Node.scene_file_path setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_scene_file_path(value);
     return JS_UNDEFINED;
 }
@@ -4839,7 +4839,7 @@ static JSValue js_Node_set_editor_description(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "Node.editor_description setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_editor_description(value);
     return JS_UNDEFINED;
 }

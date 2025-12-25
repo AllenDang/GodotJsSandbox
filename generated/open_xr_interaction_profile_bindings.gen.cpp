@@ -287,7 +287,7 @@ static JSValue js_OpenXRInteractionProfile_set_interaction_profile_path(JSContex
         return JS_ThrowTypeError(ctx, "OpenXRInteractionProfile.interaction_profile_path setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_interaction_profile_path(value);
     return JS_UNDEFINED;
 }

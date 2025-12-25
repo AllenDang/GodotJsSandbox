@@ -1295,7 +1295,7 @@ static JSValue js_Area2D_set_audio_bus_name(JSContext* ctx, JSValueConst this_va
         return JS_ThrowTypeError(ctx, "Area2D.audio_bus_name setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_audio_bus_name(value);
     return JS_UNDEFINED;
 }

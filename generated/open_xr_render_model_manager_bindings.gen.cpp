@@ -162,7 +162,7 @@ static JSValue js_OpenXRRenderModelManager_set_make_local_to_pose(JSContext* ctx
         return JS_ThrowTypeError(ctx, "OpenXRRenderModelManager.make_local_to_pose setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_make_local_to_pose(value);
     return JS_UNDEFINED;
 }

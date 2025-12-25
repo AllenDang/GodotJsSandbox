@@ -136,7 +136,7 @@ static JSValue js_StatusIndicator_set_tooltip(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "StatusIndicator.tooltip setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_tooltip(value);
     return JS_UNDEFINED;
 }
@@ -310,7 +310,7 @@ static JSValue js_StatusIndicator_set_menu(JSContext* ctx, JSValueConst this_val
         return JS_ThrowTypeError(ctx, "StatusIndicator.menu setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_menu(value);
     return JS_UNDEFINED;
 }

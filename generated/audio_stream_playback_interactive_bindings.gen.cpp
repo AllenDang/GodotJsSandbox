@@ -71,7 +71,7 @@ static JSValue js_AudioStreamPlaybackInteractive_switch_to_clip_by_name(JSContex
     }
 
     // Convert arguments
-    const char* cstr_clip_name = JS_ToCString(ctx, argv[1]); StringName arg_clip_name = cstr_clip_name ? cstr_clip_name : ""; JS_FreeCString(ctx, cstr_clip_name);
+    const char* cstr_clip_name = JS_ToCString(ctx, argv[1]); StringName arg_clip_name = cstr_clip_name ? String::utf8(cstr_clip_name) : ""; JS_FreeCString(ctx, cstr_clip_name);
 
     typed_obj->switch_to_clip_by_name(arg_clip_name);
     return JS_UNDEFINED;

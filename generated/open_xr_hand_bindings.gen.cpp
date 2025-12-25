@@ -229,7 +229,7 @@ static JSValue js_OpenXRHand_set_hand_skeleton(JSContext* ctx, JSValueConst this
         return JS_ThrowTypeError(ctx, "OpenXRHand.hand_skeleton setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_hand_skeleton(value);
     return JS_UNDEFINED;
 }

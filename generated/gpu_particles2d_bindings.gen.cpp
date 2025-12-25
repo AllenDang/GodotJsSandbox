@@ -575,7 +575,7 @@ static JSValue js_GPUParticles2D_set_sub_emitter(JSContext* ctx, JSValueConst th
         return JS_ThrowTypeError(ctx, "GPUParticles2D.sub_emitter setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_sub_emitter(value);
     return JS_UNDEFINED;
 }

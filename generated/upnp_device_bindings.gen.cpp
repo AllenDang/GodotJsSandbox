@@ -280,7 +280,7 @@ static JSValue js_UPNPDevice_set_description_url(JSContext* ctx, JSValueConst th
         return JS_ThrowTypeError(ctx, "UPNPDevice.description_url setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_description_url(value);
     return JS_UNDEFINED;
 }
@@ -347,7 +347,7 @@ static JSValue js_UPNPDevice_set_service_type(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "UPNPDevice.service_type setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_service_type(value);
     return JS_UNDEFINED;
 }
@@ -414,7 +414,7 @@ static JSValue js_UPNPDevice_set_igd_control_url(JSContext* ctx, JSValueConst th
         return JS_ThrowTypeError(ctx, "UPNPDevice.igd_control_url setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_igd_control_url(value);
     return JS_UNDEFINED;
 }
@@ -481,7 +481,7 @@ static JSValue js_UPNPDevice_set_igd_service_type(JSContext* ctx, JSValueConst t
         return JS_ThrowTypeError(ctx, "UPNPDevice.igd_service_type setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_igd_service_type(value);
     return JS_UNDEFINED;
 }
@@ -548,7 +548,7 @@ static JSValue js_UPNPDevice_set_igd_our_addr(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "UPNPDevice.igd_our_addr setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_igd_our_addr(value);
     return JS_UNDEFINED;
 }

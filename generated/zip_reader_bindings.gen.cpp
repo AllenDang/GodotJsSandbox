@@ -71,7 +71,7 @@ static JSValue js_ZIPReader_open(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Error result = typed_obj->open(arg_path);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -182,7 +182,7 @@ static JSValue js_ZIPReader_read_file(JSContext* ctx, JSValueConst this_val, int
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
     // Optional argument: case_sensitive (default: true)
     bool arg_case_sensitive = true;
     if (argc > 2) {
@@ -232,7 +232,7 @@ static JSValue js_ZIPReader_file_exists(JSContext* ctx, JSValueConst this_val, i
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
     // Optional argument: case_sensitive (default: true)
     bool arg_case_sensitive = true;
     if (argc > 2) {
@@ -277,7 +277,7 @@ static JSValue js_ZIPReader_get_compression_level(JSContext* ctx, JSValueConst t
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
     // Optional argument: case_sensitive (default: true)
     bool arg_case_sensitive = true;
     if (argc > 2) {

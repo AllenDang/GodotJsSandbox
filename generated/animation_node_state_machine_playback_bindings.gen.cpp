@@ -71,7 +71,7 @@ static JSValue js_AnimationNodeStateMachinePlayback_travel(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_to_node = JS_ToCString(ctx, argv[1]); StringName arg_to_node = cstr_to_node ? cstr_to_node : ""; JS_FreeCString(ctx, cstr_to_node);
+    const char* cstr_to_node = JS_ToCString(ctx, argv[1]); StringName arg_to_node = cstr_to_node ? String::utf8(cstr_to_node) : ""; JS_FreeCString(ctx, cstr_to_node);
     // Optional argument: reset_on_teleport (default: true)
     bool arg_reset_on_teleport = true;
     if (argc > 2) {
@@ -121,7 +121,7 @@ static JSValue js_AnimationNodeStateMachinePlayback_start(JSContext* ctx, JSValu
     }
 
     // Convert arguments
-    const char* cstr_node = JS_ToCString(ctx, argv[1]); StringName arg_node = cstr_node ? cstr_node : ""; JS_FreeCString(ctx, cstr_node);
+    const char* cstr_node = JS_ToCString(ctx, argv[1]); StringName arg_node = cstr_node ? String::utf8(cstr_node) : ""; JS_FreeCString(ctx, cstr_node);
     // Optional argument: reset (default: true)
     bool arg_reset = true;
     if (argc > 2) {

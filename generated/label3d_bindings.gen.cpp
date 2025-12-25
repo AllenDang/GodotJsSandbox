@@ -1075,7 +1075,7 @@ static JSValue js_Label3D_set_text(JSContext* ctx, JSValueConst this_val, int ar
         return JS_ThrowTypeError(ctx, "Label3D.text setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_text(value);
     return JS_UNDEFINED;
 }
@@ -1986,7 +1986,7 @@ static JSValue js_Label3D_set_language(JSContext* ctx, JSValueConst this_val, in
         return JS_ThrowTypeError(ctx, "Label3D.language setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_language(value);
     return JS_UNDEFINED;
 }

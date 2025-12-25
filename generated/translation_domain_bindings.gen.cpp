@@ -67,7 +67,7 @@ static JSValue js_TranslationDomain_get_translation_object(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_locale = JS_ToCString(ctx, argv[1]); String arg_locale = cstr_locale ? cstr_locale : ""; JS_FreeCString(ctx, cstr_locale);
+    const char* cstr_locale = JS_ToCString(ctx, argv[1]); String arg_locale = cstr_locale ? String::utf8(cstr_locale) : ""; JS_FreeCString(ctx, cstr_locale);
 
     Ref<Translation> result = typed_obj->get_translation_object(arg_locale);
     if (result.is_null()) return JS_NULL;
@@ -290,7 +290,7 @@ static JSValue js_TranslationDomain_translate(JSContext* ctx, JSValueConst this_
     }
 
     // Convert arguments
-    const char* cstr_message = JS_ToCString(ctx, argv[1]); StringName arg_message = cstr_message ? cstr_message : ""; JS_FreeCString(ctx, cstr_message);
+    const char* cstr_message = JS_ToCString(ctx, argv[1]); StringName arg_message = cstr_message ? String::utf8(cstr_message) : ""; JS_FreeCString(ctx, cstr_message);
     // Optional argument: context (default: StringName())
     StringName arg_context = StringName();
     if (argc > 2) {
@@ -340,8 +340,8 @@ static JSValue js_TranslationDomain_translate_plural(JSContext* ctx, JSValueCons
     }
 
     // Convert arguments
-    const char* cstr_message = JS_ToCString(ctx, argv[1]); StringName arg_message = cstr_message ? cstr_message : ""; JS_FreeCString(ctx, cstr_message);
-    const char* cstr_message_plural = JS_ToCString(ctx, argv[2]); StringName arg_message_plural = cstr_message_plural ? cstr_message_plural : ""; JS_FreeCString(ctx, cstr_message_plural);
+    const char* cstr_message = JS_ToCString(ctx, argv[1]); StringName arg_message = cstr_message ? String::utf8(cstr_message) : ""; JS_FreeCString(ctx, cstr_message);
+    const char* cstr_message_plural = JS_ToCString(ctx, argv[2]); StringName arg_message_plural = cstr_message_plural ? String::utf8(cstr_message_plural) : ""; JS_FreeCString(ctx, cstr_message_plural);
     int64_t arg_n; JS_ToInt64(ctx, &arg_n, argv[3]);
     // Optional argument: context (default: StringName())
     StringName arg_context = StringName();
@@ -423,7 +423,7 @@ static JSValue js_TranslationDomain_set_locale_override(JSContext* ctx, JSValueC
     }
 
     // Convert arguments
-    const char* cstr_locale = JS_ToCString(ctx, argv[1]); String arg_locale = cstr_locale ? cstr_locale : ""; JS_FreeCString(ctx, cstr_locale);
+    const char* cstr_locale = JS_ToCString(ctx, argv[1]); String arg_locale = cstr_locale ? String::utf8(cstr_locale) : ""; JS_FreeCString(ctx, cstr_locale);
 
     typed_obj->set_locale_override(arg_locale);
     return JS_UNDEFINED;
@@ -467,7 +467,7 @@ static JSValue js_TranslationDomain_pseudolocalize(JSContext* ctx, JSValueConst 
     }
 
     // Convert arguments
-    const char* cstr_message = JS_ToCString(ctx, argv[1]); StringName arg_message = cstr_message ? cstr_message : ""; JS_FreeCString(ctx, cstr_message);
+    const char* cstr_message = JS_ToCString(ctx, argv[1]); StringName arg_message = cstr_message ? String::utf8(cstr_message) : ""; JS_FreeCString(ctx, cstr_message);
 
     StringName result = typed_obj->pseudolocalize(arg_message);
     return JS_NewString(ctx, String(result).utf8().get_data());
@@ -1071,7 +1071,7 @@ static JSValue js_TranslationDomain_set_pseudolocalization_prefix(JSContext* ctx
         return JS_ThrowTypeError(ctx, "TranslationDomain.pseudolocalization_prefix setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_pseudolocalization_prefix(value);
     return JS_UNDEFINED;
 }
@@ -1138,7 +1138,7 @@ static JSValue js_TranslationDomain_set_pseudolocalization_suffix(JSContext* ctx
         return JS_ThrowTypeError(ctx, "TranslationDomain.pseudolocalization_suffix setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_pseudolocalization_suffix(value);
     return JS_UNDEFINED;
 }

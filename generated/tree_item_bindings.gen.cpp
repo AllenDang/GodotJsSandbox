@@ -544,7 +544,7 @@ static JSValue js_TreeItem_set_text(JSContext* ctx, JSValueConst this_val, int a
 
     // Convert arguments
     int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[1]);
-    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
 
     typed_obj->set_text(arg_column, arg_text);
     return JS_UNDEFINED;
@@ -628,7 +628,7 @@ static JSValue js_TreeItem_set_description(JSContext* ctx, JSValueConst this_val
 
     // Convert arguments
     int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[1]);
-    const char* cstr_description = JS_ToCString(ctx, argv[2]); String arg_description = cstr_description ? cstr_description : ""; JS_FreeCString(ctx, cstr_description);
+    const char* cstr_description = JS_ToCString(ctx, argv[2]); String arg_description = cstr_description ? String::utf8(cstr_description) : ""; JS_FreeCString(ctx, cstr_description);
 
     typed_obj->set_description(arg_column, arg_description);
     return JS_UNDEFINED;
@@ -1132,7 +1132,7 @@ static JSValue js_TreeItem_set_language(JSContext* ctx, JSValueConst this_val, i
 
     // Convert arguments
     int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[1]);
-    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? cstr_language : ""; JS_FreeCString(ctx, cstr_language);
+    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? String::utf8(cstr_language) : ""; JS_FreeCString(ctx, cstr_language);
 
     typed_obj->set_language(arg_column, arg_language);
     return JS_UNDEFINED;
@@ -1216,7 +1216,7 @@ static JSValue js_TreeItem_set_suffix(JSContext* ctx, JSValueConst this_val, int
 
     // Convert arguments
     int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[1]);
-    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
 
     typed_obj->set_suffix(arg_column, arg_text);
     return JS_UNDEFINED;
@@ -2117,7 +2117,7 @@ static JSValue js_TreeItem_set_custom_draw(JSContext* ctx, JSValueConst this_val
         }
         JS_FreeValue(ctx, jh_object);
     }
-    const char* cstr_callback = JS_ToCString(ctx, argv[3]); StringName arg_callback = cstr_callback ? cstr_callback : ""; JS_FreeCString(ctx, cstr_callback);
+    const char* cstr_callback = JS_ToCString(ctx, argv[3]); StringName arg_callback = cstr_callback ? String::utf8(cstr_callback) : ""; JS_FreeCString(ctx, cstr_callback);
 
     typed_obj->set_custom_draw(arg_column, arg_object, arg_callback);
     return JS_UNDEFINED;
@@ -3676,7 +3676,7 @@ static JSValue js_TreeItem_set_button_tooltip_text(JSContext* ctx, JSValueConst 
     // Convert arguments
     int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[1]);
     int64_t arg_button_index; JS_ToInt64(ctx, &arg_button_index, argv[2]);
-    const char* cstr_tooltip = JS_ToCString(ctx, argv[3]); String arg_tooltip = cstr_tooltip ? cstr_tooltip : ""; JS_FreeCString(ctx, cstr_tooltip);
+    const char* cstr_tooltip = JS_ToCString(ctx, argv[3]); String arg_tooltip = cstr_tooltip ? String::utf8(cstr_tooltip) : ""; JS_FreeCString(ctx, cstr_tooltip);
 
     typed_obj->set_button_tooltip_text(arg_column, arg_button_index, arg_tooltip);
     return JS_UNDEFINED;
@@ -3828,7 +3828,7 @@ static JSValue js_TreeItem_set_button_description(JSContext* ctx, JSValueConst t
     // Convert arguments
     int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[1]);
     int64_t arg_button_index; JS_ToInt64(ctx, &arg_button_index, argv[2]);
-    const char* cstr_description = JS_ToCString(ctx, argv[3]); String arg_description = cstr_description ? cstr_description : ""; JS_FreeCString(ctx, cstr_description);
+    const char* cstr_description = JS_ToCString(ctx, argv[3]); String arg_description = cstr_description ? String::utf8(cstr_description) : ""; JS_FreeCString(ctx, cstr_description);
 
     typed_obj->set_button_description(arg_column, arg_button_index, arg_description);
     return JS_UNDEFINED;
@@ -4018,7 +4018,7 @@ static JSValue js_TreeItem_set_tooltip_text(JSContext* ctx, JSValueConst this_va
 
     // Convert arguments
     int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[1]);
-    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? cstr_tooltip : ""; JS_FreeCString(ctx, cstr_tooltip);
+    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? String::utf8(cstr_tooltip) : ""; JS_FreeCString(ctx, cstr_tooltip);
 
     typed_obj->set_tooltip_text(arg_column, arg_tooltip);
     return JS_UNDEFINED;

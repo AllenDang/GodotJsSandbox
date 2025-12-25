@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/skeleton3d.hpp>
-#include <godot_cpp/classes/skin.hpp>
 #include <godot_cpp/classes/skin_reference.hpp>
+#include <godot_cpp/classes/skin.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -73,7 +73,7 @@ static JSValue js_Skeleton3D_add_bone(JSContext* ctx, JSValueConst this_val, int
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     int64_t result = typed_obj->add_bone(arg_name);
     return JS_NewInt64(ctx, result);
@@ -112,7 +112,7 @@ static JSValue js_Skeleton3D_find_bone(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     int64_t result = typed_obj->find_bone(arg_name);
     return JS_NewInt64(ctx, result);
@@ -196,7 +196,7 @@ static JSValue js_Skeleton3D_set_bone_name(JSContext* ctx, JSValueConst this_val
 
     // Convert arguments
     int64_t arg_bone_idx; JS_ToInt64(ctx, &arg_bone_idx, argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->set_bone_name(arg_bone_idx, arg_name);
     return JS_UNDEFINED;
@@ -236,7 +236,7 @@ static JSValue js_Skeleton3D_get_bone_meta(JSContext* ctx, JSValueConst this_val
 
     // Convert arguments
     int64_t arg_bone_idx; JS_ToInt64(ctx, &arg_bone_idx, argv[1]);
-    const char* cstr_key = JS_ToCString(ctx, argv[2]); StringName arg_key = cstr_key ? cstr_key : ""; JS_FreeCString(ctx, cstr_key);
+    const char* cstr_key = JS_ToCString(ctx, argv[2]); StringName arg_key = cstr_key ? String::utf8(cstr_key) : ""; JS_FreeCString(ctx, cstr_key);
 
     Variant result = typed_obj->get_bone_meta(arg_bone_idx, arg_key);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -315,7 +315,7 @@ static JSValue js_Skeleton3D_has_bone_meta(JSContext* ctx, JSValueConst this_val
 
     // Convert arguments
     int64_t arg_bone_idx; JS_ToInt64(ctx, &arg_bone_idx, argv[1]);
-    const char* cstr_key = JS_ToCString(ctx, argv[2]); StringName arg_key = cstr_key ? cstr_key : ""; JS_FreeCString(ctx, cstr_key);
+    const char* cstr_key = JS_ToCString(ctx, argv[2]); StringName arg_key = cstr_key ? String::utf8(cstr_key) : ""; JS_FreeCString(ctx, cstr_key);
 
     bool result = typed_obj->has_bone_meta(arg_bone_idx, arg_key);
     return JS_NewBool(ctx, result);
@@ -360,7 +360,7 @@ static JSValue js_Skeleton3D_set_bone_meta(JSContext* ctx, JSValueConst this_val
 
     // Convert arguments
     int64_t arg_bone_idx; JS_ToInt64(ctx, &arg_bone_idx, argv[1]);
-    const char* cstr_key = JS_ToCString(ctx, argv[2]); StringName arg_key = cstr_key ? cstr_key : ""; JS_FreeCString(ctx, cstr_key);
+    const char* cstr_key = JS_ToCString(ctx, argv[2]); StringName arg_key = cstr_key ? String::utf8(cstr_key) : ""; JS_FreeCString(ctx, cstr_key);
     Variant arg_value = qjs_ctx->js_to_variant(argv[3]);
 
     typed_obj->set_bone_meta(arg_bone_idx, arg_key, arg_value);

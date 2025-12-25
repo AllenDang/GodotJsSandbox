@@ -1370,7 +1370,7 @@ static JSValue js_Area3D_set_wind_source_path(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "Area3D.wind_source_path setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_wind_source_path(value);
     return JS_UNDEFINED;
 }
@@ -1504,7 +1504,7 @@ static JSValue js_Area3D_set_audio_bus_name(JSContext* ctx, JSValueConst this_va
         return JS_ThrowTypeError(ctx, "Area3D.audio_bus_name setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_audio_bus_name(value);
     return JS_UNDEFINED;
 }
@@ -1638,7 +1638,7 @@ static JSValue js_Area3D_set_reverb_bus_name(JSContext* ctx, JSValueConst this_v
         return JS_ThrowTypeError(ctx, "Area3D.reverb_bus_name setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_reverb_bus_name(value);
     return JS_UNDEFINED;
 }

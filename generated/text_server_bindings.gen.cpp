@@ -173,7 +173,7 @@ static JSValue js_TextServer_load_support_data(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    const char* cstr_filename = JS_ToCString(ctx, argv[1]); String arg_filename = cstr_filename ? cstr_filename : ""; JS_FreeCString(ctx, cstr_filename);
+    const char* cstr_filename = JS_ToCString(ctx, argv[1]); String arg_filename = cstr_filename ? String::utf8(cstr_filename) : ""; JS_FreeCString(ctx, cstr_filename);
 
     bool result = typed_obj->load_support_data(arg_filename);
     return JS_NewBool(ctx, result);
@@ -279,7 +279,7 @@ static JSValue js_TextServer_save_support_data(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    const char* cstr_filename = JS_ToCString(ctx, argv[1]); String arg_filename = cstr_filename ? cstr_filename : ""; JS_FreeCString(ctx, cstr_filename);
+    const char* cstr_filename = JS_ToCString(ctx, argv[1]); String arg_filename = cstr_filename ? String::utf8(cstr_filename) : ""; JS_FreeCString(ctx, cstr_filename);
 
     bool result = typed_obj->save_support_data(arg_filename);
     return JS_NewBool(ctx, result);
@@ -349,7 +349,7 @@ static JSValue js_TextServer_is_locale_right_to_left(JSContext* ctx, JSValueCons
     }
 
     // Convert arguments
-    const char* cstr_locale = JS_ToCString(ctx, argv[1]); String arg_locale = cstr_locale ? cstr_locale : ""; JS_FreeCString(ctx, cstr_locale);
+    const char* cstr_locale = JS_ToCString(ctx, argv[1]); String arg_locale = cstr_locale ? String::utf8(cstr_locale) : ""; JS_FreeCString(ctx, cstr_locale);
 
     bool result = typed_obj->is_locale_right_to_left(arg_locale);
     return JS_NewBool(ctx, result);
@@ -393,7 +393,7 @@ static JSValue js_TextServer_name_to_tag(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     int64_t result = typed_obj->name_to_tag(arg_name);
     return JS_NewInt64(ctx, result);
@@ -917,7 +917,7 @@ static JSValue js_TextServer_font_set_name(JSContext* ctx, JSValueConst this_val
 
     // Convert arguments
     RID arg_font_rid = qjs_ctx->js_to_variant(argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->font_set_name(arg_font_rid, arg_name);
     return JS_UNDEFINED;
@@ -1050,7 +1050,7 @@ static JSValue js_TextServer_font_set_style_name(JSContext* ctx, JSValueConst th
 
     // Convert arguments
     RID arg_font_rid = qjs_ctx->js_to_variant(argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->font_set_style_name(arg_font_rid, arg_name);
     return JS_UNDEFINED;
@@ -5645,7 +5645,7 @@ static JSValue js_TextServer_font_is_language_supported(JSContext* ctx, JSValueC
 
     // Convert arguments
     RID arg_font_rid = qjs_ctx->js_to_variant(argv[1]);
-    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? cstr_language : ""; JS_FreeCString(ctx, cstr_language);
+    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? String::utf8(cstr_language) : ""; JS_FreeCString(ctx, cstr_language);
 
     bool result = typed_obj->font_is_language_supported(arg_font_rid, arg_language);
     return JS_NewBool(ctx, result);
@@ -5690,7 +5690,7 @@ static JSValue js_TextServer_font_set_language_support_override(JSContext* ctx, 
 
     // Convert arguments
     RID arg_font_rid = qjs_ctx->js_to_variant(argv[1]);
-    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? cstr_language : ""; JS_FreeCString(ctx, cstr_language);
+    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? String::utf8(cstr_language) : ""; JS_FreeCString(ctx, cstr_language);
     bool arg_supported = JS_ToBool(ctx, argv[3]);
 
     typed_obj->font_set_language_support_override(arg_font_rid, arg_language, arg_supported);
@@ -5736,7 +5736,7 @@ static JSValue js_TextServer_font_get_language_support_override(JSContext* ctx, 
 
     // Convert arguments
     RID arg_font_rid = qjs_ctx->js_to_variant(argv[1]);
-    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? cstr_language : ""; JS_FreeCString(ctx, cstr_language);
+    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? String::utf8(cstr_language) : ""; JS_FreeCString(ctx, cstr_language);
 
     bool result = typed_obj->font_get_language_support_override(arg_font_rid, arg_language);
     return JS_NewBool(ctx, result);
@@ -5781,7 +5781,7 @@ static JSValue js_TextServer_font_remove_language_support_override(JSContext* ct
 
     // Convert arguments
     RID arg_font_rid = qjs_ctx->js_to_variant(argv[1]);
-    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? cstr_language : ""; JS_FreeCString(ctx, cstr_language);
+    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? String::utf8(cstr_language) : ""; JS_FreeCString(ctx, cstr_language);
 
     typed_obj->font_remove_language_support_override(arg_font_rid, arg_language);
     return JS_UNDEFINED;
@@ -5870,7 +5870,7 @@ static JSValue js_TextServer_font_is_script_supported(JSContext* ctx, JSValueCon
 
     // Convert arguments
     RID arg_font_rid = qjs_ctx->js_to_variant(argv[1]);
-    const char* cstr_script = JS_ToCString(ctx, argv[2]); String arg_script = cstr_script ? cstr_script : ""; JS_FreeCString(ctx, cstr_script);
+    const char* cstr_script = JS_ToCString(ctx, argv[2]); String arg_script = cstr_script ? String::utf8(cstr_script) : ""; JS_FreeCString(ctx, cstr_script);
 
     bool result = typed_obj->font_is_script_supported(arg_font_rid, arg_script);
     return JS_NewBool(ctx, result);
@@ -5915,7 +5915,7 @@ static JSValue js_TextServer_font_set_script_support_override(JSContext* ctx, JS
 
     // Convert arguments
     RID arg_font_rid = qjs_ctx->js_to_variant(argv[1]);
-    const char* cstr_script = JS_ToCString(ctx, argv[2]); String arg_script = cstr_script ? cstr_script : ""; JS_FreeCString(ctx, cstr_script);
+    const char* cstr_script = JS_ToCString(ctx, argv[2]); String arg_script = cstr_script ? String::utf8(cstr_script) : ""; JS_FreeCString(ctx, cstr_script);
     bool arg_supported = JS_ToBool(ctx, argv[3]);
 
     typed_obj->font_set_script_support_override(arg_font_rid, arg_script, arg_supported);
@@ -5961,7 +5961,7 @@ static JSValue js_TextServer_font_get_script_support_override(JSContext* ctx, JS
 
     // Convert arguments
     RID arg_font_rid = qjs_ctx->js_to_variant(argv[1]);
-    const char* cstr_script = JS_ToCString(ctx, argv[2]); String arg_script = cstr_script ? cstr_script : ""; JS_FreeCString(ctx, cstr_script);
+    const char* cstr_script = JS_ToCString(ctx, argv[2]); String arg_script = cstr_script ? String::utf8(cstr_script) : ""; JS_FreeCString(ctx, cstr_script);
 
     bool result = typed_obj->font_get_script_support_override(arg_font_rid, arg_script);
     return JS_NewBool(ctx, result);
@@ -6006,7 +6006,7 @@ static JSValue js_TextServer_font_remove_script_support_override(JSContext* ctx,
 
     // Convert arguments
     RID arg_font_rid = qjs_ctx->js_to_variant(argv[1]);
-    const char* cstr_script = JS_ToCString(ctx, argv[2]); String arg_script = cstr_script ? cstr_script : ""; JS_FreeCString(ctx, cstr_script);
+    const char* cstr_script = JS_ToCString(ctx, argv[2]); String arg_script = cstr_script ? String::utf8(cstr_script) : ""; JS_FreeCString(ctx, cstr_script);
 
     typed_obj->font_remove_script_support_override(arg_font_rid, arg_script);
     return JS_UNDEFINED;
@@ -6745,7 +6745,7 @@ static JSValue js_TextServer_shaped_text_set_custom_punctuation(JSContext* ctx, 
 
     // Convert arguments
     RID arg_shaped = qjs_ctx->js_to_variant(argv[1]);
-    const char* cstr_punct = JS_ToCString(ctx, argv[2]); String arg_punct = cstr_punct ? cstr_punct : ""; JS_FreeCString(ctx, cstr_punct);
+    const char* cstr_punct = JS_ToCString(ctx, argv[2]); String arg_punct = cstr_punct ? String::utf8(cstr_punct) : ""; JS_FreeCString(ctx, cstr_punct);
 
     typed_obj->shaped_text_set_custom_punctuation(arg_shaped, arg_punct);
     return JS_UNDEFINED;
@@ -7286,7 +7286,7 @@ static JSValue js_TextServer_shaped_text_add_string(JSContext* ctx, JSValueConst
 
     // Convert arguments
     RID arg_shaped = qjs_ctx->js_to_variant(argv[1]);
-    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     Array arg_fonts = qjs_ctx->js_to_variant(argv[3]);
     int64_t arg_size; JS_ToInt64(ctx, &arg_size, argv[4]);
     // Optional argument: opentype_features (default: Dictionary())
@@ -10289,7 +10289,7 @@ static JSValue js_TextServer_format_number(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_number = JS_ToCString(ctx, argv[1]); String arg_number = cstr_number ? cstr_number : ""; JS_FreeCString(ctx, cstr_number);
+    const char* cstr_number = JS_ToCString(ctx, argv[1]); String arg_number = cstr_number ? String::utf8(cstr_number) : ""; JS_FreeCString(ctx, cstr_number);
     // Optional argument: language (default: String())
     String arg_language = String();
     if (argc > 2) {
@@ -10339,7 +10339,7 @@ static JSValue js_TextServer_parse_number(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    const char* cstr_number = JS_ToCString(ctx, argv[1]); String arg_number = cstr_number ? cstr_number : ""; JS_FreeCString(ctx, cstr_number);
+    const char* cstr_number = JS_ToCString(ctx, argv[1]); String arg_number = cstr_number ? String::utf8(cstr_number) : ""; JS_FreeCString(ctx, cstr_number);
     // Optional argument: language (default: String())
     String arg_language = String();
     if (argc > 2) {
@@ -10438,7 +10438,7 @@ static JSValue js_TextServer_string_get_word_breaks(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? cstr_string : ""; JS_FreeCString(ctx, cstr_string);
+    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? String::utf8(cstr_string) : ""; JS_FreeCString(ctx, cstr_string);
     // Optional argument: language (default: String())
     String arg_language = String();
     if (argc > 2) {
@@ -10494,7 +10494,7 @@ static JSValue js_TextServer_string_get_character_breaks(JSContext* ctx, JSValue
     }
 
     // Convert arguments
-    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? cstr_string : ""; JS_FreeCString(ctx, cstr_string);
+    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? String::utf8(cstr_string) : ""; JS_FreeCString(ctx, cstr_string);
     // Optional argument: language (default: String())
     String arg_language = String();
     if (argc > 2) {
@@ -10539,7 +10539,7 @@ static JSValue js_TextServer_is_confusable(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? cstr_string : ""; JS_FreeCString(ctx, cstr_string);
+    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? String::utf8(cstr_string) : ""; JS_FreeCString(ctx, cstr_string);
     PackedStringArray arg_dict = qjs_ctx->js_to_variant(argv[2]);
 
     int64_t result = typed_obj->is_confusable(arg_string, arg_dict);
@@ -10584,7 +10584,7 @@ static JSValue js_TextServer_spoof_check(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? cstr_string : ""; JS_FreeCString(ctx, cstr_string);
+    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? String::utf8(cstr_string) : ""; JS_FreeCString(ctx, cstr_string);
 
     bool result = typed_obj->spoof_check(arg_string);
     return JS_NewBool(ctx, result);
@@ -10628,7 +10628,7 @@ static JSValue js_TextServer_strip_diacritics(JSContext* ctx, JSValueConst this_
     }
 
     // Convert arguments
-    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? cstr_string : ""; JS_FreeCString(ctx, cstr_string);
+    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? String::utf8(cstr_string) : ""; JS_FreeCString(ctx, cstr_string);
 
     String result = typed_obj->strip_diacritics(arg_string);
     return JS_NewString(ctx, result.utf8().get_data());
@@ -10667,7 +10667,7 @@ static JSValue js_TextServer_is_valid_identifier(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? cstr_string : ""; JS_FreeCString(ctx, cstr_string);
+    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? String::utf8(cstr_string) : ""; JS_FreeCString(ctx, cstr_string);
 
     bool result = typed_obj->is_valid_identifier(arg_string);
     return JS_NewBool(ctx, result);
@@ -10750,7 +10750,7 @@ static JSValue js_TextServer_string_to_upper(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? cstr_string : ""; JS_FreeCString(ctx, cstr_string);
+    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? String::utf8(cstr_string) : ""; JS_FreeCString(ctx, cstr_string);
     // Optional argument: language (default: String())
     String arg_language = String();
     if (argc > 2) {
@@ -10800,7 +10800,7 @@ static JSValue js_TextServer_string_to_lower(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? cstr_string : ""; JS_FreeCString(ctx, cstr_string);
+    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? String::utf8(cstr_string) : ""; JS_FreeCString(ctx, cstr_string);
     // Optional argument: language (default: String())
     String arg_language = String();
     if (argc > 2) {
@@ -10850,7 +10850,7 @@ static JSValue js_TextServer_string_to_title(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? cstr_string : ""; JS_FreeCString(ctx, cstr_string);
+    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? String::utf8(cstr_string) : ""; JS_FreeCString(ctx, cstr_string);
     // Optional argument: language (default: String())
     String arg_language = String();
     if (argc > 2) {
@@ -10902,7 +10902,7 @@ static JSValue js_TextServer_parse_structured_text(JSContext* ctx, JSValueConst 
     // Convert arguments
     int64_t tmp_parser_type; JS_ToInt64(ctx, &tmp_parser_type, argv[1]); TextServer::StructuredTextParser arg_parser_type = (TextServer::StructuredTextParser)tmp_parser_type;
     Array arg_args = qjs_ctx->js_to_variant(argv[2]);
-    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
 
     Array result = typed_obj->parse_structured_text(arg_parser_type, arg_args, arg_text);
     return qjs_ctx->variant_to_js(Variant(result));

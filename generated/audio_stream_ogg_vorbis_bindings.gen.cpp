@@ -141,7 +141,7 @@ static JSValue js_AudioStreamOggVorbis_load_from_file(JSContext* ctx, JSValueCon
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Ref<AudioStreamOggVorbis> result = typed_obj->load_from_file(arg_path);
     if (result.is_null()) return JS_NULL;

@@ -95,7 +95,7 @@ static JSValue js_InputEventAction_set_action(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "InputEventAction.action setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_action(value);
     return JS_UNDEFINED;
 }

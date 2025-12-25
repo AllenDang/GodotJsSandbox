@@ -133,7 +133,7 @@ static JSValue js_XRNode3D_trigger_haptic_pulse(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_action_name = JS_ToCString(ctx, argv[1]); String arg_action_name = cstr_action_name ? cstr_action_name : ""; JS_FreeCString(ctx, cstr_action_name);
+    const char* cstr_action_name = JS_ToCString(ctx, argv[1]); String arg_action_name = cstr_action_name ? String::utf8(cstr_action_name) : ""; JS_FreeCString(ctx, cstr_action_name);
     double arg_frequency; JS_ToFloat64(ctx, &arg_frequency, argv[2]);
     double arg_amplitude; JS_ToFloat64(ctx, &arg_amplitude, argv[3]);
     double arg_duration_sec; JS_ToFloat64(ctx, &arg_duration_sec, argv[4]);

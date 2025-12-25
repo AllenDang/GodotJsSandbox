@@ -72,7 +72,7 @@ static JSValue js_ResourcePreloader_add_resource(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Ref<Resource> arg_resource;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -132,7 +132,7 @@ static JSValue js_ResourcePreloader_remove_resource(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->remove_resource(arg_name);
     return JS_UNDEFINED;
@@ -176,8 +176,8 @@ static JSValue js_ResourcePreloader_rename_resource(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_newname = JS_ToCString(ctx, argv[2]); StringName arg_newname = cstr_newname ? cstr_newname : ""; JS_FreeCString(ctx, cstr_newname);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_newname = JS_ToCString(ctx, argv[2]); StringName arg_newname = cstr_newname ? String::utf8(cstr_newname) : ""; JS_FreeCString(ctx, cstr_newname);
 
     typed_obj->rename_resource(arg_name, arg_newname);
     return JS_UNDEFINED;
@@ -216,7 +216,7 @@ static JSValue js_ResourcePreloader_has_resource(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->has_resource(arg_name);
     return JS_NewBool(ctx, result);
@@ -255,7 +255,7 @@ static JSValue js_ResourcePreloader_get_resource(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Ref<Resource> result = typed_obj->get_resource(arg_name);
     if (result.is_null()) return JS_NULL;

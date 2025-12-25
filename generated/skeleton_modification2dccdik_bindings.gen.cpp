@@ -72,7 +72,7 @@ static JSValue js_SkeletonModification2DCCDIK_set_ccdik_joint_bone2d_node(JSCont
 
     // Convert arguments
     int64_t arg_joint_idx; JS_ToInt64(ctx, &arg_joint_idx, argv[1]);
-    const char* cstr_bone2d_nodepath = JS_ToCString(ctx, argv[2]); NodePath arg_bone2d_nodepath = cstr_bone2d_nodepath ? NodePath(cstr_bone2d_nodepath) : NodePath(); JS_FreeCString(ctx, cstr_bone2d_nodepath);
+    const char* cstr_bone2d_nodepath = JS_ToCString(ctx, argv[2]); NodePath arg_bone2d_nodepath = cstr_bone2d_nodepath ? NodePath(String::utf8(cstr_bone2d_nodepath)) : NodePath(); JS_FreeCString(ctx, cstr_bone2d_nodepath);
 
     typed_obj->set_ccdik_joint_bone2d_node(arg_joint_idx, arg_bone2d_nodepath);
     return JS_UNDEFINED;
@@ -683,7 +683,7 @@ static JSValue js_SkeletonModification2DCCDIK_set_target_nodepath(JSContext* ctx
         return JS_ThrowTypeError(ctx, "SkeletonModification2DCCDIK.target_nodepath setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_target_node(value);
     return JS_UNDEFINED;
 }
@@ -750,7 +750,7 @@ static JSValue js_SkeletonModification2DCCDIK_set_tip_nodepath(JSContext* ctx, J
         return JS_ThrowTypeError(ctx, "SkeletonModification2DCCDIK.tip_nodepath setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_tip_node(value);
     return JS_UNDEFINED;
 }

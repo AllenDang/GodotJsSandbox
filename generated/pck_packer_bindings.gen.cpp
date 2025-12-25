@@ -71,7 +71,7 @@ static JSValue js_PCKPacker_pck_start(JSContext* ctx, JSValueConst this_val, int
     }
 
     // Convert arguments
-    const char* cstr_pck_path = JS_ToCString(ctx, argv[1]); String arg_pck_path = cstr_pck_path ? cstr_pck_path : ""; JS_FreeCString(ctx, cstr_pck_path);
+    const char* cstr_pck_path = JS_ToCString(ctx, argv[1]); String arg_pck_path = cstr_pck_path ? String::utf8(cstr_pck_path) : ""; JS_FreeCString(ctx, cstr_pck_path);
     // Optional argument: alignment (default: 32)
     int64_t arg_alignment = 32;
     if (argc > 2) {
@@ -133,8 +133,8 @@ static JSValue js_PCKPacker_add_file(JSContext* ctx, JSValueConst this_val, int 
     }
 
     // Convert arguments
-    const char* cstr_target_path = JS_ToCString(ctx, argv[1]); String arg_target_path = cstr_target_path ? cstr_target_path : ""; JS_FreeCString(ctx, cstr_target_path);
-    const char* cstr_source_path = JS_ToCString(ctx, argv[2]); String arg_source_path = cstr_source_path ? cstr_source_path : ""; JS_FreeCString(ctx, cstr_source_path);
+    const char* cstr_target_path = JS_ToCString(ctx, argv[1]); String arg_target_path = cstr_target_path ? String::utf8(cstr_target_path) : ""; JS_FreeCString(ctx, cstr_target_path);
+    const char* cstr_source_path = JS_ToCString(ctx, argv[2]); String arg_source_path = cstr_source_path ? String::utf8(cstr_source_path) : ""; JS_FreeCString(ctx, cstr_source_path);
     // Optional argument: encrypt (default: false)
     bool arg_encrypt = false;
     if (argc > 3) {
@@ -184,7 +184,7 @@ static JSValue js_PCKPacker_add_file_removal(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_target_path = JS_ToCString(ctx, argv[1]); String arg_target_path = cstr_target_path ? cstr_target_path : ""; JS_FreeCString(ctx, cstr_target_path);
+    const char* cstr_target_path = JS_ToCString(ctx, argv[1]); String arg_target_path = cstr_target_path ? String::utf8(cstr_target_path) : ""; JS_FreeCString(ctx, cstr_target_path);
 
     Error result = typed_obj->add_file_removal(arg_target_path);
     return qjs_ctx->variant_to_js(Variant(result));

@@ -71,9 +71,9 @@ static JSValue js_GraphEdit_connect_node(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_from_node = JS_ToCString(ctx, argv[1]); StringName arg_from_node = cstr_from_node ? cstr_from_node : ""; JS_FreeCString(ctx, cstr_from_node);
+    const char* cstr_from_node = JS_ToCString(ctx, argv[1]); StringName arg_from_node = cstr_from_node ? String::utf8(cstr_from_node) : ""; JS_FreeCString(ctx, cstr_from_node);
     int64_t arg_from_port; JS_ToInt64(ctx, &arg_from_port, argv[2]);
-    const char* cstr_to_node = JS_ToCString(ctx, argv[3]); StringName arg_to_node = cstr_to_node ? cstr_to_node : ""; JS_FreeCString(ctx, cstr_to_node);
+    const char* cstr_to_node = JS_ToCString(ctx, argv[3]); StringName arg_to_node = cstr_to_node ? String::utf8(cstr_to_node) : ""; JS_FreeCString(ctx, cstr_to_node);
     int64_t arg_to_port; JS_ToInt64(ctx, &arg_to_port, argv[4]);
     // Optional argument: keep_alive (default: false)
     bool arg_keep_alive = false;
@@ -119,9 +119,9 @@ static JSValue js_GraphEdit_is_node_connected(JSContext* ctx, JSValueConst this_
     }
 
     // Convert arguments
-    const char* cstr_from_node = JS_ToCString(ctx, argv[1]); StringName arg_from_node = cstr_from_node ? cstr_from_node : ""; JS_FreeCString(ctx, cstr_from_node);
+    const char* cstr_from_node = JS_ToCString(ctx, argv[1]); StringName arg_from_node = cstr_from_node ? String::utf8(cstr_from_node) : ""; JS_FreeCString(ctx, cstr_from_node);
     int64_t arg_from_port; JS_ToInt64(ctx, &arg_from_port, argv[2]);
-    const char* cstr_to_node = JS_ToCString(ctx, argv[3]); StringName arg_to_node = cstr_to_node ? cstr_to_node : ""; JS_FreeCString(ctx, cstr_to_node);
+    const char* cstr_to_node = JS_ToCString(ctx, argv[3]); StringName arg_to_node = cstr_to_node ? String::utf8(cstr_to_node) : ""; JS_FreeCString(ctx, cstr_to_node);
     int64_t arg_to_port; JS_ToInt64(ctx, &arg_to_port, argv[4]);
 
     bool result = typed_obj->is_node_connected(arg_from_node, arg_from_port, arg_to_node, arg_to_port);
@@ -166,9 +166,9 @@ static JSValue js_GraphEdit_disconnect_node(JSContext* ctx, JSValueConst this_va
     }
 
     // Convert arguments
-    const char* cstr_from_node = JS_ToCString(ctx, argv[1]); StringName arg_from_node = cstr_from_node ? cstr_from_node : ""; JS_FreeCString(ctx, cstr_from_node);
+    const char* cstr_from_node = JS_ToCString(ctx, argv[1]); StringName arg_from_node = cstr_from_node ? String::utf8(cstr_from_node) : ""; JS_FreeCString(ctx, cstr_from_node);
     int64_t arg_from_port; JS_ToInt64(ctx, &arg_from_port, argv[2]);
-    const char* cstr_to_node = JS_ToCString(ctx, argv[3]); StringName arg_to_node = cstr_to_node ? cstr_to_node : ""; JS_FreeCString(ctx, cstr_to_node);
+    const char* cstr_to_node = JS_ToCString(ctx, argv[3]); StringName arg_to_node = cstr_to_node ? String::utf8(cstr_to_node) : ""; JS_FreeCString(ctx, cstr_to_node);
     int64_t arg_to_port; JS_ToInt64(ctx, &arg_to_port, argv[4]);
 
     typed_obj->disconnect_node(arg_from_node, arg_from_port, arg_to_node, arg_to_port);
@@ -213,9 +213,9 @@ static JSValue js_GraphEdit_set_connection_activity(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_from_node = JS_ToCString(ctx, argv[1]); StringName arg_from_node = cstr_from_node ? cstr_from_node : ""; JS_FreeCString(ctx, cstr_from_node);
+    const char* cstr_from_node = JS_ToCString(ctx, argv[1]); StringName arg_from_node = cstr_from_node ? String::utf8(cstr_from_node) : ""; JS_FreeCString(ctx, cstr_from_node);
     int64_t arg_from_port; JS_ToInt64(ctx, &arg_from_port, argv[2]);
-    const char* cstr_to_node = JS_ToCString(ctx, argv[3]); StringName arg_to_node = cstr_to_node ? cstr_to_node : ""; JS_FreeCString(ctx, cstr_to_node);
+    const char* cstr_to_node = JS_ToCString(ctx, argv[3]); StringName arg_to_node = cstr_to_node ? String::utf8(cstr_to_node) : ""; JS_FreeCString(ctx, cstr_to_node);
     int64_t arg_to_port; JS_ToInt64(ctx, &arg_to_port, argv[4]);
     double arg_amount; JS_ToFloat64(ctx, &arg_amount, argv[5]);
 
@@ -256,7 +256,7 @@ static JSValue js_GraphEdit_get_connection_count(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_from_node = JS_ToCString(ctx, argv[1]); StringName arg_from_node = cstr_from_node ? cstr_from_node : ""; JS_FreeCString(ctx, cstr_from_node);
+    const char* cstr_from_node = JS_ToCString(ctx, argv[1]); StringName arg_from_node = cstr_from_node ? String::utf8(cstr_from_node) : ""; JS_FreeCString(ctx, cstr_from_node);
     int64_t arg_from_port; JS_ToInt64(ctx, &arg_from_port, argv[2]);
 
     int64_t result = typed_obj->get_connection_count(arg_from_node, arg_from_port);
@@ -348,7 +348,7 @@ static JSValue js_GraphEdit_get_connection_list_from_node(JSContext* ctx, JSValu
     }
 
     // Convert arguments
-    const char* cstr_node = JS_ToCString(ctx, argv[1]); StringName arg_node = cstr_node ? cstr_node : ""; JS_FreeCString(ctx, cstr_node);
+    const char* cstr_node = JS_ToCString(ctx, argv[1]); StringName arg_node = cstr_node ? String::utf8(cstr_node) : ""; JS_FreeCString(ctx, cstr_node);
 
     Array result = typed_obj->get_connection_list_from_node(arg_node);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -884,8 +884,8 @@ static JSValue js_GraphEdit_attach_graph_element_to_frame(JSContext* ctx, JSValu
     }
 
     // Convert arguments
-    const char* cstr_element = JS_ToCString(ctx, argv[1]); StringName arg_element = cstr_element ? cstr_element : ""; JS_FreeCString(ctx, cstr_element);
-    const char* cstr_frame = JS_ToCString(ctx, argv[2]); StringName arg_frame = cstr_frame ? cstr_frame : ""; JS_FreeCString(ctx, cstr_frame);
+    const char* cstr_element = JS_ToCString(ctx, argv[1]); StringName arg_element = cstr_element ? String::utf8(cstr_element) : ""; JS_FreeCString(ctx, cstr_element);
+    const char* cstr_frame = JS_ToCString(ctx, argv[2]); StringName arg_frame = cstr_frame ? String::utf8(cstr_frame) : ""; JS_FreeCString(ctx, cstr_frame);
 
     typed_obj->attach_graph_element_to_frame(arg_element, arg_frame);
     return JS_UNDEFINED;
@@ -929,7 +929,7 @@ static JSValue js_GraphEdit_detach_graph_element_from_frame(JSContext* ctx, JSVa
     }
 
     // Convert arguments
-    const char* cstr_element = JS_ToCString(ctx, argv[1]); StringName arg_element = cstr_element ? cstr_element : ""; JS_FreeCString(ctx, cstr_element);
+    const char* cstr_element = JS_ToCString(ctx, argv[1]); StringName arg_element = cstr_element ? String::utf8(cstr_element) : ""; JS_FreeCString(ctx, cstr_element);
 
     typed_obj->detach_graph_element_from_frame(arg_element);
     return JS_UNDEFINED;
@@ -968,7 +968,7 @@ static JSValue js_GraphEdit_get_element_frame(JSContext* ctx, JSValueConst this_
     }
 
     // Convert arguments
-    const char* cstr_element = JS_ToCString(ctx, argv[1]); StringName arg_element = cstr_element ? cstr_element : ""; JS_FreeCString(ctx, cstr_element);
+    const char* cstr_element = JS_ToCString(ctx, argv[1]); StringName arg_element = cstr_element ? String::utf8(cstr_element) : ""; JS_FreeCString(ctx, cstr_element);
 
     GraphFrame* result = typed_obj->get_element_frame(arg_element);
     if (!result) return JS_NULL;
@@ -1032,7 +1032,7 @@ static JSValue js_GraphEdit_get_attached_nodes_of_frame(JSContext* ctx, JSValueC
     }
 
     // Convert arguments
-    const char* cstr_frame = JS_ToCString(ctx, argv[1]); StringName arg_frame = cstr_frame ? cstr_frame : ""; JS_FreeCString(ctx, cstr_frame);
+    const char* cstr_frame = JS_ToCString(ctx, argv[1]); StringName arg_frame = cstr_frame ? String::utf8(cstr_frame) : ""; JS_FreeCString(ctx, cstr_frame);
 
     Array result = typed_obj->get_attached_nodes_of_frame(arg_frame);
     return qjs_ctx->variant_to_js(Variant(result));

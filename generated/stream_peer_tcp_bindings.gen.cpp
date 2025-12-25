@@ -121,7 +121,7 @@ static JSValue js_StreamPeerTCP_connect_to_host(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_host = JS_ToCString(ctx, argv[1]); String arg_host = cstr_host ? cstr_host : ""; JS_FreeCString(ctx, cstr_host);
+    const char* cstr_host = JS_ToCString(ctx, argv[1]); String arg_host = cstr_host ? String::utf8(cstr_host) : ""; JS_FreeCString(ctx, cstr_host);
     int64_t arg_port; JS_ToInt64(ctx, &arg_port, argv[2]);
 
     Error result = typed_obj->connect_to_host(arg_host, arg_port);

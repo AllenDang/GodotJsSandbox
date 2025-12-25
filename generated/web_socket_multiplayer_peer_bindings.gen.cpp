@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/web_socket_multiplayer_peer.hpp>
-#include <godot_cpp/classes/web_socket_peer.hpp>
 #include <godot_cpp/classes/tls_options.hpp>
+#include <godot_cpp/classes/web_socket_peer.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -73,7 +73,7 @@ static JSValue js_WebSocketMultiplayerPeer_create_client(JSContext* ctx, JSValue
     }
 
     // Convert arguments
-    const char* cstr_url = JS_ToCString(ctx, argv[1]); String arg_url = cstr_url ? cstr_url : ""; JS_FreeCString(ctx, cstr_url);
+    const char* cstr_url = JS_ToCString(ctx, argv[1]); String arg_url = cstr_url ? String::utf8(cstr_url) : ""; JS_FreeCString(ctx, cstr_url);
     // Optional argument: tls_client_options (default: nullptr)
     Ref<TLSOptions> arg_tls_client_options = nullptr;
     if (argc > 2) {

@@ -72,7 +72,7 @@ static JSValue js_ItemList_add_item(JSContext* ctx, JSValueConst this_val, int a
     }
 
     // Convert arguments
-    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     // Optional argument: icon (default: nullptr)
     Ref<Texture2D> arg_icon = nullptr;
     if (argc > 2) {
@@ -210,7 +210,7 @@ static JSValue js_ItemList_set_item_text(JSContext* ctx, JSValueConst this_val, 
 
     // Convert arguments
     int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
-    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
 
     typed_obj->set_item_text(arg_idx, arg_text);
     return JS_UNDEFINED;
@@ -502,7 +502,7 @@ static JSValue js_ItemList_set_item_language(JSContext* ctx, JSValueConst this_v
 
     // Convert arguments
     int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
-    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? cstr_language : ""; JS_FreeCString(ctx, cstr_language);
+    const char* cstr_language = JS_ToCString(ctx, argv[2]); String arg_language = cstr_language ? String::utf8(cstr_language) : ""; JS_FreeCString(ctx, cstr_language);
 
     typed_obj->set_item_language(arg_idx, arg_language);
     return JS_UNDEFINED;
@@ -1557,7 +1557,7 @@ static JSValue js_ItemList_set_item_tooltip(JSContext* ctx, JSValueConst this_va
 
     // Convert arguments
     int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
-    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? cstr_tooltip : ""; JS_FreeCString(ctx, cstr_tooltip);
+    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? String::utf8(cstr_tooltip) : ""; JS_FreeCString(ctx, cstr_tooltip);
 
     typed_obj->set_item_tooltip(arg_idx, arg_tooltip);
     return JS_UNDEFINED;

@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/node3d.hpp>
-#include <godot_cpp/classes/node3d_gizmo.hpp>
 #include <godot_cpp/classes/world3d.hpp>
+#include <godot_cpp/classes/node3d_gizmo.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -3268,7 +3268,7 @@ static JSValue js_Node3D_set_visibility_parent(JSContext* ctx, JSValueConst this
         return JS_ThrowTypeError(ctx, "Node3D.visibility_parent setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_visibility_parent(value);
     return JS_UNDEFINED;
 }

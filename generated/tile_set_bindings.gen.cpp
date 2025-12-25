@@ -1749,7 +1749,7 @@ static JSValue js_TileSet_set_terrain_name(JSContext* ctx, JSValueConst this_val
     // Convert arguments
     int64_t arg_terrain_set; JS_ToInt64(ctx, &arg_terrain_set, argv[1]);
     int64_t arg_terrain_index; JS_ToInt64(ctx, &arg_terrain_index, argv[2]);
-    const char* cstr_name = JS_ToCString(ctx, argv[3]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[3]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->set_terrain_name(arg_terrain_set, arg_terrain_index, arg_name);
     return JS_UNDEFINED;
@@ -2440,7 +2440,7 @@ static JSValue js_TileSet_get_custom_data_layer_by_name(JSContext* ctx, JSValueC
     }
 
     // Convert arguments
-    const char* cstr_layer_name = JS_ToCString(ctx, argv[1]); String arg_layer_name = cstr_layer_name ? cstr_layer_name : ""; JS_FreeCString(ctx, cstr_layer_name);
+    const char* cstr_layer_name = JS_ToCString(ctx, argv[1]); String arg_layer_name = cstr_layer_name ? String::utf8(cstr_layer_name) : ""; JS_FreeCString(ctx, cstr_layer_name);
 
     int64_t result = typed_obj->get_custom_data_layer_by_name(arg_layer_name);
     return JS_NewInt64(ctx, result);
@@ -2485,7 +2485,7 @@ static JSValue js_TileSet_set_custom_data_layer_name(JSContext* ctx, JSValueCons
 
     // Convert arguments
     int64_t arg_layer_index; JS_ToInt64(ctx, &arg_layer_index, argv[1]);
-    const char* cstr_layer_name = JS_ToCString(ctx, argv[2]); String arg_layer_name = cstr_layer_name ? cstr_layer_name : ""; JS_FreeCString(ctx, cstr_layer_name);
+    const char* cstr_layer_name = JS_ToCString(ctx, argv[2]); String arg_layer_name = cstr_layer_name ? String::utf8(cstr_layer_name) : ""; JS_FreeCString(ctx, cstr_layer_name);
 
     typed_obj->set_custom_data_layer_name(arg_layer_index, arg_layer_name);
     return JS_UNDEFINED;
@@ -2524,7 +2524,7 @@ static JSValue js_TileSet_has_custom_data_layer_by_name(JSContext* ctx, JSValueC
     }
 
     // Convert arguments
-    const char* cstr_layer_name = JS_ToCString(ctx, argv[1]); String arg_layer_name = cstr_layer_name ? cstr_layer_name : ""; JS_FreeCString(ctx, cstr_layer_name);
+    const char* cstr_layer_name = JS_ToCString(ctx, argv[1]); String arg_layer_name = cstr_layer_name ? String::utf8(cstr_layer_name) : ""; JS_FreeCString(ctx, cstr_layer_name);
 
     bool result = typed_obj->has_custom_data_layer_by_name(arg_layer_name);
     return JS_NewBool(ctx, result);

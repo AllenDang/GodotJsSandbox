@@ -72,7 +72,7 @@ static JSValue js_Resource_take_over_path(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     typed_obj->take_over_path(arg_path);
     return JS_UNDEFINED;
@@ -116,7 +116,7 @@ static JSValue js_Resource_set_path_cache(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     typed_obj->set_path_cache(arg_path);
     return JS_UNDEFINED;
@@ -319,8 +319,8 @@ static JSValue js_Resource_set_id_for_path(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
-    const char* cstr_id = JS_ToCString(ctx, argv[2]); String arg_id = cstr_id ? cstr_id : ""; JS_FreeCString(ctx, cstr_id);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_id = JS_ToCString(ctx, argv[2]); String arg_id = cstr_id ? String::utf8(cstr_id) : ""; JS_FreeCString(ctx, cstr_id);
 
     typed_obj->set_id_for_path(arg_path, arg_id);
     return JS_UNDEFINED;
@@ -359,7 +359,7 @@ static JSValue js_Resource_get_id_for_path(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     String result = typed_obj->get_id_for_path(arg_path);
     return JS_NewString(ctx, result.utf8().get_data());
@@ -709,7 +709,7 @@ static JSValue js_Resource_set_resource_path(JSContext* ctx, JSValueConst this_v
         return JS_ThrowTypeError(ctx, "Resource.resource_path setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_path(value);
     return JS_UNDEFINED;
 }
@@ -776,7 +776,7 @@ static JSValue js_Resource_set_resource_name(JSContext* ctx, JSValueConst this_v
         return JS_ThrowTypeError(ctx, "Resource.resource_name setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_name(value);
     return JS_UNDEFINED;
 }
@@ -843,7 +843,7 @@ static JSValue js_Resource_set_resource_scene_unique_id(JSContext* ctx, JSValueC
         return JS_ThrowTypeError(ctx, "Resource.resource_scene_unique_id setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_scene_unique_id(value);
     return JS_UNDEFINED;
 }

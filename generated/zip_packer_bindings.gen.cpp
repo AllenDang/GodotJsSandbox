@@ -71,7 +71,7 @@ static JSValue js_ZIPPacker_open(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
     // Optional argument: append (default: (ZIPPacker::ZipAppend)0)
     ZIPPacker::ZipAppend arg_append = (ZIPPacker::ZipAppend)0;
     if (argc > 2) {
@@ -121,7 +121,7 @@ static JSValue js_ZIPPacker_start_file(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Error result = typed_obj->start_file(arg_path);
     return qjs_ctx->variant_to_js(Variant(result));

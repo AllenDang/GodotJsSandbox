@@ -71,7 +71,7 @@ static JSValue js_X509Certificate_save(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Error result = typed_obj->save(arg_path);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -115,7 +115,7 @@ static JSValue js_X509Certificate_load(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Error result = typed_obj->load(arg_path);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -195,7 +195,7 @@ static JSValue js_X509Certificate_load_from_string(JSContext* ctx, JSValueConst 
     }
 
     // Convert arguments
-    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? cstr_string : ""; JS_FreeCString(ctx, cstr_string);
+    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? String::utf8(cstr_string) : ""; JS_FreeCString(ctx, cstr_string);
 
     Error result = typed_obj->load_from_string(arg_string);
     return qjs_ctx->variant_to_js(Variant(result));

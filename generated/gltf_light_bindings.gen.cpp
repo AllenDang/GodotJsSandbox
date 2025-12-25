@@ -317,7 +317,7 @@ static JSValue js_GLTFLight_get_additional_data(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_extension_name = JS_ToCString(ctx, argv[1]); StringName arg_extension_name = cstr_extension_name ? cstr_extension_name : ""; JS_FreeCString(ctx, cstr_extension_name);
+    const char* cstr_extension_name = JS_ToCString(ctx, argv[1]); StringName arg_extension_name = cstr_extension_name ? String::utf8(cstr_extension_name) : ""; JS_FreeCString(ctx, cstr_extension_name);
 
     Variant result = typed_obj->get_additional_data(arg_extension_name);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -361,7 +361,7 @@ static JSValue js_GLTFLight_set_additional_data(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_extension_name = JS_ToCString(ctx, argv[1]); StringName arg_extension_name = cstr_extension_name ? cstr_extension_name : ""; JS_FreeCString(ctx, cstr_extension_name);
+    const char* cstr_extension_name = JS_ToCString(ctx, argv[1]); StringName arg_extension_name = cstr_extension_name ? String::utf8(cstr_extension_name) : ""; JS_FreeCString(ctx, cstr_extension_name);
     Variant arg_additional_data = qjs_ctx->js_to_variant(argv[2]);
 
     typed_obj->set_additional_data(arg_extension_name, arg_additional_data);
@@ -582,7 +582,7 @@ static JSValue js_GLTFLight_set_light_type(JSContext* ctx, JSValueConst this_val
         return JS_ThrowTypeError(ctx, "GLTFLight.light_type setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_light_type(value);
     return JS_UNDEFINED;
 }

@@ -68,8 +68,8 @@ static JSValue js_RenderSceneBuffersRD_has_texture(JSContext* ctx, JSValueConst 
     }
 
     // Convert arguments
-    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? String::utf8(cstr_context) : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->has_texture(arg_context, arg_name);
     return JS_NewBool(ctx, result);
@@ -113,8 +113,8 @@ static JSValue js_RenderSceneBuffersRD_create_texture(JSContext* ctx, JSValueCon
     }
 
     // Convert arguments
-    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? String::utf8(cstr_context) : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     int64_t tmp_data_format; JS_ToInt64(ctx, &tmp_data_format, argv[3]); RenderingDevice::DataFormat arg_data_format = (RenderingDevice::DataFormat)tmp_data_format;
     int64_t arg_usage_bits; JS_ToInt64(ctx, &arg_usage_bits, argv[4]);
     int64_t tmp_texture_samples; JS_ToInt64(ctx, &tmp_texture_samples, argv[5]); RenderingDevice::TextureSamples arg_texture_samples = (RenderingDevice::TextureSamples)tmp_texture_samples;
@@ -166,8 +166,8 @@ static JSValue js_RenderSceneBuffersRD_create_texture_from_format(JSContext* ctx
     }
 
     // Convert arguments
-    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? String::utf8(cstr_context) : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Ref<RDTextureFormat> arg_format;
     if (JS_IsNumber(argv[3])) {
         // Direct handle (unwrapped by JS proxy)
@@ -244,9 +244,9 @@ static JSValue js_RenderSceneBuffersRD_create_texture_view(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
-    const char* cstr_view_name = JS_ToCString(ctx, argv[3]); StringName arg_view_name = cstr_view_name ? cstr_view_name : ""; JS_FreeCString(ctx, cstr_view_name);
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? String::utf8(cstr_context) : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_view_name = JS_ToCString(ctx, argv[3]); StringName arg_view_name = cstr_view_name ? String::utf8(cstr_view_name) : ""; JS_FreeCString(ctx, cstr_view_name);
     Ref<RDTextureView> arg_view;
     if (JS_IsNumber(argv[4])) {
         // Direct handle (unwrapped by JS proxy)
@@ -301,8 +301,8 @@ static JSValue js_RenderSceneBuffersRD_get_texture(JSContext* ctx, JSValueConst 
     }
 
     // Convert arguments
-    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? String::utf8(cstr_context) : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     RID result = typed_obj->get_texture(arg_context, arg_name);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -341,8 +341,8 @@ static JSValue js_RenderSceneBuffersRD_get_texture_format(JSContext* ctx, JSValu
     }
 
     // Convert arguments
-    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? String::utf8(cstr_context) : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Ref<RDTextureFormat> result = typed_obj->get_texture_format(arg_context, arg_name);
     if (result.is_null()) return JS_NULL;
@@ -406,8 +406,8 @@ static JSValue js_RenderSceneBuffersRD_get_texture_slice(JSContext* ctx, JSValue
     }
 
     // Convert arguments
-    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? String::utf8(cstr_context) : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[3]);
     int64_t arg_mipmap; JS_ToInt64(ctx, &arg_mipmap, argv[4]);
     int64_t arg_layers; JS_ToInt64(ctx, &arg_layers, argv[5]);
@@ -450,8 +450,8 @@ static JSValue js_RenderSceneBuffersRD_get_texture_slice_view(JSContext* ctx, JS
     }
 
     // Convert arguments
-    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? String::utf8(cstr_context) : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     int64_t arg_layer; JS_ToInt64(ctx, &arg_layer, argv[3]);
     int64_t arg_mipmap; JS_ToInt64(ctx, &arg_mipmap, argv[4]);
     int64_t arg_layers; JS_ToInt64(ctx, &arg_layers, argv[5]);
@@ -510,8 +510,8 @@ static JSValue js_RenderSceneBuffersRD_get_texture_slice_size(JSContext* ctx, JS
     }
 
     // Convert arguments
-    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? String::utf8(cstr_context) : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     int64_t arg_mipmap; JS_ToInt64(ctx, &arg_mipmap, argv[3]);
 
     Vector2i result = typed_obj->get_texture_slice_size(arg_context, arg_name, arg_mipmap);
@@ -556,7 +556,7 @@ static JSValue js_RenderSceneBuffersRD_clear_context(JSContext* ctx, JSValueCons
     }
 
     // Convert arguments
-    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? cstr_context : ""; JS_FreeCString(ctx, cstr_context);
+    const char* cstr_context = JS_ToCString(ctx, argv[1]); StringName arg_context = cstr_context ? String::utf8(cstr_context) : ""; JS_FreeCString(ctx, cstr_context);
 
     typed_obj->clear_context(arg_context);
     return JS_UNDEFINED;

@@ -72,7 +72,7 @@ static JSValue js_LightmapGIData_add_user(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
     double tmp_x_uv_scale, tmp_y_uv_scale, tmp_w_uv_scale, tmp_h_uv_scale;
     JSValue jpos_uv_scale = JS_GetPropertyStr(ctx, argv[2], "position");
     JSValue jsize_uv_scale = JS_GetPropertyStr(ctx, argv[2], "size");

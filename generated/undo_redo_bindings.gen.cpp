@@ -71,7 +71,7 @@ static JSValue js_UndoRedo_create_action(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     // Optional argument: merge_mode (default: (UndoRedo::MergeMode)0)
     UndoRedo::MergeMode arg_merge_mode = (UndoRedo::MergeMode)0;
     if (argc > 2) {
@@ -311,7 +311,7 @@ static JSValue js_UndoRedo_add_do_property(JSContext* ctx, JSValueConst this_val
         }
         JS_FreeValue(ctx, jh_object);
     }
-    const char* cstr_property = JS_ToCString(ctx, argv[2]); StringName arg_property = cstr_property ? cstr_property : ""; JS_FreeCString(ctx, cstr_property);
+    const char* cstr_property = JS_ToCString(ctx, argv[2]); StringName arg_property = cstr_property ? String::utf8(cstr_property) : ""; JS_FreeCString(ctx, cstr_property);
     Variant arg_value = qjs_ctx->js_to_variant(argv[3]);
 
     typed_obj->add_do_property(arg_object, arg_property, arg_value);
@@ -372,7 +372,7 @@ static JSValue js_UndoRedo_add_undo_property(JSContext* ctx, JSValueConst this_v
         }
         JS_FreeValue(ctx, jh_object);
     }
-    const char* cstr_property = JS_ToCString(ctx, argv[2]); StringName arg_property = cstr_property ? cstr_property : ""; JS_FreeCString(ctx, cstr_property);
+    const char* cstr_property = JS_ToCString(ctx, argv[2]); StringName arg_property = cstr_property ? String::utf8(cstr_property) : ""; JS_FreeCString(ctx, cstr_property);
     Variant arg_value = qjs_ctx->js_to_variant(argv[3]);
 
     typed_obj->add_undo_property(arg_object, arg_property, arg_value);

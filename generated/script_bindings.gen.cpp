@@ -355,7 +355,7 @@ static JSValue js_Script_has_script_signal(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_signal_name = JS_ToCString(ctx, argv[1]); StringName arg_signal_name = cstr_signal_name ? cstr_signal_name : ""; JS_FreeCString(ctx, cstr_signal_name);
+    const char* cstr_signal_name = JS_ToCString(ctx, argv[1]); StringName arg_signal_name = cstr_signal_name ? String::utf8(cstr_signal_name) : ""; JS_FreeCString(ctx, cstr_signal_name);
 
     bool result = typed_obj->has_script_signal(arg_signal_name);
     return JS_NewBool(ctx, result);
@@ -518,7 +518,7 @@ static JSValue js_Script_get_property_default_value(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_property = JS_ToCString(ctx, argv[1]); StringName arg_property = cstr_property ? cstr_property : ""; JS_FreeCString(ctx, cstr_property);
+    const char* cstr_property = JS_ToCString(ctx, argv[1]); StringName arg_property = cstr_property ? String::utf8(cstr_property) : ""; JS_FreeCString(ctx, cstr_property);
 
     Variant result = typed_obj->get_property_default_value(arg_property);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -679,7 +679,7 @@ static JSValue js_Script_set_source_code(JSContext* ctx, JSValueConst this_val, 
         return JS_ThrowTypeError(ctx, "Script.source_code setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_source_code(value);
     return JS_UNDEFINED;
 }

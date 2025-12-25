@@ -261,7 +261,7 @@ static JSValue js_RDShaderFile_set_base_error(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "RDShaderFile.base_error setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_base_error(value);
     return JS_UNDEFINED;
 }

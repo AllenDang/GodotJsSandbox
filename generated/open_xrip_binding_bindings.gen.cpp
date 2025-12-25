@@ -194,7 +194,7 @@ static JSValue js_OpenXRIPBinding_has_path(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     bool result = typed_obj->has_path(arg_path);
     return JS_NewBool(ctx, result);
@@ -238,7 +238,7 @@ static JSValue js_OpenXRIPBinding_add_path(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     typed_obj->add_path(arg_path);
     return JS_UNDEFINED;
@@ -282,7 +282,7 @@ static JSValue js_OpenXRIPBinding_remove_path(JSContext* ctx, JSValueConst this_
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     typed_obj->remove_path(arg_path);
     return JS_UNDEFINED;
@@ -457,7 +457,7 @@ static JSValue js_OpenXRIPBinding_set_binding_path(JSContext* ctx, JSValueConst 
         return JS_ThrowTypeError(ctx, "OpenXRIPBinding.binding_path setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_binding_path(value);
     return JS_UNDEFINED;
 }

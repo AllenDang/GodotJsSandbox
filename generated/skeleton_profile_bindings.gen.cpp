@@ -112,7 +112,7 @@ static JSValue js_SkeletonProfile_set_group_name(JSContext* ctx, JSValueConst th
 
     // Convert arguments
     int64_t arg_group_idx; JS_ToInt64(ctx, &arg_group_idx, argv[1]);
-    const char* cstr_group_name = JS_ToCString(ctx, argv[2]); StringName arg_group_name = cstr_group_name ? cstr_group_name : ""; JS_FreeCString(ctx, cstr_group_name);
+    const char* cstr_group_name = JS_ToCString(ctx, argv[2]); StringName arg_group_name = cstr_group_name ? String::utf8(cstr_group_name) : ""; JS_FreeCString(ctx, cstr_group_name);
 
     typed_obj->set_group_name(arg_group_idx, arg_group_name);
     return JS_UNDEFINED;
@@ -275,7 +275,7 @@ static JSValue js_SkeletonProfile_find_bone(JSContext* ctx, JSValueConst this_va
     }
 
     // Convert arguments
-    const char* cstr_bone_name = JS_ToCString(ctx, argv[1]); StringName arg_bone_name = cstr_bone_name ? cstr_bone_name : ""; JS_FreeCString(ctx, cstr_bone_name);
+    const char* cstr_bone_name = JS_ToCString(ctx, argv[1]); StringName arg_bone_name = cstr_bone_name ? String::utf8(cstr_bone_name) : ""; JS_FreeCString(ctx, cstr_bone_name);
 
     int64_t result = typed_obj->find_bone(arg_bone_name);
     return JS_NewInt64(ctx, result);
@@ -359,7 +359,7 @@ static JSValue js_SkeletonProfile_set_bone_name(JSContext* ctx, JSValueConst thi
 
     // Convert arguments
     int64_t arg_bone_idx; JS_ToInt64(ctx, &arg_bone_idx, argv[1]);
-    const char* cstr_bone_name = JS_ToCString(ctx, argv[2]); StringName arg_bone_name = cstr_bone_name ? cstr_bone_name : ""; JS_FreeCString(ctx, cstr_bone_name);
+    const char* cstr_bone_name = JS_ToCString(ctx, argv[2]); StringName arg_bone_name = cstr_bone_name ? String::utf8(cstr_bone_name) : ""; JS_FreeCString(ctx, cstr_bone_name);
 
     typed_obj->set_bone_name(arg_bone_idx, arg_bone_name);
     return JS_UNDEFINED;
@@ -443,7 +443,7 @@ static JSValue js_SkeletonProfile_set_bone_parent(JSContext* ctx, JSValueConst t
 
     // Convert arguments
     int64_t arg_bone_idx; JS_ToInt64(ctx, &arg_bone_idx, argv[1]);
-    const char* cstr_bone_parent = JS_ToCString(ctx, argv[2]); StringName arg_bone_parent = cstr_bone_parent ? cstr_bone_parent : ""; JS_FreeCString(ctx, cstr_bone_parent);
+    const char* cstr_bone_parent = JS_ToCString(ctx, argv[2]); StringName arg_bone_parent = cstr_bone_parent ? String::utf8(cstr_bone_parent) : ""; JS_FreeCString(ctx, cstr_bone_parent);
 
     typed_obj->set_bone_parent(arg_bone_idx, arg_bone_parent);
     return JS_UNDEFINED;
@@ -611,7 +611,7 @@ static JSValue js_SkeletonProfile_set_bone_tail(JSContext* ctx, JSValueConst thi
 
     // Convert arguments
     int64_t arg_bone_idx; JS_ToInt64(ctx, &arg_bone_idx, argv[1]);
-    const char* cstr_bone_tail = JS_ToCString(ctx, argv[2]); StringName arg_bone_tail = cstr_bone_tail ? cstr_bone_tail : ""; JS_FreeCString(ctx, cstr_bone_tail);
+    const char* cstr_bone_tail = JS_ToCString(ctx, argv[2]); StringName arg_bone_tail = cstr_bone_tail ? String::utf8(cstr_bone_tail) : ""; JS_FreeCString(ctx, cstr_bone_tail);
 
     typed_obj->set_bone_tail(arg_bone_idx, arg_bone_tail);
     return JS_UNDEFINED;
@@ -930,7 +930,7 @@ static JSValue js_SkeletonProfile_set_group(JSContext* ctx, JSValueConst this_va
 
     // Convert arguments
     int64_t arg_bone_idx; JS_ToInt64(ctx, &arg_bone_idx, argv[1]);
-    const char* cstr_group = JS_ToCString(ctx, argv[2]); StringName arg_group = cstr_group ? cstr_group : ""; JS_FreeCString(ctx, cstr_group);
+    const char* cstr_group = JS_ToCString(ctx, argv[2]); StringName arg_group = cstr_group ? String::utf8(cstr_group) : ""; JS_FreeCString(ctx, cstr_group);
 
     typed_obj->set_group(arg_bone_idx, arg_group);
     return JS_UNDEFINED;
@@ -1082,7 +1082,7 @@ static JSValue js_SkeletonProfile_set_root_bone(JSContext* ctx, JSValueConst thi
         return JS_ThrowTypeError(ctx, "SkeletonProfile.root_bone setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_root_bone(value);
     return JS_UNDEFINED;
 }
@@ -1149,7 +1149,7 @@ static JSValue js_SkeletonProfile_set_scale_base_bone(JSContext* ctx, JSValueCon
         return JS_ThrowTypeError(ctx, "SkeletonProfile.scale_base_bone setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_scale_base_bone(value);
     return JS_UNDEFINED;
 }

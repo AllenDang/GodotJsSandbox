@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/gltf_document.hpp>
-#include <godot_cpp/classes/gltf_document_extension.hpp>
 #include <godot_cpp/classes/gltf_object_model_property.hpp>
+#include <godot_cpp/classes/gltf_document_extension.hpp>
 #include <godot_cpp/classes/gltf_state.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -74,7 +74,7 @@ static JSValue js_GLTFDocument_append_from_file(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
     Ref<GLTFState> arg_state;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -147,7 +147,7 @@ static JSValue js_GLTFDocument_append_from_buffer(JSContext* ctx, JSValueConst t
 
     // Convert arguments
     PackedByteArray arg_bytes = qjs_ctx->js_to_variant(argv[1]);
-    const char* cstr_base_path = JS_ToCString(ctx, argv[2]); String arg_base_path = cstr_base_path ? cstr_base_path : ""; JS_FreeCString(ctx, cstr_base_path);
+    const char* cstr_base_path = JS_ToCString(ctx, argv[2]); String arg_base_path = cstr_base_path ? String::utf8(cstr_base_path) : ""; JS_FreeCString(ctx, cstr_base_path);
     Ref<GLTFState> arg_state;
     if (JS_IsNumber(argv[3])) {
         // Direct handle (unwrapped by JS proxy)
@@ -471,7 +471,7 @@ static JSValue js_GLTFDocument_write_to_filesystem(JSContext* ctx, JSValueConst 
         }
         JS_FreeValue(ctx, jh_state);
     }
-    const char* cstr_path = JS_ToCString(ctx, argv[2]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[2]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Error result = typed_obj->write_to_filesystem(arg_state, arg_path);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -531,7 +531,7 @@ static JSValue js_GLTFDocument_import_object_model_property(JSContext* ctx, JSVa
         }
         JS_FreeValue(ctx, jh_state);
     }
-    const char* cstr_json_pointer = JS_ToCString(ctx, argv[2]); String arg_json_pointer = cstr_json_pointer ? cstr_json_pointer : ""; JS_FreeCString(ctx, cstr_json_pointer);
+    const char* cstr_json_pointer = JS_ToCString(ctx, argv[2]); String arg_json_pointer = cstr_json_pointer ? String::utf8(cstr_json_pointer) : ""; JS_FreeCString(ctx, cstr_json_pointer);
 
     Ref<GLTFObjectModelProperty> result = typed_obj->import_object_model_property(arg_state, arg_json_pointer);
     if (result.is_null()) return JS_NULL;
@@ -616,7 +616,7 @@ static JSValue js_GLTFDocument_export_object_model_property(JSContext* ctx, JSVa
         }
         JS_FreeValue(ctx, jh_state);
     }
-    const char* cstr_node_path = JS_ToCString(ctx, argv[2]); NodePath arg_node_path = cstr_node_path ? NodePath(cstr_node_path) : NodePath(); JS_FreeCString(ctx, cstr_node_path);
+    const char* cstr_node_path = JS_ToCString(ctx, argv[2]); NodePath arg_node_path = cstr_node_path ? NodePath(String::utf8(cstr_node_path)) : NodePath(); JS_FreeCString(ctx, cstr_node_path);
     Node* arg_godot_node = nullptr;
     if (JS_IsNumber(argv[3])) {
         // Direct handle (unwrapped by JS proxy)
@@ -881,7 +881,7 @@ static JSValue js_GLTFDocument_set_image_format(JSContext* ctx, JSValueConst thi
         return JS_ThrowTypeError(ctx, "GLTFDocument.image_format setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_image_format(value);
     return JS_UNDEFINED;
 }
@@ -1015,7 +1015,7 @@ static JSValue js_GLTFDocument_set_fallback_image_format(JSContext* ctx, JSValue
         return JS_ThrowTypeError(ctx, "GLTFDocument.fallback_image_format setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_fallback_image_format(value);
     return JS_UNDEFINED;
 }

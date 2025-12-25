@@ -10,8 +10,8 @@
 
 #include <godot_cpp/classes/gltf_physics_shape.hpp>
 #include <godot_cpp/classes/shape3d.hpp>
-#include <godot_cpp/classes/gltf_physics_shape.hpp>
 #include <godot_cpp/classes/importer_mesh.hpp>
+#include <godot_cpp/classes/gltf_physics_shape.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -519,7 +519,7 @@ static JSValue js_GLTFPhysicsShape_set_shape_type(JSContext* ctx, JSValueConst t
         return JS_ThrowTypeError(ctx, "GLTFPhysicsShape.shape_type setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_shape_type(value);
     return JS_UNDEFINED;
 }

@@ -188,7 +188,7 @@ static JSValue js_LookAtModifier3D_set_target_node(JSContext* ctx, JSValueConst 
         return JS_ThrowTypeError(ctx, "LookAtModifier3D.target_node setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_target_node(value);
     return JS_UNDEFINED;
 }
@@ -255,7 +255,7 @@ static JSValue js_LookAtModifier3D_set_bone_name(JSContext* ctx, JSValueConst th
         return JS_ThrowTypeError(ctx, "LookAtModifier3D.bone_name setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_bone_name(value);
     return JS_UNDEFINED;
 }
@@ -657,7 +657,7 @@ static JSValue js_LookAtModifier3D_set_origin_bone_name(JSContext* ctx, JSValueC
         return JS_ThrowTypeError(ctx, "LookAtModifier3D.origin_bone_name setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_origin_bone_name(value);
     return JS_UNDEFINED;
 }
@@ -791,7 +791,7 @@ static JSValue js_LookAtModifier3D_set_origin_external_node(JSContext* ctx, JSVa
         return JS_ThrowTypeError(ctx, "LookAtModifier3D.origin_external_node setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_origin_external_node(value);
     return JS_UNDEFINED;
 }

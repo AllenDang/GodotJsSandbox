@@ -9,12 +9,12 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/canvas_item.hpp>
-#include <godot_cpp/classes/style_box.hpp>
-#include <godot_cpp/classes/mesh.hpp>
-#include <godot_cpp/classes/input_event.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
-#include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/multi_mesh.hpp>
+#include <godot_cpp/classes/input_event.hpp>
+#include <godot_cpp/classes/mesh.hpp>
+#include <godot_cpp/classes/style_box.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/world2d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -2069,7 +2069,7 @@ static JSValue js_CanvasItem_draw_string(JSContext* ctx, JSValueConst this_val, 
     JS_FreeValue(ctx, jx_pos);
     JS_FreeValue(ctx, jy_pos);
     Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
-    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     // Optional argument: alignment (default: (HorizontalAlignment)0)
     HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
     if (argc > 4) {
@@ -2200,7 +2200,7 @@ static JSValue js_CanvasItem_draw_multiline_string(JSContext* ctx, JSValueConst 
     JS_FreeValue(ctx, jx_pos);
     JS_FreeValue(ctx, jy_pos);
     Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
-    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     // Optional argument: alignment (default: (HorizontalAlignment)0)
     HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
     if (argc > 4) {
@@ -2343,7 +2343,7 @@ static JSValue js_CanvasItem_draw_string_outline(JSContext* ctx, JSValueConst th
     JS_FreeValue(ctx, jx_pos);
     JS_FreeValue(ctx, jy_pos);
     Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
-    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     // Optional argument: alignment (default: (HorizontalAlignment)0)
     HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
     if (argc > 4) {
@@ -2480,7 +2480,7 @@ static JSValue js_CanvasItem_draw_multiline_string_outline(JSContext* ctx, JSVal
     JS_FreeValue(ctx, jx_pos);
     JS_FreeValue(ctx, jy_pos);
     Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
-    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     // Optional argument: alignment (default: (HorizontalAlignment)0)
     HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
     if (argc > 4) {
@@ -2629,7 +2629,7 @@ static JSValue js_CanvasItem_draw_char(JSContext* ctx, JSValueConst this_val, in
     JS_FreeValue(ctx, jx_pos);
     JS_FreeValue(ctx, jy_pos);
     Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
-    const char* cstr_char = JS_ToCString(ctx, argv[3]); String arg_char = cstr_char ? cstr_char : ""; JS_FreeCString(ctx, cstr_char);
+    const char* cstr_char = JS_ToCString(ctx, argv[3]); String arg_char = cstr_char ? String::utf8(cstr_char) : ""; JS_FreeCString(ctx, cstr_char);
     // Optional argument: font_size (default: 16)
     int64_t arg_font_size = 16;
     if (argc > 4) {
@@ -2729,7 +2729,7 @@ static JSValue js_CanvasItem_draw_char_outline(JSContext* ctx, JSValueConst this
     JS_FreeValue(ctx, jx_pos);
     JS_FreeValue(ctx, jy_pos);
     Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
-    const char* cstr_char = JS_ToCString(ctx, argv[3]); String arg_char = cstr_char ? cstr_char : ""; JS_FreeCString(ctx, cstr_char);
+    const char* cstr_char = JS_ToCString(ctx, argv[3]); String arg_char = cstr_char ? String::utf8(cstr_char) : ""; JS_FreeCString(ctx, cstr_char);
     // Optional argument: font_size (default: 16)
     int64_t arg_font_size = 16;
     if (argc > 4) {
@@ -3628,7 +3628,7 @@ static JSValue js_CanvasItem_set_instance_shader_parameter(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Variant arg_value = qjs_ctx->js_to_variant(argv[2]);
 
     typed_obj->set_instance_shader_parameter(arg_name, arg_value);
@@ -3668,7 +3668,7 @@ static JSValue js_CanvasItem_get_instance_shader_parameter(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Variant result = typed_obj->get_instance_shader_parameter(arg_name);
     return qjs_ctx->variant_to_js(Variant(result));

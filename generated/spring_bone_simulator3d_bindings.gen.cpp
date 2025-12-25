@@ -73,7 +73,7 @@ static JSValue js_SpringBoneSimulator3D_set_root_bone_name(JSContext* ctx, JSVal
 
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
-    const char* cstr_bone_name = JS_ToCString(ctx, argv[2]); String arg_bone_name = cstr_bone_name ? cstr_bone_name : ""; JS_FreeCString(ctx, cstr_bone_name);
+    const char* cstr_bone_name = JS_ToCString(ctx, argv[2]); String arg_bone_name = cstr_bone_name ? String::utf8(cstr_bone_name) : ""; JS_FreeCString(ctx, cstr_bone_name);
 
     typed_obj->set_root_bone_name(arg_index, arg_bone_name);
     return JS_UNDEFINED;
@@ -241,7 +241,7 @@ static JSValue js_SpringBoneSimulator3D_set_end_bone_name(JSContext* ctx, JSValu
 
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
-    const char* cstr_bone_name = JS_ToCString(ctx, argv[2]); String arg_bone_name = cstr_bone_name ? cstr_bone_name : ""; JS_FreeCString(ctx, cstr_bone_name);
+    const char* cstr_bone_name = JS_ToCString(ctx, argv[2]); String arg_bone_name = cstr_bone_name ? String::utf8(cstr_bone_name) : ""; JS_FreeCString(ctx, cstr_bone_name);
 
     typed_obj->set_end_bone_name(arg_index, arg_bone_name);
     return JS_UNDEFINED;
@@ -745,7 +745,7 @@ static JSValue js_SpringBoneSimulator3D_set_center_node(JSContext* ctx, JSValueC
 
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
-    const char* cstr_node_path = JS_ToCString(ctx, argv[2]); NodePath arg_node_path = cstr_node_path ? NodePath(cstr_node_path) : NodePath(); JS_FreeCString(ctx, cstr_node_path);
+    const char* cstr_node_path = JS_ToCString(ctx, argv[2]); NodePath arg_node_path = cstr_node_path ? NodePath(String::utf8(cstr_node_path)) : NodePath(); JS_FreeCString(ctx, cstr_node_path);
 
     typed_obj->set_center_node(arg_index, arg_node_path);
     return JS_UNDEFINED;
@@ -829,7 +829,7 @@ static JSValue js_SpringBoneSimulator3D_set_center_bone_name(JSContext* ctx, JSV
 
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
-    const char* cstr_bone_name = JS_ToCString(ctx, argv[2]); String arg_bone_name = cstr_bone_name ? cstr_bone_name : ""; JS_FreeCString(ctx, cstr_bone_name);
+    const char* cstr_bone_name = JS_ToCString(ctx, argv[2]); String arg_bone_name = cstr_bone_name ? String::utf8(cstr_bone_name) : ""; JS_FreeCString(ctx, cstr_bone_name);
 
     typed_obj->set_center_bone_name(arg_index, arg_bone_name);
     return JS_UNDEFINED;
@@ -3063,7 +3063,7 @@ static JSValue js_SpringBoneSimulator3D_set_exclude_collision_path(JSContext* ct
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
     int64_t arg_collision; JS_ToInt64(ctx, &arg_collision, argv[2]);
-    const char* cstr_node_path = JS_ToCString(ctx, argv[3]); NodePath arg_node_path = cstr_node_path ? NodePath(cstr_node_path) : NodePath(); JS_FreeCString(ctx, cstr_node_path);
+    const char* cstr_node_path = JS_ToCString(ctx, argv[3]); NodePath arg_node_path = cstr_node_path ? NodePath(String::utf8(cstr_node_path)) : NodePath(); JS_FreeCString(ctx, cstr_node_path);
 
     typed_obj->set_exclude_collision_path(arg_index, arg_collision, arg_node_path);
     return JS_UNDEFINED;
@@ -3277,7 +3277,7 @@ static JSValue js_SpringBoneSimulator3D_set_collision_path(JSContext* ctx, JSVal
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
     int64_t arg_collision; JS_ToInt64(ctx, &arg_collision, argv[2]);
-    const char* cstr_node_path = JS_ToCString(ctx, argv[3]); NodePath arg_node_path = cstr_node_path ? NodePath(cstr_node_path) : NodePath(); JS_FreeCString(ctx, cstr_node_path);
+    const char* cstr_node_path = JS_ToCString(ctx, argv[3]); NodePath arg_node_path = cstr_node_path ? NodePath(String::utf8(cstr_node_path)) : NodePath(); JS_FreeCString(ctx, cstr_node_path);
 
     typed_obj->set_collision_path(arg_index, arg_collision, arg_node_path);
     return JS_UNDEFINED;

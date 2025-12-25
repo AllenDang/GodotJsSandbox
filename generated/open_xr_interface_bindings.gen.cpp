@@ -128,7 +128,7 @@ static JSValue js_OpenXRInterface_is_action_set_active(JSContext* ctx, JSValueCo
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->is_action_set_active(arg_name);
     return JS_NewBool(ctx, result);
@@ -172,7 +172,7 @@ static JSValue js_OpenXRInterface_set_action_set_active(JSContext* ctx, JSValueC
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     bool arg_active = JS_ToBool(ctx, argv[2]);
 
     typed_obj->set_action_set_active(arg_name, arg_active);

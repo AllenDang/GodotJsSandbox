@@ -235,8 +235,8 @@ static JSValue js_CodeEdit_add_auto_brace_completion_pair(JSContext* ctx, JSValu
     }
 
     // Convert arguments
-    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? cstr_start_key : ""; JS_FreeCString(ctx, cstr_start_key);
-    const char* cstr_end_key = JS_ToCString(ctx, argv[2]); String arg_end_key = cstr_end_key ? cstr_end_key : ""; JS_FreeCString(ctx, cstr_end_key);
+    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? String::utf8(cstr_start_key) : ""; JS_FreeCString(ctx, cstr_start_key);
+    const char* cstr_end_key = JS_ToCString(ctx, argv[2]); String arg_end_key = cstr_end_key ? String::utf8(cstr_end_key) : ""; JS_FreeCString(ctx, cstr_end_key);
 
     typed_obj->add_auto_brace_completion_pair(arg_start_key, arg_end_key);
     return JS_UNDEFINED;
@@ -275,7 +275,7 @@ static JSValue js_CodeEdit_has_auto_brace_completion_open_key(JSContext* ctx, JS
     }
 
     // Convert arguments
-    const char* cstr_open_key = JS_ToCString(ctx, argv[1]); String arg_open_key = cstr_open_key ? cstr_open_key : ""; JS_FreeCString(ctx, cstr_open_key);
+    const char* cstr_open_key = JS_ToCString(ctx, argv[1]); String arg_open_key = cstr_open_key ? String::utf8(cstr_open_key) : ""; JS_FreeCString(ctx, cstr_open_key);
 
     bool result = typed_obj->has_auto_brace_completion_open_key(arg_open_key);
     return JS_NewBool(ctx, result);
@@ -314,7 +314,7 @@ static JSValue js_CodeEdit_has_auto_brace_completion_close_key(JSContext* ctx, J
     }
 
     // Convert arguments
-    const char* cstr_close_key = JS_ToCString(ctx, argv[1]); String arg_close_key = cstr_close_key ? cstr_close_key : ""; JS_FreeCString(ctx, cstr_close_key);
+    const char* cstr_close_key = JS_ToCString(ctx, argv[1]); String arg_close_key = cstr_close_key ? String::utf8(cstr_close_key) : ""; JS_FreeCString(ctx, cstr_close_key);
 
     bool result = typed_obj->has_auto_brace_completion_close_key(arg_close_key);
     return JS_NewBool(ctx, result);
@@ -353,7 +353,7 @@ static JSValue js_CodeEdit_get_auto_brace_completion_close_key(JSContext* ctx, J
     }
 
     // Convert arguments
-    const char* cstr_open_key = JS_ToCString(ctx, argv[1]); String arg_open_key = cstr_open_key ? cstr_open_key : ""; JS_FreeCString(ctx, cstr_open_key);
+    const char* cstr_open_key = JS_ToCString(ctx, argv[1]); String arg_open_key = cstr_open_key ? String::utf8(cstr_open_key) : ""; JS_FreeCString(ctx, cstr_open_key);
 
     String result = typed_obj->get_auto_brace_completion_close_key(arg_open_key);
     return JS_NewString(ctx, result.utf8().get_data());
@@ -1430,8 +1430,8 @@ static JSValue js_CodeEdit_add_string_delimiter(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? cstr_start_key : ""; JS_FreeCString(ctx, cstr_start_key);
-    const char* cstr_end_key = JS_ToCString(ctx, argv[2]); String arg_end_key = cstr_end_key ? cstr_end_key : ""; JS_FreeCString(ctx, cstr_end_key);
+    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? String::utf8(cstr_start_key) : ""; JS_FreeCString(ctx, cstr_start_key);
+    const char* cstr_end_key = JS_ToCString(ctx, argv[2]); String arg_end_key = cstr_end_key ? String::utf8(cstr_end_key) : ""; JS_FreeCString(ctx, cstr_end_key);
     // Optional argument: line_only (default: false)
     bool arg_line_only = false;
     if (argc > 3) {
@@ -1481,7 +1481,7 @@ static JSValue js_CodeEdit_remove_string_delimiter(JSContext* ctx, JSValueConst 
     }
 
     // Convert arguments
-    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? cstr_start_key : ""; JS_FreeCString(ctx, cstr_start_key);
+    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? String::utf8(cstr_start_key) : ""; JS_FreeCString(ctx, cstr_start_key);
 
     typed_obj->remove_string_delimiter(arg_start_key);
     return JS_UNDEFINED;
@@ -1520,7 +1520,7 @@ static JSValue js_CodeEdit_has_string_delimiter(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? cstr_start_key : ""; JS_FreeCString(ctx, cstr_start_key);
+    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? String::utf8(cstr_start_key) : ""; JS_FreeCString(ctx, cstr_start_key);
 
     bool result = typed_obj->has_string_delimiter(arg_start_key);
     return JS_NewBool(ctx, result);
@@ -1645,8 +1645,8 @@ static JSValue js_CodeEdit_add_comment_delimiter(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? cstr_start_key : ""; JS_FreeCString(ctx, cstr_start_key);
-    const char* cstr_end_key = JS_ToCString(ctx, argv[2]); String arg_end_key = cstr_end_key ? cstr_end_key : ""; JS_FreeCString(ctx, cstr_end_key);
+    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? String::utf8(cstr_start_key) : ""; JS_FreeCString(ctx, cstr_start_key);
+    const char* cstr_end_key = JS_ToCString(ctx, argv[2]); String arg_end_key = cstr_end_key ? String::utf8(cstr_end_key) : ""; JS_FreeCString(ctx, cstr_end_key);
     // Optional argument: line_only (default: false)
     bool arg_line_only = false;
     if (argc > 3) {
@@ -1696,7 +1696,7 @@ static JSValue js_CodeEdit_remove_comment_delimiter(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? cstr_start_key : ""; JS_FreeCString(ctx, cstr_start_key);
+    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? String::utf8(cstr_start_key) : ""; JS_FreeCString(ctx, cstr_start_key);
 
     typed_obj->remove_comment_delimiter(arg_start_key);
     return JS_UNDEFINED;
@@ -1735,7 +1735,7 @@ static JSValue js_CodeEdit_has_comment_delimiter(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? cstr_start_key : ""; JS_FreeCString(ctx, cstr_start_key);
+    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? String::utf8(cstr_start_key) : ""; JS_FreeCString(ctx, cstr_start_key);
 
     bool result = typed_obj->has_comment_delimiter(arg_start_key);
     return JS_NewBool(ctx, result);
@@ -2024,7 +2024,7 @@ static JSValue js_CodeEdit_set_code_hint(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_code_hint = JS_ToCString(ctx, argv[1]); String arg_code_hint = cstr_code_hint ? cstr_code_hint : ""; JS_FreeCString(ctx, cstr_code_hint);
+    const char* cstr_code_hint = JS_ToCString(ctx, argv[1]); String arg_code_hint = cstr_code_hint ? String::utf8(cstr_code_hint) : ""; JS_FreeCString(ctx, cstr_code_hint);
 
     typed_obj->set_code_hint(arg_code_hint);
     return JS_UNDEFINED;
@@ -2193,8 +2193,8 @@ static JSValue js_CodeEdit_add_code_completion_option(JSContext* ctx, JSValueCon
 
     // Convert arguments
     int64_t tmp_type; JS_ToInt64(ctx, &tmp_type, argv[1]); CodeEdit::CodeCompletionKind arg_type = (CodeEdit::CodeCompletionKind)tmp_type;
-    const char* cstr_display_text = JS_ToCString(ctx, argv[2]); String arg_display_text = cstr_display_text ? cstr_display_text : ""; JS_FreeCString(ctx, cstr_display_text);
-    const char* cstr_insert_text = JS_ToCString(ctx, argv[3]); String arg_insert_text = cstr_insert_text ? cstr_insert_text : ""; JS_FreeCString(ctx, cstr_insert_text);
+    const char* cstr_display_text = JS_ToCString(ctx, argv[2]); String arg_display_text = cstr_display_text ? String::utf8(cstr_display_text) : ""; JS_FreeCString(ctx, cstr_display_text);
+    const char* cstr_insert_text = JS_ToCString(ctx, argv[3]); String arg_insert_text = cstr_insert_text ? String::utf8(cstr_insert_text) : ""; JS_FreeCString(ctx, cstr_insert_text);
     // Optional argument: text_color (default: Color(1, 1, 1, 1))
     Color arg_text_color = Color(1, 1, 1, 1);
     if (argc > 4) {

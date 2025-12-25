@@ -71,7 +71,7 @@ static JSValue js_CryptoKey_save(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
     // Optional argument: public_only (default: false)
     bool arg_public_only = false;
     if (argc > 2) {
@@ -121,7 +121,7 @@ static JSValue js_CryptoKey_load(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
     // Optional argument: public_only (default: false)
     bool arg_public_only = false;
     if (argc > 2) {
@@ -251,7 +251,7 @@ static JSValue js_CryptoKey_load_from_string(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_string_key = JS_ToCString(ctx, argv[1]); String arg_string_key = cstr_string_key ? cstr_string_key : ""; JS_FreeCString(ctx, cstr_string_key);
+    const char* cstr_string_key = JS_ToCString(ctx, argv[1]); String arg_string_key = cstr_string_key ? String::utf8(cstr_string_key) : ""; JS_FreeCString(ctx, cstr_string_key);
     // Optional argument: public_only (default: false)
     bool arg_public_only = false;
     if (argc > 2) {

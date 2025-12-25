@@ -71,7 +71,7 @@ static JSValue js_CodeHighlighter_add_keyword_color(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_keyword = JS_ToCString(ctx, argv[1]); String arg_keyword = cstr_keyword ? cstr_keyword : ""; JS_FreeCString(ctx, cstr_keyword);
+    const char* cstr_keyword = JS_ToCString(ctx, argv[1]); String arg_keyword = cstr_keyword ? String::utf8(cstr_keyword) : ""; JS_FreeCString(ctx, cstr_keyword);
     double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
     JSValue jr_color = JS_GetPropertyStr(ctx, argv[2], "r");
     JSValue jg_color = JS_GetPropertyStr(ctx, argv[2], "g");
@@ -129,7 +129,7 @@ static JSValue js_CodeHighlighter_remove_keyword_color(JSContext* ctx, JSValueCo
     }
 
     // Convert arguments
-    const char* cstr_keyword = JS_ToCString(ctx, argv[1]); String arg_keyword = cstr_keyword ? cstr_keyword : ""; JS_FreeCString(ctx, cstr_keyword);
+    const char* cstr_keyword = JS_ToCString(ctx, argv[1]); String arg_keyword = cstr_keyword ? String::utf8(cstr_keyword) : ""; JS_FreeCString(ctx, cstr_keyword);
 
     typed_obj->remove_keyword_color(arg_keyword);
     return JS_UNDEFINED;
@@ -168,7 +168,7 @@ static JSValue js_CodeHighlighter_has_keyword_color(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_keyword = JS_ToCString(ctx, argv[1]); String arg_keyword = cstr_keyword ? cstr_keyword : ""; JS_FreeCString(ctx, cstr_keyword);
+    const char* cstr_keyword = JS_ToCString(ctx, argv[1]); String arg_keyword = cstr_keyword ? String::utf8(cstr_keyword) : ""; JS_FreeCString(ctx, cstr_keyword);
 
     bool result = typed_obj->has_keyword_color(arg_keyword);
     return JS_NewBool(ctx, result);
@@ -207,7 +207,7 @@ static JSValue js_CodeHighlighter_get_keyword_color(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_keyword = JS_ToCString(ctx, argv[1]); String arg_keyword = cstr_keyword ? cstr_keyword : ""; JS_FreeCString(ctx, cstr_keyword);
+    const char* cstr_keyword = JS_ToCString(ctx, argv[1]); String arg_keyword = cstr_keyword ? String::utf8(cstr_keyword) : ""; JS_FreeCString(ctx, cstr_keyword);
 
     Color result = typed_obj->get_keyword_color(arg_keyword);
     JSValue ret_obj = JS_NewObject(ctx);
@@ -292,7 +292,7 @@ static JSValue js_CodeHighlighter_add_member_keyword_color(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_member_keyword = JS_ToCString(ctx, argv[1]); String arg_member_keyword = cstr_member_keyword ? cstr_member_keyword : ""; JS_FreeCString(ctx, cstr_member_keyword);
+    const char* cstr_member_keyword = JS_ToCString(ctx, argv[1]); String arg_member_keyword = cstr_member_keyword ? String::utf8(cstr_member_keyword) : ""; JS_FreeCString(ctx, cstr_member_keyword);
     double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
     JSValue jr_color = JS_GetPropertyStr(ctx, argv[2], "r");
     JSValue jg_color = JS_GetPropertyStr(ctx, argv[2], "g");
@@ -350,7 +350,7 @@ static JSValue js_CodeHighlighter_remove_member_keyword_color(JSContext* ctx, JS
     }
 
     // Convert arguments
-    const char* cstr_member_keyword = JS_ToCString(ctx, argv[1]); String arg_member_keyword = cstr_member_keyword ? cstr_member_keyword : ""; JS_FreeCString(ctx, cstr_member_keyword);
+    const char* cstr_member_keyword = JS_ToCString(ctx, argv[1]); String arg_member_keyword = cstr_member_keyword ? String::utf8(cstr_member_keyword) : ""; JS_FreeCString(ctx, cstr_member_keyword);
 
     typed_obj->remove_member_keyword_color(arg_member_keyword);
     return JS_UNDEFINED;
@@ -389,7 +389,7 @@ static JSValue js_CodeHighlighter_has_member_keyword_color(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_member_keyword = JS_ToCString(ctx, argv[1]); String arg_member_keyword = cstr_member_keyword ? cstr_member_keyword : ""; JS_FreeCString(ctx, cstr_member_keyword);
+    const char* cstr_member_keyword = JS_ToCString(ctx, argv[1]); String arg_member_keyword = cstr_member_keyword ? String::utf8(cstr_member_keyword) : ""; JS_FreeCString(ctx, cstr_member_keyword);
 
     bool result = typed_obj->has_member_keyword_color(arg_member_keyword);
     return JS_NewBool(ctx, result);
@@ -428,7 +428,7 @@ static JSValue js_CodeHighlighter_get_member_keyword_color(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_member_keyword = JS_ToCString(ctx, argv[1]); String arg_member_keyword = cstr_member_keyword ? cstr_member_keyword : ""; JS_FreeCString(ctx, cstr_member_keyword);
+    const char* cstr_member_keyword = JS_ToCString(ctx, argv[1]); String arg_member_keyword = cstr_member_keyword ? String::utf8(cstr_member_keyword) : ""; JS_FreeCString(ctx, cstr_member_keyword);
 
     Color result = typed_obj->get_member_keyword_color(arg_member_keyword);
     JSValue ret_obj = JS_NewObject(ctx);
@@ -513,8 +513,8 @@ static JSValue js_CodeHighlighter_add_color_region(JSContext* ctx, JSValueConst 
     }
 
     // Convert arguments
-    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? cstr_start_key : ""; JS_FreeCString(ctx, cstr_start_key);
-    const char* cstr_end_key = JS_ToCString(ctx, argv[2]); String arg_end_key = cstr_end_key ? cstr_end_key : ""; JS_FreeCString(ctx, cstr_end_key);
+    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? String::utf8(cstr_start_key) : ""; JS_FreeCString(ctx, cstr_start_key);
+    const char* cstr_end_key = JS_ToCString(ctx, argv[2]); String arg_end_key = cstr_end_key ? String::utf8(cstr_end_key) : ""; JS_FreeCString(ctx, cstr_end_key);
     double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
     JSValue jr_color = JS_GetPropertyStr(ctx, argv[3], "r");
     JSValue jg_color = JS_GetPropertyStr(ctx, argv[3], "g");
@@ -578,7 +578,7 @@ static JSValue js_CodeHighlighter_remove_color_region(JSContext* ctx, JSValueCon
     }
 
     // Convert arguments
-    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? cstr_start_key : ""; JS_FreeCString(ctx, cstr_start_key);
+    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? String::utf8(cstr_start_key) : ""; JS_FreeCString(ctx, cstr_start_key);
 
     typed_obj->remove_color_region(arg_start_key);
     return JS_UNDEFINED;
@@ -617,7 +617,7 @@ static JSValue js_CodeHighlighter_has_color_region(JSContext* ctx, JSValueConst 
     }
 
     // Convert arguments
-    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? cstr_start_key : ""; JS_FreeCString(ctx, cstr_start_key);
+    const char* cstr_start_key = JS_ToCString(ctx, argv[1]); String arg_start_key = cstr_start_key ? String::utf8(cstr_start_key) : ""; JS_FreeCString(ctx, cstr_start_key);
 
     bool result = typed_obj->has_color_region(arg_start_key);
     return JS_NewBool(ctx, result);

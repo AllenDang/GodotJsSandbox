@@ -72,7 +72,7 @@ static JSValue js_GLTFObjectModelProperty_append_node_path(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_node_path = JS_ToCString(ctx, argv[1]); NodePath arg_node_path = cstr_node_path ? NodePath(cstr_node_path) : NodePath(); JS_FreeCString(ctx, cstr_node_path);
+    const char* cstr_node_path = JS_ToCString(ctx, argv[1]); NodePath arg_node_path = cstr_node_path ? NodePath(String::utf8(cstr_node_path)) : NodePath(); JS_FreeCString(ctx, cstr_node_path);
 
     typed_obj->append_node_path(arg_node_path);
     return JS_UNDEFINED;
@@ -116,8 +116,8 @@ static JSValue js_GLTFObjectModelProperty_append_path_to_property(JSContext* ctx
     }
 
     // Convert arguments
-    const char* cstr_node_path = JS_ToCString(ctx, argv[1]); NodePath arg_node_path = cstr_node_path ? NodePath(cstr_node_path) : NodePath(); JS_FreeCString(ctx, cstr_node_path);
-    const char* cstr_prop_name = JS_ToCString(ctx, argv[2]); StringName arg_prop_name = cstr_prop_name ? cstr_prop_name : ""; JS_FreeCString(ctx, cstr_prop_name);
+    const char* cstr_node_path = JS_ToCString(ctx, argv[1]); NodePath arg_node_path = cstr_node_path ? NodePath(String::utf8(cstr_node_path)) : NodePath(); JS_FreeCString(ctx, cstr_node_path);
+    const char* cstr_prop_name = JS_ToCString(ctx, argv[2]); StringName arg_prop_name = cstr_prop_name ? String::utf8(cstr_prop_name) : ""; JS_FreeCString(ctx, cstr_prop_name);
 
     typed_obj->append_path_to_property(arg_node_path, arg_prop_name);
     return JS_UNDEFINED;

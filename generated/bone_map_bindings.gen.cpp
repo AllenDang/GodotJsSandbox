@@ -67,7 +67,7 @@ static JSValue js_BoneMap_get_skeleton_bone_name(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_profile_bone_name = JS_ToCString(ctx, argv[1]); StringName arg_profile_bone_name = cstr_profile_bone_name ? cstr_profile_bone_name : ""; JS_FreeCString(ctx, cstr_profile_bone_name);
+    const char* cstr_profile_bone_name = JS_ToCString(ctx, argv[1]); StringName arg_profile_bone_name = cstr_profile_bone_name ? String::utf8(cstr_profile_bone_name) : ""; JS_FreeCString(ctx, cstr_profile_bone_name);
 
     StringName result = typed_obj->get_skeleton_bone_name(arg_profile_bone_name);
     return JS_NewString(ctx, String(result).utf8().get_data());
@@ -111,8 +111,8 @@ static JSValue js_BoneMap_set_skeleton_bone_name(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_profile_bone_name = JS_ToCString(ctx, argv[1]); StringName arg_profile_bone_name = cstr_profile_bone_name ? cstr_profile_bone_name : ""; JS_FreeCString(ctx, cstr_profile_bone_name);
-    const char* cstr_skeleton_bone_name = JS_ToCString(ctx, argv[2]); StringName arg_skeleton_bone_name = cstr_skeleton_bone_name ? cstr_skeleton_bone_name : ""; JS_FreeCString(ctx, cstr_skeleton_bone_name);
+    const char* cstr_profile_bone_name = JS_ToCString(ctx, argv[1]); StringName arg_profile_bone_name = cstr_profile_bone_name ? String::utf8(cstr_profile_bone_name) : ""; JS_FreeCString(ctx, cstr_profile_bone_name);
+    const char* cstr_skeleton_bone_name = JS_ToCString(ctx, argv[2]); StringName arg_skeleton_bone_name = cstr_skeleton_bone_name ? String::utf8(cstr_skeleton_bone_name) : ""; JS_FreeCString(ctx, cstr_skeleton_bone_name);
 
     typed_obj->set_skeleton_bone_name(arg_profile_bone_name, arg_skeleton_bone_name);
     return JS_UNDEFINED;
@@ -151,7 +151,7 @@ static JSValue js_BoneMap_find_profile_bone_name(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_skeleton_bone_name = JS_ToCString(ctx, argv[1]); StringName arg_skeleton_bone_name = cstr_skeleton_bone_name ? cstr_skeleton_bone_name : ""; JS_FreeCString(ctx, cstr_skeleton_bone_name);
+    const char* cstr_skeleton_bone_name = JS_ToCString(ctx, argv[1]); StringName arg_skeleton_bone_name = cstr_skeleton_bone_name ? String::utf8(cstr_skeleton_bone_name) : ""; JS_FreeCString(ctx, cstr_skeleton_bone_name);
 
     StringName result = typed_obj->find_profile_bone_name(arg_skeleton_bone_name);
     return JS_NewString(ctx, String(result).utf8().get_data());

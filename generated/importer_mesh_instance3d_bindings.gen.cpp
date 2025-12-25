@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/importer_mesh_instance3d.hpp>
-#include <godot_cpp/classes/skin.hpp>
 #include <godot_cpp/classes/importer_mesh.hpp>
+#include <godot_cpp/classes/skin.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -311,7 +311,7 @@ static JSValue js_ImporterMeshInstance3D_set_skeleton_path(JSContext* ctx, JSVal
         return JS_ThrowTypeError(ctx, "ImporterMeshInstance3D.skeleton_path setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_skeleton_path(value);
     return JS_UNDEFINED;
 }

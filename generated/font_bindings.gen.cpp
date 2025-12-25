@@ -706,7 +706,7 @@ static JSValue js_Font_get_string_size(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     // Optional argument: alignment (default: (HorizontalAlignment)0)
     HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
     if (argc > 2) {
@@ -785,7 +785,7 @@ static JSValue js_Font_get_multiline_string_size(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     // Optional argument: alignment (default: (HorizontalAlignment)0)
     HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
     if (argc > 2) {
@@ -890,7 +890,7 @@ static JSValue js_Font_draw_string(JSContext* ctx, JSValueConst this_val, int ar
     JS_FreeValue(ctx, jx_pos);
     JS_FreeValue(ctx, jy_pos);
     Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
-    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     // Optional argument: alignment (default: (HorizontalAlignment)0)
     HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
     if (argc > 4) {
@@ -1006,7 +1006,7 @@ static JSValue js_Font_draw_multiline_string(JSContext* ctx, JSValueConst this_v
     JS_FreeValue(ctx, jx_pos);
     JS_FreeValue(ctx, jy_pos);
     Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
-    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     // Optional argument: alignment (default: (HorizontalAlignment)0)
     HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
     if (argc > 4) {
@@ -1134,7 +1134,7 @@ static JSValue js_Font_draw_string_outline(JSContext* ctx, JSValueConst this_val
     JS_FreeValue(ctx, jx_pos);
     JS_FreeValue(ctx, jy_pos);
     Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
-    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     // Optional argument: alignment (default: (HorizontalAlignment)0)
     HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
     if (argc > 4) {
@@ -1256,7 +1256,7 @@ static JSValue js_Font_draw_multiline_string_outline(JSContext* ctx, JSValueCons
     JS_FreeValue(ctx, jx_pos);
     JS_FreeValue(ctx, jy_pos);
     Vector2 arg_pos(tmp_x_pos, tmp_y_pos);
-    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[3]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
     // Optional argument: alignment (default: (HorizontalAlignment)0)
     HorizontalAlignment arg_alignment = (HorizontalAlignment)0;
     if (argc > 4) {
@@ -1655,7 +1655,7 @@ static JSValue js_Font_is_language_supported(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_language = JS_ToCString(ctx, argv[1]); String arg_language = cstr_language ? cstr_language : ""; JS_FreeCString(ctx, cstr_language);
+    const char* cstr_language = JS_ToCString(ctx, argv[1]); String arg_language = cstr_language ? String::utf8(cstr_language) : ""; JS_FreeCString(ctx, cstr_language);
 
     bool result = typed_obj->is_language_supported(arg_language);
     return JS_NewBool(ctx, result);
@@ -1694,7 +1694,7 @@ static JSValue js_Font_is_script_supported(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_script = JS_ToCString(ctx, argv[1]); String arg_script = cstr_script ? cstr_script : ""; JS_FreeCString(ctx, cstr_script);
+    const char* cstr_script = JS_ToCString(ctx, argv[1]); String arg_script = cstr_script ? String::utf8(cstr_script) : ""; JS_FreeCString(ctx, cstr_script);
 
     bool result = typed_obj->is_script_supported(arg_script);
     return JS_NewBool(ctx, result);

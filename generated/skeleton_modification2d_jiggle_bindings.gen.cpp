@@ -222,7 +222,7 @@ static JSValue js_SkeletonModification2DJiggle_set_jiggle_joint_bone2d_node(JSCo
 
     // Convert arguments
     int64_t arg_joint_idx; JS_ToInt64(ctx, &arg_joint_idx, argv[1]);
-    const char* cstr_bone2d_node = JS_ToCString(ctx, argv[2]); NodePath arg_bone2d_node = cstr_bone2d_node ? NodePath(cstr_bone2d_node) : NodePath(); JS_FreeCString(ctx, cstr_bone2d_node);
+    const char* cstr_bone2d_node = JS_ToCString(ctx, argv[2]); NodePath arg_bone2d_node = cstr_bone2d_node ? NodePath(String::utf8(cstr_bone2d_node)) : NodePath(); JS_FreeCString(ctx, cstr_bone2d_node);
 
     typed_obj->set_jiggle_joint_bone2d_node(arg_joint_idx, arg_bone2d_node);
     return JS_UNDEFINED;
@@ -927,7 +927,7 @@ static JSValue js_SkeletonModification2DJiggle_set_target_nodepath(JSContext* ct
         return JS_ThrowTypeError(ctx, "SkeletonModification2DJiggle.target_nodepath setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_target_node(value);
     return JS_UNDEFINED;
 }

@@ -72,7 +72,7 @@ static JSValue js_WebRTCPeerConnection_set_default_extension(JSContext* ctx, JSV
     }
 
     // Convert arguments
-    const char* cstr_extension_class = JS_ToCString(ctx, argv[1]); StringName arg_extension_class = cstr_extension_class ? cstr_extension_class : ""; JS_FreeCString(ctx, cstr_extension_class);
+    const char* cstr_extension_class = JS_ToCString(ctx, argv[1]); StringName arg_extension_class = cstr_extension_class ? String::utf8(cstr_extension_class) : ""; JS_FreeCString(ctx, cstr_extension_class);
 
     typed_obj->set_default_extension(arg_extension_class);
     return JS_UNDEFINED;
@@ -166,7 +166,7 @@ static JSValue js_WebRTCPeerConnection_create_data_channel(JSContext* ctx, JSVal
     }
 
     // Convert arguments
-    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? cstr_label : ""; JS_FreeCString(ctx, cstr_label);
+    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? String::utf8(cstr_label) : ""; JS_FreeCString(ctx, cstr_label);
     // Optional argument: options (default: Dictionary())
     Dictionary arg_options = Dictionary();
     if (argc > 2) {
@@ -278,8 +278,8 @@ static JSValue js_WebRTCPeerConnection_set_local_description(JSContext* ctx, JSV
     }
 
     // Convert arguments
-    const char* cstr_type = JS_ToCString(ctx, argv[1]); String arg_type = cstr_type ? cstr_type : ""; JS_FreeCString(ctx, cstr_type);
-    const char* cstr_sdp = JS_ToCString(ctx, argv[2]); String arg_sdp = cstr_sdp ? cstr_sdp : ""; JS_FreeCString(ctx, cstr_sdp);
+    const char* cstr_type = JS_ToCString(ctx, argv[1]); String arg_type = cstr_type ? String::utf8(cstr_type) : ""; JS_FreeCString(ctx, cstr_type);
+    const char* cstr_sdp = JS_ToCString(ctx, argv[2]); String arg_sdp = cstr_sdp ? String::utf8(cstr_sdp) : ""; JS_FreeCString(ctx, cstr_sdp);
 
     Error result = typed_obj->set_local_description(arg_type, arg_sdp);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -323,8 +323,8 @@ static JSValue js_WebRTCPeerConnection_set_remote_description(JSContext* ctx, JS
     }
 
     // Convert arguments
-    const char* cstr_type = JS_ToCString(ctx, argv[1]); String arg_type = cstr_type ? cstr_type : ""; JS_FreeCString(ctx, cstr_type);
-    const char* cstr_sdp = JS_ToCString(ctx, argv[2]); String arg_sdp = cstr_sdp ? cstr_sdp : ""; JS_FreeCString(ctx, cstr_sdp);
+    const char* cstr_type = JS_ToCString(ctx, argv[1]); String arg_type = cstr_type ? String::utf8(cstr_type) : ""; JS_FreeCString(ctx, cstr_type);
+    const char* cstr_sdp = JS_ToCString(ctx, argv[2]); String arg_sdp = cstr_sdp ? String::utf8(cstr_sdp) : ""; JS_FreeCString(ctx, cstr_sdp);
 
     Error result = typed_obj->set_remote_description(arg_type, arg_sdp);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -368,9 +368,9 @@ static JSValue js_WebRTCPeerConnection_add_ice_candidate(JSContext* ctx, JSValue
     }
 
     // Convert arguments
-    const char* cstr_media = JS_ToCString(ctx, argv[1]); String arg_media = cstr_media ? cstr_media : ""; JS_FreeCString(ctx, cstr_media);
+    const char* cstr_media = JS_ToCString(ctx, argv[1]); String arg_media = cstr_media ? String::utf8(cstr_media) : ""; JS_FreeCString(ctx, cstr_media);
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[2]);
-    const char* cstr_name = JS_ToCString(ctx, argv[3]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[3]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Error result = typed_obj->add_ice_candidate(arg_media, arg_index, arg_name);
     return qjs_ctx->variant_to_js(Variant(result));

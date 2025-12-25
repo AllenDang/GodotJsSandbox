@@ -72,7 +72,7 @@ static JSValue js_OptionButton_add_item(JSContext* ctx, JSValueConst this_val, i
     }
 
     // Convert arguments
-    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? cstr_label : ""; JS_FreeCString(ctx, cstr_label);
+    const char* cstr_label = JS_ToCString(ctx, argv[1]); String arg_label = cstr_label ? String::utf8(cstr_label) : ""; JS_FreeCString(ctx, cstr_label);
     // Optional argument: id (default: -1)
     int64_t arg_id = -1;
     if (argc > 2) {
@@ -138,7 +138,7 @@ static JSValue js_OptionButton_add_icon_item(JSContext* ctx, JSValueConst this_v
         }
         JS_FreeValue(ctx, jh_texture);
     }
-    const char* cstr_label = JS_ToCString(ctx, argv[2]); String arg_label = cstr_label ? cstr_label : ""; JS_FreeCString(ctx, cstr_label);
+    const char* cstr_label = JS_ToCString(ctx, argv[2]); String arg_label = cstr_label ? String::utf8(cstr_label) : ""; JS_FreeCString(ctx, cstr_label);
     // Optional argument: id (default: -1)
     int64_t arg_id = -1;
     if (argc > 3) {
@@ -189,7 +189,7 @@ static JSValue js_OptionButton_set_item_text(JSContext* ctx, JSValueConst this_v
 
     // Convert arguments
     int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
-    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[2]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
 
     typed_obj->set_item_text(arg_idx, arg_text);
     return JS_UNDEFINED;
@@ -429,7 +429,7 @@ static JSValue js_OptionButton_set_item_tooltip(JSContext* ctx, JSValueConst thi
 
     // Convert arguments
     int64_t arg_idx; JS_ToInt64(ctx, &arg_idx, argv[1]);
-    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? cstr_tooltip : ""; JS_FreeCString(ctx, cstr_tooltip);
+    const char* cstr_tooltip = JS_ToCString(ctx, argv[2]); String arg_tooltip = cstr_tooltip ? String::utf8(cstr_tooltip) : ""; JS_FreeCString(ctx, cstr_tooltip);
 
     typed_obj->set_item_tooltip(arg_idx, arg_tooltip);
     return JS_UNDEFINED;

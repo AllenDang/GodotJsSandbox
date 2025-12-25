@@ -646,7 +646,7 @@ static JSValue js_AnimationNodeBlendSpace1D_set_value_label(JSContext* ctx, JSVa
         return JS_ThrowTypeError(ctx, "AnimationNodeBlendSpace1D.value_label setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_value_label(value);
     return JS_UNDEFINED;
 }

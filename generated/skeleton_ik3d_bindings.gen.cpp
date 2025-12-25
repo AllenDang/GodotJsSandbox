@@ -267,7 +267,7 @@ static JSValue js_SkeletonIK3D_set_root_bone(JSContext* ctx, JSValueConst this_v
         return JS_ThrowTypeError(ctx, "SkeletonIK3D.root_bone setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_root_bone(value);
     return JS_UNDEFINED;
 }
@@ -334,7 +334,7 @@ static JSValue js_SkeletonIK3D_set_tip_bone(JSContext* ctx, JSValueConst this_va
         return JS_ThrowTypeError(ctx, "SkeletonIK3D.tip_bone setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_tip_bone(value);
     return JS_UNDEFINED;
 }
@@ -740,7 +740,7 @@ static JSValue js_SkeletonIK3D_set_target_node(JSContext* ctx, JSValueConst this
         return JS_ThrowTypeError(ctx, "SkeletonIK3D.target_node setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_target_node(value);
     return JS_UNDEFINED;
 }

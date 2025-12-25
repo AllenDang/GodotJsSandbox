@@ -103,7 +103,7 @@ static JSValue js_Shader_set_default_texture_parameter(JSContext* ctx, JSValueCo
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Ref<Texture> arg_texture;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -164,7 +164,7 @@ static JSValue js_Shader_get_default_texture_parameter(JSContext* ctx, JSValueCo
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     // Optional argument: index (default: 0)
     int64_t arg_index = 0;
     if (argc > 2) {
@@ -343,7 +343,7 @@ static JSValue js_Shader_set_code(JSContext* ctx, JSValueConst this_val, int arg
         return JS_ThrowTypeError(ctx, "Shader.code setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_code(value);
     return JS_UNDEFINED;
 }

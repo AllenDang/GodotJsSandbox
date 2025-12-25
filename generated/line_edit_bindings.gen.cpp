@@ -736,7 +736,7 @@ static JSValue js_LineEdit_insert_text_at_caret(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
 
     typed_obj->insert_text_at_caret(arg_text);
     return JS_UNDEFINED;
@@ -1016,7 +1016,7 @@ static JSValue js_LineEdit_set_text(JSContext* ctx, JSValueConst this_val, int a
         return JS_ThrowTypeError(ctx, "LineEdit.text setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_text(value);
     return JS_UNDEFINED;
 }
@@ -1083,7 +1083,7 @@ static JSValue js_LineEdit_set_placeholder_text(JSContext* ctx, JSValueConst thi
         return JS_ThrowTypeError(ctx, "LineEdit.placeholder_text setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_placeholder(value);
     return JS_UNDEFINED;
 }
@@ -2999,7 +2999,7 @@ static JSValue js_LineEdit_set_secret_character(JSContext* ctx, JSValueConst thi
         return JS_ThrowTypeError(ctx, "LineEdit.secret_character setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_secret_character(value);
     return JS_UNDEFINED;
 }
@@ -3133,7 +3133,7 @@ static JSValue js_LineEdit_set_language(JSContext* ctx, JSValueConst this_val, i
         return JS_ThrowTypeError(ctx, "LineEdit.language setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_language(value);
     return JS_UNDEFINED;
 }

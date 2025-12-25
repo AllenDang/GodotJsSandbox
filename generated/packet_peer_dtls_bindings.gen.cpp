@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/packet_peer_dtls.hpp>
-#include <godot_cpp/classes/packet_peer_udp.hpp>
 #include <godot_cpp/classes/tls_options.hpp>
+#include <godot_cpp/classes/packet_peer_udp.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -125,7 +125,7 @@ static JSValue js_PacketPeerDTLS_connect_to_peer(JSContext* ctx, JSValueConst th
         }
         JS_FreeValue(ctx, jh_packet_peer);
     }
-    const char* cstr_hostname = JS_ToCString(ctx, argv[2]); String arg_hostname = cstr_hostname ? cstr_hostname : ""; JS_FreeCString(ctx, cstr_hostname);
+    const char* cstr_hostname = JS_ToCString(ctx, argv[2]); String arg_hostname = cstr_hostname ? String::utf8(cstr_hostname) : ""; JS_FreeCString(ctx, cstr_hostname);
     // Optional argument: client_options (default: nullptr)
     Ref<TLSOptions> arg_client_options = nullptr;
     if (argc > 3) {

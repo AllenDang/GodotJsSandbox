@@ -687,7 +687,7 @@ static JSValue js_SoftBody3D_set_point_pinned(JSContext* ctx, JSValueConst this_
     if (argc > 3) {
         // Override default with provided value
         // Complex type - use full conversion
-        const char* cstr_attachment_path = JS_ToCString(ctx, argv[3]); NodePath arg_attachment_path = cstr_attachment_path ? NodePath(cstr_attachment_path) : NodePath(); JS_FreeCString(ctx, cstr_attachment_path);
+        const char* cstr_attachment_path = JS_ToCString(ctx, argv[3]); NodePath arg_attachment_path = cstr_attachment_path ? NodePath(String::utf8(cstr_attachment_path)) : NodePath(); JS_FreeCString(ctx, cstr_attachment_path);
     }
     // Optional argument: insert_at (default: -1)
     int64_t arg_insert_at = -1;
@@ -935,7 +935,7 @@ static JSValue js_SoftBody3D_set_parent_collision_ignore(JSContext* ctx, JSValue
         return JS_ThrowTypeError(ctx, "SoftBody3D.parent_collision_ignore setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_parent_collision_ignore(value);
     return JS_UNDEFINED;
 }

@@ -964,7 +964,7 @@ static JSValue js_Image_load(JSContext* ctx, JSValueConst this_val, int argc, JS
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Error result = typed_obj->load(arg_path);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -1008,7 +1008,7 @@ static JSValue js_Image_load_from_file(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Ref<Image> result = typed_obj->load_from_file(arg_path);
     if (result.is_null()) return JS_NULL;
@@ -1077,7 +1077,7 @@ static JSValue js_Image_save_png(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Error result = typed_obj->save_png(arg_path);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -1157,7 +1157,7 @@ static JSValue js_Image_save_jpg(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
     // Optional argument: quality (default: 0.75)
     double arg_quality = 0.75;
     if (argc > 2) {
@@ -1256,7 +1256,7 @@ static JSValue js_Image_save_exr(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
     // Optional argument: grayscale (default: false)
     bool arg_grayscale = false;
     if (argc > 2) {
@@ -1355,7 +1355,7 @@ static JSValue js_Image_save_dds(JSContext* ctx, JSValueConst this_val, int argc
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Error result = typed_obj->save_dds(arg_path);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -1435,7 +1435,7 @@ static JSValue js_Image_save_webp(JSContext* ctx, JSValueConst this_val, int arg
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
     // Optional argument: lossy (default: false)
     bool arg_lossy = false;
     if (argc > 2) {
@@ -3421,7 +3421,7 @@ static JSValue js_Image_load_svg_from_string(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_svg_str = JS_ToCString(ctx, argv[1]); String arg_svg_str = cstr_svg_str ? cstr_svg_str : ""; JS_FreeCString(ctx, cstr_svg_str);
+    const char* cstr_svg_str = JS_ToCString(ctx, argv[1]); String arg_svg_str = cstr_svg_str ? String::utf8(cstr_svg_str) : ""; JS_FreeCString(ctx, cstr_svg_str);
     // Optional argument: scale (default: 1.0)
     double arg_scale = 1.0;
     if (argc > 2) {

@@ -72,7 +72,7 @@ static JSValue js_FileSystemDock_navigate_to_path(JSContext* ctx, JSValueConst t
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     typed_obj->navigate_to_path(arg_path);
     return JS_UNDEFINED;

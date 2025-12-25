@@ -95,7 +95,7 @@ static JSValue js_XRFaceModifier3D_set_target(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "XRFaceModifier3D.target setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_target(value);
     return JS_UNDEFINED;
 }

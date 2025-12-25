@@ -9,10 +9,10 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/classes/scene_tree_timer.hpp>
 #include <godot_cpp/classes/multiplayer_api.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/tween.hpp>
+#include <godot_cpp/classes/scene_tree_timer.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -70,7 +70,7 @@ static JSValue js_SceneTree_has_group(JSContext* ctx, JSValueConst this_val, int
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->has_group(arg_name);
     return JS_NewBool(ctx, result);
@@ -526,7 +526,7 @@ static JSValue js_SceneTree_notify_group_flags(JSContext* ctx, JSValueConst this
 
     // Convert arguments
     int64_t arg_call_flags; JS_ToInt64(ctx, &arg_call_flags, argv[1]);
-    const char* cstr_group = JS_ToCString(ctx, argv[2]); StringName arg_group = cstr_group ? cstr_group : ""; JS_FreeCString(ctx, cstr_group);
+    const char* cstr_group = JS_ToCString(ctx, argv[2]); StringName arg_group = cstr_group ? String::utf8(cstr_group) : ""; JS_FreeCString(ctx, cstr_group);
     int64_t arg_notification; JS_ToInt64(ctx, &arg_notification, argv[3]);
 
     typed_obj->notify_group_flags(arg_call_flags, arg_group, arg_notification);
@@ -572,8 +572,8 @@ static JSValue js_SceneTree_set_group_flags(JSContext* ctx, JSValueConst this_va
 
     // Convert arguments
     int64_t arg_call_flags; JS_ToInt64(ctx, &arg_call_flags, argv[1]);
-    const char* cstr_group = JS_ToCString(ctx, argv[2]); StringName arg_group = cstr_group ? cstr_group : ""; JS_FreeCString(ctx, cstr_group);
-    const char* cstr_property = JS_ToCString(ctx, argv[3]); String arg_property = cstr_property ? cstr_property : ""; JS_FreeCString(ctx, cstr_property);
+    const char* cstr_group = JS_ToCString(ctx, argv[2]); StringName arg_group = cstr_group ? String::utf8(cstr_group) : ""; JS_FreeCString(ctx, cstr_group);
+    const char* cstr_property = JS_ToCString(ctx, argv[3]); String arg_property = cstr_property ? String::utf8(cstr_property) : ""; JS_FreeCString(ctx, cstr_property);
     Variant arg_value = qjs_ctx->js_to_variant(argv[4]);
 
     typed_obj->set_group_flags(arg_call_flags, arg_group, arg_property, arg_value);
@@ -618,7 +618,7 @@ static JSValue js_SceneTree_notify_group(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? cstr_group : ""; JS_FreeCString(ctx, cstr_group);
+    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? String::utf8(cstr_group) : ""; JS_FreeCString(ctx, cstr_group);
     int64_t arg_notification; JS_ToInt64(ctx, &arg_notification, argv[2]);
 
     typed_obj->notify_group(arg_group, arg_notification);
@@ -663,8 +663,8 @@ static JSValue js_SceneTree_set_group(JSContext* ctx, JSValueConst this_val, int
     }
 
     // Convert arguments
-    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? cstr_group : ""; JS_FreeCString(ctx, cstr_group);
-    const char* cstr_property = JS_ToCString(ctx, argv[2]); String arg_property = cstr_property ? cstr_property : ""; JS_FreeCString(ctx, cstr_property);
+    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? String::utf8(cstr_group) : ""; JS_FreeCString(ctx, cstr_group);
+    const char* cstr_property = JS_ToCString(ctx, argv[2]); String arg_property = cstr_property ? String::utf8(cstr_property) : ""; JS_FreeCString(ctx, cstr_property);
     Variant arg_value = qjs_ctx->js_to_variant(argv[3]);
 
     typed_obj->set_group(arg_group, arg_property, arg_value);
@@ -704,7 +704,7 @@ static JSValue js_SceneTree_get_nodes_in_group(JSContext* ctx, JSValueConst this
     }
 
     // Convert arguments
-    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? cstr_group : ""; JS_FreeCString(ctx, cstr_group);
+    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? String::utf8(cstr_group) : ""; JS_FreeCString(ctx, cstr_group);
 
     Array result = typed_obj->get_nodes_in_group(arg_group);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -743,7 +743,7 @@ static JSValue js_SceneTree_get_first_node_in_group(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? cstr_group : ""; JS_FreeCString(ctx, cstr_group);
+    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? String::utf8(cstr_group) : ""; JS_FreeCString(ctx, cstr_group);
 
     Node* result = typed_obj->get_first_node_in_group(arg_group);
     if (!result) return JS_NULL;
@@ -807,7 +807,7 @@ static JSValue js_SceneTree_get_node_count_in_group(JSContext* ctx, JSValueConst
     }
 
     // Convert arguments
-    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? cstr_group : ""; JS_FreeCString(ctx, cstr_group);
+    const char* cstr_group = JS_ToCString(ctx, argv[1]); StringName arg_group = cstr_group ? String::utf8(cstr_group) : ""; JS_FreeCString(ctx, cstr_group);
 
     int64_t result = typed_obj->get_node_count_in_group(arg_group);
     return JS_NewInt64(ctx, result);
@@ -851,7 +851,7 @@ static JSValue js_SceneTree_change_scene_to_file(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Error result = typed_obj->change_scene_to_file(arg_path);
     return qjs_ctx->variant_to_js(Variant(result));
@@ -1047,7 +1047,7 @@ static JSValue js_SceneTree_set_multiplayer(JSContext* ctx, JSValueConst this_va
     if (argc > 2) {
         // Override default with provided value
         // Complex type - use full conversion
-        const char* cstr_root_path = JS_ToCString(ctx, argv[2]); NodePath arg_root_path = cstr_root_path ? NodePath(cstr_root_path) : NodePath(); JS_FreeCString(ctx, cstr_root_path);
+        const char* cstr_root_path = JS_ToCString(ctx, argv[2]); NodePath arg_root_path = cstr_root_path ? NodePath(String::utf8(cstr_root_path)) : NodePath(); JS_FreeCString(ctx, cstr_root_path);
     }
 
     typed_obj->set_multiplayer(arg_multiplayer, arg_root_path);
@@ -1092,7 +1092,7 @@ static JSValue js_SceneTree_get_multiplayer(JSContext* ctx, JSValueConst this_va
     if (argc > 1) {
         // Override default with provided value
         // Complex type - use full conversion
-        const char* cstr_for_path = JS_ToCString(ctx, argv[1]); NodePath arg_for_path = cstr_for_path ? NodePath(cstr_for_path) : NodePath(); JS_FreeCString(ctx, cstr_for_path);
+        const char* cstr_for_path = JS_ToCString(ctx, argv[1]); NodePath arg_for_path = cstr_for_path ? NodePath(String::utf8(cstr_for_path)) : NodePath(); JS_FreeCString(ctx, cstr_for_path);
     }
 
     Ref<MultiplayerAPI> result = typed_obj->get_multiplayer(arg_for_path);

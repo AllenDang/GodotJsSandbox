@@ -165,7 +165,7 @@ static JSValue js_OpenXRAPIExtension_xr_result(JSContext* ctx, JSValueConst this
 
     // Convert arguments
     int64_t arg_result; JS_ToInt64(ctx, &arg_result, argv[1]);
-    const char* cstr_format = JS_ToCString(ctx, argv[2]); String arg_format = cstr_format ? cstr_format : ""; JS_FreeCString(ctx, cstr_format);
+    const char* cstr_format = JS_ToCString(ctx, argv[2]); String arg_format = cstr_format ? String::utf8(cstr_format) : ""; JS_FreeCString(ctx, cstr_format);
     Array arg_args = qjs_ctx->js_to_variant(argv[3]);
 
     bool result = typed_obj->xr_result(arg_result, arg_format, arg_args);
@@ -249,7 +249,7 @@ static JSValue js_OpenXRAPIExtension_get_instance_proc_addr(JSContext* ctx, JSVa
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     int64_t result = typed_obj->get_instance_proc_addr(arg_name);
     return JS_NewInt64(ctx, result);
@@ -373,7 +373,7 @@ static JSValue js_OpenXRAPIExtension_set_object_name(JSContext* ctx, JSValueCons
     // Convert arguments
     int64_t arg_object_type; JS_ToInt64(ctx, &arg_object_type, argv[1]);
     int64_t arg_object_handle; JS_ToInt64(ctx, &arg_object_handle, argv[2]);
-    const char* cstr_object_name = JS_ToCString(ctx, argv[3]); String arg_object_name = cstr_object_name ? cstr_object_name : ""; JS_FreeCString(ctx, cstr_object_name);
+    const char* cstr_object_name = JS_ToCString(ctx, argv[3]); String arg_object_name = cstr_object_name ? String::utf8(cstr_object_name) : ""; JS_FreeCString(ctx, cstr_object_name);
 
     typed_obj->set_object_name(arg_object_type, arg_object_handle, arg_object_name);
     return JS_UNDEFINED;
@@ -417,7 +417,7 @@ static JSValue js_OpenXRAPIExtension_begin_debug_label_region(JSContext* ctx, JS
     }
 
     // Convert arguments
-    const char* cstr_label_name = JS_ToCString(ctx, argv[1]); String arg_label_name = cstr_label_name ? cstr_label_name : ""; JS_FreeCString(ctx, cstr_label_name);
+    const char* cstr_label_name = JS_ToCString(ctx, argv[1]); String arg_label_name = cstr_label_name ? String::utf8(cstr_label_name) : ""; JS_FreeCString(ctx, cstr_label_name);
 
     typed_obj->begin_debug_label_region(arg_label_name);
     return JS_UNDEFINED;
@@ -497,7 +497,7 @@ static JSValue js_OpenXRAPIExtension_insert_debug_label(JSContext* ctx, JSValueC
     }
 
     // Convert arguments
-    const char* cstr_label_name = JS_ToCString(ctx, argv[1]); String arg_label_name = cstr_label_name ? cstr_label_name : ""; JS_FreeCString(ctx, cstr_label_name);
+    const char* cstr_label_name = JS_ToCString(ctx, argv[1]); String arg_label_name = cstr_label_name ? String::utf8(cstr_label_name) : ""; JS_FreeCString(ctx, cstr_label_name);
 
     typed_obj->insert_debug_label(arg_label_name);
     return JS_UNDEFINED;
@@ -722,7 +722,7 @@ static JSValue js_OpenXRAPIExtension_find_action(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     RID arg_action_set = qjs_ctx->js_to_variant(argv[2]);
 
     RID result = typed_obj->find_action(arg_name, arg_action_set);

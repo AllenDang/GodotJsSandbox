@@ -71,8 +71,8 @@ static JSValue js_Translation_add_message(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    const char* cstr_src_message = JS_ToCString(ctx, argv[1]); StringName arg_src_message = cstr_src_message ? cstr_src_message : ""; JS_FreeCString(ctx, cstr_src_message);
-    const char* cstr_xlated_message = JS_ToCString(ctx, argv[2]); StringName arg_xlated_message = cstr_xlated_message ? cstr_xlated_message : ""; JS_FreeCString(ctx, cstr_xlated_message);
+    const char* cstr_src_message = JS_ToCString(ctx, argv[1]); StringName arg_src_message = cstr_src_message ? String::utf8(cstr_src_message) : ""; JS_FreeCString(ctx, cstr_src_message);
+    const char* cstr_xlated_message = JS_ToCString(ctx, argv[2]); StringName arg_xlated_message = cstr_xlated_message ? String::utf8(cstr_xlated_message) : ""; JS_FreeCString(ctx, cstr_xlated_message);
     // Optional argument: context (default: StringName())
     StringName arg_context = StringName();
     if (argc > 3) {
@@ -122,7 +122,7 @@ static JSValue js_Translation_add_plural_message(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_src_message = JS_ToCString(ctx, argv[1]); StringName arg_src_message = cstr_src_message ? cstr_src_message : ""; JS_FreeCString(ctx, cstr_src_message);
+    const char* cstr_src_message = JS_ToCString(ctx, argv[1]); StringName arg_src_message = cstr_src_message ? String::utf8(cstr_src_message) : ""; JS_FreeCString(ctx, cstr_src_message);
     PackedStringArray arg_xlated_messages = qjs_ctx->js_to_variant(argv[2]);
     // Optional argument: context (default: StringName())
     StringName arg_context = StringName();
@@ -168,7 +168,7 @@ static JSValue js_Translation_get_message(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    const char* cstr_src_message = JS_ToCString(ctx, argv[1]); StringName arg_src_message = cstr_src_message ? cstr_src_message : ""; JS_FreeCString(ctx, cstr_src_message);
+    const char* cstr_src_message = JS_ToCString(ctx, argv[1]); StringName arg_src_message = cstr_src_message ? String::utf8(cstr_src_message) : ""; JS_FreeCString(ctx, cstr_src_message);
     // Optional argument: context (default: StringName())
     StringName arg_context = StringName();
     if (argc > 2) {
@@ -213,8 +213,8 @@ static JSValue js_Translation_get_plural_message(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_src_message = JS_ToCString(ctx, argv[1]); StringName arg_src_message = cstr_src_message ? cstr_src_message : ""; JS_FreeCString(ctx, cstr_src_message);
-    const char* cstr_src_plural_message = JS_ToCString(ctx, argv[2]); StringName arg_src_plural_message = cstr_src_plural_message ? cstr_src_plural_message : ""; JS_FreeCString(ctx, cstr_src_plural_message);
+    const char* cstr_src_message = JS_ToCString(ctx, argv[1]); StringName arg_src_message = cstr_src_message ? String::utf8(cstr_src_message) : ""; JS_FreeCString(ctx, cstr_src_message);
+    const char* cstr_src_plural_message = JS_ToCString(ctx, argv[2]); StringName arg_src_plural_message = cstr_src_plural_message ? String::utf8(cstr_src_plural_message) : ""; JS_FreeCString(ctx, cstr_src_plural_message);
     int64_t arg_n; JS_ToInt64(ctx, &arg_n, argv[3]);
     // Optional argument: context (default: StringName())
     StringName arg_context = StringName();
@@ -265,7 +265,7 @@ static JSValue js_Translation_erase_message(JSContext* ctx, JSValueConst this_va
     }
 
     // Convert arguments
-    const char* cstr_src_message = JS_ToCString(ctx, argv[1]); StringName arg_src_message = cstr_src_message ? cstr_src_message : ""; JS_FreeCString(ctx, cstr_src_message);
+    const char* cstr_src_message = JS_ToCString(ctx, argv[1]); StringName arg_src_message = cstr_src_message ? String::utf8(cstr_src_message) : ""; JS_FreeCString(ctx, cstr_src_message);
     // Optional argument: context (default: StringName())
     StringName arg_context = StringName();
     if (argc > 2) {
@@ -432,7 +432,7 @@ static JSValue js_Translation_set_locale(JSContext* ctx, JSValueConst this_val, 
         return JS_ThrowTypeError(ctx, "Translation.locale setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_locale(value);
     return JS_UNDEFINED;
 }

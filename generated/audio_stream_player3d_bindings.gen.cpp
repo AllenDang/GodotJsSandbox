@@ -1255,7 +1255,7 @@ static JSValue js_AudioStreamPlayer3D_set_bus(JSContext* ctx, JSValueConst this_
         return JS_ThrowTypeError(ctx, "AudioStreamPlayer3D.bus setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_bus(value);
     return JS_UNDEFINED;
 }

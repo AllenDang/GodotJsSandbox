@@ -67,7 +67,7 @@ static JSValue js_WebXRInterface_is_session_supported(JSContext* ctx, JSValueCon
     }
 
     // Convert arguments
-    const char* cstr_session_mode = JS_ToCString(ctx, argv[1]); String arg_session_mode = cstr_session_mode ? cstr_session_mode : ""; JS_FreeCString(ctx, cstr_session_mode);
+    const char* cstr_session_mode = JS_ToCString(ctx, argv[1]); String arg_session_mode = cstr_session_mode ? String::utf8(cstr_session_mode) : ""; JS_FreeCString(ctx, cstr_session_mode);
 
     typed_obj->is_session_supported(arg_session_mode);
     return JS_UNDEFINED;
@@ -383,7 +383,7 @@ static JSValue js_WebXRInterface_set_session_mode(JSContext* ctx, JSValueConst t
         return JS_ThrowTypeError(ctx, "WebXRInterface.session_mode setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_session_mode(value);
     return JS_UNDEFINED;
 }
@@ -450,7 +450,7 @@ static JSValue js_WebXRInterface_set_required_features(JSContext* ctx, JSValueCo
         return JS_ThrowTypeError(ctx, "WebXRInterface.required_features setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_required_features(value);
     return JS_UNDEFINED;
 }
@@ -517,7 +517,7 @@ static JSValue js_WebXRInterface_set_optional_features(JSContext* ctx, JSValueCo
         return JS_ThrowTypeError(ctx, "WebXRInterface.optional_features setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_optional_features(value);
     return JS_UNDEFINED;
 }
@@ -584,7 +584,7 @@ static JSValue js_WebXRInterface_set_requested_reference_space_types(JSContext* 
         return JS_ThrowTypeError(ctx, "WebXRInterface.requested_reference_space_types setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_requested_reference_space_types(value);
     return JS_UNDEFINED;
 }

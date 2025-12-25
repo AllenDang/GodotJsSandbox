@@ -73,7 +73,7 @@ static JSValue js_AudioStreamInteractive_set_clip_name(JSContext* ctx, JSValueCo
 
     // Convert arguments
     int64_t arg_clip_index; JS_ToInt64(ctx, &arg_clip_index, argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->set_clip_name(arg_clip_index, arg_name);
     return JS_UNDEFINED;

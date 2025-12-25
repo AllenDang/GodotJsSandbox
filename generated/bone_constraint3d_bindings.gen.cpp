@@ -156,7 +156,7 @@ static JSValue js_BoneConstraint3D_set_apply_bone_name(JSContext* ctx, JSValueCo
 
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
-    const char* cstr_bone_name = JS_ToCString(ctx, argv[2]); String arg_bone_name = cstr_bone_name ? cstr_bone_name : ""; JS_FreeCString(ctx, cstr_bone_name);
+    const char* cstr_bone_name = JS_ToCString(ctx, argv[2]); String arg_bone_name = cstr_bone_name ? String::utf8(cstr_bone_name) : ""; JS_FreeCString(ctx, cstr_bone_name);
 
     typed_obj->set_apply_bone_name(arg_index, arg_bone_name);
     return JS_UNDEFINED;
@@ -324,7 +324,7 @@ static JSValue js_BoneConstraint3D_set_reference_bone_name(JSContext* ctx, JSVal
 
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
-    const char* cstr_bone_name = JS_ToCString(ctx, argv[2]); String arg_bone_name = cstr_bone_name ? cstr_bone_name : ""; JS_FreeCString(ctx, cstr_bone_name);
+    const char* cstr_bone_name = JS_ToCString(ctx, argv[2]); String arg_bone_name = cstr_bone_name ? String::utf8(cstr_bone_name) : ""; JS_FreeCString(ctx, cstr_bone_name);
 
     typed_obj->set_reference_bone_name(arg_index, arg_bone_name);
     return JS_UNDEFINED;

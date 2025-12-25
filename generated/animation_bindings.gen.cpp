@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/animation.hpp>
-#include <godot_cpp/classes/animation.hpp>
 #include <godot_cpp/classes/resource.hpp>
+#include <godot_cpp/classes/animation.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -287,7 +287,7 @@ static JSValue js_Animation_track_set_path(JSContext* ctx, JSValueConst this_val
 
     // Convert arguments
     int64_t arg_track_idx; JS_ToInt64(ctx, &arg_track_idx, argv[1]);
-    const char* cstr_path = JS_ToCString(ctx, argv[2]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[2]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     typed_obj->track_set_path(arg_track_idx, arg_path);
     return JS_UNDEFINED;
@@ -326,7 +326,7 @@ static JSValue js_Animation_find_track(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
     int64_t tmp_type; JS_ToInt64(ctx, &tmp_type, argv[2]); Animation::TrackType arg_type = (Animation::TrackType)tmp_type;
 
     int64_t result = typed_obj->find_track(arg_path, arg_type);
@@ -3036,7 +3036,7 @@ static JSValue js_Animation_animation_track_insert_key(JSContext* ctx, JSValueCo
     // Convert arguments
     int64_t arg_track_idx; JS_ToInt64(ctx, &arg_track_idx, argv[1]);
     double arg_time; JS_ToFloat64(ctx, &arg_time, argv[2]);
-    const char* cstr_animation = JS_ToCString(ctx, argv[3]); StringName arg_animation = cstr_animation ? cstr_animation : ""; JS_FreeCString(ctx, cstr_animation);
+    const char* cstr_animation = JS_ToCString(ctx, argv[3]); StringName arg_animation = cstr_animation ? String::utf8(cstr_animation) : ""; JS_FreeCString(ctx, cstr_animation);
 
     int64_t result = typed_obj->animation_track_insert_key(arg_track_idx, arg_time, arg_animation);
     return JS_NewInt64(ctx, result);
@@ -3082,7 +3082,7 @@ static JSValue js_Animation_animation_track_set_key_animation(JSContext* ctx, JS
     // Convert arguments
     int64_t arg_track_idx; JS_ToInt64(ctx, &arg_track_idx, argv[1]);
     int64_t arg_key_idx; JS_ToInt64(ctx, &arg_key_idx, argv[2]);
-    const char* cstr_animation = JS_ToCString(ctx, argv[3]); StringName arg_animation = cstr_animation ? cstr_animation : ""; JS_FreeCString(ctx, cstr_animation);
+    const char* cstr_animation = JS_ToCString(ctx, argv[3]); StringName arg_animation = cstr_animation ? String::utf8(cstr_animation) : ""; JS_FreeCString(ctx, cstr_animation);
 
     typed_obj->animation_track_set_key_animation(arg_track_idx, arg_key_idx, arg_animation);
     return JS_UNDEFINED;
@@ -3171,7 +3171,7 @@ static JSValue js_Animation_add_marker(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     double arg_time; JS_ToFloat64(ctx, &arg_time, argv[2]);
 
     typed_obj->add_marker(arg_name, arg_time);
@@ -3216,7 +3216,7 @@ static JSValue js_Animation_remove_marker(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->remove_marker(arg_name);
     return JS_UNDEFINED;
@@ -3255,7 +3255,7 @@ static JSValue js_Animation_has_marker(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     bool result = typed_obj->has_marker(arg_name);
     return JS_NewBool(ctx, result);
@@ -3411,7 +3411,7 @@ static JSValue js_Animation_get_marker_time(JSContext* ctx, JSValueConst this_va
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     double result = typed_obj->get_marker_time(arg_name);
     return JS_NewFloat64(ctx, result);
@@ -3481,7 +3481,7 @@ static JSValue js_Animation_get_marker_color(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     Color result = typed_obj->get_marker_color(arg_name);
     JSValue ret_obj = JS_NewObject(ctx);
@@ -3530,7 +3530,7 @@ static JSValue js_Animation_set_marker_color(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     double tmp_r_color, tmp_g_color, tmp_b_color, tmp_a_color = 1.0;
     JSValue jr_color = JS_GetPropertyStr(ctx, argv[2], "r");
     JSValue jg_color = JS_GetPropertyStr(ctx, argv[2], "g");

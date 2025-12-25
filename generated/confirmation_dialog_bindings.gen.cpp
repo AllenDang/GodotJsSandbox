@@ -151,7 +151,7 @@ static JSValue js_ConfirmationDialog_set_cancel_button_text(JSContext* ctx, JSVa
         return JS_ThrowTypeError(ctx, "ConfirmationDialog.cancel_button_text setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_cancel_button_text(value);
     return JS_UNDEFINED;
 }

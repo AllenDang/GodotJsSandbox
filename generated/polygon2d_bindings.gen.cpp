@@ -72,7 +72,7 @@ static JSValue js_Polygon2D_add_bone(JSContext* ctx, JSValueConst this_val, int 
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
     PackedFloat32Array arg_weights;
     if (JS_IsArray(argv[2])) {
         JSValue len_val = JS_GetPropertyStr(ctx, argv[2], "length");
@@ -322,7 +322,7 @@ static JSValue js_Polygon2D_set_bone_path(JSContext* ctx, JSValueConst this_val,
 
     // Convert arguments
     int64_t arg_index; JS_ToInt64(ctx, &arg_index, argv[1]);
-    const char* cstr_path = JS_ToCString(ctx, argv[2]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[2]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     typed_obj->set_bone_path(arg_index, arg_path);
     return JS_UNDEFINED;
@@ -1003,7 +1003,7 @@ static JSValue js_Polygon2D_set_skeleton(JSContext* ctx, JSValueConst this_val, 
         return JS_ThrowTypeError(ctx, "Polygon2D.skeleton setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(cstr_value) : NodePath(); JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); NodePath value = cstr_value ? NodePath(String::utf8(cstr_value)) : NodePath(); JS_FreeCString(ctx, cstr_value);
     typed_obj->set_skeleton(value);
     return JS_UNDEFINED;
 }

@@ -71,7 +71,7 @@ static JSValue js_JSONRPC_set_method(JSContext* ctx, JSValueConst this_val, int 
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
     Callable arg_callback = qjs_ctx->js_to_variant(argv[2]);
 
     typed_obj->set_method(arg_name, arg_callback);
@@ -166,7 +166,7 @@ static JSValue js_JSONRPC_process_string(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_action = JS_ToCString(ctx, argv[1]); String arg_action = cstr_action ? cstr_action : ""; JS_FreeCString(ctx, cstr_action);
+    const char* cstr_action = JS_ToCString(ctx, argv[1]); String arg_action = cstr_action ? String::utf8(cstr_action) : ""; JS_FreeCString(ctx, cstr_action);
 
     String result = typed_obj->process_string(arg_action);
     return JS_NewString(ctx, result.utf8().get_data());
@@ -210,7 +210,7 @@ static JSValue js_JSONRPC_make_request(JSContext* ctx, JSValueConst this_val, in
     }
 
     // Convert arguments
-    const char* cstr_method = JS_ToCString(ctx, argv[1]); String arg_method = cstr_method ? cstr_method : ""; JS_FreeCString(ctx, cstr_method);
+    const char* cstr_method = JS_ToCString(ctx, argv[1]); String arg_method = cstr_method ? String::utf8(cstr_method) : ""; JS_FreeCString(ctx, cstr_method);
     Variant arg_params = qjs_ctx->js_to_variant(argv[2]);
     Variant arg_id = qjs_ctx->js_to_variant(argv[3]);
 
@@ -301,7 +301,7 @@ static JSValue js_JSONRPC_make_notification(JSContext* ctx, JSValueConst this_va
     }
 
     // Convert arguments
-    const char* cstr_method = JS_ToCString(ctx, argv[1]); String arg_method = cstr_method ? cstr_method : ""; JS_FreeCString(ctx, cstr_method);
+    const char* cstr_method = JS_ToCString(ctx, argv[1]); String arg_method = cstr_method ? String::utf8(cstr_method) : ""; JS_FreeCString(ctx, cstr_method);
     Variant arg_params = qjs_ctx->js_to_variant(argv[2]);
 
     Dictionary result = typed_obj->make_notification(arg_method, arg_params);
@@ -347,7 +347,7 @@ static JSValue js_JSONRPC_make_response_error(JSContext* ctx, JSValueConst this_
 
     // Convert arguments
     int64_t arg_code; JS_ToInt64(ctx, &arg_code, argv[1]);
-    const char* cstr_message = JS_ToCString(ctx, argv[2]); String arg_message = cstr_message ? cstr_message : ""; JS_FreeCString(ctx, cstr_message);
+    const char* cstr_message = JS_ToCString(ctx, argv[2]); String arg_message = cstr_message ? String::utf8(cstr_message) : ""; JS_FreeCString(ctx, cstr_message);
     // Optional argument: id (default: nullptr)
     Variant arg_id = nullptr;
     if (argc > 3) {

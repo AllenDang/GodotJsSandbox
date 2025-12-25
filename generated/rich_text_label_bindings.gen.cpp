@@ -105,7 +105,7 @@ static JSValue js_RichTextLabel_add_text(JSContext* ctx, JSValueConst this_val, 
     }
 
     // Convert arguments
-    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? cstr_text : ""; JS_FreeCString(ctx, cstr_text);
+    const char* cstr_text = JS_ToCString(ctx, argv[1]); String arg_text = cstr_text ? String::utf8(cstr_text) : ""; JS_FreeCString(ctx, cstr_text);
 
     typed_obj->add_text(arg_text);
     return JS_UNDEFINED;
@@ -1359,7 +1359,7 @@ static JSValue js_RichTextLabel_push_hint(JSContext* ctx, JSValueConst this_val,
     }
 
     // Convert arguments
-    const char* cstr_description = JS_ToCString(ctx, argv[1]); String arg_description = cstr_description ? cstr_description : ""; JS_FreeCString(ctx, cstr_description);
+    const char* cstr_description = JS_ToCString(ctx, argv[1]); String arg_description = cstr_description ? String::utf8(cstr_description) : ""; JS_FreeCString(ctx, cstr_description);
 
     typed_obj->push_hint(arg_description);
     return JS_UNDEFINED;
@@ -1403,7 +1403,7 @@ static JSValue js_RichTextLabel_push_language(JSContext* ctx, JSValueConst this_
     }
 
     // Convert arguments
-    const char* cstr_language = JS_ToCString(ctx, argv[1]); String arg_language = cstr_language ? cstr_language : ""; JS_FreeCString(ctx, cstr_language);
+    const char* cstr_language = JS_ToCString(ctx, argv[1]); String arg_language = cstr_language ? String::utf8(cstr_language) : ""; JS_FreeCString(ctx, cstr_language);
 
     typed_obj->push_language(arg_language);
     return JS_UNDEFINED;
@@ -1636,7 +1636,7 @@ static JSValue js_RichTextLabel_push_dropcap(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? cstr_string : ""; JS_FreeCString(ctx, cstr_string);
+    const char* cstr_string = JS_ToCString(ctx, argv[1]); String arg_string = cstr_string ? String::utf8(cstr_string) : ""; JS_FreeCString(ctx, cstr_string);
     Ref<Font> arg_font;
     if (JS_IsNumber(argv[2])) {
         // Direct handle (unwrapped by JS proxy)
@@ -1822,7 +1822,7 @@ static JSValue js_RichTextLabel_set_table_column_name(JSContext* ctx, JSValueCon
 
     // Convert arguments
     int64_t arg_column; JS_ToInt64(ctx, &arg_column, argv[1]);
-    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[2]); String arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->set_table_column_name(arg_column, arg_name);
     return JS_UNDEFINED;
@@ -2877,7 +2877,7 @@ static JSValue js_RichTextLabel_parse_bbcode(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_bbcode = JS_ToCString(ctx, argv[1]); String arg_bbcode = cstr_bbcode ? cstr_bbcode : ""; JS_FreeCString(ctx, cstr_bbcode);
+    const char* cstr_bbcode = JS_ToCString(ctx, argv[1]); String arg_bbcode = cstr_bbcode ? String::utf8(cstr_bbcode) : ""; JS_FreeCString(ctx, cstr_bbcode);
 
     typed_obj->parse_bbcode(arg_bbcode);
     return JS_UNDEFINED;
@@ -2921,7 +2921,7 @@ static JSValue js_RichTextLabel_append_text(JSContext* ctx, JSValueConst this_va
     }
 
     // Convert arguments
-    const char* cstr_bbcode = JS_ToCString(ctx, argv[1]); String arg_bbcode = cstr_bbcode ? cstr_bbcode : ""; JS_FreeCString(ctx, cstr_bbcode);
+    const char* cstr_bbcode = JS_ToCString(ctx, argv[1]); String arg_bbcode = cstr_bbcode ? String::utf8(cstr_bbcode) : ""; JS_FreeCString(ctx, cstr_bbcode);
 
     typed_obj->append_text(arg_bbcode);
     return JS_UNDEFINED;
@@ -3894,7 +3894,7 @@ static JSValue js_RichTextLabel_set_text(JSContext* ctx, JSValueConst this_val, 
         return JS_ThrowTypeError(ctx, "RichTextLabel.text setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_text(value);
     return JS_UNDEFINED;
 }
@@ -5584,7 +5584,7 @@ static JSValue js_RichTextLabel_set_language(JSContext* ctx, JSValueConst this_v
         return JS_ThrowTypeError(ctx, "RichTextLabel.language setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_language(value);
     return JS_UNDEFINED;
 }

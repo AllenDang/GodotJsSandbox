@@ -605,7 +605,7 @@ static JSValue js_AnimationNodeStateMachineTransition_set_advance_condition(JSCo
         return JS_ThrowTypeError(ctx, "AnimationNodeStateMachineTransition.advance_condition setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); StringName value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_advance_condition(value);
     return JS_UNDEFINED;
 }
@@ -672,7 +672,7 @@ static JSValue js_AnimationNodeStateMachineTransition_set_advance_expression(JSC
         return JS_ThrowTypeError(ctx, "AnimationNodeStateMachineTransition.advance_expression setter: wrong type");
     }
 
-    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? cstr_value : ""; JS_FreeCString(ctx, cstr_value);
+    const char* cstr_value = JS_ToCString(ctx, argv[1]); String value = cstr_value ? String::utf8(cstr_value) : ""; JS_FreeCString(ctx, cstr_value);
     typed_obj->set_advance_expression(value);
     return JS_UNDEFINED;
 }

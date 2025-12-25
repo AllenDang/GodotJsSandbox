@@ -71,8 +71,8 @@ static JSValue js_AnimationPlayer_animation_set_next(JSContext* ctx, JSValueCons
     }
 
     // Convert arguments
-    const char* cstr_animation_from = JS_ToCString(ctx, argv[1]); StringName arg_animation_from = cstr_animation_from ? cstr_animation_from : ""; JS_FreeCString(ctx, cstr_animation_from);
-    const char* cstr_animation_to = JS_ToCString(ctx, argv[2]); StringName arg_animation_to = cstr_animation_to ? cstr_animation_to : ""; JS_FreeCString(ctx, cstr_animation_to);
+    const char* cstr_animation_from = JS_ToCString(ctx, argv[1]); StringName arg_animation_from = cstr_animation_from ? String::utf8(cstr_animation_from) : ""; JS_FreeCString(ctx, cstr_animation_from);
+    const char* cstr_animation_to = JS_ToCString(ctx, argv[2]); StringName arg_animation_to = cstr_animation_to ? String::utf8(cstr_animation_to) : ""; JS_FreeCString(ctx, cstr_animation_to);
 
     typed_obj->animation_set_next(arg_animation_from, arg_animation_to);
     return JS_UNDEFINED;
@@ -116,7 +116,7 @@ static JSValue js_AnimationPlayer_animation_get_next(JSContext* ctx, JSValueCons
     }
 
     // Convert arguments
-    const char* cstr_animation_from = JS_ToCString(ctx, argv[1]); StringName arg_animation_from = cstr_animation_from ? cstr_animation_from : ""; JS_FreeCString(ctx, cstr_animation_from);
+    const char* cstr_animation_from = JS_ToCString(ctx, argv[1]); StringName arg_animation_from = cstr_animation_from ? String::utf8(cstr_animation_from) : ""; JS_FreeCString(ctx, cstr_animation_from);
 
     StringName result = typed_obj->animation_get_next(arg_animation_from);
     return JS_NewString(ctx, String(result).utf8().get_data());
@@ -160,8 +160,8 @@ static JSValue js_AnimationPlayer_set_blend_time(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_animation_from = JS_ToCString(ctx, argv[1]); StringName arg_animation_from = cstr_animation_from ? cstr_animation_from : ""; JS_FreeCString(ctx, cstr_animation_from);
-    const char* cstr_animation_to = JS_ToCString(ctx, argv[2]); StringName arg_animation_to = cstr_animation_to ? cstr_animation_to : ""; JS_FreeCString(ctx, cstr_animation_to);
+    const char* cstr_animation_from = JS_ToCString(ctx, argv[1]); StringName arg_animation_from = cstr_animation_from ? String::utf8(cstr_animation_from) : ""; JS_FreeCString(ctx, cstr_animation_from);
+    const char* cstr_animation_to = JS_ToCString(ctx, argv[2]); StringName arg_animation_to = cstr_animation_to ? String::utf8(cstr_animation_to) : ""; JS_FreeCString(ctx, cstr_animation_to);
     double arg_sec; JS_ToFloat64(ctx, &arg_sec, argv[3]);
 
     typed_obj->set_blend_time(arg_animation_from, arg_animation_to, arg_sec);
@@ -201,8 +201,8 @@ static JSValue js_AnimationPlayer_get_blend_time(JSContext* ctx, JSValueConst th
     }
 
     // Convert arguments
-    const char* cstr_animation_from = JS_ToCString(ctx, argv[1]); StringName arg_animation_from = cstr_animation_from ? cstr_animation_from : ""; JS_FreeCString(ctx, cstr_animation_from);
-    const char* cstr_animation_to = JS_ToCString(ctx, argv[2]); StringName arg_animation_to = cstr_animation_to ? cstr_animation_to : ""; JS_FreeCString(ctx, cstr_animation_to);
+    const char* cstr_animation_from = JS_ToCString(ctx, argv[1]); StringName arg_animation_from = cstr_animation_from ? String::utf8(cstr_animation_from) : ""; JS_FreeCString(ctx, cstr_animation_from);
+    const char* cstr_animation_to = JS_ToCString(ctx, argv[2]); StringName arg_animation_to = cstr_animation_to ? String::utf8(cstr_animation_to) : ""; JS_FreeCString(ctx, cstr_animation_to);
 
     double result = typed_obj->get_blend_time(arg_animation_from, arg_animation_to);
     return JS_NewFloat64(ctx, result);
@@ -861,7 +861,7 @@ static JSValue js_AnimationPlayer_queue(JSContext* ctx, JSValueConst this_val, i
     }
 
     // Convert arguments
-    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? cstr_name : ""; JS_FreeCString(ctx, cstr_name);
+    const char* cstr_name = JS_ToCString(ctx, argv[1]); StringName arg_name = cstr_name ? String::utf8(cstr_name) : ""; JS_FreeCString(ctx, cstr_name);
 
     typed_obj->queue(arg_name);
     return JS_UNDEFINED;
@@ -1448,7 +1448,7 @@ static JSValue js_AnimationPlayer_set_root(JSContext* ctx, JSValueConst this_val
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(cstr_path) : NodePath(); JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); NodePath arg_path = cstr_path ? NodePath(String::utf8(cstr_path)) : NodePath(); JS_FreeCString(ctx, cstr_path);
 
     typed_obj->set_root(arg_path);
     return JS_UNDEFINED;

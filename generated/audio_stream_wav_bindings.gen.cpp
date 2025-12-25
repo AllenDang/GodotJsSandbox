@@ -148,7 +148,7 @@ static JSValue js_AudioStreamWAV_load_from_file(JSContext* ctx, JSValueConst thi
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
     // Optional argument: options (default: Dictionary())
     Dictionary arg_options = Dictionary();
     if (argc > 2) {
@@ -224,7 +224,7 @@ static JSValue js_AudioStreamWAV_save_to_wav(JSContext* ctx, JSValueConst this_v
     }
 
     // Convert arguments
-    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? cstr_path : ""; JS_FreeCString(ctx, cstr_path);
+    const char* cstr_path = JS_ToCString(ctx, argv[1]); String arg_path = cstr_path ? String::utf8(cstr_path) : ""; JS_FreeCString(ctx, cstr_path);
 
     Error result = typed_obj->save_to_wav(arg_path);
     return qjs_ctx->variant_to_js(Variant(result));
