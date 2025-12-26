@@ -19,6 +19,7 @@ const TestPackedArrayProxyClass = preload("res://test_cases/test_packed_array_pr
 const TestBulkOperationsClass = preload("res://test_cases/test_bulk_operations.gd")
 const TestPackedArrayAppendClass = preload("res://test_cases/test_packed_array_append.gd")
 const TestGlobalConstantsClass = preload("res://test_cases/test_global_constants.gd")
+const TestFallbackPathsClass = preload("res://test_cases/test_fallback_paths.gd")
 
 var sandbox: JSSandbox
 
@@ -131,6 +132,9 @@ func run_tests() -> void:
 
 	# Global constants (autoloads accessible from JavaScript)
 	runner.add_suite(TestGlobalConstantsClass.new())
+
+	# Fallback paths (unbound properties/methods with Godot objects)
+	runner.add_suite(TestFallbackPathsClass.new())
 
 	# Run all tests
 	var results = await runner.run_all(sandbox, get_tree())

@@ -759,12 +759,8 @@ void GodotBindings::setup_godot_class_constructor() {
                     return function(signalName) {
                         var args = [handle, signalName];
                         for (var i = 1; i < arguments.length; i++) {
-                            var arg = arguments[i];
-                            if (arg && typeof arg === 'object' && arg.__handle !== undefined) {
-                                args.push(arg.__handle);
-                            } else {
-                                args.push(arg);
-                            }
+                            // Don't unwrap __handle - js_to_variant handles proxied objects correctly
+                            args.push(arguments[i]);
                         }
                         return __godot_emit_signal.apply(null, args);
                     };
@@ -809,12 +805,8 @@ void GodotBindings::setup_godot_class_constructor() {
                         emit: function() {
                             var args = [handle, signalName];
                             for (var i = 0; i < arguments.length; i++) {
-                                var arg = arguments[i];
-                                if (arg && typeof arg === 'object' && arg.__handle !== undefined) {
-                                    args.push(arg.__handle);
-                                } else {
-                                    args.push(arg);
-                                }
+                                // Don't unwrap __handle - js_to_variant handles proxied objects correctly
+                                args.push(arguments[i]);
                             }
                             return __godot_emit_signal.apply(null, args);
                         }
@@ -877,12 +869,8 @@ void GodotBindings::setup_godot_class_constructor() {
                     return function() {
                         var args = [handle, prop];
                         for (var i = 0; i < arguments.length; i++) {
-                            var arg = arguments[i];
-                            if (arg && typeof arg === 'object' && arg.__handle !== undefined) {
-                                args.push(arg.__handle);
-                            } else {
-                                args.push(arg);
-                            }
+                            // Don't unwrap __handle - js_to_variant handles proxied objects correctly
+                            args.push(arguments[i]);
                         }
                         return __godot_call_script_method.apply(null, args);
                     };
@@ -897,12 +885,8 @@ void GodotBindings::setup_godot_class_constructor() {
                     return function() {
                         var args = [handle, prop];
                         for (var i = 0; i < arguments.length; i++) {
-                            var arg = arguments[i];
-                            if (arg && typeof arg === 'object' && arg.__handle !== undefined) {
-                                args.push(arg.__handle);
-                            } else {
-                                args.push(arg);
-                            }
+                            // Don't unwrap __handle - js_to_variant handles proxied objects correctly
+                            args.push(arguments[i]);
                         }
                         return __godot_call.apply(null, args);
                     };
@@ -928,11 +912,9 @@ void GodotBindings::setup_godot_class_constructor() {
                 }
 
                 // Fallback: use generic runtime property setter for unbound objects
-                var unwrapped = value;
-                if (value && typeof value === 'object' && value.__handle !== undefined) {
-                    unwrapped = value.__handle;
-                }
-                __godot_set(target.__handle, prop, unwrapped);
+                // NOTE: Don't unwrap __handle here - js_to_variant handles proxied objects correctly
+                // by checking for __handle property and looking up the Object in the registry
+                __godot_set(target.__handle, prop, value);
                 return true;
             },
             has: function(target, prop) {
