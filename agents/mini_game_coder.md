@@ -142,6 +142,23 @@ var enemy = sandbox.load_scene(game_dir + "/scenes/enemy.tscn");
 this.add_child(enemy);
 ```
 
+## Dynamic Script Attachment
+
+Attach scripts to dynamically created nodes using `sandbox.create_script()`:
+
+```javascript
+var script = sandbox.create_script(`
+    var speed = 100;
+    exports._process = function(delta) {
+        this.position.x += speed * delta;
+    };
+`);
+
+var node = new Node3D();
+node.set_script(script);
+this.add_child(node);
+```
+
 ## Materials and Shaders
 
 ```javascript
@@ -256,4 +273,21 @@ script = ExtResource("1")
 [node name="Mesh" type="MeshInstance3D" parent="Player"]
 mesh = SubResource("BoxMesh_1")
 
+```
+
+**Referencing GLB models in tscn:**
+
+GLB/GLTF files in `user://` can be directly referenced in scene files:
+
+```
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="scripts/main.js" id="1"]
+[ext_resource type="PackedScene" path="models/enemy.glb" id="2"]
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Enemy" parent="." instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5)
 ```

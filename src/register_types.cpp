@@ -12,6 +12,7 @@
 #include "js_script.h"
 #include "js_script_language.h"
 #include "js_resource_loader.h"
+#include "gltf_resource_loader.h"
 #include "js_runtime_manager.h"
 #include "deletion_tracker.h"
 #include "async_scene_loader.h"
@@ -22,6 +23,7 @@ using namespace godot;
 static jsb::JSScriptLanguage* script_language = nullptr;
 static Ref<jsb::JSResourceLoader> resource_loader;
 static Ref<jsb::JSResourceSaver> resource_saver;
+static Ref<jsb::GLTFResourceLoader> gltf_resource_loader;
 
 void initialize_godot_js_runtime_module(ModuleInitializationLevel p_level) {
     if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
@@ -37,6 +39,7 @@ void initialize_godot_js_runtime_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<jsb::JSScriptLanguage>();
     ClassDB::register_class<jsb::JSResourceLoader>();
     ClassDB::register_class<jsb::JSResourceSaver>();
+    ClassDB::register_class<jsb::GLTFResourceLoader>();
     ClassDB::register_class<jsb::DeletionCallback>();
     ClassDB::register_class<jsb::AsyncSceneLoader>();
     ClassDB::register_class<jsb::SandboxLogger>();
@@ -48,8 +51,11 @@ void initialize_godot_js_runtime_module(ModuleInitializationLevel p_level) {
     // Create and register resource loader/saver
     resource_loader.instantiate();
     resource_saver.instantiate();
+    gltf_resource_loader.instantiate();
     ResourceLoader::get_singleton()->add_resource_format_loader(resource_loader);
     ResourceSaver::get_singleton()->add_resource_format_saver(resource_saver);
+    // Add GLTF loader with high priority to intercept user:// glb/gltf files
+    ResourceLoader::get_singleton()->add_resource_format_loader(gltf_resource_loader, true);
 }
 
 void uninitialize_godot_js_runtime_module(ModuleInitializationLevel p_level) {
@@ -58,6 +64,10 @@ void uninitialize_godot_js_runtime_module(ModuleInitializationLevel p_level) {
     }
 
     // Unregister resource loader/saver
+    if (gltf_resource_loader.is_valid()) {
+        ResourceLoader::get_singleton()->remove_resource_format_loader(gltf_resource_loader);
+        gltf_resource_loader.unref();
+    }
     if (resource_loader.is_valid()) {
         ResourceLoader::get_singleton()->remove_resource_format_loader(resource_loader);
         resource_loader.unref();
