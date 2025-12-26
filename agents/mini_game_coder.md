@@ -206,6 +206,31 @@ Why this matters:
 - Using `load()` for scenes would bypass sandbox security
 - `sandbox.load_scene()` properly associates all scripts with the sandbox
 
+### Resolving Scene Paths at Runtime
+
+**Problem:** Hardcoded paths like `"user://games/my_game/enemy.tscn"` break when game folders are renamed or have generated IDs.
+
+**Solution:** Use the current scene's path to construct absolute paths:
+
+```javascript
+// Get the directory where the current scene lives
+var scene_path = this.scene_file_path;  // e.g., "user://games/abc123/main.tscn"
+var base_dir = scene_path.get_base_dir();  // e.g., "user://games/abc123"
+
+// Load another scene relative to current scene
+var enemy = sandbox.load_scene(base_dir + "/scenes/enemy.tscn");
+this.add_child(enemy);
+
+// Load resources the same way
+var texture = load(base_dir + "/assets/icon.png");
+```
+
+**Key points:**
+- `this.scene_file_path` returns the full path of the .tscn file this script is attached to
+- `get_base_dir()` extracts the directory portion
+- Use string concatenation to build paths to sibling files
+- This works regardless of where the game folder is located
+
 ## Constants and Enums
 
 Access via enum class name (not bare globals):
@@ -369,6 +394,77 @@ The sandbox enforces per-frame limits to prevent infinite loops and resource abu
 - **Memory**: 64MB
 
 If you hit these limits, split work across multiple frames using `_process`.
+
+### CRITICAL: Batched Initialization for Tile-Based Games
+
+**Problem:** Creating many nodes in `_ready()` will exceed write limits and crash. Each node creation involves multiple writes (position, size, color, name, add_child = 5+ writes). A 10x10 grid = 100 tiles × 5 writes = 500 writes just for floor tiles!
+
+**Solution:** Queue tiles and create them across multiple frames:
+
+```javascript
+var loadQueue = [];       // Tiles waiting to be created
+var isLoading = false;
+var TILES_PER_FRAME = 10; // Create 10 tiles per frame (~50 writes)
+
+exports._ready = function() {
+    self = this;
+    queueLevelLoad(0);  // Queue tiles instead of creating them
+};
+
+function queueLevelLoad(levelIndex) {
+    isLoading = true;
+    loadQueue = [];
+
+    var map = LEVELS[levelIndex].map;
+    var offsetX = (1280 - map[0].length * TILE_SIZE) / 2;
+    var offsetY = (720 - map.length * TILE_SIZE) / 2;
+
+    // Queue all tiles - DON'T create them yet
+    for (var y = 0; y < map.length; y++) {
+        for (var x = 0; x < map[y].length; x++) {
+            var posX = offsetX + x * TILE_SIZE;
+            var posY = offsetY + y * TILE_SIZE;
+
+            // Always queue floor tile
+            loadQueue.push({type: "floor", x: posX, y: posY, gridX: x, gridY: y});
+
+            // Queue element based on map tile type
+            var tile = map[y][x];
+            if (tile === 1) loadQueue.push({type: "wall", x: posX, y: posY, gridX: x, gridY: y});
+            else if (tile === 2) loadQueue.push({type: "player", x: posX, y: posY, gridX: x, gridY: y});
+            // ... etc for other tile types
+        }
+    }
+}
+
+function processLoadQueue() {
+    var processed = 0;
+    while (loadQueue.length > 0 && processed < TILES_PER_FRAME) {
+        var item = loadQueue.shift();
+        createTileByType(item);  // Actually create the node
+        processed++;
+    }
+
+    if (loadQueue.length === 0) {
+        isLoading = false;
+        console.log("Level loaded!");
+    }
+}
+
+exports._process = function(delta) {
+    if (isLoading) {
+        processLoadQueue();
+        return;  // Don't process input while loading
+    }
+    // Normal game logic here
+};
+```
+
+**Key points:**
+- `_ready()` only queues data, doesn't create nodes
+- `_process()` creates a few tiles each frame
+- Block player input until loading completes
+- 10 tiles/frame × 5 writes = 50 writes/frame (safe margin)
 
 ## Error Handling and AI Feedback
 
