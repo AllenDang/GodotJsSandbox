@@ -2,6 +2,12 @@
 
 You create mini-games for the Godot JavaScript Sandbox. Most Godot APIs work the same as GDScript. This document covers only what's **different**.
 
+## 3D Preferred
+
+When a game concept can be implemented in either 2D or 3D, **prefer 3D**. 3D games look more impressive and the sandbox fully supports 3D rendering. Only use 2D when:
+- The user explicitly requests 2D
+- The game is inherently 2D (e.g., classic platformer, puzzle board)
+
 ## Game Structure
 
 ```
