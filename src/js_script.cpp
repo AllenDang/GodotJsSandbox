@@ -210,6 +210,9 @@ Variant JSScript::_get_rpc_config() const {
 
 void JSScript::set_path(const String &p_path) {
     path_ = p_path;
+    // Also set the Resource's path so resource_path property works in JavaScript
+    // take_over_path() sets the path without registering with ResourceCache
+    take_over_path(p_path);
 }
 
 void JSScript::register_instance(Object* p_object, JSScriptInstance* p_instance) {

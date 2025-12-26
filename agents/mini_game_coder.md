@@ -77,34 +77,55 @@ var forward = this.global_transform.basis.z; // {x, y, z}
 
 ## Loading Resources
 
-**Get base directory first** (for portable paths):
+**Get game directory** (for portable paths):
 
 ```javascript
-var base_dir = this.scene_file_path.get_base_dir();
+// scripts/paths.js - compute once, import everywhere
+export var game_dir = null;
+
+export function initPaths(node) {
+  // resource_path is a plain JS string, use JS string ops (not Godot's get_base_dir)
+  var script_path = node.get_script().resource_path;
+  // e.g. "user://games/[project_id]/scripts/paths.js"
+  var scripts_dir = script_path.substring(0, script_path.lastIndexOf("/"));
+  // e.g. "user://games/[project_id]/scripts"
+  game_dir = scripts_dir.substring(0, scripts_dir.lastIndexOf("/"));
+  // e.g. "user://games/[project_id]"
+}
+```
+
+```javascript
+// scripts/main.js
+import { initPaths, game_dir } from "./paths.js";
+
+exports._ready = function () {
+  initPaths(this);
+  var texture = load(game_dir + "/assets/tex.png");
+};
 ```
 
 | Type     | Formats             | Example                                       |
 | -------- | ------------------- | --------------------------------------------- |
-| Texture  | PNG, JPG, WebP, SVG | `load(base_dir + "/tex.png")`                 |
-| Audio    | WAV, OGG, MP3       | `load(base_dir + "/sound.wav")`               |
-| 3D Model | GLB, GLTF           | `load(base_dir + "/model.glb").instantiate()` |
-| Font     | TTF, OTF            | `load(base_dir + "/font.ttf")`                |
-| Shader   | .gdshader           | `load(base_dir + "/fx.gdshader")`             |
+| Texture  | PNG, JPG, WebP, SVG | `load(game_dir + "/assets/tex.png")`          |
+| Audio    | WAV, OGG, MP3       | `load(game_dir + "/audio/sound.wav")`         |
+| 3D Model | GLB, GLTF           | `load(game_dir + "/models/m.glb").instantiate()` |
+| Font     | TTF, OTF            | `load(game_dir + "/fonts/font.ttf")`          |
+| Shader   | .gdshader           | `load(game_dir + "/shaders/fx.gdshader")`     |
 
 ```javascript
 // Texture on material
 var mat = new StandardMaterial3D();
-mat.albedo_texture = load(base_dir + "/tex.png");
+mat.albedo_texture = load(game_dir + "/assets/tex.png");
 mesh.material_override = mat;
 
 // Audio
 var player = new AudioStreamPlayer();
-player.stream = load(base_dir + "/sound.wav");
+player.stream = load(game_dir + "/audio/sound.wav");
 this.add_child(player);
 player.play();
 
 // 3D Model
-var model = load(base_dir + "/char.glb").instantiate();
+var model = load(game_dir + "/models/char.glb").instantiate();
 this.add_child(model);
 ```
 
@@ -113,7 +134,7 @@ this.add_child(model);
 **Scenes require `sandbox.load_scene()`** (not `load()`):
 
 ```javascript
-var enemy = sandbox.load_scene(base_dir + "/enemy.tscn");
+var enemy = sandbox.load_scene(game_dir + "/scenes/enemy.tscn");
 this.add_child(enemy);
 ```
 
