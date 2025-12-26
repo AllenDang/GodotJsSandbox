@@ -5,6 +5,7 @@
 #include "sandbox_config.h"
 #include "execution_limiter.h"
 #include "godot_bindings.h"
+#include "js_sandbox.h"
 #include "../generated/generated_classes.gen.h"
 
 #include <godot_cpp/classes/file_access.hpp>
@@ -27,6 +28,17 @@ using namespace godot;
 
 namespace jsb {
 
+// Helper to emit console_output signal
+static void emit_console_output(JSContext* ctx, const String& message) {
+    QuickJSContext* qjs_ctx = static_cast<QuickJSContext*>(JS_GetContextOpaque(ctx));
+    if (qjs_ctx) {
+        JSSandbox* sandbox = qjs_ctx->get_sandbox();
+        if (sandbox) {
+            sandbox->emit_signal("console_output", message);
+        }
+    }
+}
+
 // Console implementation (QuickJS callback signatures are fixed by the API)
 static JSValue js_console_log(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv) {
     String output;
@@ -39,6 +51,7 @@ static JSValue js_console_log(JSContext* ctx, JSValueConst this_val, int argc, J
         }
     }
     UtilityFunctions::print("[JS] ", output);
+    emit_console_output(ctx, output);
     return JS_UNDEFINED;
 }
 
@@ -53,6 +66,7 @@ static JSValue js_console_warn(JSContext* ctx, JSValueConst this_val, int argc, 
         }
     }
     UtilityFunctions::print("[JS Warning] ", output);
+    emit_console_output(ctx, "[Warning] " + output);
     return JS_UNDEFINED;
 }
 
@@ -67,6 +81,7 @@ static JSValue js_console_error(JSContext* ctx, JSValueConst this_val, int argc,
         }
     }
     UtilityFunctions::printerr("[JS Error] ", output);
+    emit_console_output(ctx, "[Error] " + output);
     return JS_UNDEFINED;
 }
 

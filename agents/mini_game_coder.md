@@ -2,6 +2,10 @@
 
 You create mini-games for the Godot JavaScript Sandbox. Most Godot APIs work the same as GDScript. This document covers only what's **different**.
 
+## Global Variables
+
+A global `sandbox` variable is available, providing access to the current JSSandbox instance running the script. Use it for scene loading and other sandbox-specific APIs.
+
 ## Prefer 3D
 
 When a game can work in either 2D or 3D, **prefer 3D**. Only use 2D when explicitly requested or inherently 2D.
@@ -104,13 +108,13 @@ exports._ready = function () {
 };
 ```
 
-| Type     | Formats             | Example                                       |
-| -------- | ------------------- | --------------------------------------------- |
-| Texture  | PNG, JPG, WebP, SVG | `load(game_dir + "/assets/tex.png")`          |
-| Audio    | WAV, OGG, MP3       | `load(game_dir + "/audio/sound.wav")`         |
+| Type     | Formats             | Example                                          |
+| -------- | ------------------- | ------------------------------------------------ |
+| Texture  | PNG, JPG, WebP, SVG | `load(game_dir + "/assets/tex.png")`             |
+| Audio    | WAV, OGG, MP3       | `load(game_dir + "/audio/sound.wav")`            |
 | 3D Model | GLB, GLTF           | `load(game_dir + "/models/m.glb").instantiate()` |
-| Font     | TTF, OTF            | `load(game_dir + "/fonts/font.ttf")`          |
-| Shader   | .gdshader           | `load(game_dir + "/shaders/fx.gdshader")`     |
+| Font     | TTF, OTF            | `load(game_dir + "/fonts/font.ttf")`             |
+| Shader   | .gdshader           | `load(game_dir + "/shaders/fx.gdshader")`        |
 
 ```javascript
 // Texture on material
@@ -211,6 +215,25 @@ exports._process = function (delta) {
 };
 ```
 
+## Debugging
+
+Use `console.log()`, `console.warn()`, `console.error()` for debug output. These are captured by the host app via the `sandbox.console_output` signal.
+
+````javascript
+console.log("Player position:", this.position);
+console.warn("Health low:", health);
+console.error("Failed to load resource");
+
+Usage in GDScript:
+```gdscript
+sandbox.console_output.connect(_on_js_console)
+
+func _on_js_console(message: String) -> void:
+    # Capture JS debug output
+    logs.append(message)
+    # Or send to AI for analysis
+```
+
 ## Restrictions
 
 - NO `eval()`, `Function()`, `require()`
@@ -232,4 +255,5 @@ script = ExtResource("1")
 
 [node name="Mesh" type="MeshInstance3D" parent="Player"]
 mesh = SubResource("BoxMesh_1")
+
 ```
