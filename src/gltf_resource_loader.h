@@ -5,8 +5,9 @@
 
 namespace jsb {
 
-// GLTFResourceLoader handles loading .glb/.gltf files from user:// directory
+// GLTFResourceLoader handles loading .glb/.gltf files from user:// directory and OS file paths
 // This enables tscn files to directly reference glb files without Godot's import system
+// Supports: user:// paths, absolute Unix paths (/path/to/file.glb), Windows paths (C:\path\file.glb)
 class GLTFResourceLoader : public godot::ResourceFormatLoader {
     GDCLASS(GLTFResourceLoader, godot::ResourceFormatLoader);
 

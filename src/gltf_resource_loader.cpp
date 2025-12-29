@@ -41,9 +41,25 @@ String GLTFResourceLoader::_get_resource_type(const String &p_path) const {
 }
 
 Variant GLTFResourceLoader::_load(const String &p_path, const String &p_original_path, bool p_use_sub_threads, int32_t p_cache_mode) const {
-    // Only handle user:// paths - let Godot's default loader handle res:// (imported) files
-    if (!p_path.begins_with("user://")) {
+    // Handle user:// paths and absolute OS file paths
+    // Let Godot's default loader handle res:// (imported) files
+    bool is_user_path = p_path.begins_with("user://");
+    bool is_absolute_path = p_path.begins_with("/") ||  // Unix/macOS absolute path
+                            (p_path.length() >= 2 && p_path[1] == ':');  // Windows drive letter (e.g., C:)
+
+    if (!is_user_path && !is_absolute_path) {
         return Variant();
+    }
+
+    // Security: Prevent path traversal for absolute paths
+    if (is_absolute_path) {
+        if (p_path.find("/../") != -1 ||
+            p_path.ends_with("/..") ||
+            p_path.find("\\..") != -1 ||
+            p_path.find("..\\") != -1) {
+            UtilityFunctions::printerr("GLTF path traversal not allowed: ", p_path);
+            return Variant();
+        }
     }
 
     // Check if file exists

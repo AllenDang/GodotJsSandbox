@@ -430,15 +430,9 @@ Variant SafeWrapper::load_resource(const String& path, String& error) {
         return Variant();
     }
 
-    // Validate path
+    // Validate path using sandbox config (supports res://, user://, and configured OS paths)
     if (sandbox_config_ && !sandbox_config_->is_path_allowed(path)) {
         error = "Path not allowed: " + path;
-        return Variant();
-    }
-
-    // Additional path checks
-    if (!path.begins_with("res://") && !path.begins_with("user://")) {
-        error = "Only res:// and user:// paths are allowed";
         return Variant();
     }
 
