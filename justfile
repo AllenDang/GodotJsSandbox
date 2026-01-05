@@ -38,3 +38,14 @@ lint:
   echo ""
   echo "=== Analyzing unused functions ==="
   ./scripts/analyze_unused.sh
+
+clean:
+  #!/bin/bash
+  set -e
+  echo "Cleaning compile outputs..."
+  find . -name "*.o" -type f -delete 2>/dev/null || true
+  find . -name "*.a" -type f -delete 2>/dev/null || true
+  find . -name "*.so" -type f -not -path "./scripts/.venv/*" -delete 2>/dev/null || true
+  find . -name "*.dylib" -type f -delete 2>/dev/null || true
+  find . -name "*.dll" -type f -delete 2>/dev/null || true
+  echo "Done."
