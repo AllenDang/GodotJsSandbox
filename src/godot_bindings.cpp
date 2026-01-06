@@ -3207,25 +3207,28 @@ JSValue GodotBindings::js_math_get_property(JSContext *ctx,
       JS_FreeValue(ctx, wrap_fn);
       JS_FreeValue(ctx, global);
     }
-    // For basis, return as nested object (keep value copy for now, complex
-    // structure)
+    // For basis, return as nested object with columns (axis directions)
+    // Basis stores internally as rows but API exposes x/y/z as columns
     if (prop == "basis") {
       JSValue obj = JS_NewObject(ctx);
-      JSValue x_row = JS_NewObject(ctx);
-      JSValue y_row = JS_NewObject(ctx);
-      JSValue z_row = JS_NewObject(ctx);
-      JS_SetPropertyStr(ctx, x_row, "x", JS_NewFloat64(ctx, t.basis.rows[0].x));
-      JS_SetPropertyStr(ctx, x_row, "y", JS_NewFloat64(ctx, t.basis.rows[0].y));
-      JS_SetPropertyStr(ctx, x_row, "z", JS_NewFloat64(ctx, t.basis.rows[0].z));
-      JS_SetPropertyStr(ctx, y_row, "x", JS_NewFloat64(ctx, t.basis.rows[1].x));
-      JS_SetPropertyStr(ctx, y_row, "y", JS_NewFloat64(ctx, t.basis.rows[1].y));
-      JS_SetPropertyStr(ctx, y_row, "z", JS_NewFloat64(ctx, t.basis.rows[1].z));
-      JS_SetPropertyStr(ctx, z_row, "x", JS_NewFloat64(ctx, t.basis.rows[2].x));
-      JS_SetPropertyStr(ctx, z_row, "y", JS_NewFloat64(ctx, t.basis.rows[2].y));
-      JS_SetPropertyStr(ctx, z_row, "z", JS_NewFloat64(ctx, t.basis.rows[2].z));
-      JS_SetPropertyStr(ctx, obj, "x", x_row);
-      JS_SetPropertyStr(ctx, obj, "y", y_row);
-      JS_SetPropertyStr(ctx, obj, "z", z_row);
+      JSValue x_col = JS_NewObject(ctx);
+      JSValue y_col = JS_NewObject(ctx);
+      JSValue z_col = JS_NewObject(ctx);
+      Vector3 col_x = t.basis.get_column(0);
+      Vector3 col_y = t.basis.get_column(1);
+      Vector3 col_z = t.basis.get_column(2);
+      JS_SetPropertyStr(ctx, x_col, "x", JS_NewFloat64(ctx, col_x.x));
+      JS_SetPropertyStr(ctx, x_col, "y", JS_NewFloat64(ctx, col_x.y));
+      JS_SetPropertyStr(ctx, x_col, "z", JS_NewFloat64(ctx, col_x.z));
+      JS_SetPropertyStr(ctx, y_col, "x", JS_NewFloat64(ctx, col_y.x));
+      JS_SetPropertyStr(ctx, y_col, "y", JS_NewFloat64(ctx, col_y.y));
+      JS_SetPropertyStr(ctx, y_col, "z", JS_NewFloat64(ctx, col_y.z));
+      JS_SetPropertyStr(ctx, z_col, "x", JS_NewFloat64(ctx, col_z.x));
+      JS_SetPropertyStr(ctx, z_col, "y", JS_NewFloat64(ctx, col_z.y));
+      JS_SetPropertyStr(ctx, z_col, "z", JS_NewFloat64(ctx, col_z.z));
+      JS_SetPropertyStr(ctx, obj, "x", x_col);
+      JS_SetPropertyStr(ctx, obj, "y", y_col);
+      JS_SetPropertyStr(ctx, obj, "z", z_col);
       return obj;
     }
     break;

@@ -11,6 +11,7 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/variant/projection.hpp>
 
 // InputEvent includes
 #include <godot_cpp/classes/input_event.hpp>
@@ -968,6 +969,22 @@ JSValue QuickJSContext::variant_to_js(const Variant &value) {
             return obj;
         }
 
+        case Variant::PROJECTION: {
+            Projection proj = value;
+            JSValue obj = JS_NewObject(ctx_);
+            // Projection is a 4x4 matrix stored as 4 column vectors (Vector4)
+            const char* col_names[4] = { "x", "y", "z", "w" };
+            for (int i = 0; i < 4; i++) {
+                JSValue col = JS_NewObject(ctx_);
+                JS_SetPropertyStr(ctx_, col, "x", JS_NewFloat64(ctx_, proj.columns[i].x));
+                JS_SetPropertyStr(ctx_, col, "y", JS_NewFloat64(ctx_, proj.columns[i].y));
+                JS_SetPropertyStr(ctx_, col, "z", JS_NewFloat64(ctx_, proj.columns[i].z));
+                JS_SetPropertyStr(ctx_, col, "w", JS_NewFloat64(ctx_, proj.columns[i].w));
+                JS_SetPropertyStr(ctx_, obj, col_names[i], col);
+            }
+            return obj;
+        }
+
         case Variant::AABB: {
             AABB a = value;
             JSValue obj = JS_NewObject(ctx_);
@@ -1386,6 +1403,51 @@ Variant QuickJSContext::js_to_variant(JSValue value) {
             JS_FreeValue(ctx_, basis_val);
             JS_FreeValue(ctx_, origin_val);
         }
+
+        // Check for Projection (has x, y, z, w columns, each being Vector4)
+        JSValue px_val = JS_GetPropertyStr(ctx_, value, "x");
+        JSValue py_val = JS_GetPropertyStr(ctx_, value, "y");
+        JSValue pz_val = JS_GetPropertyStr(ctx_, value, "z");
+        JSValue pw_val = JS_GetPropertyStr(ctx_, value, "w");
+
+        if (JS_IsObject(px_val) && JS_IsObject(py_val) && JS_IsObject(pz_val) && JS_IsObject(pw_val)) {
+            // Check if first column has w component (distinguishes from Quaternion)
+            JSValue px_w = JS_GetPropertyStr(ctx_, px_val, "w");
+            if (JS_IsNumber(px_w)) {
+                Projection proj;
+                const char* col_names[4] = { "x", "y", "z", "w" };
+                JSValue col_vals[4] = { px_val, py_val, pz_val, pw_val };
+                for (int i = 0; i < 4; i++) {
+                    JSValue cx = JS_GetPropertyStr(ctx_, col_vals[i], "x");
+                    JSValue cy = JS_GetPropertyStr(ctx_, col_vals[i], "y");
+                    JSValue cz = JS_GetPropertyStr(ctx_, col_vals[i], "z");
+                    JSValue cw = JS_GetPropertyStr(ctx_, col_vals[i], "w");
+                    if (JS_IsNumber(cx) && JS_IsNumber(cy) && JS_IsNumber(cz) && JS_IsNumber(cw)) {
+                        double x, y, z, w;
+                        JS_ToFloat64(ctx_, &x, cx);
+                        JS_ToFloat64(ctx_, &y, cy);
+                        JS_ToFloat64(ctx_, &z, cz);
+                        JS_ToFloat64(ctx_, &w, cw);
+                        proj.columns[i] = Vector4(x, y, z, w);
+                    }
+                    JS_FreeValue(ctx_, cx);
+                    JS_FreeValue(ctx_, cy);
+                    JS_FreeValue(ctx_, cz);
+                    JS_FreeValue(ctx_, cw);
+                }
+                JS_FreeValue(ctx_, px_w);
+                JS_FreeValue(ctx_, px_val);
+                JS_FreeValue(ctx_, py_val);
+                JS_FreeValue(ctx_, pz_val);
+                JS_FreeValue(ctx_, pw_val);
+                return proj;
+            }
+            JS_FreeValue(ctx_, px_w);
+        }
+        JS_FreeValue(ctx_, px_val);
+        JS_FreeValue(ctx_, py_val);
+        JS_FreeValue(ctx_, pz_val);
+        JS_FreeValue(ctx_, pw_val);
 
         Dictionary dict;
         JSPropertyEnum* props = nullptr;

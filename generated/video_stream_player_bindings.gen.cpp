@@ -9,8 +9,8 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/video_stream_player.hpp>
-#include <godot_cpp/classes/video_stream.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/video_stream.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
