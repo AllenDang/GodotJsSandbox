@@ -881,19 +881,23 @@ JSValue QuickJSContext::variant_to_js(const Variant &value) {
         case Variant::BASIS: {
             Basis b = value;
             JSValue obj = JS_NewObject(ctx_);
-            // Basis has 3 row vectors (x, y, z)
+            // Basis exposes x, y, z as column vectors (axis directions)
+            // Godot stores internally as rows but API exposes columns via get_column()
+            Vector3 col_x = b.get_column(0);
+            Vector3 col_y = b.get_column(1);
+            Vector3 col_z = b.get_column(2);
             JSValue x = JS_NewObject(ctx_);
-            JS_SetPropertyStr(ctx_, x, "x", JS_NewFloat64(ctx_, b.rows[0].x));
-            JS_SetPropertyStr(ctx_, x, "y", JS_NewFloat64(ctx_, b.rows[0].y));
-            JS_SetPropertyStr(ctx_, x, "z", JS_NewFloat64(ctx_, b.rows[0].z));
+            JS_SetPropertyStr(ctx_, x, "x", JS_NewFloat64(ctx_, col_x.x));
+            JS_SetPropertyStr(ctx_, x, "y", JS_NewFloat64(ctx_, col_x.y));
+            JS_SetPropertyStr(ctx_, x, "z", JS_NewFloat64(ctx_, col_x.z));
             JSValue y = JS_NewObject(ctx_);
-            JS_SetPropertyStr(ctx_, y, "x", JS_NewFloat64(ctx_, b.rows[1].x));
-            JS_SetPropertyStr(ctx_, y, "y", JS_NewFloat64(ctx_, b.rows[1].y));
-            JS_SetPropertyStr(ctx_, y, "z", JS_NewFloat64(ctx_, b.rows[1].z));
+            JS_SetPropertyStr(ctx_, y, "x", JS_NewFloat64(ctx_, col_y.x));
+            JS_SetPropertyStr(ctx_, y, "y", JS_NewFloat64(ctx_, col_y.y));
+            JS_SetPropertyStr(ctx_, y, "z", JS_NewFloat64(ctx_, col_y.z));
             JSValue z = JS_NewObject(ctx_);
-            JS_SetPropertyStr(ctx_, z, "x", JS_NewFloat64(ctx_, b.rows[2].x));
-            JS_SetPropertyStr(ctx_, z, "y", JS_NewFloat64(ctx_, b.rows[2].y));
-            JS_SetPropertyStr(ctx_, z, "z", JS_NewFloat64(ctx_, b.rows[2].z));
+            JS_SetPropertyStr(ctx_, z, "x", JS_NewFloat64(ctx_, col_z.x));
+            JS_SetPropertyStr(ctx_, z, "y", JS_NewFloat64(ctx_, col_z.y));
+            JS_SetPropertyStr(ctx_, z, "z", JS_NewFloat64(ctx_, col_z.z));
             JS_SetPropertyStr(ctx_, obj, "x", x);
             JS_SetPropertyStr(ctx_, obj, "y", y);
             JS_SetPropertyStr(ctx_, obj, "z", z);
@@ -909,20 +913,23 @@ JSValue QuickJSContext::variant_to_js(const Variant &value) {
             JS_SetPropertyStr(ctx_, origin, "y", JS_NewFloat64(ctx_, t.origin.y));
             JS_SetPropertyStr(ctx_, origin, "z", JS_NewFloat64(ctx_, t.origin.z));
             JS_SetPropertyStr(ctx_, obj, "origin", origin);
-            // Basis
+            // Basis - use columns (axis directions) not rows
+            Vector3 col_x = t.basis.get_column(0);
+            Vector3 col_y = t.basis.get_column(1);
+            Vector3 col_z = t.basis.get_column(2);
             JSValue basis = JS_NewObject(ctx_);
             JSValue bx = JS_NewObject(ctx_);
-            JS_SetPropertyStr(ctx_, bx, "x", JS_NewFloat64(ctx_, t.basis.rows[0].x));
-            JS_SetPropertyStr(ctx_, bx, "y", JS_NewFloat64(ctx_, t.basis.rows[0].y));
-            JS_SetPropertyStr(ctx_, bx, "z", JS_NewFloat64(ctx_, t.basis.rows[0].z));
+            JS_SetPropertyStr(ctx_, bx, "x", JS_NewFloat64(ctx_, col_x.x));
+            JS_SetPropertyStr(ctx_, bx, "y", JS_NewFloat64(ctx_, col_x.y));
+            JS_SetPropertyStr(ctx_, bx, "z", JS_NewFloat64(ctx_, col_x.z));
             JSValue by = JS_NewObject(ctx_);
-            JS_SetPropertyStr(ctx_, by, "x", JS_NewFloat64(ctx_, t.basis.rows[1].x));
-            JS_SetPropertyStr(ctx_, by, "y", JS_NewFloat64(ctx_, t.basis.rows[1].y));
-            JS_SetPropertyStr(ctx_, by, "z", JS_NewFloat64(ctx_, t.basis.rows[1].z));
+            JS_SetPropertyStr(ctx_, by, "x", JS_NewFloat64(ctx_, col_y.x));
+            JS_SetPropertyStr(ctx_, by, "y", JS_NewFloat64(ctx_, col_y.y));
+            JS_SetPropertyStr(ctx_, by, "z", JS_NewFloat64(ctx_, col_y.z));
             JSValue bz = JS_NewObject(ctx_);
-            JS_SetPropertyStr(ctx_, bz, "x", JS_NewFloat64(ctx_, t.basis.rows[2].x));
-            JS_SetPropertyStr(ctx_, bz, "y", JS_NewFloat64(ctx_, t.basis.rows[2].y));
-            JS_SetPropertyStr(ctx_, bz, "z", JS_NewFloat64(ctx_, t.basis.rows[2].z));
+            JS_SetPropertyStr(ctx_, bz, "x", JS_NewFloat64(ctx_, col_z.x));
+            JS_SetPropertyStr(ctx_, bz, "y", JS_NewFloat64(ctx_, col_z.y));
+            JS_SetPropertyStr(ctx_, bz, "z", JS_NewFloat64(ctx_, col_z.z));
             JS_SetPropertyStr(ctx_, basis, "x", bx);
             JS_SetPropertyStr(ctx_, basis, "y", by);
             JS_SetPropertyStr(ctx_, basis, "z", bz);
@@ -1347,26 +1354,26 @@ Variant QuickJSContext::js_to_variant(JSValue value) {
             JS_FreeValue(ctx_, oy_val);
             JS_FreeValue(ctx_, oz_val);
 
-            // Parse basis (has x, y, z rows)
+            // Parse basis (has x, y, z columns - axis directions)
             JSValue bx_val = JS_GetPropertyStr(ctx_, basis_val, "x");
             JSValue by_val = JS_GetPropertyStr(ctx_, basis_val, "y");
             JSValue bz_val = JS_GetPropertyStr(ctx_, basis_val, "z");
             if (JS_IsObject(bx_val) && JS_IsObject(by_val) && JS_IsObject(bz_val)) {
-                for (int row = 0; row < 3; row++) {
-                    JSValue row_val = (row == 0) ? bx_val : (row == 1) ? by_val : bz_val;
-                    JSValue rx = JS_GetPropertyStr(ctx_, row_val, "x");
-                    JSValue ry = JS_GetPropertyStr(ctx_, row_val, "y");
-                    JSValue rz = JS_GetPropertyStr(ctx_, row_val, "z");
-                    if (JS_IsNumber(rx) && JS_IsNumber(ry) && JS_IsNumber(rz)) {
+                for (int col = 0; col < 3; col++) {
+                    JSValue col_val = (col == 0) ? bx_val : (col == 1) ? by_val : bz_val;
+                    JSValue cx = JS_GetPropertyStr(ctx_, col_val, "x");
+                    JSValue cy = JS_GetPropertyStr(ctx_, col_val, "y");
+                    JSValue cz = JS_GetPropertyStr(ctx_, col_val, "z");
+                    if (JS_IsNumber(cx) && JS_IsNumber(cy) && JS_IsNumber(cz)) {
                         double x, y, z;
-                        JS_ToFloat64(ctx_, &x, rx);
-                        JS_ToFloat64(ctx_, &y, ry);
-                        JS_ToFloat64(ctx_, &z, rz);
-                        t.basis.rows[row] = Vector3(x, y, z);
+                        JS_ToFloat64(ctx_, &x, cx);
+                        JS_ToFloat64(ctx_, &y, cy);
+                        JS_ToFloat64(ctx_, &z, cz);
+                        t.basis.set_column(col, Vector3(x, y, z));
                     }
-                    JS_FreeValue(ctx_, rx);
-                    JS_FreeValue(ctx_, ry);
-                    JS_FreeValue(ctx_, rz);
+                    JS_FreeValue(ctx_, cx);
+                    JS_FreeValue(ctx_, cy);
+                    JS_FreeValue(ctx_, cz);
                 }
             }
             JS_FreeValue(ctx_, bx_val);

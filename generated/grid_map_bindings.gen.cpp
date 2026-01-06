@@ -9,9 +9,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/grid_map.hpp>
-#include <godot_cpp/classes/resource.hpp>
-#include <godot_cpp/classes/physics_material.hpp>
 #include <godot_cpp/classes/mesh_library.hpp>
+#include <godot_cpp/classes/physics_material.hpp>
+#include <godot_cpp/classes/resource.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -448,15 +448,18 @@ static JSValue js_GridMap_get_cell_item_basis(JSContext* ctx, JSValueConst this_
     JSValue x_obj = JS_NewObject(ctx);
     JSValue y_obj = JS_NewObject(ctx);
     JSValue z_obj = JS_NewObject(ctx);
-    JS_SetPropertyStr(ctx, x_obj, "x", JS_NewFloat64(ctx, result.rows[0].x));
-    JS_SetPropertyStr(ctx, x_obj, "y", JS_NewFloat64(ctx, result.rows[0].y));
-    JS_SetPropertyStr(ctx, x_obj, "z", JS_NewFloat64(ctx, result.rows[0].z));
-    JS_SetPropertyStr(ctx, y_obj, "x", JS_NewFloat64(ctx, result.rows[1].x));
-    JS_SetPropertyStr(ctx, y_obj, "y", JS_NewFloat64(ctx, result.rows[1].y));
-    JS_SetPropertyStr(ctx, y_obj, "z", JS_NewFloat64(ctx, result.rows[1].z));
-    JS_SetPropertyStr(ctx, z_obj, "x", JS_NewFloat64(ctx, result.rows[2].x));
-    JS_SetPropertyStr(ctx, z_obj, "y", JS_NewFloat64(ctx, result.rows[2].y));
-    JS_SetPropertyStr(ctx, z_obj, "z", JS_NewFloat64(ctx, result.rows[2].z));
+    Vector3 col_x = result.get_column(0);
+    Vector3 col_y = result.get_column(1);
+    Vector3 col_z = result.get_column(2);
+    JS_SetPropertyStr(ctx, x_obj, "x", JS_NewFloat64(ctx, col_x.x));
+    JS_SetPropertyStr(ctx, x_obj, "y", JS_NewFloat64(ctx, col_x.y));
+    JS_SetPropertyStr(ctx, x_obj, "z", JS_NewFloat64(ctx, col_x.z));
+    JS_SetPropertyStr(ctx, y_obj, "x", JS_NewFloat64(ctx, col_y.x));
+    JS_SetPropertyStr(ctx, y_obj, "y", JS_NewFloat64(ctx, col_y.y));
+    JS_SetPropertyStr(ctx, y_obj, "z", JS_NewFloat64(ctx, col_y.z));
+    JS_SetPropertyStr(ctx, z_obj, "x", JS_NewFloat64(ctx, col_z.x));
+    JS_SetPropertyStr(ctx, z_obj, "y", JS_NewFloat64(ctx, col_z.y));
+    JS_SetPropertyStr(ctx, z_obj, "z", JS_NewFloat64(ctx, col_z.z));
     JS_SetPropertyStr(ctx, ret_obj, "x", x_obj);
     JS_SetPropertyStr(ctx, ret_obj, "y", y_obj);
     JS_SetPropertyStr(ctx, ret_obj, "z", z_obj);
@@ -503,15 +506,18 @@ static JSValue js_GridMap_get_basis_with_orthogonal_index(JSContext* ctx, JSValu
     JSValue x_obj = JS_NewObject(ctx);
     JSValue y_obj = JS_NewObject(ctx);
     JSValue z_obj = JS_NewObject(ctx);
-    JS_SetPropertyStr(ctx, x_obj, "x", JS_NewFloat64(ctx, result.rows[0].x));
-    JS_SetPropertyStr(ctx, x_obj, "y", JS_NewFloat64(ctx, result.rows[0].y));
-    JS_SetPropertyStr(ctx, x_obj, "z", JS_NewFloat64(ctx, result.rows[0].z));
-    JS_SetPropertyStr(ctx, y_obj, "x", JS_NewFloat64(ctx, result.rows[1].x));
-    JS_SetPropertyStr(ctx, y_obj, "y", JS_NewFloat64(ctx, result.rows[1].y));
-    JS_SetPropertyStr(ctx, y_obj, "z", JS_NewFloat64(ctx, result.rows[1].z));
-    JS_SetPropertyStr(ctx, z_obj, "x", JS_NewFloat64(ctx, result.rows[2].x));
-    JS_SetPropertyStr(ctx, z_obj, "y", JS_NewFloat64(ctx, result.rows[2].y));
-    JS_SetPropertyStr(ctx, z_obj, "z", JS_NewFloat64(ctx, result.rows[2].z));
+    Vector3 col_x = result.get_column(0);
+    Vector3 col_y = result.get_column(1);
+    Vector3 col_z = result.get_column(2);
+    JS_SetPropertyStr(ctx, x_obj, "x", JS_NewFloat64(ctx, col_x.x));
+    JS_SetPropertyStr(ctx, x_obj, "y", JS_NewFloat64(ctx, col_x.y));
+    JS_SetPropertyStr(ctx, x_obj, "z", JS_NewFloat64(ctx, col_x.z));
+    JS_SetPropertyStr(ctx, y_obj, "x", JS_NewFloat64(ctx, col_y.x));
+    JS_SetPropertyStr(ctx, y_obj, "y", JS_NewFloat64(ctx, col_y.y));
+    JS_SetPropertyStr(ctx, y_obj, "z", JS_NewFloat64(ctx, col_y.z));
+    JS_SetPropertyStr(ctx, z_obj, "x", JS_NewFloat64(ctx, col_z.x));
+    JS_SetPropertyStr(ctx, z_obj, "y", JS_NewFloat64(ctx, col_z.y));
+    JS_SetPropertyStr(ctx, z_obj, "z", JS_NewFloat64(ctx, col_z.z));
     JS_SetPropertyStr(ctx, ret_obj, "x", x_obj);
     JS_SetPropertyStr(ctx, ret_obj, "y", y_obj);
     JS_SetPropertyStr(ctx, ret_obj, "z", z_obj);

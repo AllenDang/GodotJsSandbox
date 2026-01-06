@@ -9,9 +9,9 @@
 #include "generated_classes.gen.h"
 
 #include <godot_cpp/classes/mesh_library.hpp>
+#include <godot_cpp/classes/navigation_mesh.hpp>
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
-#include <godot_cpp/classes/navigation_mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -743,15 +743,18 @@ static JSValue js_MeshLibrary_get_item_mesh_transform(JSContext* ctx, JSValueCon
     JSValue bx_obj = JS_NewObject(ctx);
     JSValue by_obj = JS_NewObject(ctx);
     JSValue bz_obj = JS_NewObject(ctx);
-    JS_SetPropertyStr(ctx, bx_obj, "x", JS_NewFloat64(ctx, result.basis.rows[0].x));
-    JS_SetPropertyStr(ctx, bx_obj, "y", JS_NewFloat64(ctx, result.basis.rows[0].y));
-    JS_SetPropertyStr(ctx, bx_obj, "z", JS_NewFloat64(ctx, result.basis.rows[0].z));
-    JS_SetPropertyStr(ctx, by_obj, "x", JS_NewFloat64(ctx, result.basis.rows[1].x));
-    JS_SetPropertyStr(ctx, by_obj, "y", JS_NewFloat64(ctx, result.basis.rows[1].y));
-    JS_SetPropertyStr(ctx, by_obj, "z", JS_NewFloat64(ctx, result.basis.rows[1].z));
-    JS_SetPropertyStr(ctx, bz_obj, "x", JS_NewFloat64(ctx, result.basis.rows[2].x));
-    JS_SetPropertyStr(ctx, bz_obj, "y", JS_NewFloat64(ctx, result.basis.rows[2].y));
-    JS_SetPropertyStr(ctx, bz_obj, "z", JS_NewFloat64(ctx, result.basis.rows[2].z));
+    Vector3 col_x = result.basis.get_column(0);
+    Vector3 col_y = result.basis.get_column(1);
+    Vector3 col_z = result.basis.get_column(2);
+    JS_SetPropertyStr(ctx, bx_obj, "x", JS_NewFloat64(ctx, col_x.x));
+    JS_SetPropertyStr(ctx, bx_obj, "y", JS_NewFloat64(ctx, col_x.y));
+    JS_SetPropertyStr(ctx, bx_obj, "z", JS_NewFloat64(ctx, col_x.z));
+    JS_SetPropertyStr(ctx, by_obj, "x", JS_NewFloat64(ctx, col_y.x));
+    JS_SetPropertyStr(ctx, by_obj, "y", JS_NewFloat64(ctx, col_y.y));
+    JS_SetPropertyStr(ctx, by_obj, "z", JS_NewFloat64(ctx, col_y.z));
+    JS_SetPropertyStr(ctx, bz_obj, "x", JS_NewFloat64(ctx, col_z.x));
+    JS_SetPropertyStr(ctx, bz_obj, "y", JS_NewFloat64(ctx, col_z.y));
+    JS_SetPropertyStr(ctx, bz_obj, "z", JS_NewFloat64(ctx, col_z.z));
     JS_SetPropertyStr(ctx, basis_obj, "x", bx_obj);
     JS_SetPropertyStr(ctx, basis_obj, "y", by_obj);
     JS_SetPropertyStr(ctx, basis_obj, "z", bz_obj);
@@ -908,15 +911,18 @@ static JSValue js_MeshLibrary_get_item_navigation_mesh_transform(JSContext* ctx,
     JSValue bx_obj = JS_NewObject(ctx);
     JSValue by_obj = JS_NewObject(ctx);
     JSValue bz_obj = JS_NewObject(ctx);
-    JS_SetPropertyStr(ctx, bx_obj, "x", JS_NewFloat64(ctx, result.basis.rows[0].x));
-    JS_SetPropertyStr(ctx, bx_obj, "y", JS_NewFloat64(ctx, result.basis.rows[0].y));
-    JS_SetPropertyStr(ctx, bx_obj, "z", JS_NewFloat64(ctx, result.basis.rows[0].z));
-    JS_SetPropertyStr(ctx, by_obj, "x", JS_NewFloat64(ctx, result.basis.rows[1].x));
-    JS_SetPropertyStr(ctx, by_obj, "y", JS_NewFloat64(ctx, result.basis.rows[1].y));
-    JS_SetPropertyStr(ctx, by_obj, "z", JS_NewFloat64(ctx, result.basis.rows[1].z));
-    JS_SetPropertyStr(ctx, bz_obj, "x", JS_NewFloat64(ctx, result.basis.rows[2].x));
-    JS_SetPropertyStr(ctx, bz_obj, "y", JS_NewFloat64(ctx, result.basis.rows[2].y));
-    JS_SetPropertyStr(ctx, bz_obj, "z", JS_NewFloat64(ctx, result.basis.rows[2].z));
+    Vector3 col_x = result.basis.get_column(0);
+    Vector3 col_y = result.basis.get_column(1);
+    Vector3 col_z = result.basis.get_column(2);
+    JS_SetPropertyStr(ctx, bx_obj, "x", JS_NewFloat64(ctx, col_x.x));
+    JS_SetPropertyStr(ctx, bx_obj, "y", JS_NewFloat64(ctx, col_x.y));
+    JS_SetPropertyStr(ctx, bx_obj, "z", JS_NewFloat64(ctx, col_x.z));
+    JS_SetPropertyStr(ctx, by_obj, "x", JS_NewFloat64(ctx, col_y.x));
+    JS_SetPropertyStr(ctx, by_obj, "y", JS_NewFloat64(ctx, col_y.y));
+    JS_SetPropertyStr(ctx, by_obj, "z", JS_NewFloat64(ctx, col_y.z));
+    JS_SetPropertyStr(ctx, bz_obj, "x", JS_NewFloat64(ctx, col_z.x));
+    JS_SetPropertyStr(ctx, bz_obj, "y", JS_NewFloat64(ctx, col_z.y));
+    JS_SetPropertyStr(ctx, bz_obj, "z", JS_NewFloat64(ctx, col_z.z));
     JS_SetPropertyStr(ctx, basis_obj, "x", bx_obj);
     JS_SetPropertyStr(ctx, basis_obj, "y", by_obj);
     JS_SetPropertyStr(ctx, basis_obj, "z", bz_obj);

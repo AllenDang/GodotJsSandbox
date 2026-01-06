@@ -832,39 +832,49 @@ class BindingGenerator:
     JS_SetPropertyStr(ctx, ret_obj, "w", JS_NewFloat64(ctx, {var_name}.w));
     return ret_obj;"""
         if cpp_type == "Basis":
+            # Note: Basis stores internally as rows but exposes x/y/z as columns (axis directions)
+            # Use get_column() to get the correct axis vectors
             return f"""JSValue ret_obj = JS_NewObject(ctx);
     JSValue x_obj = JS_NewObject(ctx);
     JSValue y_obj = JS_NewObject(ctx);
     JSValue z_obj = JS_NewObject(ctx);
-    JS_SetPropertyStr(ctx, x_obj, "x", JS_NewFloat64(ctx, {var_name}.rows[0].x));
-    JS_SetPropertyStr(ctx, x_obj, "y", JS_NewFloat64(ctx, {var_name}.rows[0].y));
-    JS_SetPropertyStr(ctx, x_obj, "z", JS_NewFloat64(ctx, {var_name}.rows[0].z));
-    JS_SetPropertyStr(ctx, y_obj, "x", JS_NewFloat64(ctx, {var_name}.rows[1].x));
-    JS_SetPropertyStr(ctx, y_obj, "y", JS_NewFloat64(ctx, {var_name}.rows[1].y));
-    JS_SetPropertyStr(ctx, y_obj, "z", JS_NewFloat64(ctx, {var_name}.rows[1].z));
-    JS_SetPropertyStr(ctx, z_obj, "x", JS_NewFloat64(ctx, {var_name}.rows[2].x));
-    JS_SetPropertyStr(ctx, z_obj, "y", JS_NewFloat64(ctx, {var_name}.rows[2].y));
-    JS_SetPropertyStr(ctx, z_obj, "z", JS_NewFloat64(ctx, {var_name}.rows[2].z));
+    Vector3 col_x = {var_name}.get_column(0);
+    Vector3 col_y = {var_name}.get_column(1);
+    Vector3 col_z = {var_name}.get_column(2);
+    JS_SetPropertyStr(ctx, x_obj, "x", JS_NewFloat64(ctx, col_x.x));
+    JS_SetPropertyStr(ctx, x_obj, "y", JS_NewFloat64(ctx, col_x.y));
+    JS_SetPropertyStr(ctx, x_obj, "z", JS_NewFloat64(ctx, col_x.z));
+    JS_SetPropertyStr(ctx, y_obj, "x", JS_NewFloat64(ctx, col_y.x));
+    JS_SetPropertyStr(ctx, y_obj, "y", JS_NewFloat64(ctx, col_y.y));
+    JS_SetPropertyStr(ctx, y_obj, "z", JS_NewFloat64(ctx, col_y.z));
+    JS_SetPropertyStr(ctx, z_obj, "x", JS_NewFloat64(ctx, col_z.x));
+    JS_SetPropertyStr(ctx, z_obj, "y", JS_NewFloat64(ctx, col_z.y));
+    JS_SetPropertyStr(ctx, z_obj, "z", JS_NewFloat64(ctx, col_z.z));
     JS_SetPropertyStr(ctx, ret_obj, "x", x_obj);
     JS_SetPropertyStr(ctx, ret_obj, "y", y_obj);
     JS_SetPropertyStr(ctx, ret_obj, "z", z_obj);
     return ret_obj;"""
         if cpp_type == "Transform3D":
+            # Note: Basis stores internally as rows but exposes x/y/z as columns (axis directions)
+            # Use get_column() to get the correct axis vectors
             return f"""JSValue ret_obj = JS_NewObject(ctx);
     JSValue basis_obj = JS_NewObject(ctx);
     JSValue origin_obj = JS_NewObject(ctx);
     JSValue bx_obj = JS_NewObject(ctx);
     JSValue by_obj = JS_NewObject(ctx);
     JSValue bz_obj = JS_NewObject(ctx);
-    JS_SetPropertyStr(ctx, bx_obj, "x", JS_NewFloat64(ctx, {var_name}.basis.rows[0].x));
-    JS_SetPropertyStr(ctx, bx_obj, "y", JS_NewFloat64(ctx, {var_name}.basis.rows[0].y));
-    JS_SetPropertyStr(ctx, bx_obj, "z", JS_NewFloat64(ctx, {var_name}.basis.rows[0].z));
-    JS_SetPropertyStr(ctx, by_obj, "x", JS_NewFloat64(ctx, {var_name}.basis.rows[1].x));
-    JS_SetPropertyStr(ctx, by_obj, "y", JS_NewFloat64(ctx, {var_name}.basis.rows[1].y));
-    JS_SetPropertyStr(ctx, by_obj, "z", JS_NewFloat64(ctx, {var_name}.basis.rows[1].z));
-    JS_SetPropertyStr(ctx, bz_obj, "x", JS_NewFloat64(ctx, {var_name}.basis.rows[2].x));
-    JS_SetPropertyStr(ctx, bz_obj, "y", JS_NewFloat64(ctx, {var_name}.basis.rows[2].y));
-    JS_SetPropertyStr(ctx, bz_obj, "z", JS_NewFloat64(ctx, {var_name}.basis.rows[2].z));
+    Vector3 col_x = {var_name}.basis.get_column(0);
+    Vector3 col_y = {var_name}.basis.get_column(1);
+    Vector3 col_z = {var_name}.basis.get_column(2);
+    JS_SetPropertyStr(ctx, bx_obj, "x", JS_NewFloat64(ctx, col_x.x));
+    JS_SetPropertyStr(ctx, bx_obj, "y", JS_NewFloat64(ctx, col_x.y));
+    JS_SetPropertyStr(ctx, bx_obj, "z", JS_NewFloat64(ctx, col_x.z));
+    JS_SetPropertyStr(ctx, by_obj, "x", JS_NewFloat64(ctx, col_y.x));
+    JS_SetPropertyStr(ctx, by_obj, "y", JS_NewFloat64(ctx, col_y.y));
+    JS_SetPropertyStr(ctx, by_obj, "z", JS_NewFloat64(ctx, col_y.z));
+    JS_SetPropertyStr(ctx, bz_obj, "x", JS_NewFloat64(ctx, col_z.x));
+    JS_SetPropertyStr(ctx, bz_obj, "y", JS_NewFloat64(ctx, col_z.y));
+    JS_SetPropertyStr(ctx, bz_obj, "z", JS_NewFloat64(ctx, col_z.z));
     JS_SetPropertyStr(ctx, basis_obj, "x", bx_obj);
     JS_SetPropertyStr(ctx, basis_obj, "y", by_obj);
     JS_SetPropertyStr(ctx, basis_obj, "z", bz_obj);
