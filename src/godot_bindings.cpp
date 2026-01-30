@@ -951,8 +951,8 @@ void GodotBindings::setup_godot_class_constructor() {
   }
   JS_FreeValue(ctx, result);
 
-  // Step 3: Create object factory
-  const char *factory_code = R"(
+  // Step 3: Create object factory (split into parts for MSVC string literal limit)
+  const char *factory_code_1 = R"(
         globalThis.__create_godot_object = function(className) {
             var raw = __godot_new(className);
             if (!raw || raw.__handle === undefined) {
@@ -973,8 +973,27 @@ void GodotBindings::setup_godot_class_constructor() {
             };
             return new Proxy(target, __godot_proxy_handler);
         };
+        'factory part 1 done';
+    )";
 
-        // Array proxy handler for zero-copy access to Godot arrays
+  result = JS_Eval(ctx, factory_code_1, strlen(factory_code_1), "<factory1>",
+                   JS_EVAL_TYPE_GLOBAL);
+  if (JS_IsException(result)) {
+    JSValue exception = JS_GetException(ctx);
+    const char *err = JS_ToCString(ctx, exception);
+    UtilityFunctions::printerr("Failed to setup JS factory part 1: ",
+                               err ? err : "unknown");
+    if (err)
+      JS_FreeCString(ctx, err);
+    JS_FreeValue(ctx, exception);
+    JS_FreeValue(ctx, result);
+    JS_FreeValue(ctx, global);
+    return;
+  }
+  JS_FreeValue(ctx, result);
+
+  // Array proxy handler for zero-copy access to Godot arrays
+  const char *factory_code_2 = R"(
         globalThis.__godot_array_proxy_handler = {
             get: function(target, prop, receiver) {
                 if (prop === '__array_handle') return target.__array_handle;
@@ -1083,8 +1102,27 @@ void GodotBindings::setup_godot_class_constructor() {
             var target = __create_array_handle_wrapper(handle);
             return new Proxy(target, __godot_array_proxy_handler);
         };
+        'factory part 2 done';
+    )";
 
-        // Packed array proxy handler for zero-copy access to Godot packed arrays
+  result = JS_Eval(ctx, factory_code_2, strlen(factory_code_2), "<factory2>",
+                   JS_EVAL_TYPE_GLOBAL);
+  if (JS_IsException(result)) {
+    JSValue exception = JS_GetException(ctx);
+    const char *err = JS_ToCString(ctx, exception);
+    UtilityFunctions::printerr("Failed to setup JS factory part 2: ",
+                               err ? err : "unknown");
+    if (err)
+      JS_FreeCString(ctx, err);
+    JS_FreeValue(ctx, exception);
+    JS_FreeValue(ctx, result);
+    JS_FreeValue(ctx, global);
+    return;
+  }
+  JS_FreeValue(ctx, result);
+
+  // Packed array proxy handler for zero-copy access to Godot packed arrays
+  const char *factory_code_3 = R"(
         globalThis.__packed_array_proxy_handler = {
             get: function(target, prop, receiver) {
                 if (prop === '__packed_handle') return target.__packed_handle;
@@ -1199,99 +1237,10 @@ void GodotBindings::setup_godot_class_constructor() {
                         return fn ? fn(handle, jsArray) : false;
                     };
                 }
-                // PackedByteArray-specific encode/decode methods
-                if (target.__packed_type === 'PackedByteArray') {
-                    if (prop === 'encode_float') {
-                        var handle = target.__packed_handle;
-                        return function(byte_offset, value) {
-                            return __packed_byte_array_encode_float(handle, byte_offset, value);
-                        };
-                    }
-                    if (prop === 'encode_double') {
-                        var handle = target.__packed_handle;
-                        return function(byte_offset, value) {
-                            return __packed_byte_array_encode_double(handle, byte_offset, value);
-                        };
-                    }
-                    if (prop === 'encode_u32') {
-                        var handle = target.__packed_handle;
-                        return function(byte_offset, value) {
-                            return __packed_byte_array_encode_u32(handle, byte_offset, value);
-                        };
-                    }
-                    if (prop === 'encode_s32') {
-                        var handle = target.__packed_handle;
-                        return function(byte_offset, value) {
-                            return __packed_byte_array_encode_s32(handle, byte_offset, value);
-                        };
-                    }
-                    if (prop === 'encode_u64') {
-                        var handle = target.__packed_handle;
-                        return function(byte_offset, value) {
-                            return __packed_byte_array_encode_u64(handle, byte_offset, value);
-                        };
-                    }
-                    if (prop === 'encode_s64') {
-                        var handle = target.__packed_handle;
-                        return function(byte_offset, value) {
-                            return __packed_byte_array_encode_s64(handle, byte_offset, value);
-                        };
-                    }
-                    if (prop === 'decode_float') {
-                        var handle = target.__packed_handle;
-                        return function(byte_offset) {
-                            return __packed_byte_array_decode_float(handle, byte_offset);
-                        };
-                    }
-                    if (prop === 'decode_double') {
-                        var handle = target.__packed_handle;
-                        return function(byte_offset) {
-                            return __packed_byte_array_decode_double(handle, byte_offset);
-                        };
-                    }
-                    if (prop === 'decode_u32') {
-                        var handle = target.__packed_handle;
-                        return function(byte_offset) {
-                            return __packed_byte_array_decode_u32(handle, byte_offset);
-                        };
-                    }
-                    if (prop === 'decode_s32') {
-                        var handle = target.__packed_handle;
-                        return function(byte_offset) {
-                            return __packed_byte_array_decode_s32(handle, byte_offset);
-                        };
-                    }
-                    if (prop === 'decode_u64') {
-                        var handle = target.__packed_handle;
-                        return function(byte_offset) {
-                            return __packed_byte_array_decode_u64(handle, byte_offset);
-                        };
-                    }
-                    if (prop === 'decode_s64') {
-                        var handle = target.__packed_handle;
-                        return function(byte_offset) {
-                            return __packed_byte_array_decode_s64(handle, byte_offset);
-                        };
-                    }
-                    // Reinterpret methods - convert byte buffer to other packed array types (zero-copy)
-                    if (prop === 'as_vector3_array') {
-                        var handle = target.__packed_handle;
-                        return function(count) {
-                            return __packed_byte_array_to_packed_vector3_array(handle, count);
-                        };
-                    }
-                    if (prop === 'as_vector2_array') {
-                        var handle = target.__packed_handle;
-                        return function(count) {
-                            return __packed_byte_array_to_packed_vector2_array(handle, count);
-                        };
-                    }
-                    if (prop === 'as_int32_array') {
-                        var handle = target.__packed_handle;
-                        return function(count) {
-                            return __packed_byte_array_to_packed_int32_array(handle, count);
-                        };
-                    }
+                // PackedByteArray-specific methods handled by helper (defined in part 4)
+                if (target.__packed_type === 'PackedByteArray' && globalThis.__getPackedByteArrayMethod) {
+                    var method = globalThis.__getPackedByteArrayMethod(target.__packed_handle, prop);
+                    if (method !== undefined) return method;
                 }
                 // Numeric index access
                 var index = parseInt(prop);
@@ -1318,14 +1267,130 @@ void GodotBindings::setup_godot_class_constructor() {
                 return false;
             }
         };
+        'factory part 3 done';
+    )";
 
+  result = JS_Eval(ctx, factory_code_3, strlen(factory_code_3), "<factory3>",
+                   JS_EVAL_TYPE_GLOBAL);
+  if (JS_IsException(result)) {
+    JSValue exception = JS_GetException(ctx);
+    const char *err = JS_ToCString(ctx, exception);
+    UtilityFunctions::printerr("Failed to setup JS factory part 3: ",
+                               err ? err : "unknown");
+    if (err)
+      JS_FreeCString(ctx, err);
+    JS_FreeValue(ctx, exception);
+    JS_FreeValue(ctx, result);
+    JS_FreeValue(ctx, global);
+    return;
+  }
+  JS_FreeValue(ctx, result);
+
+  // PackedByteArray-specific methods helper
+  const char *factory_code_4 = R"(
+        globalThis.__getPackedByteArrayMethod = function(handle, prop) {
+            if (prop === 'encode_float') {
+                return function(byte_offset, value) {
+                    return __packed_byte_array_encode_float(handle, byte_offset, value);
+                };
+            }
+            if (prop === 'encode_double') {
+                return function(byte_offset, value) {
+                    return __packed_byte_array_encode_double(handle, byte_offset, value);
+                };
+            }
+            if (prop === 'encode_u32') {
+                return function(byte_offset, value) {
+                    return __packed_byte_array_encode_u32(handle, byte_offset, value);
+                };
+            }
+            if (prop === 'encode_s32') {
+                return function(byte_offset, value) {
+                    return __packed_byte_array_encode_s32(handle, byte_offset, value);
+                };
+            }
+            if (prop === 'encode_u64') {
+                return function(byte_offset, value) {
+                    return __packed_byte_array_encode_u64(handle, byte_offset, value);
+                };
+            }
+            if (prop === 'encode_s64') {
+                return function(byte_offset, value) {
+                    return __packed_byte_array_encode_s64(handle, byte_offset, value);
+                };
+            }
+            if (prop === 'decode_float') {
+                return function(byte_offset) {
+                    return __packed_byte_array_decode_float(handle, byte_offset);
+                };
+            }
+            if (prop === 'decode_double') {
+                return function(byte_offset) {
+                    return __packed_byte_array_decode_double(handle, byte_offset);
+                };
+            }
+            if (prop === 'decode_u32') {
+                return function(byte_offset) {
+                    return __packed_byte_array_decode_u32(handle, byte_offset);
+                };
+            }
+            if (prop === 'decode_s32') {
+                return function(byte_offset) {
+                    return __packed_byte_array_decode_s32(handle, byte_offset);
+                };
+            }
+            if (prop === 'decode_u64') {
+                return function(byte_offset) {
+                    return __packed_byte_array_decode_u64(handle, byte_offset);
+                };
+            }
+            if (prop === 'decode_s64') {
+                return function(byte_offset) {
+                    return __packed_byte_array_decode_s64(handle, byte_offset);
+                };
+            }
+            // Reinterpret methods - convert byte buffer to other packed array types (zero-copy)
+            if (prop === 'as_vector3_array') {
+                return function(count) {
+                    return __packed_byte_array_to_packed_vector3_array(handle, count);
+                };
+            }
+            if (prop === 'as_vector2_array') {
+                return function(count) {
+                    return __packed_byte_array_to_packed_vector2_array(handle, count);
+                };
+            }
+            if (prop === 'as_int32_array') {
+                return function(count) {
+                    return __packed_byte_array_to_packed_int32_array(handle, count);
+                };
+            }
+            return undefined;
+        };
+        'factory part 4 done';
+    )";
+
+  result = JS_Eval(ctx, factory_code_4, strlen(factory_code_4), "<factory4>",
+                   JS_EVAL_TYPE_GLOBAL);
+  if (JS_IsException(result)) {
+    JSValue exception = JS_GetException(ctx);
+    const char *err = JS_ToCString(ctx, exception);
+    UtilityFunctions::printerr("Failed to setup JS factory part 4: ",
+                               err ? err : "unknown");
+    if (err)
+      JS_FreeCString(ctx, err);
+    JS_FreeValue(ctx, exception);
+    JS_FreeValue(ctx, result);
+    JS_FreeValue(ctx, global);
+    return;
+  }
+  JS_FreeValue(ctx, result);
+
+  // Wrap functions and math type proxy handler
+  const char *factory_code_5 = R"(
         // Wrap a packed array handle with a proxy
-        // Uses __create_array_handle_wrapper to create a proper JSObjectClass with finalizer
-        // This ensures ArrayRegistry::release_handle() is called when the proxy is garbage collected
         globalThis.__wrap_packed_array = function(handle, type) {
-            // Create wrapper with finalizer - when GC'd, this calls ArrayRegistry::release_handle()
             var target = __create_array_handle_wrapper(handle);
-            // Also set packed-specific properties for JS-side access
             target.__packed_handle = handle;
             target.__packed_type = type;
             return new Proxy(target, __packed_array_proxy_handler);
@@ -1345,7 +1410,6 @@ void GodotBindings::setup_godot_class_constructor() {
                     var type = target.__math_type || 'MathType';
                     return function() { return '[' + type + ']'; };
                 }
-                // Property access (x, y, z, w, r, g, b, a, etc.)
                 return __math_get_property(target.__math_handle, prop);
             },
             set: function(target, prop, value) {
@@ -1353,7 +1417,6 @@ void GodotBindings::setup_godot_class_constructor() {
                     target[prop] = value;
                     return true;
                 }
-                // Property modification (x, y, z, w, r, g, b, a, etc.)
                 return __math_set_property(target.__math_handle, prop, value) === true;
             },
             has: function(target, prop) {
@@ -1369,25 +1432,21 @@ void GodotBindings::setup_godot_class_constructor() {
         };
 
         // Wrap a math type handle with a proxy
-        // Uses __create_array_handle_wrapper to create a proper JSObjectClass with finalizer
-        // This ensures ArrayRegistry::release_handle() is called when the proxy is garbage collected
         globalThis.__wrap_math_type = function(handle, type) {
-            // Create wrapper with finalizer - when GC'd, this calls ArrayRegistry::release_handle()
             var target = __create_array_handle_wrapper(handle);
-            // Also set math-specific properties for JS-side access
             target.__math_handle = handle;
             target.__math_type = type;
             return new Proxy(target, __math_type_proxy_handler);
         };
-        'factory done';
+        'factory part 5 done';
     )";
 
-  result = JS_Eval(ctx, factory_code, strlen(factory_code), "<factory>",
+  result = JS_Eval(ctx, factory_code_5, strlen(factory_code_5), "<factory5>",
                    JS_EVAL_TYPE_GLOBAL);
   if (JS_IsException(result)) {
     JSValue exception = JS_GetException(ctx);
     const char *err = JS_ToCString(ctx, exception);
-    UtilityFunctions::printerr("Failed to setup JS factory: ",
+    UtilityFunctions::printerr("Failed to setup JS factory part 5: ",
                                err ? err : "unknown");
     if (err)
       JS_FreeCString(ctx, err);
