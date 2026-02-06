@@ -90,11 +90,12 @@ jobs:
             -G Xcode \
             -DCMAKE_SYSTEM_NAME=iOS \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
-            -DCMAKE_OSX_ARCHITECTURES=arm64
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO
 
       - name: Build
         working-directory: addons/hmsandbox
-        run: cmake --build Build --config Release
+        run: cmake --build Build --config Release --target HMSandbox
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
