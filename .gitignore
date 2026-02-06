@@ -1,13 +1,5 @@
-ref
-.DS_Store
-bin/
-demo/.godot
-demo/bin
+# Godot 4+ specific ignores
+.godot/
+/android/
 
-# Build artifacts
-*.os
-*.o
-*.dylib
-.sconsign.dblite
-tests/.godot
-scripts/__pycache__/generate_bindings.cpython-314.pyc
+nul

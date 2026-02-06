@@ -1,0 +1,11 @@
+BasedOnStyle: LLVM  # 改为 LLVM 风格作为基础
+BreakBeforeBraces: Allman 
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+ColumnLimit: 200
+IndentWidth: 4
+PointerAlignment: Left
+SpaceBeforeParens: ControlStatements
+AccessModifierOffset: -4
+NamespaceIndentation: All  # 缩进命名空间内容

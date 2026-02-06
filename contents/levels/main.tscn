@@ -1,0 +1,92 @@
+[gd_scene format=3 uid="uid://bwa5q0j8jtkai"]
+
+[ext_resource type="Script" uid="uid://dnbrx05meuslx" path="res://contents/levels/main.gd" id="1_main"]
+
+[node name="Main" type="Control" unique_id=473268288]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+
+[node name="LauncherUI" type="VBoxContainer" parent="." unique_id=69639348]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Header" type="HBoxContainer" parent="LauncherUI" unique_id=260553117]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="LauncherUI/Header" unique_id=1733374223]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "JS Game Launcher"
+
+[node name="HSeparator" type="HSeparator" parent="LauncherUI/Header" unique_id=1415769791]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RefreshButton" type="Button" parent="LauncherUI/Header" unique_id=1688201591]
+layout_mode = 2
+text = "Refresh"
+
+[node name="GameList" type="ScrollContainer" parent="LauncherUI" unique_id=447824261]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GameListContainer" type="VBoxContainer" parent="LauncherUI/GameList" unique_id=1761981070]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusLabel" type="Label" parent="LauncherUI" unique_id=1874627238]
+layout_mode = 2
+text = "Scanning for games..."
+
+[node name="GameContainer" type="Node" parent="." unique_id=889313458]
+
+[node name="BackButton" type="Button" parent="." unique_id=410440603]
+visible = false
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 110.0
+offset_bottom = 40.0
+text = "< Back (ESC)"
+
+[node name="LoadingPanel" type="PanelContainer" parent="." unique_id=322743617]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -50.0
+offset_right = 150.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="LoadingPanel" unique_id=1764357735]
+layout_mode = 2
+
+[node name="LoadingLabel" type="Label" parent="LoadingPanel/VBoxContainer" unique_id=603693133]
+layout_mode = 2
+text = "Loading..."
+horizontal_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="LoadingPanel/VBoxContainer" unique_id=696363431]
+custom_minimum_size = Vector2(280, 20)
+layout_mode = 2
+value = 50.0
+
+[node name="StageLabel" type="Label" parent="LoadingPanel/VBoxContainer" unique_id=580836806]
+layout_mode = 2
+text = "Stage: loading_scene"
+horizontal_alignment = 1
