@@ -246,8 +246,12 @@ bool SandboxConfig::is_path_allowed(const String& path) const {
     }
 
     // Check if path starts with an allowed prefix
-    return std::any_of(allowed_path_prefixes_.begin(), allowed_path_prefixes_.end(),
-        [&path](const String& prefix) { return path.begins_with(prefix); });
+    for (const String& prefix : allowed_path_prefixes_) {
+        if (path.begins_with(prefix)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void SandboxConfig::add_allowed_path_prefix(const String& prefix) {
