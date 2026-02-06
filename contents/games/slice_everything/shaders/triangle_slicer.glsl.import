@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cla82fudflmhs"
+path="res://.godot/imported/triangle_slicer.glsl-dec123fe0ad28219c8d8c3ec459740ed.res"
+
+[deps]
+
+source_file="res://contents/games/slice_everything/shaders/triangle_slicer.glsl"
+dest_files=["res://.godot/imported/triangle_slicer.glsl-dec123fe0ad28219c8d8c3ec459740ed.res"]
+
+[params]
+
