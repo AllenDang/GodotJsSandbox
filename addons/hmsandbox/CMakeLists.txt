@@ -21,6 +21,16 @@ if(MSVC)
             set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES};${cfg}" CACHE STRING "" FORCE)
         endif()
     endforeach()
+
+    # Initialize required CMake flag variables for custom configurations (based on Debug)
+    foreach(cfg IN ITEMS DEBUGGAME DEBUGGAMEEDITOR)
+        set(CMAKE_C_FLAGS_${cfg} "${CMAKE_C_FLAGS_DEBUG}" CACHE STRING "" FORCE)
+        set(CMAKE_CXX_FLAGS_${cfg} "${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "" FORCE)
+        set(CMAKE_EXE_LINKER_FLAGS_${cfg} "${CMAKE_EXE_LINKER_FLAGS_DEBUG}" CACHE STRING "" FORCE)
+        set(CMAKE_SHARED_LINKER_FLAGS_${cfg} "${CMAKE_SHARED_LINKER_FLAGS_DEBUG}" CACHE STRING "" FORCE)
+        set(CMAKE_STATIC_LINKER_FLAGS_${cfg} "${CMAKE_STATIC_LINKER_FLAGS_DEBUG}" CACHE STRING "" FORCE)
+        set(CMAKE_MODULE_LINKER_FLAGS_${cfg} "${CMAKE_MODULE_LINKER_FLAGS_DEBUG}" CACHE STRING "" FORCE)
+    endforeach()
 endif()
 
 # ============================================================
@@ -34,6 +44,8 @@ add_subdirectory(${GODOT_CPP_PATH} build)
 # ============================================================
 set(JS_PATH "${CMAKE_SOURCE_DIR}/quickjs")
 add_subdirectory(${JS_PATH} quickjs_build)
+# Static library qjs will be linked into a shared library, so it needs -fPIC on Linux
+set_target_properties(qjs PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # ============================================================
 # generated 路径配置
