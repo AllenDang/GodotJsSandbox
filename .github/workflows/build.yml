@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version tag (e.g. v1.0.0)'
+        required: true
+        default: 'v0.0.0'
 
 jobs:
   build-windows:
@@ -50,6 +55,53 @@ jobs:
           name: linux-release
           path: addons/hmsandbox/bin/Release/
 
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure CMake
+        working-directory: addons/hmsandbox
+        run: cmake -B Build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        working-directory: addons/hmsandbox
+        run: cmake --build Build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release
+          path: addons/hmsandbox/bin/Release/
+
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure CMake
+        working-directory: addons/hmsandbox
+        run: |
+          cmake -B Build \
+            -G Xcode \
+            -DCMAKE_SYSTEM_NAME=iOS \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
+            -DCMAKE_OSX_ARCHITECTURES=arm64
+
+      - name: Build
+        working-directory: addons/hmsandbox
+        run: cmake --build Build --config Release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release
+          path: addons/hmsandbox/bin/Release/
+
   build-android:
     runs-on: ubuntu-latest
     steps:
@@ -75,3 +127,38 @@ jobs:
         with:
           name: android-release
           path: addons/hmsandbox/bin/Release/
+
+  release:
+    if: github.event_name == 'workflow_dispatch'
+    needs: [build-windows, build-linux, build-macos, build-ios, build-android]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Zip artifacts
+        run: |
+          cd artifacts
+          for dir in */; do
+            name="${dir%/}"
+            zip -r "../${name}.zip" "$dir"
+          done
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ inputs.version }}" \
+            --title "${{ inputs.version }}" \
+            --generate-notes \
+            windows-release.zip \
+            linux-release.zip \
+            macos-release.zip \
+            ios-release.zip \
+            android-release.zip
